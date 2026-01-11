@@ -1,8 +1,50 @@
-@"
-node_modules
-dist
-build
+# =====================
+# Dependencies
+# =====================
+node_modules/
+**/node_modules/
+
+# =====================
+# Build output
+# =====================
+dist/
+**/dist/
+build/
+out/
+.vite/
+
+# =====================
+# Environment / secrets
+# =====================
 .env
 .env.*
+!.env.example
+.env.local
+
+# =====================
+# Logs & caches
+# =====================
+*.log
+.pnpm-store
+.cache
+.tmp
+.temp
+
+# =====================
+# OS junk
+# =====================
 .DS_Store
-"@ | Set-Content .gitignore
+Thumbs.db
+desktop.ini
+
+# =====================
+# Editor junk
+# =====================
+.idea/
+.vscode/
+*.swp
+
+# =====================
+# Misc
+# =====================
+coverage/
