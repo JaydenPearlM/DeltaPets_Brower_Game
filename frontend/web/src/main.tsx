@@ -1,10 +1,15 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./app/App.tsx";
+console.log("MAIN.TSX LOADED ✅", import.meta.url);
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./app/App";
+import { AppProviders } from "./app/providers/AppProviders";
+import "./styles/index.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <AppProviders>
+      <App />
+    </AppProviders>
+  </React.StrictMode>
 );
