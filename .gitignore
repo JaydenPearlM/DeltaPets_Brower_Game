@@ -3,6 +3,8 @@
 # =====================
 node_modules/
 **/node_modules/
+.pnpm-store/
+.pnpm-debug.log*
 
 # =====================
 # Build output
@@ -12,6 +14,8 @@ dist/
 build/
 out/
 .vite/
+.vite-cache/
+.esbuild/
 
 # =====================
 # Environment / secrets
@@ -20,15 +24,24 @@ out/
 .env.*
 !.env.example
 .env.local
+.env.development
+.env.production
+.env.test
+
+# Supabase local dev
+.supabase/
+supabase/.env
+supabase/.temp/
 
 # =====================
 # Logs & caches
 # =====================
 *.log
-.pnpm-store
-.cache
-.tmp
-.temp
+.cache/
+.tmp/
+.temp/
+coverage/
+.nyc_output/
 
 # =====================
 # OS junk
@@ -38,13 +51,24 @@ Thumbs.db
 desktop.ini
 
 # =====================
-# Editor junk
+# Editor / IDE junk
 # =====================
 .idea/
 .vscode/
 *.swp
+*.swo
+*.bak
+
+# =====================
+# Testing / tooling
+# =====================
+playwright-report/
+test-results/
+cypress/videos/
+cypress/screenshots/
 
 # =====================
 # Misc
 # =====================
-coverage/
+*.local
+*.lock.old
