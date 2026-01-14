@@ -1,43 +1,34 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "../../lib/supabase/client";
+import React, { createContext, useEffect, useMemo, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "../../lib/supabase/client"; // adjust path if needed
 
-type AuthContextValue = {
+export type AuthContextValue = {
   user: User | null;
-  session: Session | null;
   loading: boolean;
-  signUp(email: string, password: string): Promise<{ error: string | null }>;
-  signIn(email: string, password: string): Promise<{ error: string | null }>;
-  signOut(): Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data, error }) => {
+    supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      if (error) console.warn("getSession error:", error.message);
-      setSession(data.session ?? null);
+      setUser(data.session?.user ?? null);
       setLoading(false);
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        setSession(newSession ?? null);
-      }
-    );
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
     return () => {
       mounted = false;
@@ -45,35 +36,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const value = useMemo<AuthContextValue>(() => {
-    const user = session?.user ?? null;
-
-    return {
+  const value = useMemo<AuthContextValue>(
+    () => ({
       user,
-      session,
       loading,
-      async signUp(email, password) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        return { error: error?.message ?? null };
-      },
       async signIn(email, password) {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        return { error: error?.message ?? null };
+        if (error) throw error;
+      },
+      async signUp(email, password) {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
       },
       async signOut() {
-        await supabase.auth.signOut();
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
       },
-    };
-  }, [session, loading]);
+    }),
+    [user, loading]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider />");
-  return ctx;
 }

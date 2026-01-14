@@ -5,6 +5,22 @@ const app = express();
 app.disable("x-powered-by");
 app.use(express.json());
 
+app.get("/", (_req, res) => {
+  res
+    .status(200)
+    .type("text")
+    .send(
+      [
+        "DeltaPets Backend ✅",
+        "",
+        "Try:",
+        "  GET /api/health",
+        "  GET /api/me  (requires Authorization: Bearer <token>)",
+        "",
+      ].join("\n")
+    );
+});
+
 // ALWAYS-ON health endpoint (does NOT depend on Supabase env)
 app.get("/api/health", (_req, res) => {
   res.json({
