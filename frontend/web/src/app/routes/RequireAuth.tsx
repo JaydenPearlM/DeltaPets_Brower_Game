@@ -24,3 +24,12 @@ export default function RequireAuth({ children }: RequireAuthProps) {
 
   return <>{children}</>;
 }
+
+//These are for other files.
+
+//so anchors dont get lost:
+//state={{ from: location.pathname + location.search + location.hash }}
+
+//After Successful login:
+// const from = (location.state as any)?.from ?? "/";
+//navigate(from, { replace: true });

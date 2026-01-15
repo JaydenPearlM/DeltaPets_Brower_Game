@@ -8,9 +8,17 @@ export type AuthedRequest = Request & {
 function getBearerToken(req: Request): string | null {
   const h = req.headers.authorization;
   if (!h) return null;
+
   const [type, token] = h.split(" ");
   if (type !== "Bearer" || !token) return null;
+
   return token;
+}
+
+async function getUserFromBearer(token: string) {
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  if (error || !data?.user) return null;
+  return data.user;
 }
 
 export async function requireUser(
@@ -21,10 +29,9 @@ export async function requireUser(
   const token = getBearerToken(req);
   if (!token) return res.status(401).json({ error: "Missing Bearer token" });
 
-  const { data, error } = await supabaseAdmin.auth.getUser(token);
-  if (error || !data?.user)
-    return res.status(401).json({ error: "Invalid token" });
+  const user = await getUserFromBearer(token);
+  if (!user) return res.status(401).json({ error: "Invalid token" });
 
-  req.user = { id: data.user.id, email: data.user.email ?? null };
-  next();
+  req.user = { id: user.id, email: user.email ?? null };
+  return next();
 }

@@ -1,18 +1,27 @@
-import React, { createContext, useEffect, useMemo, useState } from "react";
-import type { User } from "@supabase/supabase-js";
-import { supabase } from "../../lib/supabase/client"; // adjust path if needed
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase } from "../../lib/supabase/client";
+import * as auth from "./authService.ts";
 
-export type AuthContextValue = {
+type AuthContextValue = {
   user: User | null;
+  session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  signIn: typeof auth.signIn;
+  signUp: typeof auth.signUp;
+  signOut: typeof auth.signOut;
 };
 
-export const AuthContext = createContext<AuthContextValue | null>(null);
+const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,14 +30,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
+      setSession(data.session ?? null);
       setUser(data.session?.user ?? null);
       setLoading(false);
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const { data: sub } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession ?? null);
+        setUser(newSession?.user ?? null);
+        setLoading(false);
+      }
+    );
 
     return () => {
       mounted = false;
@@ -39,25 +52,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
+      session,
       loading,
-      async signIn(email, password) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-      },
-      async signUp(email, password) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-      },
-      async signOut() {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-      },
+      signIn: auth.signIn,
+      signUp: auth.signUp,
+      signOut: auth.signOut,
     }),
-    [user, loading]
+    [user, session, loading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider />");
+  return ctx;
 }

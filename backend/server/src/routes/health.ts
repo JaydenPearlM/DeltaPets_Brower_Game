@@ -1,5 +1,4 @@
-import type { Request, Response } from "express";
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 
 export const healthRouter = Router();
 

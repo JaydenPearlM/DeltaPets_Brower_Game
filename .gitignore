@@ -36,6 +36,12 @@ out/
 **/.env
 **/.env.*
 **/.env.local
+**/.env.*.local
+!.env.example
+!**/.env.example
+
+# Explicit backend env (extra safety)
+backend/server/.env
 
 
 # =============================================================================
