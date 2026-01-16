@@ -1,16 +1,22 @@
-//This is just a placeholder
-//Dont use this for prod
-
 import React from "react";
 import { createBrowserRouter } from "react-router-dom";
-import RequireAuth from "./RequireAuth";
+import App from "../App";
+import Homepage from "../../NaviPages/homepage";
 
 function LoginPlaceholder() {
-  return <div style={{ padding: 10 }}>Login page placeholder (skeleton)</div>;
+  return <div style={{ padding: 16 }}>Login page placeholder</div>;
 }
 
-function AuthedHomePlaceholder() {
-  return <div style={{ padding: 16 }}>Authed page placeholder (skeleton)</div>;
+function RegisterPlaceholder() {
+  return <div style={{ padding: 16 }}>Register page placeholder</div>;
+}
+
+function CreatePlaceholder() {
+  return <div style={{ padding: 16 }}>Character creation placeholder</div>;
+}
+
+function PetPlaceholder() {
+  return <div style={{ padding: 16 }}>Pet page placeholder</div>;
 }
 
 function NotFound() {
@@ -18,42 +24,18 @@ function NotFound() {
 }
 
 export const router = createBrowserRouter([
-  { path: "/login", element: <LoginPlaceholder /> },
   {
     path: "/",
-    element: (
-      <RequireAuth>
-        <AuthedHomePlaceholder />
-      </RequireAuth>
-    ),
+    element: <App />,
+    children: [
+      { index: true, element: <Homepage /> },
+
+      // placeholders for now
+      { path: "login", element: <LoginPlaceholder /> },
+      { path: "register", element: <RegisterPlaceholder /> },
+      { path: "create", element: <CreatePlaceholder /> },
+      { path: "pet", element: <PetPlaceholder /> },
+    ],
   },
   { path: "*", element: <NotFound /> },
 ]);
-
-//The above code is just a placeholder.
-
-// import { createBrowserRouter } from "react-router-dom";
-// import RequireAuth from "./RequireAuth";
-// // Optional: a simple not-found page
-// function NotFound() {
-//   return <div style={{ padding: 16 }}>404 — Page not found</div>;
-// }
-
-// export const router = createBrowserRouter([
-//   {
-//     path: "/login",
-//     element: <LoginPage />,
-//   },
-//   {
-//     path: "/",
-//     element: (
-//       <RequireAuth>
-//         <PetPage />
-//       </RequireAuth>
-//     ),
-//   },
-//   {
-//     path: "*",
-//     element: <NotFound />,
-//   },
-// ]);
