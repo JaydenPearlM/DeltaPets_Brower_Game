@@ -4,7 +4,7 @@ import { supabase } from "../supabase/client";
  * Use a relative base so Vite proxy handles dev,
  * and production (same origin) just works.
  */
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
 async function authHeaders(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
