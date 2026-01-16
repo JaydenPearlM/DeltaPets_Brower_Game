@@ -13,12 +13,12 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/index.tsx",
-    "src/env.tsx",
-    "src/app.tsx",
+    "src/index.ts",
+    "src/env.ts",
+    "src/app.ts",
     "src/routes/me.tsx",
     "src/routes/index.tsx",
     "src/routes/health.tsx",
-    "src/middleware/auth.tsx"
+    "src/middleware/auth.ts"
   ]
 }

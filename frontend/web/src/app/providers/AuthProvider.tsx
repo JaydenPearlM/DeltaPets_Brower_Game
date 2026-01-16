@@ -9,7 +9,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase/client";
 import * as auth from "./authService";
 
-type AuthContextValue = {
+export type AuthContextValue = {
   user: User | null;
   session: Session | null;
   loading: boolean;
