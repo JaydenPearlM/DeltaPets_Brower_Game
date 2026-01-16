@@ -1,0 +1,13 @@
+{
+  "name": "deltapets",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "frontend/*",
+    "backend/*"
+  ],
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build"
+  }
+}
