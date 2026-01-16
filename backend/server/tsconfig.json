@@ -11,5 +11,14 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/index.tsx",
+    "src/env.tsx",
+    "src/app.tsx",
+    "src/routes/me.tsx",
+    "src/routes/index.tsx",
+    "src/routes/health.tsx",
+    "src/middleware/auth.tsx"
+  ]
 }

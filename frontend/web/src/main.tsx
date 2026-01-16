@@ -4,7 +4,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./app/App";
 import { AppProviders } from "./app/providers/AppProviders";
-import "./styles/index.css";
+import "./index.css";
 
 console.log("MAIN IMPORTS APP =>", new URL("./app/App", import.meta.url).href);
 

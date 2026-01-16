@@ -5,9 +5,14 @@ import { DevBanner } from "../components/DevBanner";
 
 export default function App() {
   return (
-    <>
-      <DevBanner />
-      <RouterProvider router={router} />
-    </>
+    <div className="game-shell">
+      <div className="game-canvas">
+        <div className="ui-layer">
+          <DevBanner />
+        </div>
+
+        <RouterProvider router={router} />
+      </div>
+    </div>
   );
 }

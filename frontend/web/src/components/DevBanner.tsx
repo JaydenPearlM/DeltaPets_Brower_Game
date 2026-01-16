@@ -20,7 +20,7 @@ export function DevBanner() {
       <h2 style={{ marginTop: 0 }}>Deltapets</h2>
       <p>Pre-Alpha environment is running.</p>
       <p>
-        Coming Soon — visit my website at{" "}
+        Coming Soon! Visit my website at{" "}
         <a
           href="https://jayden-devfolio.com"
           target="_blank"

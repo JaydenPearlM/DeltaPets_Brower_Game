@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase/client";
-import * as auth from "./authService.ts";
+import * as auth from "./authService";
 
 type AuthContextValue = {
   user: User | null;
@@ -28,18 +28,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data }) => {
+    (async () => {
+      const { data, error } = await supabase.auth.getSession();
       if (!mounted) return;
+
+      if (error) console.error("getSession error:", error.message);
+
       setSession(data.session ?? null);
       setUser(data.session?.user ?? null);
       setLoading(false);
-    });
+    })();
 
     const { data: sub } = supabase.auth.onAuthStateChange(
       (_event, newSession) => {
         setSession(newSession ?? null);
         setUser(newSession?.user ?? null);
-        setLoading(false);
       }
     );
 

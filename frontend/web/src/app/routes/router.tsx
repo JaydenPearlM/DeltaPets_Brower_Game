@@ -6,7 +6,7 @@ import { createBrowserRouter } from "react-router-dom";
 import RequireAuth from "./RequireAuth";
 
 function LoginPlaceholder() {
-  return <div style={{ padding: 16 }}>Login page placeholder (skeleton)</div>;
+  return <div style={{ padding: 10 }}>Login page placeholder (skeleton)</div>;
 }
 
 function AuthedHomePlaceholder() {
