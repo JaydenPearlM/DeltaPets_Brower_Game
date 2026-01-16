@@ -16,9 +16,9 @@
     "src/index.ts",
     "src/env.ts",
     "src/app.ts",
-    "src/routes/me.tsx",
-    "src/routes/index.tsx",
-    "src/routes/health.tsx",
+    "src/routes/me.ts",
+    "src/routes/index.ts",
+    "src/routes/health.ts",
     "src/middleware/auth.ts"
   ]
 }

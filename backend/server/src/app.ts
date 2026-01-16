@@ -1,28 +1,23 @@
 import express from "express";
 import { apiRouter } from "./routes";
+import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
 
 export function createApp() {
   const app = express();
   app.disable("x-powered-by");
-  app.use(express.json());
+
+  // Important for correct req.ip behind proxies (Render/Cloudflare/etc)
+  app.set("trust proxy", 1);
+
+  // Basic request shaping (avoid huge payload spam)
+  app.use(express.json({ limit: "100kb" }));
 
   app.get("/", (_req, res) => {
-    res
-      .status(200)
-      .type("text")
-      .send(
-        [
-          "DeltaPets Backend ✅",
-          "",
-          "Try:",
-          "  GET /api/health",
-          "  GET /api/me (Authorization: Bearer <token>)",
-          "",
-        ].join("\n")
-      );
+    res.type("text").send("DeltaPets Backend ✅\nTry GET /api/health");
   });
 
-  app.use("/api", apiRouter);
+  // ✅ Rate limiting + request shaping applied to ALL /api routes
+  app.use("/api", apiLimiter, apiSpeedLimiter, apiRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: "Not found", path: req.path });
