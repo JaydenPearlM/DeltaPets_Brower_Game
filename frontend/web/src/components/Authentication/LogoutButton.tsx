@@ -1,7 +1,11 @@
-import { useAuth } from "../../app/providers/AuthProvider";
+import { useAuth } from "../../app/providers/useAuth";
 
 export function LogoutButton() {
-  const auth = useAuth();
+  const { signOut, loading } = useAuth();
 
-  return <button onClick={auth.signOut}>Logout</button>;
+  return (
+    <button type="button" onClick={signOut} disabled={loading}>
+      Logout
+    </button>
+  );
 }

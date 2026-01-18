@@ -1,5 +1,5 @@
 /* =============================================================================
-   Deltapets – Global Styles (index.css)
+   Deltapets – Global Styles (global.css)
    Goals:
    - One source of truth (no Vite starter conflicts)
    - Global typography + font variables
@@ -37,11 +37,31 @@ html {
   -moz-osx-font-smoothing: grayscale;
 
   /* Fonts */
-  --font-logo: "New Rocker", cursive;
-  --font-heading: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto,
-    Helvetica, Arial, sans-serif;
-  --font-body: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+  /*
+    NOTE: You said you're using Quantico for the DeltaPets logo + in-game headers.
+    This variable is the single source of truth. If Quantico isn't loaded yet,
+    it will fall back cleanly.
+  */
+  --font-logo: "Quantico", "New Rocker", system-ui, sans-serif;
+  --font-heading:
+    "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
     Arial, sans-serif;
+  --font-body:
+    "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    sans-serif;
+
+  /* Theme tokens */
+  --bg: #0b0e14;
+  --bg-elev: rgba(255, 255, 255, 0.05);
+  --bg-elev-2: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --text: #e6e8ee;
+  --muted: rgba(230, 232, 238, 0.78);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --focus: rgba(255, 255, 255, 0.35);
 
   /* Responsive type scale */
   --text-xs: clamp(12px, 1vw, 13px);
@@ -62,8 +82,8 @@ body {
   line-height: 1.5;
 
   /* Deltapets default theme */
-  background-color: #0b0e14;
-  color: #e6e8ee;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 h1,
@@ -86,6 +106,45 @@ h1 {
   letter-spacing: 0.05em;
 }
 
+.heading-text {
+  font-family: var(--font-heading);
+}
+
+/* -------------------------
+   Forms (global baseline)
+-------------------------- */
+label {
+  display: block;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+::placeholder {
+  color: rgba(230, 232, 238, 0.55);
+}
+
 /* -------------------------
    Links
 -------------------------- */
@@ -104,21 +163,47 @@ a:hover {
 button {
   font: inherit;
   cursor: pointer;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
   color: inherit;
   padding: 0.6em 1.1em;
 }
 
 button:hover {
-  border-color: rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.09);
+  border-color: var(--border-strong);
+  background: var(--bg-elev-2);
 }
 
 button:focus-visible {
-  outline: 3px solid rgba(255, 255, 255, 0.35);
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Optional button variants (use via className when you start caring about UI) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-ghost {
+  background: transparent;
+}
+
+/* -------------------------
+   Shared “card” surface helper
+-------------------------- */
+.surface {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
 }
 
 /* -------------------------

@@ -1,0 +1,24 @@
+.auth-root {
+  margin-top: 8px;
+}
+
+.auth-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-message {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.auth-message.error {
+  color: #ffb4b4;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}

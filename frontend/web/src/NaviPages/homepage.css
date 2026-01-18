@@ -1,0 +1,71 @@
+.homepage {
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+.homepage-title {
+  font-family: var(--font-logo);
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.homepage-subtitle {
+  margin-top: 6px;
+  opacity: 0.85;
+}
+
+.homepage-panel {
+  margin-top: 20px;
+  padding: 16px;
+  max-width: 520px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+}
+
+.homepage-user {
+  opacity: 0.9;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+/* IMPORTANT: scope button tweaks to the homepage so we don't stomp global buttons */
+.homepage button {
+  padding: 10px 14px;
+}
+
+.auth-form {
+  margin-top: 16px;
+}
+
+.auth-form h2 {
+  margin-bottom: 12px;
+}
+
+.auth-form label {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.auth-form input {
+  margin-top: 6px;
+}
+
+.homepage-message {
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.test-render {
+  margin-top: 16px;
+  opacity: 0.8;
+}

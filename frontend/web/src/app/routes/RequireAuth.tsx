@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
-import { useAuth } from "../../app/providers/AuthProvider";
+import { useAuth } from "../providers/useAuth";
 
 type RequireAuthProps = {
   children: ReactNode;
@@ -24,12 +24,3 @@ export default function RequireAuth({ children }: RequireAuthProps) {
 
   return <>{children}</>;
 }
-
-//These are for other files.
-
-//so anchors dont get lost:
-//state={{ from: location.pathname + location.search + location.hash }}
-
-//After Successful login:
-// const from = (location.state as any)?.from ?? "/";
-//navigate(from, { replace: true });

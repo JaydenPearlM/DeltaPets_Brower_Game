@@ -1,41 +1,25 @@
-import { useState } from "react";
-import { useAuth } from "../../app/providers/AuthProvider";
+type LoginFormProps = {
+  onMessage?: (msg: string | null) => void;
+};
 
-export function LoginForm() {
-  const { signIn, loading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+export function LoginForm({ onMessage }: LoginFormProps) {
+  async function handleLogin() {
     try {
-      await signIn(email, password);
+      // your login logic here
+
+      onMessage?.("Logged in successfully");
     } catch (err: any) {
-      setError(err?.message ?? "Login failed");
+      onMessage?.(err?.message ?? "Login failed");
     }
-  };
+  }
 
   return (
-    <form onSubmit={onSubmit}>
-      <input
-        placeholder="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        autoComplete="email"
-      />
-      <input
-        placeholder="password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        autoComplete="current-password"
-      />
-      <button type="submit" disabled={loading}>
+    <form>
+      {/* inputs */}
+
+      <button type="button" onClick={handleLogin}>
         Login
       </button>
-      {error && <p>{error}</p>}
     </form>
   );
 }
