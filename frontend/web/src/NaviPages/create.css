@@ -1,0 +1,105 @@
+@import url("https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&display=swap");
+
+.dp-create-root {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.dp-black {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 1;
+}
+
+.dp-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  gap: 18px;
+}
+
+.dp-fade-out {
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+.dp-line {
+  font-family:
+    "Quantico",
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Arial,
+    sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.6px;
+  color: #f2f2f2;
+  text-align: center;
+  max-width: 760px;
+  line-height: 1.35;
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.12);
+}
+
+.dp-egg-wrap {
+  display: grid;
+  place-items: center;
+  animation: eggFadeIn 650ms ease forwards;
+}
+
+@keyframes eggFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Circle placeholder egg */
+.dp-egg {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+
+  background:
+    radial-gradient(
+      circle at 35% 28%,
+      rgba(255, 255, 255, 0.55),
+      rgba(255, 255, 255, 0.1) 36%,
+      rgba(255, 255, 255, 0.03) 60%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.18),
+      rgba(255, 255, 255, 0.06)
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.22);
+
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.6),
+    0 0 44px rgba(255, 255, 255, 0.06);
+
+  animation: eggFloat 1.4s ease-in-out infinite;
+}
+
+@keyframes eggFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

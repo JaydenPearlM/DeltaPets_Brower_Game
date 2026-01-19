@@ -210,12 +210,20 @@ button:disabled {
    Resolution-safe Game Shell
 -------------------------- */
 /* Full-viewport center wrapper */
+
+body {
+  overflow: hidden;
+}
+
 .game-shell {
   width: 100vw;
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: max(12px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
 
   /* Background behind the 16:9 canvas */
   background: radial-gradient(circle at center, #121826, #080b12);

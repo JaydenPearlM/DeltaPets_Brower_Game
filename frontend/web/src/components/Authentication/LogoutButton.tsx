@@ -1,11 +1,29 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../app/providers/useAuth";
 
 export function LogoutButton() {
-  const { signOut, loading } = useAuth();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
 
   return (
-    <button type="button" onClick={signOut} disabled={loading}>
-      Logout
+    <button
+      type="button"
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        const { error } = await signOut();
+        setBusy(false);
+
+        if (!error) {
+          navigate("/"); // ✅ bounce back to homepage
+        } else {
+          console.error("Logout failed:", error);
+        }
+      }}
+    >
+      {busy ? "Logging out…" : "Logout"}
     </button>
   );
 }

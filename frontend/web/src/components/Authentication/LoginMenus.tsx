@@ -12,23 +12,26 @@ type Mode = "none" | "login";
 
 const AUTO_CLOSE_MS = 2 * 60 * 1000; // 2 minutes
 
-export function LoginMenus() {
-  const [mode, setMode] = useState<Mode>("none");
-  const [signupOpen, setSignupOpen] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+type LoginPanelProps = {
+  identifier: string;
+  setIdentifier: (v: string) => void;
+  message: string | null;
+  setMessage: (v: string | null) => void;
+  closeLogin: () => void;
+};
 
-  const [identifier, setIdentifier] = useState(() => {
-    return localStorage.getItem("dp_login_identifier") ?? "";
-  });
+function LoginPanel({
+  identifier,
+  setIdentifier,
+  message,
+  setMessage,
+  closeLogin,
+}: LoginPanelProps) {
   const [password, setPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
-  // ✅ optional in Alpha — one line to avoid parser weirdness
+  // optional in Alpha — one line to avoid parser weirdness
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
-
-  useEffect(() => {
-    localStorage.setItem("dp_login_identifier", identifier);
-  }, [identifier]);
 
   const { loading: loginLoading, handleSubmit: handleLoginSubmit } =
     useLoginSubmit({
@@ -39,39 +42,89 @@ export function LoginMenus() {
       onAfterAttempt: () => setCaptchaToken(null),
     });
 
+  // Auto-close after 2 minutes while panel is mounted (i.e., mode === "login")
   useEffect(() => {
-    if (mode !== "login") return;
-
     const t = window.setTimeout(() => {
-      setMode("none");
       setMessage(null);
       setPassword("");
       setCaptchaToken(null);
+      closeLogin();
     }, AUTO_CLOSE_MS);
 
     return () => window.clearTimeout(t);
-  }, [mode]);
+  }, [closeLogin, setMessage]);
+
+  // When the panel mounts, clear any old state
+  useEffect(() => {
+    setMessage(null);
+    setPassword("");
+    setCaptchaToken(null);
+  }, [setMessage]);
+
+  return (
+    <div className="auth-shell-panel">
+      <form onSubmit={handleLoginSubmit}>
+        <LoginForm
+          identifier={identifier}
+          password={password}
+          setIdentifier={setIdentifier}
+          setPassword={setPassword}
+        />
+
+        {siteKey && (
+          <div style={{ marginTop: 12 }}>
+            <TurnstileWidget
+              siteKey={siteKey}
+              onToken={(t) => setCaptchaToken(t)}
+            />
+          </div>
+        )}
+
+        <div className="login-actions" style={{ marginTop: 12 }}>
+          <LoginSubmitButton loading={loginLoading} />
+          <button type="button" onClick={closeLogin} disabled={loginLoading}>
+            Close
+          </button>
+        </div>
+      </form>
+
+      {message ? <p className="auth-message">{message}</p> : null}
+
+      <p style={{ fontSize: 12, opacity: 0.8 }}>
+        This menu will auto-close in 2 minutes.
+      </p>
+    </div>
+  );
+}
+
+export function LoginMenus() {
+  const [mode, setMode] = useState<Mode>("none");
+  const [signupOpen, setSignupOpen] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const [identifier, setIdentifier] = useState(() => {
+    return localStorage.getItem("dp_login_identifier") ?? "";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("dp_login_identifier", identifier);
+  }, [identifier]);
 
   function openLogin() {
     setMessage(null);
     setMode("login");
     setSignupOpen(false);
-    setPassword("");
-    setCaptchaToken(null);
   }
 
   function openSignup() {
     setMessage(null);
     setSignupOpen(true);
     setMode("none");
-    setCaptchaToken(null);
   }
 
   function closeLogin() {
     setMode("none");
     setMessage(null);
-    setPassword("");
-    setCaptchaToken(null);
   }
 
   function closeSignup() {
@@ -86,42 +139,13 @@ export function LoginMenus() {
       </div>
 
       {mode === "login" && (
-        <div className="auth-shell-panel">
-          <form onSubmit={handleLoginSubmit}>
-            <LoginForm
-              identifier={identifier}
-              password={password}
-              setIdentifier={setIdentifier}
-              setPassword={setPassword}
-            />
-
-            {siteKey && (
-              <div style={{ marginTop: 12 }}>
-                <TurnstileWidget
-                  siteKey={siteKey}
-                  onToken={(t) => setCaptchaToken(t)}
-                />
-              </div>
-            )}
-
-            <div className="login-actions" style={{ marginTop: 12 }}>
-              <LoginSubmitButton loading={loginLoading} />
-              <button
-                type="button"
-                onClick={closeLogin}
-                disabled={loginLoading}
-              >
-                Close
-              </button>
-            </div>
-          </form>
-
-          {message ? <p className="auth-message">{message}</p> : null}
-
-          <p style={{ fontSize: 12, opacity: 0.8 }}>
-            This menu will auto-close in 2 minutes.
-          </p>
-        </div>
+        <LoginPanel
+          identifier={identifier}
+          setIdentifier={setIdentifier}
+          message={message}
+          setMessage={setMessage}
+          closeLogin={closeLogin}
+        />
       )}
 
       {signupOpen && (

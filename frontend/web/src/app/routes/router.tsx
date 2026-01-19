@@ -3,14 +3,6 @@ import App from "../App";
 import Homepage from "../../NaviPages/homepage";
 import PetPage from "../../features/auth/pets/pages/PetPage1/PetPage";
 
-function LoginPlaceholder() {
-  return <div style={{ padding: 16 }}>Login page placeholder</div>;
-}
-
-function RegisterPlaceholder() {
-  return <div style={{ padding: 16 }}>Register page placeholder</div>;
-}
-
 function CreatePlaceholder() {
   return <div style={{ padding: 16 }}>Character creation placeholder</div>;
 }
@@ -27,8 +19,6 @@ export const router = createBrowserRouter([
       { index: true, element: <Homepage /> },
 
       // placeholders for now
-      { path: "login", element: <LoginPlaceholder /> },
-      { path: "register", element: <RegisterPlaceholder /> },
       { path: "create", element: <CreatePlaceholder /> },
 
       // ✅ real pet page route

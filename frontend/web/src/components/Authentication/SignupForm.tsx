@@ -16,10 +16,21 @@ function isValidUsername(username: string) {
   return /^[a-z0-9_]{3,20}$/.test(username);
 }
 
+function looksLikeEmailAlreadyUsed(message: string) {
+  const m = message.toLowerCase();
+  return (
+    m.includes("already registered") ||
+    m.includes("already exists") ||
+    m.includes("user already") ||
+    m.includes("email already") ||
+    m.includes("already in use")
+  );
+}
+
 export function SignupForm({ onSuccess, onMessage }: SignupFormProps) {
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
-  const [birthday, setBirthday] = useState(""); // still collected for now
+  const [birthday, setBirthday] = useState(""); // collected for now
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rewritePassword, setRewritePassword] = useState("");
@@ -57,11 +68,13 @@ export function SignupForm({ onSuccess, onMessage }: SignupFormProps) {
     const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanName) return fail("Account not created: missing name.");
+
     if (!isValidUsername(cleanUsername)) {
       return fail(
         "Account not created: username must be 3–20 chars and use letters, numbers, or underscores.",
       );
     }
+
     if (!birthday) return fail("Account not created: missing birthday.");
 
     if (password.length < 8) {
@@ -69,33 +82,49 @@ export function SignupForm({ onSuccess, onMessage }: SignupFormProps) {
         "Account not created: password must be at least 8 characters.",
       );
     }
+
+    // ✅ Task: passwords don’t match
     if (password !== rewritePassword) {
       return fail("Account not created: passwords do not match.");
     }
 
     setLoading(true);
     try {
-      const { error: authErr } = await supabase.auth.signUp({
+      const { data, error: authErr } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
         options: {
+          // ✅ Task: verification email redirect back to your site
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             username: cleanUsername,
             display_name: cleanName,
-            // birthday is collected but not stored in your profiles table yet
+            // birthday collected but not stored yet
           },
         },
       });
 
       if (authErr) {
-        const m = String(authErr.message ?? authErr);
-        if (m.toLowerCase().includes("already registered")) {
+        const msg = String(authErr.message ?? authErr);
+
+        // ✅ Task: email already used
+        if (looksLikeEmailAlreadyUsed(msg)) {
           return fail("Email already exists. Try logging in instead.");
         }
-        return fail(`Account not created: ${m}`);
+
+        return fail(`Account not created: ${msg}`);
       }
 
-      ok("Account created! You can log in now.");
+      // ✅ Task: After signup show check-email message (when confirmations are ON)
+      // Supabase returns no session when email confirmation is required.
+      if (!data.session) {
+        ok("Account created. Check your email to verify your account.");
+        onSuccess();
+        return;
+      }
+
+      // If confirmations are OFF (not recommended), they may be logged in instantly.
+      ok("Account successfully made.");
       onSuccess();
     } finally {
       setLoading(false);

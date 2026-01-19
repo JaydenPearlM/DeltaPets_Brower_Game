@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type { FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../app/providers/useAuth";
+import { useEnterGame } from "../../app/entry/useEnterGame";
 
 type UseLoginSubmitArgs = {
   identifier: string;
@@ -11,6 +11,11 @@ type UseLoginSubmitArgs = {
   onAfterAttempt?: () => void;
 };
 
+function isEmailNotConfirmedMessage(msg: string) {
+  const m = msg.toLowerCase();
+  return m.includes("email not confirmed") || m.includes("not confirmed");
+}
+
 export function useLoginSubmit({
   identifier,
   password,
@@ -19,12 +24,16 @@ export function useLoginSubmit({
   onAfterAttempt,
 }: UseLoginSubmitArgs) {
   const { signIn } = useAuth();
-  const navigate = useNavigate();
+
+  // ✅ CALL THE HOOK HERE (top-level, safe)
+  const { enterGame } = useEnterGame();
+
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
+      onMessage(null);
 
       const raw = identifier.trim();
 
@@ -33,7 +42,7 @@ export function useLoginSubmit({
         return;
       }
 
-      // ✅ Only require captcha if site key exists
+      // Only require Turnstile if site key exists
       const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as
         | string
         | undefined;
@@ -52,11 +61,19 @@ export function useLoginSubmit({
         });
 
         if (result.error) {
-          onMessage(result.error.message ?? "Login failed.");
+          const msg = String(result.error.message ?? "Login failed.");
+
+          if (isEmailNotConfirmedMessage(msg)) {
+            onMessage("Verify your email first. Check your inbox.");
+            return;
+          }
+
+          onMessage(msg);
           return;
         }
 
-        navigate("/pets");
+        // ✅ THIS IS THE ONLY ROUTING DECISION
+        await enterGame();
       } finally {
         setLoading(false);
         onAfterAttempt?.();
@@ -67,7 +84,7 @@ export function useLoginSubmit({
       password,
       captchaToken,
       signIn,
-      navigate,
+      enterGame,
       onMessage,
       onAfterAttempt,
     ],

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogoutButton } from "../../../../../components/Authentication/LogoutButton";
-import { useAuth } from "../../../../../app/providers/useAuth"; // adjust path to your app folder
+import { useAuth } from "../../../../../app/providers/useAuth";
 
 export default function PetPage() {
   const { user, loading } = useAuth();

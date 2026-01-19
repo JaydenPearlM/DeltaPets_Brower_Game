@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./authentication.css";
 
 type LoginFormProps = {
   identifier: string;
@@ -25,6 +26,7 @@ export function LoginForm({
             onChange={(e) => setIdentifier(e.target.value)}
             autoComplete="username"
             placeholder="you@example.com or coolUsername"
+            required
           />
         </label>
       </div>
@@ -40,6 +42,7 @@ export function LoginForm({
               autoComplete="current-password"
               placeholder="••••••••"
               style={{ flex: 1 }}
+              required
             />
 
             <button
@@ -58,7 +61,6 @@ export function LoginForm({
                 cursor: "pointer",
               }}
             >
-              {/* simple eye icon (no extra deps) */}
               <svg
                 width="18"
                 height="18"
