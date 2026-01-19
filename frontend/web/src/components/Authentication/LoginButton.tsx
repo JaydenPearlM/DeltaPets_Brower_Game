@@ -1,11 +1,11 @@
-import { useAuth } from "../../app/providers/AuthProvider";
+type LoginButtonProps = {
+  onClick: () => void;
+};
 
-export function LoginButton() {
-  const auth = useAuth();
-
-  const handleLogin = async () => {
-    await auth.signIn("test@email.com", "password123");
-  };
-
-  return <button onClick={handleLogin}>Login</button>;
+export function LoginButton({ onClick }: LoginButtonProps) {
+  return (
+    <button type="button" onClick={onClick}>
+      Login
+    </button>
+  );
 }

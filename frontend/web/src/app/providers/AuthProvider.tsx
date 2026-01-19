@@ -5,12 +5,22 @@ import { supabase } from "../../lib/supabase/client";
 export type AuthContextValue = {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+
+  signIn: (args: {
+    identifier: string;
+    password: string;
+    captchaToken?: string;
+  }) => Promise<{ error: any | null }>;
+
+  signUp: (args: {
+    email: string;
+    password: string;
+    captchaToken?: string;
+  }) => Promise<{ error: any | null }>;
+
+  signOut: () => Promise<{ error: any | null }>;
 };
 
-// ✅ THIS is the missing piece: export it
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -42,23 +52,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       user,
       loading,
-      signIn: async (email, password) => {
+
+      signIn: async ({ identifier, password, captchaToken }) => {
+        const email = identifier.trim().toLowerCase();
+
+        if (!email.includes("@")) {
+          return {
+            error: { message: "Please log in using your email address." },
+          };
+        }
+
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
+          options: captchaToken ? { captchaToken } : undefined,
         });
-        if (error) throw error;
+
+        return { error: error ?? null };
       },
-      signUp: async (email, password) => {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
+
+      signUp: async ({ email, password, captchaToken }) => {
+        const { error } = await supabase.auth.signUp({
+          email: email.trim().toLowerCase(),
+          password,
+          options: captchaToken ? { captchaToken } : undefined,
+        });
+
+        return { error: error ?? null };
       },
+
       signOut: async () => {
         const { error } = await supabase.auth.signOut();
-        if (error) throw error;
+        return { error: error ?? null };
       },
     }),
-    [user, loading]
+    [user, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
