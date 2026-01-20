@@ -2,10 +2,8 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Homepage from "../../NaviPages/homepage";
 import PetPage from "../../features/auth/pets/pages/PetPage1/PetPage";
-
-function CreatePlaceholder() {
-  return <div style={{ padding: 16 }}>Character creation placeholder</div>;
-}
+import CreatePage from "../../NaviPages/create";
+import AuthCallback from "./AuthCallback";
 
 function NotFound() {
   return <div style={{ padding: 16 }}>404 — Page not found</div>;
@@ -18,10 +16,13 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Homepage /> },
 
-      // placeholders for now
-      { path: "create", element: <CreatePlaceholder /> },
+      // ✅ support the redirect you set in SignupForm
+      { path: "auth/callback", element: <AuthCallback /> },
 
-      // ✅ real pet page route
+      // ✅ keep your old route as an alias (optional, but nice)
+      { path: "authcallback", element: <AuthCallback /> },
+
+      { path: "create", element: <CreatePage /> },
       { path: "pet", element: <PetPage /> },
     ],
   },

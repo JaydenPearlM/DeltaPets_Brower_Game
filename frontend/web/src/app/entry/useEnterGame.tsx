@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase/client";
-import { useAuth } from "../providers/useAuth";
 
 /**
  * Centralized entry logic:
@@ -10,31 +9,34 @@ import { useAuth } from "../providers/useAuth";
  * - logged in + no pet -> /create
  */
 export function useEnterGame() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const enterGame = useCallback(async () => {
     setLoading(true);
     try {
-      // Use live session user to avoid timing issues after login
       const { data, error: getUserErr } = await supabase.auth.getUser();
       if (getUserErr) throw getUserErr;
 
-      const liveUser = data.user ?? user;
+      const liveUser = data.user;
 
       if (!liveUser) {
         navigate("/", { replace: true });
         return;
       }
 
-      const { data: pet, error } = await supabase
+      const { data: pet, error: petErr } = await supabase
         .from("pets")
         .select("id")
         .eq("user_id", liveUser.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (petErr) {
+        console.error("enterGame pet check failed:", petErr);
+        // If this happens, it's usually RLS or table mismatch.
+        navigate("/", { replace: true });
+        return;
+      }
 
       navigate(pet?.id ? "/pet" : "/create", { replace: true });
     } catch (err) {
@@ -43,7 +45,7 @@ export function useEnterGame() {
     } finally {
       setLoading(false);
     }
-  }, [navigate, user]);
+  }, [navigate]);
 
   return { loading, enterGame };
 }

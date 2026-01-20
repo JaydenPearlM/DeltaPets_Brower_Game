@@ -4,7 +4,7 @@ import { supabase } from "../../lib/supabase/client";
 import "./authentication.css";
 
 type SignupFormProps = {
-  onSuccess: () => void;
+  onSuccess: () => void; // usually closes the modal
   onMessage: (msg: string | null) => void;
 };
 
@@ -83,7 +83,6 @@ export function SignupForm({ onSuccess, onMessage }: SignupFormProps) {
       );
     }
 
-    // ✅ Task: passwords don’t match
     if (password !== rewritePassword) {
       return fail("Account not created: passwords do not match.");
     }
@@ -94,12 +93,11 @@ export function SignupForm({ onSuccess, onMessage }: SignupFormProps) {
         email: cleanEmail,
         password,
         options: {
-          // ✅ Task: verification email redirect back to your site
-          emailRedirectTo: `${window.location.origin}/`,
+          // keep this even if you’re not using verification right now
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             username: cleanUsername,
             display_name: cleanName,
-            // birthday collected but not stored yet
           },
         },
       });
@@ -107,7 +105,6 @@ export function SignupForm({ onSuccess, onMessage }: SignupFormProps) {
       if (authErr) {
         const msg = String(authErr.message ?? authErr);
 
-        // ✅ Task: email already used
         if (looksLikeEmailAlreadyUsed(msg)) {
           return fail("Email already exists. Try logging in instead.");
         }
@@ -115,17 +112,14 @@ export function SignupForm({ onSuccess, onMessage }: SignupFormProps) {
         return fail(`Account not created: ${msg}`);
       }
 
-      // ✅ Task: After signup show check-email message (when confirmations are ON)
-      // Supabase returns no session when email confirmation is required.
-      if (!data.session) {
-        ok("Account created. Check your email to verify your account.");
-        onSuccess();
-        return;
+      // ✅ If confirmations are OFF, Supabase may auto-create a session.
+      // We do NOT want to auto-enter the game on signup.
+      if (data?.session) {
+        await supabase.auth.signOut();
       }
 
-      // If confirmations are OFF (not recommended), they may be logged in instantly.
-      ok("Account successfully made.");
-      onSuccess();
+      ok("Account created ✅ Now log in with your email + password.");
+      onSuccess(); // close modal / return to login UI
     } finally {
       setLoading(false);
     }

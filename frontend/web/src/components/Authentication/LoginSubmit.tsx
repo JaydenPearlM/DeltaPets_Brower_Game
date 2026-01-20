@@ -11,11 +11,6 @@ type UseLoginSubmitArgs = {
   onAfterAttempt?: () => void;
 };
 
-function isEmailNotConfirmedMessage(msg: string) {
-  const m = msg.toLowerCase();
-  return m.includes("email not confirmed") || m.includes("not confirmed");
-}
-
 export function useLoginSubmit({
   identifier,
   password,
@@ -25,7 +20,7 @@ export function useLoginSubmit({
 }: UseLoginSubmitArgs) {
   const { signIn } = useAuth();
 
-  // ✅ CALL THE HOOK HERE (top-level, safe)
+  // ✅ routing decision lives in enterGame()
   const { enterGame } = useEnterGame();
 
   const [loading, setLoading] = useState(false);
@@ -36,8 +31,9 @@ export function useLoginSubmit({
       onMessage(null);
 
       const raw = identifier.trim();
+      const pass = password;
 
-      if (!raw || !password) {
+      if (!raw || !pass) {
         onMessage("Missing email and password.");
         return;
       }
@@ -56,24 +52,23 @@ export function useLoginSubmit({
       try {
         const result = await signIn({
           identifier: raw,
-          password,
-          captchaToken: captchaToken ?? "",
+          password: pass,
+          captchaToken: captchaToken ?? undefined,
         });
 
         if (result.error) {
           const msg = String(result.error.message ?? "Login failed.");
-
-          if (isEmailNotConfirmedMessage(msg)) {
-            onMessage("Verify your email first. Check your inbox.");
-            return;
-          }
-
           onMessage(msg);
           return;
         }
 
-        // ✅ THIS IS THE ONLY ROUTING DECISION
+        // ✅ After successful login:
+        // - if user has no pet yet => /create (cutscene)
+        // - else => /pet
         await enterGame();
+      } catch (err) {
+        console.error("Login submit failed:", err);
+        onMessage("Login failed. Please try again.");
       } finally {
         setLoading(false);
         onAfterAttempt?.();

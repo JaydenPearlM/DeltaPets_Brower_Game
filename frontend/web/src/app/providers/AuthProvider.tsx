@@ -6,6 +6,7 @@ export type AuthContextValue = {
   user: User | null;
   loading: boolean;
 
+  // ✅ EMAIL LOGIN ONLY (Alpha-safe)
   signIn: (args: {
     identifier: string;
     password: string;
@@ -53,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       loading,
 
+      // 🔐 EMAIL-ONLY SIGN IN (no username lookup)
       signIn: async ({ identifier, password, captchaToken }) => {
         const email = identifier.trim().toLowerCase();
 
