@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { env } from "../env";
+import { env } from "../env.server";
 
 type TurnstileVerifyResponse = {
   success: boolean;
@@ -59,7 +59,7 @@ export function requireTurnstile(opts?: {
           method: "POST",
           headers: { "content-type": "application/x-www-form-urlencoded" },
           body: form.toString(),
-        }
+        },
       );
 
       const data = (await r.json()) as TurnstileVerifyResponse;

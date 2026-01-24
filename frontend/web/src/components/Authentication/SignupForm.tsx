@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { supabase } from "../../lib/supabase/client";
-import "./authentication.css";
 
 type SignupFormProps = {
   onSuccess: () => void; // usually closes the modal

@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Homepage from "../../NaviPages/homepage";
-import PetPage from "../../features/auth/pets/pages/PetPage1/PetPage";
+import PetPage from "../../features/auth/pets/pages/Petspage_1/PetPage";
 import CreatePage from "../../NaviPages/create";
 import AuthCallback from "./AuthCallback";
 

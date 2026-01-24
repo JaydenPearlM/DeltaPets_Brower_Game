@@ -1,10 +1,7 @@
 import path from "node:path";
 import dotenv from "dotenv";
 
-/**
- * CommonJS gives us __dirname for free
- * This always resolves to backend/server/.env
- */
+// Load backend/server/.env
 dotenv.config({
   path: path.resolve(__dirname, "../.env"),
 });
@@ -25,8 +22,11 @@ export const env = {
   NODE_ENV: optional("NODE_ENV", "development")!,
   PORT: Number(optional("PORT", "4000")),
 
+  // ---------------------------------------------------------------------------
+  // Supabase
+  // ---------------------------------------------------------------------------
   SUPABASE_URL: required("SUPABASE_URL"),
-  SUPABASE_SERVICE_ROLE_KEY: required("SUPABASE_SERVICE_ROLE_KEY"),
+  SUPABASE_SECRET_KEY: required("SUPABASE_SECRET_KEY"),
 
   // ---------------------------------------------------------------------------
   // Rate limiting / request shaping
@@ -34,15 +34,12 @@ export const env = {
   RATE_LIMIT_WINDOW_MS: Number(optional("RATE_LIMIT_WINDOW_MS", "60000")),
   RATE_LIMIT_MAX: Number(optional("RATE_LIMIT_MAX", "120")),
 
-  // "Soft" throttling (adds delay instead of hard-blocking)
   SLOW_DOWN_WINDOW_MS: Number(optional("SLOW_DOWN_WINDOW_MS", "60000")),
   SLOW_DOWN_AFTER: Number(optional("SLOW_DOWN_AFTER", "60")),
-  // express-slow-down uses *milliseconds* per request after delayAfter
   SLOW_DOWN_DELAY_MS: Number(optional("SLOW_DOWN_DELAY_MS", "250")),
 
-  // Extra strict for bot-magnet endpoints
   AUTH_RATE_LIMIT_WINDOW_MS: Number(
-    optional("AUTH_RATE_LIMIT_WINDOW_MS", "60000")
+    optional("AUTH_RATE_LIMIT_WINDOW_MS", "60000"),
   ),
   AUTH_RATE_LIMIT_MAX: Number(optional("AUTH_RATE_LIMIT_MAX", "20")),
 

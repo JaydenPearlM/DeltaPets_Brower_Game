@@ -1,6 +1,6 @@
 import rateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
-import { env } from "../env";
+import { env } from "../env.server";
 
 /**
  * Let express-rate-limit use its default keyGenerator (IPv6-safe).

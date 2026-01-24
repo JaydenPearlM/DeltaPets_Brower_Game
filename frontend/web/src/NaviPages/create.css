@@ -285,3 +285,18 @@
 .dp-debug-btn:hover {
   background: rgba(255, 255, 255, 0.07);
 }
+
+.dp-caret {
+  margin-left: 2px;
+  display: inline-block;
+  width: 1ch;
+}
+
+.dp-caret.is-on {
+  animation: dpBlink 1s steps(1, end) infinite;
+  opacity: 1;
+}
+
+.dp-caret.is-off {
+  opacity: 0;
+}

@@ -6,7 +6,6 @@ import { SignupForm } from "./SignupForm";
 import { LoginSubmitButton } from "./LoginSubmitButton";
 import { useLoginSubmit } from "./LoginSubmit";
 import { TurnstileWidget } from "./TurnstileWidget";
-import "./authentication.css";
 
 type Mode = "none" | "login";
 

@@ -1,3 +1,10 @@
+//Testing
+console.log("VITE_SUPABASE_URL =", import.meta.env.VITE_SUPABASE_URL);
+console.log(
+  "VITE_SUPABASE_ANON_KEY present =",
+  !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+);
+
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -8,7 +15,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as
 if (!supabaseUrl || !supabaseAnonKey) {
   // Throwing early prevents "it kinda works" broken auth states.
   throw new Error(
-    "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Check your .env.local file."
+    "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Check your .env.local file.",
   );
 }
 

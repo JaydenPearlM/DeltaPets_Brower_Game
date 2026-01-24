@@ -178,35 +178,49 @@ export default function CreatePage() {
         setPhase("revealEggAndSave");
         setEggVisible(true);
 
-        // Save egg once, right at reveal
+        // Save egg once, right at reveal (SERVER time)
         setBusy(true);
         try {
-          const hatchReadyAt = new Date(
-            Date.now() + 20 * 60 * 1000,
-          ).toISOString();
+          // Prefer env, but don't explode if it's missing in dev
+          const apiBase =
+            (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
-          const { error: upsertErr } = await supabase.from("pets").upsert(
-            {
-              user_id: user.id,
-              line: starterLine,
-              stage: "egg",
-              hatch_ready_at: hatchReadyAt,
+          const { data: sessionData, error: sessionErr } =
+            await supabase.auth.getSession();
+          if (sessionErr) throw sessionErr;
+
+          const accessToken = sessionData.session?.access_token;
+          if (!accessToken) throw new Error("No access token");
+
+          const res = await fetch(`${apiBase}/api/pets/ensure-egg`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
             },
-            {
-              onConflict: "user_id",
-              ignoreDuplicates: true,
-            },
-          );
+            body: JSON.stringify({ line: starterLine }),
+          });
+
+          // Try to read JSON either way (nice error messages)
+          const data = await res.json().catch(() => ({}) as any);
 
           if (!alive()) return;
 
-          if (upsertErr) {
-            console.error("Egg save failed:", upsertErr);
-            setFatalError(
-              `Egg save failed: ${String((upsertErr as any).message ?? upsertErr)}`,
-            );
-            return;
+          if (!res.ok) {
+            const msg =
+              data?.error ||
+              data?.message ||
+              `Failed to ensure egg (HTTP ${res.status})`;
+            throw new Error(msg);
           }
+        } catch (err) {
+          console.error("Egg ensure failed:", err);
+          if (alive()) {
+            setFatalError(
+              `Egg save failed: ${String((err as any)?.message ?? err)}`,
+            );
+          }
+          return;
         } finally {
           if (alive()) setBusy(false);
         }
@@ -291,9 +305,14 @@ export default function CreatePage() {
         <div className="dp-stage">
           <div className="dp-text-slot" aria-live="polite">
             <div
-              className={`dp-line dp-line-1 ${line1CursorOn ? "dp-cursor dp-eldritch" : ""}`}
+              className={`dp-line dp-line-1 ${line1CursorOn ? "dp-eldritch" : ""}`}
             >
-              {line1}
+              <span className="dp-text">{line1}</span>
+              <span
+                className={`dp-caret ${line1CursorOn ? "is-on" : "is-off"}`}
+              >
+                ▍
+              </span>
             </div>
 
             <div
