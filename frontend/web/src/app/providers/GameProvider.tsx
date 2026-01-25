@@ -13,7 +13,7 @@ import { useAuth } from "./useAuth";
 /**
  * Minimal types that match your migration schema:
  * - profiles: primary key user_id
- * - pets: has user_id, hatch_ready_at, etc.
+ * - pets: has user_id, hatch_ends_at, etc.
  */
 export type ProfileRow = {
   user_id: string;
@@ -36,7 +36,7 @@ export type PetRow = {
   xp: number;
 
   hatched_at: string | null;
-  hatch_ready_at: string | null;
+  hatch_ends_at: string | null;
 
   hunger: number;
   cleanliness: number;
@@ -93,7 +93,7 @@ async function fetchPet(userId: string): Promise<PetRow | null> {
         "level",
         "xp",
         "hatched_at",
-        "hatch_ready_at",
+        "hatch_ends_at",
         "hunger",
         "cleanliness",
         "happiness",

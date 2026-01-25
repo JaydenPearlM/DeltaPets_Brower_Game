@@ -1,0 +1,114 @@
+.homepage {
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+.homepage-title {
+  font-family: var(--font-logo);
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.homepage-subtitle {
+  margin-top: 6px;
+  opacity: 0.85;
+}
+
+.homepage-panel {
+  margin-top: 20px;
+  padding: 16px;
+  max-width: 520px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+}
+
+.homepage-user {
+  opacity: 0.9;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+/* IMPORTANT: scope button tweaks to the homepage so we don't stomp global buttons */
+.homepage button {
+  padding: 10px 14px;
+}
+
+.auth-form {
+  margin-top: 16px;
+}
+
+.auth-form h2 {
+  margin-bottom: 12px;
+}
+
+.auth-form label {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.auth-form input {
+  margin-top: 6px;
+}
+
+.homepage-message {
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.test-render {
+  margin-top: 16px;
+  opacity: 0.8;
+}
+
+.dp-egg {
+  width: 220px; /* whatever you use */
+  height: 280px;
+  background: #f7f3e9; /* placeholder egg */
+  position: relative;
+  overflow: hidden;
+
+  /* egg shape: narrower top, fuller bottom */
+  border-radius: 48% 52% 56% 44% / 35% 35% 65% 65%;
+
+  /* optional: make it feel less “flat” */
+  box-shadow:
+    inset 0 18px 24px rgba(255, 255, 255, 0.5),
+    inset 0 -22px 30px rgba(0, 0, 0, 0.12),
+    0 18px 28px rgba(0, 0, 0, 0.25);
+}
+
+.dp-egg::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  top: 30%;
+  width: 70%;
+  height: 48%;
+  border-radius: 999px;
+
+  /*light blue swirl-ish pattern */
+  background: conic-gradient(
+    from 220deg,
+    rgba(120, 210, 255, 0) 0deg,
+    rgba(120, 210, 255, 0.65) 35deg,
+    rgba(120, 210, 255, 0) 110deg,
+    rgba(120, 210, 255, 0.35) 175deg,
+    rgba(120, 210, 255, 0) 360deg
+  );
+
+  opacity: 0.9;
+  filter: blur(0.2px);
+  transform: rotate(-12deg);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}

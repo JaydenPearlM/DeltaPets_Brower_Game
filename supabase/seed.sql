@@ -1,0 +1,2 @@
+-- Optional seed data for local Supabase.
+-- Add inserts here when you want deterministic dev accounts/items.

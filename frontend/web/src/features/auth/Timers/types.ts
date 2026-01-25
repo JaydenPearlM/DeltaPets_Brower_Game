@@ -1,7 +1,7 @@
 export type HatchInfo = {
   ready: boolean;
-  hatch_ready_at: string | null;
-  remaining_ms: number;
+  hatch_ends_at: string | null;
+  hatch_remaining_ms: number;
 };
 
 export type ActivePetResponse = {

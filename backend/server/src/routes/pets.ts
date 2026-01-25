@@ -32,27 +32,34 @@ function msUntil(iso: string | null | undefined, nowMs: number) {
   return Math.max(0, end - nowMs);
 }
 
+/**
+ * Hatch payload used by /active + /ensure-egg + /hatch failure response
+ * standardized naming:
+ * - hatch_ends_at
+ * - hatch_remaining_ms
+ */
 function hatchPayload(pet: any, serverNowMs: number) {
-  const remaining_ms = msUntil(pet?.hatch_ready_at, serverNowMs);
+  const hatch_remaining_ms = msUntil(pet?.hatch_ends_at, serverNowMs);
+
   const ready =
-    remaining_ms === 0 && pet?.stage === "egg" && !!pet?.hatch_ready_at;
+    hatch_remaining_ms === 0 && pet?.stage === "egg" && !!pet?.hatch_ends_at;
 
   return {
     ready,
-    hatch_ready_at: pet?.hatch_ready_at ?? null,
-    remaining_ms,
+    hatch_ends_at: pet?.hatch_ends_at ?? null,
+    hatch_remaining_ms,
   };
 }
 
-// ✅ keep config constants outside handlers
+// keep config constants outside handlers
 const BASIC_EGG_HATCH_MINUTES = 2;
 
 /**
- * GET /pets/active
- * Returns active pet + server_now + hatch info (remaining_ms).
+ * GET /api/pets/active
+ * Returns active pet + server_now + hatch info.
  */
 petsRouter.get(
-  "/pets/active",
+  "/active",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
     const userId = req.user!.id;
@@ -83,12 +90,12 @@ petsRouter.get(
 );
 
 /**
- * POST /pets/ensure-egg
+ * POST /api/pets/ensure-egg
  * Creates the user's first egg if they don't already have a pet row.
  * IMPORTANT: If a pet already exists, it returns it and does NOT overwrite timers.
  */
 petsRouter.post(
-  "/pets/ensure-egg",
+  "/ensure-egg",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
     const userId = req.user!.id;
@@ -118,7 +125,7 @@ petsRouter.post(
 
     // 2) Create egg with SERVER time
     const hatchMs = BASIC_EGG_HATCH_MINUTES * 60 * 1000;
-    const hatchReadyAt = new Date(serverNowMs + hatchMs).toISOString();
+    const hatch_ends_at = new Date(serverNowMs + hatchMs).toISOString();
 
     const { data: created, error: createErr } = await supabaseAdmin
       .from("pets")
@@ -126,7 +133,7 @@ petsRouter.post(
         user_id: userId,
         line,
         stage: "egg",
-        hatch_ready_at: hatchReadyAt,
+        hatch_ends_at,
       })
       .select("*")
       .single();
@@ -140,17 +147,17 @@ petsRouter.post(
       hatch: hatchPayload(created, serverNowMs),
     });
   },
-); // ✅ THIS was missing in your file
+);
 
 /**
- * POST /pets/hatch
+ * POST /api/pets/hatch
  * Server-authoritative hatching:
  * - Must exist
  * - Must be stage "egg"
- * - Must be ready (remaining_ms === 0)
+ * - Must be ready (now >= hatch_ends_at)
  */
 petsRouter.post(
-  "/pets/hatch",
+  "/hatch",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
     const userId = req.user!.id;
@@ -169,9 +176,14 @@ petsRouter.post(
       return res.status(400).json({ error: "Pet is not an egg" });
     }
 
-    const remaining_ms = msUntil(pet.hatch_ready_at, serverNowMs);
-    if (remaining_ms > 0) {
-      return res.status(400).json({ error: "Egg is not ready yet" });
+    // ✅ Enforce hatch timer
+    const hatch_remaining_ms = msUntil(pet.hatch_ends_at, serverNowMs);
+    if (hatch_remaining_ms > 0) {
+      return res.status(409).json({
+        error: "Egg is not ready yet",
+        server_now: new Date(serverNowMs).toISOString(),
+        hatch: hatchPayload(pet, serverNowMs),
+      });
     }
 
     const nowIso = new Date(serverNowMs).toISOString();
@@ -181,7 +193,7 @@ petsRouter.post(
       .update({
         stage: "sprout",
         hatched_at: nowIso,
-        hatch_ready_at: null,
+        hatch_ends_at: null,
       })
       .eq("id", pet.id)
       .eq("user_id", userId)

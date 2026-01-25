@@ -118,7 +118,7 @@ create table if not exists public.pets (
 
   -- timers/state
   hatched_at timestamptz,
-  hatch_ready_at timestamptz, -- egg sits 20 minutes, then hatchable
+  hatch_ends_at timestamptz, -- egg sits 20 minutes, then hatchable
 
   -- care meters (0-100)
   hunger int not null default 50 check (hunger between 0 and 100),

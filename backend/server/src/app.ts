@@ -1,7 +1,6 @@
 import express from "express";
 import { apiRouter } from "./routes";
 import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
-import { petsRouter } from "./routes/pets";
 
 export function createApp() {
   const app = express();
@@ -17,9 +16,8 @@ export function createApp() {
     res.type("text").send("DeltaPets Backend ✅\nTry GET /api/health");
   });
 
-  app.use("/api", petsRouter);
-
   // ✅ Rate limiting + request shaping applied to ALL /api routes
+  // NOTE: apiRouter is the *single* place that mounts sub-routers (pets, dailies, etc).
   app.use("/api", apiLimiter, apiSpeedLimiter, apiRouter);
 
   app.use((req, res) => {

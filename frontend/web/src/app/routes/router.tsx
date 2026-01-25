@@ -1,8 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
-import Homepage from "../../NaviPages/homepage";
+import Homepage from "../../pages/homepage";
 import PetPage from "../../features/auth/pets/pages/Petspage_1/PetPage";
-import CreatePage from "../../NaviPages/create";
+import CreatePage from "../../pages/create";
 import AuthCallback from "./AuthCallback";
 
 function NotFound() {

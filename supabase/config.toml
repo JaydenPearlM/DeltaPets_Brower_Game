@@ -1,0 +1,3 @@
+# Supabase local dev configuration.
+# If you run `supabase init`, the CLI will generate a full config.
+# Keeping this file (even minimal) prevents "empty file" confusion in diffs.

@@ -1,164 +1,124 @@
 import { Router } from "express";
+import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
-import type { AuthedRequest } from "../middleware/requireAuth";
-import { requireAuth } from "../middleware/requireAuth";
-
-// Simple alias so older routes can keep importing requireAuth
+import {
+  DEFAULT_TZ,
+  getLocalResetBoundary,
+  getNextResetAt,
+  isCompletedThisCycle,
+} from "../lib/dailyReset";
 
 export const dailyCareRouter = Router();
 
 /**
- * Helper: define "daily reset" boundary.
- * For Alpha, simplest is "once per UTC day".
- * Later you can switch to user-local midnight.
- */
-function utcDayKey(ms: number) {
-  const d = new Date(ms);
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(
-    d.getUTCDate(),
-  ).padStart(2, "0")}`;
-}
-
-function isSameUtcDay(aIso: string | null | undefined, nowMs: number) {
-  if (!aIso) return false;
-  const aMs = Date.parse(aIso);
-  if (Number.isNaN(aMs)) return false;
-  return utcDayKey(aMs) === utcDayKey(nowMs);
-}
-
-/**
- * 🔑 IMPORTANT: adapt this to however your requireAuth attaches user id.
- * I’ve seen your project use userId variables before, so we try a few common spots.
- */
-function getUserId(req: any): string | null {
-  return (
-    req.user?.id || req.auth?.userId || req.auth?.sub || req.userId || null
-  );
-}
-
-/**
  * GET /api/daily/care/status
- * Returns whether the daily care can be done today + whether Alpha ribbon already awarded.
+ * Uses profiles.daily_care_completed_at (no daily_care table needed)
  */
-dailyCareRouter.get("/care/status", requireAuth, async (req, res) => {
-  const userId = getUserId(req);
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+dailyCareRouter.get("/status", requireUser, async (req: AuthedRequest, res) => {
+  const userId = req.user.id;
+  const nowMs = Date.now();
 
-  const serverNowMs = Date.now();
-  const serverNowIso = new Date(serverNowMs).toISOString();
-
-  // profile read
-  const { data: profile, error: profErr } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from("profiles")
-    .select("daily_care_completed_at, alpha_ribbon_awarded")
-    .eq("id", userId) // if your profiles key is user_id instead, change this line
-    .maybeSingle();
+    .select("timezone, daily_care_completed_at")
+    .eq("user_id", userId)
+    .limit(1);
 
-  if (profErr) return res.status(500).json({ error: profErr.message });
+  if (error) return res.status(500).json({ error: error.message });
 
-  // If profile row doesn’t exist yet, treat as not completed + no ribbon.
-  const completedToday = isSameUtcDay(
-    profile?.daily_care_completed_at ?? null,
-    serverNowMs,
-  );
+  const row = data?.[0];
+  const tz = row?.timezone || DEFAULT_TZ;
+  const lastCompleted = row?.daily_care_completed_at ?? null;
+
+  const { boundaryIsoUtc } = getLocalResetBoundary(nowMs, tz, 9);
+  const completed_today = isCompletedThisCycle(lastCompleted, boundaryIsoUtc);
+
+  const next = getNextResetAt(nowMs, tz, 9);
 
   return res.json({
-    server_now: serverNowIso,
-    completed_today: completedToday,
-    claimable: !completedToday,
-    alpha_ribbon_awarded: profile?.alpha_ribbon_awarded ?? false,
-    reset_basis: "UTC",
+    available: !completed_today,
+    completed_today,
+    last_completed_at: lastCompleted,
+
+    server_now: new Date(nowMs).toISOString(),
+    next_reset_at: next.nextIsoUtc,
+    remaining_ms: next.remainingMs,
+
+    reset_rule: "09:00 local",
+    timezone: next.zone,
   });
 });
 
 /**
  * POST /api/daily/care/complete
- * Marks today’s care as done:
- * - increments bond on the user’s pet (if exists)
- * - stamps pets.last_cared_at
- * - stamps profiles.daily_care_completed_at
- * - awards Alpha ribbon ONE TIME EVER
- *
- * Not wired to UI yet—this is just logic.
+ * Blocks if already completed in the current 9AM-local cycle.
+ * Writes profiles.daily_care_completed_at and awards alpha ribbon once.
  */
-dailyCareRouter.post("/care/complete", requireAuth, async (req, res) => {
-  const userId = getUserId(req);
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+dailyCareRouter.post(
+  "/complete",
+  requireUser,
+  async (req: AuthedRequest, res) => {
+    const userId = req.user.id;
+    const nowMs = Date.now();
+    const nowIso = new Date(nowMs).toISOString();
 
-  const serverNowMs = Date.now();
-  const nowIso = new Date(serverNowMs).toISOString();
-
-  // read profile state
-  const { data: profile, error: profErr } = await supabaseAdmin
-    .from("profiles")
-    .select("daily_care_completed_at, alpha_ribbon_awarded")
-    .eq("id", userId) // change to .eq("user_id", userId) if that’s your schema
-    .maybeSingle();
-
-  if (profErr) return res.status(500).json({ error: profErr.message });
-
-  if (isSameUtcDay(profile?.daily_care_completed_at ?? null, serverNowMs)) {
-    return res
-      .status(400)
-      .json({ error: "Daily care already completed today" });
-  }
-
-  // You said you don’t have hatch/pets yet.
-  // We keep logic: if no pet row, we still mark daily complete (optional).
-  // If you want to REQUIRE a pet, switch this to 400.
-  const { data: pet, error: petErr } = await supabaseAdmin
-    .from("pets")
-    .select("id, bond")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (petErr) return res.status(500).json({ error: petErr.message });
-
-  // Tunables
-  const BOND_GAIN = 1;
-
-  // Apply pet updates only if pet exists
-  let updatedPet: any = null;
-  if (pet) {
-    const { data: petUpdated, error: petUpErr } = await supabaseAdmin
-      .from("pets")
-      .update({
-        bond: (pet.bond ?? 0) + BOND_GAIN,
-        last_cared_at: nowIso,
-      })
-      .eq("id", pet.id)
+    // Pull current state
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .select("timezone, daily_care_completed_at, alpha_ribbon_awarded")
       .eq("user_id", userId)
-      .select("id, bond, last_cared_at")
-      .single();
+      .limit(1);
 
-    if (petUpErr) return res.status(500).json({ error: petUpErr.message });
-    updatedPet = petUpdated;
-  }
+    if (error) return res.status(500).json({ error: error.message });
 
-  // Award Alpha ribbon only once, ever
-  const ribbonAwardedNow = !(profile?.alpha_ribbon_awarded ?? false);
+    const row = data?.[0];
+    if (!row) return res.status(404).json({ error: "Profile not found" });
 
-  const { data: profileUpdated, error: profUpErr } = await supabaseAdmin
-    .from("profiles")
-    .update({
+    const tz = row.timezone || DEFAULT_TZ;
+    const lastCompleted = row.daily_care_completed_at ?? null;
+
+    const { boundaryIsoUtc } = getLocalResetBoundary(nowMs, tz, 9);
+    const completed = isCompletedThisCycle(lastCompleted, boundaryIsoUtc);
+
+    if (completed) {
+      const next = getNextResetAt(nowMs, tz, 9);
+      return res.status(409).json({
+        error: "Already completed for this cycle.",
+        available: false,
+        next_reset_at: next.nextIsoUtc,
+        remaining_ms: next.remainingMs,
+        timezone: next.zone,
+      });
+    }
+
+    // Award ribbon once (optional)
+    const awarded: string[] = [];
+    const updatePatch: Record<string, any> = {
       daily_care_completed_at: nowIso,
-      ...(ribbonAwardedNow ? { alpha_ribbon_awarded: true } : {}),
-    })
-    .eq("id", userId) // change if needed
-    .select("daily_care_completed_at, alpha_ribbon_awarded")
-    .single();
+    };
 
-  if (profUpErr) return res.status(500).json({ error: profUpErr.message });
+    if (!row.alpha_ribbon_awarded) {
+      updatePatch.alpha_ribbon_awarded = true;
+      awarded.push("RIBBON_ALPHA_1");
+    }
 
-  return res.json({
-    server_now: nowIso,
-    completed_today: true,
-    bond_gain: pet ? BOND_GAIN : 0,
-    pet: updatedPet,
-    alpha_ribbon_awarded: profileUpdated.alpha_ribbon_awarded,
-    alpha_ribbon_awarded_now: ribbonAwardedNow,
-    note: pet
-      ? null
-      : "No pet yet: daily marked complete, but bond not applied",
-  });
-});
+    const { error: upErr } = await supabaseAdmin
+      .from("profiles")
+      .update(updatePatch)
+      .eq("user_id", userId);
+
+    if (upErr) return res.status(500).json({ error: upErr.message });
+
+    const next = getNextResetAt(nowMs, tz, 9);
+
+    return res.json({
+      ok: true,
+      awarded,
+      available: false,
+      last_completed_at: nowIso,
+      next_reset_at: next.nextIsoUtc,
+      remaining_ms: next.remainingMs,
+      timezone: next.zone,
+    });
+  },
+);

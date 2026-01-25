@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  width="260"
+  height="340"
+  viewBox="0 0 260 340"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-label="Egg with wrapped ribbons, pink overlay aura, rainbow-glow triangle"
+>
+  <defs>
+    <!-- Egg shading -->
+    <radialGradient id="eggShade" cx="72%" cy="18%" r="82%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#f6f6f6"/>
+      <stop offset="78%" stop-color="#ececec"/>
+      <stop offset="100%" stop-color="#e1e1e1"/>
+    </radialGradient>
+
+    <!-- Pink overlay aura (drawn ON TOP later) -->
+    <radialGradient id="pinkAura" cx="55%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#ff7abf" stop-opacity="0.26"/>
+      <stop offset="45%" stop-color="#ff7abf" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ff7abf" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Ribbon base gradient -->
+    <linearGradient id="stripeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2b78ff"/>
+      <stop offset="50%" stop-color="#48a3ff"/>
+      <stop offset="100%" stop-color="#2b78ff"/>
+    </linearGradient>
+
+    <!-- Wrap illusion shading -->
+    <linearGradient id="wrapFade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.35"/>
+      <stop offset="18%" stop-color="#000" stop-opacity="0.08"/>
+      <stop offset="50%" stop-color="#000" stop-opacity="0.00"/>
+      <stop offset="82%" stop-color="#000" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.35"/>
+    </linearGradient>
+
+    <!-- Triangle rainbow stroke -->
+    <linearGradient id="rainbowStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff2d55"/>
+      <stop offset="20%" stop-color="#ff9500"/>
+      <stop offset="40%" stop-color="#ffd60a"/>
+      <stop offset="60%" stop-color="#34c759"/>
+      <stop offset="80%" stop-color="#007aff"/>
+      <stop offset="100%" stop-color="#af52de"/>
+    </linearGradient>
+
+    <!-- Egg drop shadow -->
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-opacity="0.22"/>
+    </filter>
+
+    <!-- Soft blur for aura -->
+    <filter id="auraBlur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+
+    <!-- Subtle rainbow glow for triangle (UNDER pink overlay due to draw order) -->
+    <filter id="triGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2.2" flood-color="#ff2d55" flood-opacity="0.22"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="2.2" flood-color="#ffd60a" flood-opacity="0.16"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="2.2" flood-color="#34c759" flood-opacity="0.16"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="2.2" flood-color="#007aff" flood-opacity="0.16"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="2.2" flood-color="#af52de" flood-opacity="0.18"/>
+    </filter>
+
+    <!-- Clip path for egg  -->
+    <clipPath id="eggClip" clipPathUnits="userSpaceOnUse">
+      <path d="
+        M130 20
+        C80 20 42 70 46 142
+        C50 248 96 332 130 332
+        C164 332 210 248 214 142
+        C218 70 180 20 130 20
+        Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Flip everything -->
+  <g transform="translate(0 340) scale(1 -1)">
+
+    <!-- Egg body -->
+    <path
+      d="
+        M130 20
+        C80 20 42 70 46 142
+        C50 248 96 332 130 332
+        C164 332 210 248 214 142
+        C218 70 180 20 130 20
+        Z"
+      fill="url(#eggShade)"
+      filter="url(#shadow)"
+    />
+
+    <!-- Everything decorative clipped to egg -->
+    <g clip-path="url(#eggClip)">
+
+      <!-- TOP RIBBON -->
+      <g transform="rotate(-18 130 140)">
+        <rect x="-220" y="108" width="700" height="68" rx="34" fill="url(#stripeGrad)"/>
+        <rect x="-220" y="118" width="700" height="16" rx="8" fill="#fff" opacity="0.18"/>
+        <rect x="-220" y="108" width="700" height="68" rx="34" fill="url(#wrapFade)" opacity="0.55"/>
+      </g>
+
+      <!-- BOTTOM RIBBON -->
+      <g transform="rotate(-18 130 270)">
+        <rect x="-220" y="238" width="700" height="60" rx="30" fill="url(#stripeGrad)"/>
+        <rect x="-220" y="246" width="700" height="14" rx="7" fill="#fff" opacity="0.16"/>
+        <rect x="-220" y="238" width="700" height="60" rx="30" fill="url(#wrapFade)" opacity="0.55"/>
+      </g>
+
+     <!-- TRIANGLE (unchanged position, sharp edges, NO glow) -->
+<g transform="translate(92 70)">
+  <path
+    d="M 0 -22 L 24 20 L -24 20 Z"
+    fill="none"
+    stroke="url(#rainbowStroke)"
+    stroke-width="6"
+    stroke-linejoin="miter"
+    stroke-miterlimit="10"
+    stroke-linecap="butt"
+    opacity="0.95"
+  />
+</g>
+
+
+    </g>
+
+    <!-- PINK OVERLAY AURA (ON TOP of egg + triangle) -->
+    <ellipse
+      cx="130" cy="178"
+      rx="118" ry="165"
+      fill="url(#pinkAura)"
+      filter="url(#auraBlur)"
+      opacity="0.75"
+      pointer-events="none"
+    />
+
+  </g>
+</svg>
