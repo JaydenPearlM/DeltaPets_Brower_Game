@@ -5,6 +5,7 @@ import { useAuth } from "../../../../../app/providers/useAuth";
 import { useGame } from "../../../../../app/providers/GameProvider";
 import { supabase } from "../../../../../lib/supabase/client";
 import { DailyCareCard } from "../../../../../DailyQuest/components/DailyCareCard";
+
 import {
   useServerCountdown,
   formatDuration,
@@ -19,6 +20,12 @@ export default function PetPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [activePet, setActivePet] = useState<any | null>(null);
+
+  <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+    <button type="button" onClick={() => navigate("/hatchery")}>
+      Hatchery
+    </button>
+  </div>;
 
   /* -------------------------------------------
    * AUTH REDIRECT
@@ -71,7 +78,7 @@ export default function PetPage() {
 
   const { msLeft, isReady } = useServerCountdown({
     serverNowIso: activePet?.server_now,
-    remainingMs: activePet?.hatch?.remaining_ms,
+    remainingMs: activePet?.hatch?.hatch_remaining_ms ?? 0,
     tickMs: 1000,
   });
 

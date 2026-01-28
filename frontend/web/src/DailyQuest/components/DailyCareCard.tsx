@@ -51,16 +51,41 @@ export function DailyCareCard() {
     setToast(null);
     setError(null);
     setBusy(true);
+
     try {
-      const res: any = await completeDailyCare();
-      setToast(res?.ribbon_awarded ? "Ribbon earned!" : "Daily completed!");
+      const result: any = await completeDailyCare();
       await refresh();
+
+      const lines = ["Daily Complete."];
+      if (result?.ribbon_awarded_now) lines.push("Alpha Ribbon Awarded!");
+
+      setToast(lines.join("\n"));
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      const msg = e?.message ?? String(e);
+
+      // If it's the "already completed today" case, that's not an error UX-wise.
+      if (msg.toLowerCase().includes("already completed")) {
+        await refresh();
+        setToast("Daily Complete.\nAlpha Ribbon already Awarded!");
+      } else {
+        setError(msg);
+      }
     } finally {
       setBusy(false);
     }
   }
+
+  // Determine if the button should be enabled
+  const canDoDaily = !!(status?.available || isReady);
+
+  // Status text: prefer "completed_today", then available, else countdown
+  const statusText = loading
+    ? "Loading…"
+    : status?.completed_today
+      ? `Daily Complete. Next in ${prettyLeft}`
+      : status?.available || isReady
+        ? "Available now."
+        : `Next in ${prettyLeft}`;
 
   return (
     <div
@@ -76,13 +101,7 @@ export function DailyCareCard() {
         <div>
           <p style={{ margin: 0, fontWeight: 800 }}>Daily Care Quest</p>
           <p style={{ margin: "6px 0 0", opacity: 0.85, fontSize: 13 }}>
-            {loading
-              ? "Loading…"
-              : status?.available
-                ? "Available now."
-                : isReady
-                  ? "Available now."
-                  : `Next in ${prettyLeft}`}
+            {statusText}
           </p>
         </div>
 
@@ -90,7 +109,7 @@ export function DailyCareCard() {
           <button
             type="button"
             onClick={doDaily}
-            disabled={busy || loading || !(status?.available ?? isReady)}
+            disabled={busy || loading || !canDoDaily}
           >
             {busy ? "Doing…" : "Do Daily"}
           </button>
@@ -104,11 +123,15 @@ export function DailyCareCard() {
           <strong>Streak:</strong> {status?.streak ?? 0}
         </span>
         <span style={{ opacity: 0.85, fontSize: 13 }}>
-          <strong>Ribbon:</strong> {status?.alpha_ribbon_awarded ? "Yes" : "No"}
+          <strong>Alpha Ribbon:</strong>{" "}
+          {status?.alpha_ribbon_awarded ? "Yes" : "No"}
         </span>
       </div>
 
-      {toast ? <p style={{ margin: "10px 0 0" }}>{toast}</p> : null}
+      {toast ? (
+        <p style={{ margin: "10px 0 0", whiteSpace: "pre-line" }}>{toast}</p>
+      ) : null}
+
       {error ? (
         <p style={{ margin: "10px 0 0", color: "crimson" }}>{error}</p>
       ) : null}

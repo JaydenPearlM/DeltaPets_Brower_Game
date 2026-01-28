@@ -1,124 +1,138 @@
-import { Router } from "express";
-import { requireUser, type AuthedRequest } from "../middleware/auth";
+import { Router, Response } from "express";
+import { requireUser, AuthedRequest } from "../middleware/requireUser";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
-import {
-  DEFAULT_TZ,
-  getLocalResetBoundary,
-  getNextResetAt,
-  isCompletedThisCycle,
-} from "../lib/dailyReset";
 
 export const dailyCareRouter = Router();
 
-/**
- * GET /api/daily/care/status
- * Uses profiles.daily_care_completed_at (no daily_care table needed)
- */
-dailyCareRouter.get("/status", requireUser, async (req: AuthedRequest, res) => {
-  const userId = req.user.id;
-  const nowMs = Date.now();
+// Reset boundary: UTC midnight (simple + consistent for Alpha)
+function nextUtcMidnightMs(nowMs: number) {
+  const d = new Date(nowMs);
+  return Date.UTC(
+    d.getUTCFullYear(),
+    d.getUTCMonth(),
+    d.getUTCDate() + 1,
+    0,
+    0,
+    0,
+    0,
+  );
+}
 
-  const { data, error } = await supabaseAdmin
-    .from("profiles")
-    .select("timezone, daily_care_completed_at")
-    .eq("user_id", userId)
-    .limit(1);
+function nextUtcMidnightIso(nowMs: number) {
+  return new Date(nextUtcMidnightMs(nowMs)).toISOString();
+}
 
-  if (error) return res.status(500).json({ error: error.message });
+function isSameUtcDay(aIso: string, nowMs: number) {
+  const a = new Date(aIso);
+  const n = new Date(nowMs);
+  return (
+    a.getUTCFullYear() === n.getUTCFullYear() &&
+    a.getUTCMonth() === n.getUTCMonth() &&
+    a.getUTCDate() === n.getUTCDate()
+  );
+}
 
-  const row = data?.[0];
-  const tz = row?.timezone || DEFAULT_TZ;
-  const lastCompleted = row?.daily_care_completed_at ?? null;
-
-  const { boundaryIsoUtc } = getLocalResetBoundary(nowMs, tz, 9);
-  const completed_today = isCompletedThisCycle(lastCompleted, boundaryIsoUtc);
-
-  const next = getNextResetAt(nowMs, tz, 9);
-
-  return res.json({
-    available: !completed_today,
-    completed_today,
-    last_completed_at: lastCompleted,
-
-    server_now: new Date(nowMs).toISOString(),
-    next_reset_at: next.nextIsoUtc,
-    remaining_ms: next.remainingMs,
-
-    reset_rule: "09:00 local",
-    timezone: next.zone,
-  });
-});
-
-/**
- * POST /api/daily/care/complete
- * Blocks if already completed in the current 9AM-local cycle.
- * Writes profiles.daily_care_completed_at and awards alpha ribbon once.
- */
-dailyCareRouter.post(
-  "/complete",
+dailyCareRouter.get(
+  "/status",
   requireUser,
-  async (req: AuthedRequest, res) => {
-    const userId = req.user.id;
+  async (req: AuthedRequest, res: Response) => {
+    const userId = req.user!.id;
     const nowMs = Date.now();
-    const nowIso = new Date(nowMs).toISOString();
 
-    // Pull current state
     const { data, error } = await supabaseAdmin
-      .from("profiles")
-      .select("timezone, daily_care_completed_at, alpha_ribbon_awarded")
+      .from("daily_care")
+      .select("last_completed_at, streak, alpha_ribbon_awarded")
       .eq("user_id", userId)
-      .limit(1);
+      .maybeSingle();
 
     if (error) return res.status(500).json({ error: error.message });
 
-    const row = data?.[0];
-    if (!row) return res.status(404).json({ error: "Profile not found" });
+    const last = data?.last_completed_at ?? null;
+    const completed_today = !!last && isSameUtcDay(last, nowMs);
+    const available = !completed_today;
 
-    const tz = row.timezone || DEFAULT_TZ;
-    const lastCompleted = row.daily_care_completed_at ?? null;
+    const resetMs = nextUtcMidnightMs(nowMs);
 
-    const { boundaryIsoUtc } = getLocalResetBoundary(nowMs, tz, 9);
-    const completed = isCompletedThisCycle(lastCompleted, boundaryIsoUtc);
+    // ✅ key fix: ALWAYS return time until reset so UI can countdown
+    const remaining_ms = Math.max(0, resetMs - nowMs);
 
-    if (completed) {
-      const next = getNextResetAt(nowMs, tz, 9);
+    return res.json({
+      server_now: new Date(nowMs).toISOString(),
+      available,
+      completed_today,
+      next_reset_at: new Date(resetMs).toISOString(),
+      remaining_ms,
+      last_completed_at: last,
+      streak: data?.streak ?? 0,
+      alpha_ribbon_awarded: data?.alpha_ribbon_awarded ?? false,
+    });
+  },
+);
+
+dailyCareRouter.post(
+  "/complete",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    const userId = req.user!.id;
+    const nowMs = Date.now();
+    const nowIso = new Date(nowMs).toISOString();
+
+    const resetMs = nextUtcMidnightMs(nowMs);
+
+    // Read existing
+    const { data: existing, error: readErr } = await supabaseAdmin
+      .from("daily_care")
+      .select("last_completed_at, streak, alpha_ribbon_awarded")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (readErr) return res.status(500).json({ error: readErr.message });
+
+    const alreadyDoneToday = existing?.last_completed_at
+      ? isSameUtcDay(existing.last_completed_at, nowMs)
+      : false;
+
+    if (alreadyDoneToday) {
+      // ✅ include countdown info here too
       return res.status(409).json({
-        error: "Already completed for this cycle.",
-        available: false,
-        next_reset_at: next.nextIsoUtc,
-        remaining_ms: next.remainingMs,
-        timezone: next.zone,
+        error: "Daily care already completed today.",
+        server_now: nowIso,
+        completed_today: true,
+        next_reset_at: new Date(resetMs).toISOString(),
+        remaining_ms: Math.max(0, resetMs - nowMs),
       });
     }
 
-    // Award ribbon once (optional)
-    const awarded: string[] = [];
-    const updatePatch: Record<string, any> = {
-      daily_care_completed_at: nowIso,
-    };
+    const alreadyAwarded = existing?.alpha_ribbon_awarded ?? false;
+    const shouldAward = !alreadyAwarded; // first completion ever
+    const nextStreak = (existing?.streak ?? 0) + 1;
 
-    if (!row.alpha_ribbon_awarded) {
-      updatePatch.alpha_ribbon_awarded = true;
-      awarded.push("RIBBON_ALPHA_1");
-    }
-
-    const { error: upErr } = await supabaseAdmin
-      .from("profiles")
-      .update(updatePatch)
-      .eq("user_id", userId);
+    const { data: saved, error: upErr } = await supabaseAdmin
+      .from("daily_care")
+      .upsert(
+        {
+          user_id: userId,
+          last_completed_at: nowIso,
+          streak: nextStreak,
+          alpha_ribbon_awarded: alreadyAwarded || shouldAward,
+        },
+        { onConflict: "user_id" },
+      )
+      .select("last_completed_at, streak, alpha_ribbon_awarded")
+      .single();
 
     if (upErr) return res.status(500).json({ error: upErr.message });
 
-    const next = getNextResetAt(nowMs, tz, 9);
-
     return res.json({
-      ok: true,
-      awarded,
+      server_now: nowIso,
       available: false,
-      last_completed_at: nowIso,
-      next_reset_at: next.nextIsoUtc,
-      remaining_ms: next.remainingMs,
-      timezone: next.zone,
+      completed_today: true,
+      next_reset_at: new Date(resetMs).toISOString(),
+      remaining_ms: Math.max(0, resetMs - nowMs),
+      last_completed_at: saved.last_completed_at,
+      streak: saved.streak,
+      alpha_ribbon_awarded: saved.alpha_ribbon_awarded,
+      ribbon_awarded_now: shouldAward,
     });
   },
 );

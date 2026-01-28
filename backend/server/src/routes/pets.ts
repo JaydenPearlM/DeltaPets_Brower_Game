@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { Response } from "express";
 import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
+import { cooldownsFromPetRow } from "../lib/cooldowns";
 
 export const petsRouter = Router();
 
@@ -69,9 +70,12 @@ petsRouter.get(
       .from("pets")
       .select("*")
       .eq("user_id", userId)
+      .eq("is_active", true)
       .maybeSingle();
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
 
     if (!pet) {
       return res.json({
@@ -85,6 +89,7 @@ petsRouter.get(
       server_now: new Date(serverNowMs).toISOString(),
       pet,
       hatch: hatchPayload(pet, serverNowMs),
+      cooldowns: cooldownsFromPetRow(pet, serverNowMs),
     });
   },
 );

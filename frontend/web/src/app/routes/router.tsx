@@ -4,6 +4,7 @@ import Homepage from "../../pages/homepage";
 import PetPage from "../../features/auth/pets/pages/Petspage_1/PetPage";
 import CreatePage from "../../pages/create";
 import AuthCallback from "./AuthCallback";
+import HatcheryPage from "../../components/Hatchery/pages/HatcheryPage";
 
 function NotFound() {
   return <div style={{ padding: 16 }}>404 — Page not found</div>;
@@ -24,6 +25,9 @@ export const router = createBrowserRouter([
 
       { path: "create", element: <CreatePage /> },
       { path: "pet", element: <PetPage /> },
+
+      //Hatchery
+      { path: "hatchery", element: <HatcheryPage /> },
     ],
   },
   { path: "*", element: <NotFound /> },
