@@ -1,0 +1,126 @@
+.hatchery {
+  padding: 16px;
+}
+.hatcheryTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hatcheryTop h1 {
+  margin: 0;
+}
+
+.hatcheryLayout {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 14px;
+}
+
+.hatcheryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.slot {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+.slot.selected {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+}
+.slot.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.slotHeader {
+  display: flex;
+  justify-content: space-between;
+  opacity: 0.9;
+}
+.slotTimer {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.slotBody {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.eggPlaceholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.slotTitle {
+  font-weight: 800;
+}
+.slotHint {
+  opacity: 0.7;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.hatcheryPanel {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  height: fit-content;
+}
+.panelTitle {
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.panelCard {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.panelRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.eggLarge {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+}
+.panelEggName {
+  font-weight: 900;
+}
+.panelSub {
+  opacity: 0.75;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.hatchBtn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+.hatchBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

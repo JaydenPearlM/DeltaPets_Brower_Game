@@ -6,11 +6,17 @@ import { useGame } from "../../../../../app/providers/GameProvider";
 import { supabase } from "../../../../../lib/supabase/client";
 import { DailyCareCard } from "../../../../../DailyQuest/components/DailyCareCard";
 
+// ✅ exists: src/Pets_Design/auth/pets/Designs/stats.css
+import "../../Designs/stats.css";
+
+// ✅ exists: src/Pets_Design/auth/pets/StatsModal.tsx
+import { StatsModal } from "../../StatsModal";
+
 import {
   useServerCountdown,
   formatDuration,
   fetchActivePet,
-} from "./../../../Timers/index";
+} from "../../../Timers/index";
 
 export default function PetPage() {
   const { user, loading: authLoading } = useAuth();
@@ -21,26 +27,17 @@ export default function PetPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [activePet, setActivePet] = useState<any | null>(null);
 
-  <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-    <button type="button" onClick={() => navigate("/hatchery")}>
-      Hatchery
-    </button>
-  </div>;
+  const [statsOpen, setStatsOpen] = useState(false);
 
   /* -------------------------------------------
    * AUTH REDIRECT
    * ------------------------------------------- */
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/");
-    }
+    if (!authLoading && !user) navigate("/");
   }, [authLoading, user, navigate]);
-
-  // Daily Care UI is rendered via <DailyCareCard /> (no console-log side quests)
 
   /* -------------------------------------------
    * LOAD ACTIVE PET + SERVER TIMER DATA
-   *    Runs AFTER auth settles
    * ------------------------------------------- */
   useEffect(() => {
     if (authLoading || !user) return;
@@ -61,8 +58,6 @@ export default function PetPage() {
     }
 
     loadActive();
-
-    // light polling to keep timers honest
     const id = window.setInterval(loadActive, 30_000);
 
     return () => {
@@ -75,6 +70,16 @@ export default function PetPage() {
    * DERIVED STATE
    * ------------------------------------------- */
   const pet = game.pet;
+
+  // ✅ allow modal to open even if pet isn't loaded yet
+  const petName = (pet as any)?.name ?? "Your Pet";
+  const petStats = {
+    hp: (pet as any)?.hp ?? (pet as any)?.stat_hp ?? 10,
+    atk: (pet as any)?.atk ?? (pet as any)?.stat_atk ?? 5,
+    def: (pet as any)?.def ?? (pet as any)?.stat_def ?? 5,
+    magi: (pet as any)?.magi ?? (pet as any)?.stat_magi ?? 5,
+    spd: (pet as any)?.spd ?? (pet as any)?.stat_spd ?? 5,
+  };
 
   const { msLeft, isReady } = useServerCountdown({
     serverNowIso: activePet?.server_now,
@@ -110,7 +115,7 @@ export default function PetPage() {
       if (!res.ok) throw new Error(data?.error ?? "Hatch failed");
 
       await game.refresh();
-      setMsg("Hatched  (stage = sprout)");
+      setMsg("Hatched (stage = sprout)");
     } catch (e: any) {
       setMsg(`Hatch failed: ${e?.message ?? String(e)}`);
     } finally {
@@ -130,7 +135,12 @@ export default function PetPage() {
     <div style={{ padding: 16 }}>
       <h1>Pet Page</h1>
 
-      {/* Daily Care Quest (refresh-safe, server enforced) */}
+      <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+        <button type="button" onClick={() => navigate("/hatchery")}>
+          Hatchery (test)
+        </button>
+      </div>
+
       <div style={{ marginTop: 12, maxWidth: 520 }}>
         <DailyCareCard />
       </div>
@@ -185,37 +195,62 @@ export default function PetPage() {
             </p>
           )}
 
+          {/* ✅ FIXED ternary */}
           {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
         </div>
       )}
 
       {/* =========================================================
-         TEMP DEV BUTTON — DELETE THIS WHOLE BLOCK WHEN DONE ✅
-         Purpose: Replay the intro cutscene from PetsPage
+         TEMP DEV BUTTONS — DELETE THIS WHOLE BLOCK WHEN DONE ✅
          ========================================================= */}
-      <button
-        type="button"
-        onClick={() => navigate("/create")}
+      <div
         style={{
           position: "fixed",
           right: 16,
           bottom: 16,
           zIndex: 9999,
-          padding: "10px 14px",
-          borderRadius: 12,
-          fontWeight: 700,
-          border: "2px solid #ff3b3b",
-          background: "rgba(0,0,0,0.75)",
-          color: "white",
-          cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
         }}
-        aria-label="Replay Cutscene (TEMP)"
       >
-        ▶ Replay Cutscene (TEMP)
-      </button>
-      {/* =========================================================
-         END TEMP DEV BUTTON — DELETE THIS WHOLE BLOCK ✅
-         ========================================================= */}
+        <button
+          type="button"
+          className="openStatsBtn"
+          onClick={() => {
+            if (!pet) console.warn("Stats opened with no pet loaded yet");
+            setStatsOpen(true);
+          }}
+          aria-label="Open Pet Stats (TEMP)"
+        >
+          📊 Open Stats (TEMP)
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate("/create")}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 12,
+            fontWeight: 700,
+            border: "2px solid #ff3b3b",
+            background: "rgba(0,0,0,0.75)",
+            color: "white",
+            cursor: "pointer",
+          }}
+          aria-label="Replay Cutscene (TEMP)"
+        >
+          ▶ Replay Cutscene (TEMP)
+        </button>
+      </div>
+
+      {/* ✅ Stats Modal */}
+      <StatsModal
+        open={statsOpen}
+        onClose={() => setStatsOpen(false)}
+        petName={petName}
+        stats={petStats}
+      />
 
       <div style={{ marginTop: 16 }}>
         <LogoutButton />

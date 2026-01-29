@@ -215,6 +215,7 @@ body {
   overflow: hidden;
 }
 
+/* Background behind the 16:9 canvas */
 .game-shell {
   width: 100vw;
   height: 100vh;
@@ -225,8 +226,7 @@ body {
     max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
     max(12px, env(safe-area-inset-left));
 
-  /* Background behind the 16:9 canvas */
-  background: radial-gradient(circle at center, #121826, #080b12);
+  background-color: var(--bg);
 }
 
 /* Locked 16:9 game area that scales uniformly */

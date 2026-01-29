@@ -1,0 +1,182 @@
+/* stats.css */
+
+/* ✅ Your file had "openStatsBtn" missing the dot.
+   That means the style didn't apply to the button at all. */
+.openStatsBtn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.openStatsBtn:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-elev-2);
+}
+
+.openStatsBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================
+   StatsModal.tsx class names
+   ============================ */
+
+.statsModal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+}
+
+.statsModal__panel {
+  width: min(520px, 100%);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--text);
+}
+
+.statsModal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.statsModal__title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.statsModal__close {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.statsModal__close:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-elev-2);
+}
+
+.statsModal__body {
+  padding-top: 10px;
+}
+
+.statsModal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.statCell {
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.statCell__label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.statCell__value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ============================
+   stats.tsx legacy class names
+   (so either modal variant is dark)
+   ============================ */
+
+.statsOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+}
+
+.statsPanel {
+  width: min(520px, 100%);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--text);
+}
+
+.statsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.statsTitle {
+  font-weight: 700;
+}
+
+.statsCloseBtn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.statsCloseBtn:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-elev-2);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.statRow {
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.statValue {
+  font-size: 18px;
+  font-weight: 600;
+}

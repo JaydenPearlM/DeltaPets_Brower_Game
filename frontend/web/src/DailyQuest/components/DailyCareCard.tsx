@@ -1,13 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { completeDailyCare, getDailyCareStatus } from "../api/dailyCare";
-import { formatDuration, useServerCountdown } from "../../features/auth/Timers";
+import { formatDuration, useNow } from "../../Pets_Design/auth/Timers";
 
 type DailyCareStatus = {
   available: boolean;
   completed_today?: boolean;
-  next_reset_at?: string; // ISO
-  remaining_ms?: number;
+
+  // server-provided timing
+  next_reset_at?: string; // ISO (optional)
+  remaining_ms?: number; // number (preferred)
   server_now?: string; // ISO
+
   streak?: number;
   alpha_ribbon_awarded?: boolean;
 };
@@ -19,11 +22,15 @@ export function DailyCareCard() {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
+  // We store when the status was fetched so remaining_ms can tick down locally
+  const fetchedAtMsRef = useRef<number>(Date.now());
+
   async function refresh() {
     setError(null);
     try {
       const s = (await getDailyCareStatus()) as DailyCareStatus;
       setStatus(s);
+      fetchedAtMsRef.current = Date.now();
     } catch (e: any) {
       setError(e?.message ?? String(e));
     } finally {
@@ -33,19 +40,51 @@ export function DailyCareCard() {
 
   useEffect(() => {
     refresh();
-    // light polling so countdown stays honest even if tab sleeps
+    // light polling so the server stays the source of truth
     const id = window.setInterval(refresh, 30_000);
     return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { msLeft, isReady } = useServerCountdown({
-    serverNowIso: status?.server_now,
-    remainingMs: status?.remaining_ms,
-    tickMs: 1000,
-  });
+  // tick every second for UI countdown
+  const nowMs = useNow(1000);
+
+  // Compute msLeft safely.
+  // Priority:
+  // 1) Use server remaining_ms (best) and tick it down locally
+  // 2) Else derive from next_reset_at - server_now (fallback)
+  const msLeft = useMemo(() => {
+    const s = status;
+
+    // 1) preferred: server sends remaining_ms
+    if (
+      typeof s?.remaining_ms === "number" &&
+      Number.isFinite(s.remaining_ms)
+    ) {
+      const elapsed = Math.max(0, nowMs - fetchedAtMsRef.current);
+      return Math.max(0, s.remaining_ms - elapsed);
+    }
+
+    // 2) fallback: derive from ISO timestamps
+    const nextResetMs = s?.next_reset_at ? Date.parse(s.next_reset_at) : NaN;
+    const serverNowMs = s?.server_now ? Date.parse(s.server_now) : NaN;
+
+    if (!Number.isFinite(nextResetMs) || !Number.isFinite(serverNowMs))
+      return 0;
+
+    const base = Math.max(0, nextResetMs - serverNowMs);
+    const elapsed = Math.max(0, nowMs - fetchedAtMsRef.current);
+    return Math.max(0, base - elapsed);
+  }, [status, nowMs]);
 
   const prettyLeft = useMemo(() => formatDuration(msLeft), [msLeft]);
+
+  const isReady = useMemo(() => {
+    // If server says available, trust it.
+    if (status?.available) return true;
+    // If we have no time left, it should be ready.
+    return msLeft <= 0;
+  }, [status?.available, msLeft]);
 
   async function doDaily() {
     setToast(null);
@@ -75,10 +114,8 @@ export function DailyCareCard() {
     }
   }
 
-  // Determine if the button should be enabled
   const canDoDaily = !!(status?.available || isReady);
 
-  // Status text: prefer "completed_today", then available, else countdown
   const statusText = loading
     ? "Loading…"
     : status?.completed_today

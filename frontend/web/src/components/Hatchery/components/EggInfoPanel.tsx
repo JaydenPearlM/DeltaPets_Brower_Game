@@ -3,16 +3,16 @@ import {
   msUntil,
   formatDuration,
   useServerCountdown,
-} from "../../../features/auth/Timers";
-import type { HatcheryEgg } from "../../../features/auth/pets/elements";
+} from "../../../Pets_Design/auth/Timers";
+import type { HatcheryEggVM } from "../../../../../types";
 
 export function EggInfoPanel(props: {
-  egg: HatcheryEgg | null;
+  slot: HatcheryEggVM | null;
   serverNowIso: string;
 }) {
-  const { egg, serverNowIso } = props;
+  const { slot, serverNowIso } = props;
 
-  if (!egg) {
+  if (!slot || slot.locked || !slot.egg || !slot.pet) {
     return (
       <div className="eggInfo eggInfo--empty">
         <div className="eggInfo__title">Egg Info</div>
@@ -21,40 +21,106 @@ export function EggInfoPanel(props: {
     );
   }
 
-  const remainingMs = msUntil(egg.hatch_ends_at, Date.now());
+  const hatchIso = slot.hatchEndsAtIso;
+  const remainingMs = hatchIso ? msUntil(hatchIso, Date.now()) : 0;
+
   const { msLeft, isReady } = useServerCountdown({
     serverNowIso,
     remainingMs,
     tickMs: 250,
   });
 
+  const base = slot.base;
+  const iv = slot.iv;
+
+  const total = {
+    hp: base.hp + iv.hp,
+    atk: base.atk + iv.atk,
+    magic: base.magic + iv.magic,
+    def: base.def + iv.def,
+    spd: base.spd + iv.spd,
+    mana: base.mana + iv.mana,
+  };
+
   return (
     <div className="eggInfo">
       <div className="eggInfo__title">Egg Info</div>
-      <div className="eggInfo__sub">Level 0 Stats</div>
+      <div className="eggInfo__sub">Level 0 (Base + IV)</div>
 
       <div className="eggInfo__row">
-        <span>Element</span>
-        <span className="eggInfo__value">{egg.element}</span>
+        <span>Shell Element</span>
+        <span className="eggInfo__value">{slot.shellElement}</span>
+      </div>
+
+      <div className="eggInfo__row">
+        <span>Pet Line</span>
+        <span className="eggInfo__value">{slot.pet.line ?? "null"}</span>
+      </div>
+
+      <div className="eggInfo__row">
+        <span>Gender</span>
+        <span className="eggInfo__value">{slot.gender}</span>
+      </div>
+
+      <div className="eggInfo__row">
+        <span>Elements</span>
+        <span className="eggInfo__value">
+          {slot.elementsForDisplay.join(", ")}
+        </span>
       </div>
 
       <div className="eggInfo__divider" />
 
-      <div className="eggInfo__row">
-        <span>Power</span>
-        <span className="eggInfo__value">{egg.base_stats.power}</span>
+      <div className="eggInfo__sub" style={{ opacity: 0.85 }}>
+        Total
       </div>
       <div className="eggInfo__row">
-        <span>Defense</span>
-        <span className="eggInfo__value">{egg.base_stats.defense}</span>
+        <span>HP</span>
+        <span className="eggInfo__value">{total.hp}</span>
       </div>
       <div className="eggInfo__row">
-        <span>Speed</span>
-        <span className="eggInfo__value">{egg.base_stats.speed}</span>
+        <span>ATK</span>
+        <span className="eggInfo__value">{total.atk}</span>
       </div>
       <div className="eggInfo__row">
-        <span>Luck</span>
-        <span className="eggInfo__value">{egg.base_stats.luck}</span>
+        <span>MAGIC</span>
+        <span className="eggInfo__value">{total.magic}</span>
+      </div>
+      <div className="eggInfo__row">
+        <span>DEF</span>
+        <span className="eggInfo__value">{total.def}</span>
+      </div>
+      <div className="eggInfo__row">
+        <span>SPD</span>
+        <span className="eggInfo__value">{total.spd}</span>
+      </div>
+      <div className="eggInfo__row">
+        <span>MANA</span>
+        <span className="eggInfo__value">{total.mana}</span>
+      </div>
+
+      <div className="eggInfo__divider" />
+
+      <div className="eggInfo__sub" style={{ opacity: 0.85 }}>
+        Breakdown
+      </div>
+      <div className="eggInfo__row">
+        <span>Base</span>
+        <span className="eggInfo__value">
+          HP {base.hp} • ATK {base.atk} • MAG {base.magic} • DEF {base.def} •
+          SPD {base.spd} • MANA {base.mana}
+        </span>
+      </div>
+      <div className="eggInfo__row">
+        <span>IV</span>
+        <span className="eggInfo__value">
+          HP {iv.hp} • ATK {iv.atk} • MAG {iv.magic} • DEF {iv.def} • SPD{" "}
+          {iv.spd} • MANA {iv.mana}
+        </span>
+      </div>
+      <div className="eggInfo__row">
+        <span>IV Total</span>
+        <span className="eggInfo__value">{slot.ivTotal} / 20</span>
       </div>
 
       <div className="eggInfo__divider" />
@@ -62,7 +128,7 @@ export function EggInfoPanel(props: {
       <div className="eggInfo__row">
         <span>Hatch Time</span>
         <span className="eggInfo__value">
-          {isReady ? "READY!" : formatDuration(msLeft)}
+          {!hatchIso ? "—" : isReady ? "READY!" : formatDuration(msLeft)}
         </span>
       </div>
     </div>

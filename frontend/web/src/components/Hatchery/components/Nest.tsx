@@ -3,51 +3,80 @@ import {
   msUntil,
   formatDuration,
   useServerCountdown,
-} from "../../../features/auth/Timers";
-import type { HatcheryEgg } from "../../../features/auth/pets/elements";
+} from "../../../Pets_Design/auth/Timers";
+import type { HatcheryEggVM } from "./types";
 
 export function Nest(props: {
-  eggs: Array<HatcheryEgg | null>;
-  selectedEggId: string | null;
+  slots?: HatcheryEggVM[]; // <-- optional now
+  selectedSlot?: number; // <-- optional now
   serverNowIso: string;
-  onSelectEgg: (eggId: string) => void;
+  onSelectSlot: (slotIndex: number) => void;
 }) {
-  const { eggs, selectedEggId, serverNowIso, onSelectEgg } = props;
+  const {
+    slots = [], // <-- default prevents map crash
+    selectedSlot = 0,
+    serverNowIso,
+    onSelectSlot,
+  } = props;
 
   return (
     <div className="nest">
       <div className="nest__bowl">
-        {eggs.map((egg, idx) => (
-          <NestSlot
-            key={egg?.id ?? `empty_${idx}`}
-            egg={egg}
-            isSelected={!!egg && egg.id === selectedEggId}
-            serverNowIso={serverNowIso}
-            onClick={() => egg && onSelectEgg(egg.id)}
-          />
-        ))}
+        <div className="nest__grid">
+          {slots.map((slot, idx) => (
+            <NestSlot
+              key={`${idx}_${slot.egg?.id ?? "empty"}`}
+              slot={slot}
+              isSelected={idx === selectedSlot}
+              serverNowIso={serverNowIso}
+              onClick={() => {
+                if (slot.locked) return;
+                onSelectSlot(idx);
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="nest__count">
-        {eggs.filter(Boolean).length} / {eggs.length} Eggs
+        {slots.filter((s) => !!s.egg).length} / {slots.length} Eggs
       </div>
     </div>
   );
 }
 
 function NestSlot(props: {
-  egg: HatcheryEgg | null;
+  slot: HatcheryEggVM;
   isSelected: boolean;
   serverNowIso: string;
   onClick: () => void;
 }) {
-  const { egg, isSelected, serverNowIso, onClick } = props;
+  const { slot, isSelected, serverNowIso, onClick } = props;
 
-  if (!egg) {
+  if (slot.locked) {
+    return (
+      <button
+        type="button"
+        className={`eggSlot eggSlot--locked ${
+          isSelected ? "eggSlot--selected" : ""
+        }`}
+        disabled
+        onClick={onClick}
+        title="Locked slot"
+      >
+        <div className="eggSlot__lock">🔒</div>
+        <div className="eggSlot__lockedText">Locked</div>
+      </button>
+    );
+  }
+
+  if (!slot.egg) {
     return <div className="eggSlot eggSlot--empty" />;
   }
 
-  const remainingMs = msUntil(egg.hatch_ends_at, Date.now());
+  const hatchIso = slot.hatchEndsAtIso;
+  const remainingMs = hatchIso ? msUntil(hatchIso, Date.now()) : 0;
+
   const { msLeft, isReady } = useServerCountdown({
     serverNowIso,
     remainingMs,
@@ -62,10 +91,10 @@ function NestSlot(props: {
       title="Select egg"
     >
       <div className="eggSlot__timer">
-        {isReady ? "READY!" : formatDuration(msLeft)}
+        {!hatchIso ? "—" : isReady ? "READY!" : formatDuration(msLeft)}
       </div>
 
-      <div className={`egg egg--${egg.element}`}>
+      <div className={`egg egg--${slot.shellElement}`}>
         <div className="egg__shine" />
       </div>
     </button>

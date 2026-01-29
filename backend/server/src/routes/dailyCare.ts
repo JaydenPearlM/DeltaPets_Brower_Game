@@ -4,31 +4,49 @@ import { supabaseAdmin } from "../lib/supabaseAdmin";
 
 export const dailyCareRouter = Router();
 
-// Reset boundary: UTC midnight (simple + consistent for Alpha)
-function nextUtcMidnightMs(nowMs: number) {
-  const d = new Date(nowMs);
-  return Date.UTC(
-    d.getUTCFullYear(),
-    d.getUTCMonth(),
-    d.getUTCDate() + 1,
-    0,
-    0,
-    0,
-    0,
+/**
+ * Next reset boundary: 8:00 AM America/New_York (EST/EDT safe)
+ * We compute the next 8am in Eastern time, then return it as a real UTC ms value.
+ */
+function nextEastern8amMs(nowMs: number) {
+  const now = new Date(nowMs);
+
+  // Get "now" as a Date in America/New_York *representation*
+  const easternNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/New_York" }),
   );
+
+  // Build 8:00 AM Eastern for "today" in that same representation
+  const next = new Date(easternNow);
+  next.setHours(8, 0, 0, 0);
+
+  // If we've already passed 8am Eastern, move to tomorrow
+  if (easternNow >= next) {
+    next.setDate(next.getDate() + 1);
+    next.setHours(8, 0, 0, 0);
+  }
+
+  // Convert the Eastern-represented Date back into a real UTC timestamp (ms)
+  // by interpreting the "wall clock" value as Eastern and asking what UTC time that is.
+  // The trick is to compute the offset between local "now" and "easternNow".
+  const easternOffsetMs = now.getTime() - easternNow.getTime();
+  return next.getTime() + easternOffsetMs;
 }
 
-function nextUtcMidnightIso(nowMs: number) {
-  return new Date(nextUtcMidnightMs(nowMs)).toISOString();
-}
-
-function isSameUtcDay(aIso: string, nowMs: number) {
+function isSameEasternDay(aIso: string, nowMs: number) {
   const a = new Date(aIso);
-  const n = new Date(nowMs);
+
+  const easternA = new Date(
+    a.toLocaleString("en-US", { timeZone: "America/New_York" }),
+  );
+  const easternNow = new Date(
+    new Date(nowMs).toLocaleString("en-US", { timeZone: "America/New_York" }),
+  );
+
   return (
-    a.getUTCFullYear() === n.getUTCFullYear() &&
-    a.getUTCMonth() === n.getUTCMonth() &&
-    a.getUTCDate() === n.getUTCDate()
+    easternA.getFullYear() === easternNow.getFullYear() &&
+    easternA.getMonth() === easternNow.getMonth() &&
+    easternA.getDate() === easternNow.getDate()
   );
 }
 
@@ -48,12 +66,12 @@ dailyCareRouter.get(
     if (error) return res.status(500).json({ error: error.message });
 
     const last = data?.last_completed_at ?? null;
-    const completed_today = !!last && isSameUtcDay(last, nowMs);
+
+    // "Today" is defined in Eastern time (for the 8am reset design)
+    const completed_today = !!last && isSameEasternDay(last, nowMs);
     const available = !completed_today;
 
-    const resetMs = nextUtcMidnightMs(nowMs);
-
-    // ✅ key fix: ALWAYS return time until reset so UI can countdown
+    const resetMs = nextEastern8amMs(nowMs);
     const remaining_ms = Math.max(0, resetMs - nowMs);
 
     return res.json({
@@ -77,7 +95,7 @@ dailyCareRouter.post(
     const nowMs = Date.now();
     const nowIso = new Date(nowMs).toISOString();
 
-    const resetMs = nextUtcMidnightMs(nowMs);
+    const resetMs = nextEastern8amMs(nowMs);
 
     // Read existing
     const { data: existing, error: readErr } = await supabaseAdmin
@@ -89,11 +107,10 @@ dailyCareRouter.post(
     if (readErr) return res.status(500).json({ error: readErr.message });
 
     const alreadyDoneToday = existing?.last_completed_at
-      ? isSameUtcDay(existing.last_completed_at, nowMs)
+      ? isSameEasternDay(existing.last_completed_at, nowMs)
       : false;
 
     if (alreadyDoneToday) {
-      // ✅ include countdown info here too
       return res.status(409).json({
         error: "Daily care already completed today.",
         server_now: nowIso,

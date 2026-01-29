@@ -44,3 +44,24 @@ export async function completeDailyCare() {
 
   return res.json();
 }
+
+function nextEastern8amMs(nowMs: number) {
+  const now = new Date(nowMs);
+
+  // Convert "now" to Eastern Time using Intl
+  const easternNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/New_York" }),
+  );
+
+  // Build 8:00 AM Eastern today
+  const next = new Date(easternNow);
+  next.setHours(8, 0, 0, 0);
+
+  // If we've already passed 8 AM today, move to tomorrow
+  if (easternNow >= next) {
+    next.setDate(next.getDate() + 1);
+  }
+
+  // Convert back to real UTC timestamp
+  return next.getTime();
+}
