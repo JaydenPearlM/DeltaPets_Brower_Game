@@ -22,13 +22,13 @@ export function EggInfoPanel(props: {
   }
 
   const hatchIso = slot.hatchEndsAtIso;
-  const remainingMs = hatchIso ? msUntil(hatchIso, Date.now()) : 0;
 
-  const { msLeft, isReady } = useServerCountdown({
-    serverNowIso,
-    remainingMs,
-    tickMs: 250,
-  });
+  const cd = useServerCountdown(
+    hatchIso ? { serverNowIso, endsAtIso: hatchIso } : null,
+  );
+
+  const msLeft = cd.remainingMs ?? 0;
+  const isReady = !!cd.done;
 
   const base = slot.base;
   const iv = slot.iv;

@@ -71,21 +71,36 @@ export default function PetPage() {
    * ------------------------------------------- */
   const pet = game.pet;
 
-  // ✅ allow modal to open even if pet isn't loaded yet
+  // ✅ Name is safe even when no pet
   const petName = (pet as any)?.name ?? "Your Pet";
-  const petStats = {
-    hp: (pet as any)?.hp ?? (pet as any)?.stat_hp ?? 10,
-    atk: (pet as any)?.atk ?? (pet as any)?.stat_atk ?? 5,
-    def: (pet as any)?.def ?? (pet as any)?.stat_def ?? 5,
-    magi: (pet as any)?.magi ?? (pet as any)?.stat_magi ?? 5,
-    spd: (pet as any)?.spd ?? (pet as any)?.stat_spd ?? 5,
-  };
 
-  const { msLeft, isReady } = useServerCountdown({
-    serverNowIso: activePet?.server_now,
-    remainingMs: activePet?.hatch?.hatch_remaining_ms ?? 0,
-    tickMs: 1000,
-  });
+  // ✅ IMPORTANT: No pet = null -> StatsModal will show 0s
+  const petStats = pet
+    ? {
+        hp: Number((pet as any)?.hp ?? (pet as any)?.stat_hp ?? 0),
+        atk: Number((pet as any)?.atk ?? (pet as any)?.stat_atk ?? 0),
+        def: Number((pet as any)?.def ?? (pet as any)?.stat_def ?? 0),
+        magi: Number((pet as any)?.magi ?? (pet as any)?.stat_magi ?? 0),
+        spd: Number((pet as any)?.spd ?? (pet as any)?.stat_spd ?? 0),
+      }
+    : null;
+
+  // ✅ Optional: elements (if you have them on pet later)
+  // No pet => null => modal renders all 0s
+  const petElements = pet ? ((pet as any)?.elements ?? null) : null;
+
+  // ✅ FIX: useServerCountdown expects { serverNowIso, endsAtIso }
+  const hatchEndsAt = activePet?.hatch?.hatch_ends_at ?? null;
+  const serverNowIso = activePet?.server_now ?? null;
+
+  const countdown = useServerCountdown(
+    hatchEndsAt && serverNowIso
+      ? { serverNowIso, endsAtIso: hatchEndsAt }
+      : null,
+  );
+
+  const msLeft = countdown.remainingMs ?? 0;
+  const isReady = countdown.done;
 
   const prettyLeft = useMemo(() => formatDuration(msLeft), [msLeft]);
 
@@ -111,7 +126,7 @@ export default function PetPage() {
         },
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error ?? "Hatch failed");
 
       await game.refresh();
@@ -159,13 +174,13 @@ export default function PetPage() {
       ) : (
         <div style={{ marginTop: 12, maxWidth: 520 }}>
           <p style={{ margin: 0 }}>
-            <strong>Stage:</strong> {pet.stage}
+            <strong>Stage:</strong> {(pet as any).stage}
           </p>
           <p style={{ margin: "6px 0 0" }}>
-            <strong>Line:</strong> {pet.line}
+            <strong>Line:</strong> {(pet as any).line}
           </p>
 
-          {pet.stage === "egg" ? (
+          {(pet as any).stage === "egg" ? (
             <div
               style={{
                 marginTop: 14,
@@ -195,7 +210,6 @@ export default function PetPage() {
             </p>
           )}
 
-          {/* ✅ FIXED ternary */}
           {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
         </div>
       )}
@@ -244,12 +258,14 @@ export default function PetPage() {
         </button>
       </div>
 
-      {/* ✅ Stats Modal */}
+      {/* Stats Modal */}
       <StatsModal
         open={statsOpen}
         onClose={() => setStatsOpen(false)}
         petName={petName}
-        stats={petStats}
+        stats={petStats} // ✅ null => zeros
+        level={(pet as any)?.level ?? 0}
+        elements={petElements} // ✅ null => zeros
       />
 
       <div style={{ marginTop: 16 }}>

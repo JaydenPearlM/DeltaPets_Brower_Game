@@ -54,10 +54,131 @@ function hatchPayload(pet: any, serverNowMs: number) {
 
 // keep config constants outside handlers
 const BASIC_EGG_HATCH_MINUTES = 2;
+// config constants
+const HATCH_ALLOCATION_POINTS = 7;
+
+function baseStatsForLine(line: string) {
+  // Egg base stats:
+  // - total = 6
+  // - pet stats only (NOT elements)
+  // - small elemental flavor, not power spikes
+
+  switch (line) {
+    case "fire":
+      // aggressive lean
+      return {
+        hp: 1,
+        atk: 2,
+        magic: 1,
+        def: 0,
+        spd: 1,
+        mana: 1,
+        base_total: 6,
+      };
+
+    case "water":
+      // magic + sustain
+      return {
+        hp: 2,
+        atk: 0,
+        magic: 2,
+        def: 1,
+        spd: 0,
+        mana: 1,
+        base_total: 6,
+      };
+
+    case "earth":
+      // tanky baby
+      return {
+        hp: 2,
+        atk: 1,
+        magic: 0,
+        def: 2,
+        spd: 0,
+        mana: 1,
+        base_total: 6,
+      };
+
+    case "air":
+      // speed-focused
+      return {
+        hp: 0,
+        atk: 1,
+        magic: 1,
+        def: 0,
+        spd: 3,
+        mana: 1,
+        base_total: 6,
+      };
+
+    case "ice":
+      // balanced + defensive
+      return {
+        hp: 1,
+        atk: 1,
+        magic: 1,
+        def: 2,
+        spd: 0,
+        mana: 1,
+        base_total: 6,
+      };
+
+    case "storm":
+      // caster-speed hybrid
+      return {
+        hp: 0,
+        atk: 1,
+        magic: 2,
+        def: 0,
+        spd: 2,
+        mana: 1,
+        base_total: 6,
+      };
+
+    case "light":
+      // support/bulky
+      return {
+        hp: 2,
+        atk: 0,
+        magic: 2,
+        def: 1,
+        spd: 0,
+        mana: 1,
+        base_total: 6,
+      };
+
+    case "shadow":
+      // glass cannon speed
+      return {
+        hp: 0,
+        atk: 2,
+        magic: 0,
+        def: 0,
+        spd: 3,
+        mana: 1,
+        base_total: 6,
+      };
+
+    default:
+      // neutral fallback
+      return {
+        hp: 1,
+        atk: 1,
+        magic: 1,
+        def: 1,
+        spd: 1,
+        mana: 1,
+        base_total: 6,
+      };
+  }
+}
 
 /**
  * GET /api/pets/active
- * Returns active pet + server_now + hatch info.
+ * Returns active pet + server_now + hatch info + stats/elements/cooldowns.
+ * NOTE: your schema doesn't show pets.is_active, so we do NOT filter by it.
+ * Alpha assumption: 1 pet row per user.
  */
 petsRouter.get(
   "/active",
@@ -70,25 +191,44 @@ petsRouter.get(
       .from("pets")
       .select("*")
       .eq("user_id", userId)
-      .eq("is_active", true)
       .maybeSingle();
 
-    if (error) {
-      return res.status(500).json({ error: error.message });
-    }
+    if (error) return res.status(500).json({ error: error.message });
 
     if (!pet) {
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
         pet: null,
         hatch: null,
+        stats: null,
+        elements: null,
+        cooldowns: null,
       });
     }
+
+    const [{ data: stats, error: statsErr }, { data: elements, error: elErr }] =
+      await Promise.all([
+        supabaseAdmin
+          .from("pet_stats")
+          .select("*")
+          .eq("pet_id", pet.id)
+          .maybeSingle(),
+        supabaseAdmin
+          .from("pet_elements")
+          .select("*")
+          .eq("pet_id", pet.id)
+          .maybeSingle(),
+      ]);
+
+    if (statsErr) return res.status(500).json({ error: statsErr.message });
+    if (elErr) return res.status(500).json({ error: elErr.message });
 
     return res.json({
       server_now: new Date(serverNowMs).toISOString(),
       pet,
       hatch: hatchPayload(pet, serverNowMs),
+      stats: stats ?? null,
+      elements: elements ?? null,
       cooldowns: cooldownsFromPetRow(pet, serverNowMs),
     });
   },
@@ -97,7 +237,8 @@ petsRouter.get(
 /**
  * POST /api/pets/ensure-egg
  * Creates the user's first egg if they don't already have a pet row.
- * IMPORTANT: If a pet already exists, it returns it and does NOT overwrite timers.
+ * Also creates pet_stats + pet_elements so Hatchery can show level 0 stats + elements.
+ * If a pet already exists, returns it and does NOT overwrite timers.
  */
 petsRouter.post(
   "/ensure-egg",
@@ -139,11 +280,30 @@ petsRouter.post(
         line,
         stage: "egg",
         hatch_ends_at,
+        unspent_points: 0, // requires migration
       })
       .select("*")
       .single();
 
     if (createErr) return res.status(500).json({ error: createErr.message });
+
+    // 3) Create base stats + elements for the egg (so Hatchery can show them)
+    const baseStats = baseStatsForLine(line);
+    const elementRow = elementRowForLine(line);
+
+    const [statsIns, elementsIns] = await Promise.all([
+      supabaseAdmin
+        .from("pet_stats")
+        .insert({ pet_id: created.id, ...baseStats }),
+      supabaseAdmin
+        .from("pet_elements")
+        .insert({ pet_id: created.id, ...elementRow }),
+    ]);
+
+    if (statsIns.error)
+      return res.status(500).json({ error: statsIns.error.message });
+    if (elementsIns.error)
+      return res.status(500).json({ error: elementsIns.error.message });
 
     return res.json({
       server_now: new Date(serverNowMs).toISOString(),
@@ -160,6 +320,7 @@ petsRouter.post(
  * - Must exist
  * - Must be stage "egg"
  * - Must be ready (now >= hatch_ends_at)
+ * On hatch: stage -> sprout, unspent_points -> 7
  */
 petsRouter.post(
   "/hatch",
@@ -181,7 +342,7 @@ petsRouter.post(
       return res.status(400).json({ error: "Pet is not an egg" });
     }
 
-    // ✅ Enforce hatch timer
+    // Enforce hatch timer
     const hatch_remaining_ms = msUntil(pet.hatch_ends_at, serverNowMs);
     if (hatch_remaining_ms > 0) {
       return res.status(409).json({
@@ -199,6 +360,7 @@ petsRouter.post(
         stage: "sprout",
         hatched_at: nowIso,
         hatch_ends_at: null,
+        unspent_points: HATCH_ALLOCATION_POINTS, // requires migration
       })
       .eq("id", pet.id)
       .eq("user_id", userId)
@@ -210,6 +372,7 @@ petsRouter.post(
     return res.json({
       server_now: nowIso,
       pet: updated,
+      awarded_points: HATCH_ALLOCATION_POINTS,
     });
   },
 );

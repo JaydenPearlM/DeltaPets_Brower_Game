@@ -3,23 +3,55 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/useAuth";
+import { supabase } from "../../../lib/supabase/client";
 import {
   formatDuration,
+  useNow,
   useServerCountdown,
 } from "../../../Pets_Design/auth/Timers";
 import "./HatcheryPage.css";
 
-type EggStats = {
-  hatchSpeedBonusPct: number;
-  luckBonus: number;
-  elementBias?: string;
+type PetStatsRow = {
+  pet_id: string;
+  hp: number;
+  atk: number;
+  magic: number;
+  def: number;
+  spd: number;
+  mana: number;
+  base_total: number;
+};
+
+type PetElementsRow = {
+  pet_id: string;
+  null: number;
+  water: number;
+  fire: number;
+  earth: number;
+  air: number;
+  ice: number;
+  storm: number;
+  light: number;
+  shadow: number;
+};
+
+type ActivePetResponse = {
+  server_now: string;
+  pet: any | null;
+  hatch: {
+    ready: boolean;
+    hatch_ends_at: string | null;
+    hatch_remaining_ms: number;
+  } | null;
+  stats: PetStatsRow | null;
+  elements: PetElementsRow | null;
 };
 
 type HatchEgg = {
   id: string;
   name: string;
   hatch_ends_at: string; // ISO
-  stats: EggStats;
+  line?: string;
 };
 
 type HatchSlot = {
@@ -33,6 +65,39 @@ type HatchItem = {
   name: string;
   effect: string;
 };
+
+async function getAccessToken(): Promise<string> {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw new Error(error.message);
+  const token = data.session?.access_token;
+  if (!token) throw new Error("Missing access token. Are you logged in?");
+  return token;
+}
+
+async function fetchActivePet(): Promise<ActivePetResponse> {
+  const token = await getAccessToken();
+
+  const res = await fetch("/api/pets/active", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  const data = (await res.json().catch(() => ({}))) as any;
+  if (!res.ok)
+    throw new Error(data?.error ?? `Active pet failed (${res.status})`);
+  return data as ActivePetResponse;
+}
+
+async function hatchEgg(): Promise<void> {
+  const token = await getAccessToken();
+
+  const res = await fetch("/api/pets/hatch", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  const data = (await res.json().catch(() => ({}))) as any;
+  if (!res.ok) throw new Error(data?.error ?? `Hatch failed (${res.status})`);
+}
 
 function EggSlotButton(props: {
   slot: HatchSlot;
@@ -82,17 +147,9 @@ function EggSlotButton(props: {
           {slot.locked ? "Locked" : (slot.egg?.name ?? "No egg")}
         </div>
 
-        {!slot.locked && slot.egg ? (
-          <div className="eggMiniStats">
-            <span>+{slot.egg.stats.hatchSpeedBonusPct}%</span>
-            <span className="dot">•</span>
-            <span>Luck +{slot.egg.stats.luckBonus}</span>
-          </div>
-        ) : (
-          <div className="eggMiniStats muted">
-            {slot.locked ? "—" : "Select"}
-          </div>
-        )}
+        <div className="eggMiniStats muted">
+          {slot.locked ? "—" : slot.egg ? "Select" : "Empty slot"}
+        </div>
       </div>
     </button>
   );
@@ -122,8 +179,30 @@ function ItemSlotButton(props: {
   );
 }
 
-function SelectedEggStatsPanel(props: { egg: HatchEgg | null }) {
-  const { egg } = props;
+function SelectedEggStatsPanel(props: {
+  egg: HatchEgg | null;
+  stats: PetStatsRow | null;
+  elements: PetElementsRow | null;
+}) {
+  const { egg, stats, elements } = props;
+
+  const elementPairs = useMemo(() => {
+    if (!elements) return [];
+    const keys: Array<keyof PetElementsRow> = [
+      "water",
+      "fire",
+      "earth",
+      "air",
+      "ice",
+      "storm",
+      "light",
+      "shadow",
+    ];
+    return keys
+      .map((k) => [k, elements[k] as number] as const)
+      .filter(([, v]) => v > 0)
+      .sort((a, b) => b[1] - a[1]);
+  }, [elements]);
 
   return (
     <div className="statsPanel">
@@ -134,21 +213,61 @@ function SelectedEggStatsPanel(props: { egg: HatchEgg | null }) {
       <div className="panelBody">
         {!egg ? (
           <div className="muted">Select an egg to see stats.</div>
+        ) : !stats ? (
+          <div className="muted">Stats not loaded yet.</div>
         ) : (
-          <div className="statsGrid">
-            <div className="statRow">
-              <div className="statLabel">Hatch Speed Bonus</div>
-              <div className="statValue">+{egg.stats.hatchSpeedBonusPct}%</div>
+          <>
+            <div className="statsGrid">
+              <div className="statRow">
+                <div className="statLabel">HP</div>
+                <div className="statValue">{stats.hp}</div>
+              </div>
+              <div className="statRow">
+                <div className="statLabel">ATK</div>
+                <div className="statValue">{stats.atk}</div>
+              </div>
+              <div className="statRow">
+                <div className="statLabel">MAGIC</div>
+                <div className="statValue">{stats.magic}</div>
+              </div>
+              <div className="statRow">
+                <div className="statLabel">DEF</div>
+                <div className="statValue">{stats.def}</div>
+              </div>
+              <div className="statRow">
+                <div className="statLabel">SPD</div>
+                <div className="statValue">{stats.spd}</div>
+              </div>
+              <div className="statRow">
+                <div className="statLabel">MANA</div>
+                <div className="statValue">{stats.mana}</div>
+              </div>
+              <div className="statRow">
+                <div className="statLabel">Total</div>
+                <div className="statValue">{stats.base_total}</div>
+              </div>
             </div>
-            <div className="statRow">
-              <div className="statLabel">Luck Bonus</div>
-              <div className="statValue">+{egg.stats.luckBonus}</div>
+
+            <div style={{ marginTop: 12 }}>
+              <div className="muted" style={{ marginBottom: 6 }}>
+                Elements
+              </div>
+              {elementPairs.length === 0 ? (
+                <div className="muted">None</div>
+              ) : (
+                <div className="eggMiniStats">
+                  {elementPairs.map(([k, v], idx) => (
+                    <span key={String(k)}>
+                      {String(k)} {v}
+                      {idx < elementPairs.length - 1 ? (
+                        <span className="dot">•</span>
+                      ) : null}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="statRow">
-              <div className="statLabel">Element Bias</div>
-              <div className="statValue">{egg.stats.elementBias ?? "None"}</div>
-            </div>
-          </div>
+          </>
         )}
       </div>
     </div>
@@ -159,102 +278,137 @@ export default function HatcheryPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // server "now" tick (client-side for now)
-  const [serverNowIso, setServerNowIso] = useState(() =>
-    new Date().toISOString(),
-  );
-  useEffect(() => {
-    const id = window.setInterval(
-      () => setServerNowIso(new Date().toISOString()),
-      1000,
-    );
-    return () => window.clearInterval(id);
-  }, []);
+  const [active, setActive] = useState<ActivePetResponse | null>(null);
+  const [loadErr, setLoadErr] = useState<string | null>(null);
 
-  // auth gate
+  // serverNowBaseMs + drift based on local clock ticks
+  const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
+  const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
+  const localNowMs = useNow(1000);
+
+  const serverNowIso = useMemo(() => {
+    if (serverNowBaseMs == null || fetchedAtLocalMs == null)
+      return new Date().toISOString();
+    const driftedMs = serverNowBaseMs + (localNowMs - fetchedAtLocalMs);
+    return new Date(driftedMs).toISOString();
+  }, [serverNowBaseMs, fetchedAtLocalMs, localNowMs]);
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/");
   }, [authLoading, user, navigate]);
 
-  // demo hatch slots
-  const baseNowMs = useMemo(() => Date.now(), []);
-  const slots: HatchSlot[] = useMemo(() => {
-    const egg1Ends = new Date(baseNowMs + 2 * 60_000).toISOString();
-    const egg2Ends = new Date(baseNowMs + 7 * 60_000).toISOString();
+  useEffect(() => {
+    if (authLoading || !user) return;
 
-    const arr: HatchSlot[] = [];
-    for (let i = 1; i <= 10; i++) {
-      if (i === 1) {
-        arr.push({
-          index: i,
-          locked: false,
-          egg: {
-            id: "egg_1",
-            name: "Warm Egg",
-            hatch_ends_at: egg1Ends,
-            stats: {
-              hatchSpeedBonusPct: 0,
-              luckBonus: 1,
-              elementBias: "light",
-            },
-          },
-        });
-      } else if (i === 2) {
-        arr.push({
-          index: i,
-          locked: false,
-          egg: {
-            id: "egg_2",
-            name: "Breezy Egg",
-            hatch_ends_at: egg2Ends,
-            stats: { hatchSpeedBonusPct: 5, luckBonus: 0, elementBias: "air" },
-          },
-        });
-      } else {
-        arr.push({ index: i, locked: true });
+    let alive = true;
+
+    async function load() {
+      setLoadErr(null);
+      try {
+        const data = await fetchActivePet();
+        if (!alive) return;
+        setActive(data);
+
+        const serverMs = Date.parse(data.server_now);
+        if (Number.isFinite(serverMs)) {
+          setServerNowBaseMs(serverMs);
+          setFetchedAtLocalMs(Date.now());
+        }
+      } catch (e: any) {
+        if (!alive) return;
+        setLoadErr(e?.message ?? String(e));
       }
     }
+
+    load();
+    const id = window.setInterval(load, 30_000);
+
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+    };
+  }, [authLoading, user]);
+
+  // 10 slots:
+  // - Slot 1: user's current egg (if stage === "egg")
+  // - Slot 2: open (placeholder for “found egg around the site”)
+  // - Slot 3-10: locked
+  const slots: HatchSlot[] = useMemo(() => {
+    const pet = active?.pet;
+    const hatchEndsAt = active?.hatch?.hatch_ends_at ?? null;
+
+    const slot1Egg =
+      pet && pet.stage === "egg" && hatchEndsAt
+        ? ({
+            id: pet.id,
+            name: "Warm Egg",
+            hatch_ends_at: hatchEndsAt,
+            line: pet.line ?? undefined,
+          } satisfies HatchEgg)
+        : undefined;
+
+    const arr: HatchSlot[] = [];
+    arr.push({ index: 1, locked: false, egg: slot1Egg });
+    arr.push({ index: 2, locked: false }); // open, empty for now
+    for (let i = 3; i <= 10; i++) arr.push({ index: i, locked: true });
     return arr;
-  }, [baseNowMs]);
+  }, [active]);
 
   const [selectedSlot, setSelectedSlot] = useState<number>(1);
   const selected = slots.find((s) => s.index === selectedSlot) ?? slots[0];
   const selectedEgg = selected.egg ?? null;
 
-  // Selected egg countdown (safe)
   const selectedCd = useServerCountdown(
     selectedEgg ? { serverNowIso, endsAtIso: selectedEgg.hatch_ends_at } : null,
   );
 
-  // Right: 10 item slots (demo)
   const [itemSlots, setItemSlots] = useState<Array<HatchItem | null>>(() => {
     const arr = new Array(10).fill(null) as Array<HatchItem | null>;
-    arr[0] = { id: "item_1", name: "Heat Lamp", effect: "+10% hatch speed" };
-    arr[1] = { id: "item_2", name: "Lucky Charm", effect: "+2 luck" };
+    arr[0] = {
+      id: "item_1",
+      name: "Heat Lamp",
+      effect: "+10% hatch speed (later)",
+    };
+    arr[1] = { id: "item_2", name: "Lucky Charm", effect: "+2 luck (later)" };
     return arr;
   });
 
   function handleClickItemSlot(idx: number) {
-    // demo toggle
     setItemSlots((prev) => {
       const next = [...prev];
-      if (next[idx]) next[idx] = null;
-      else
-        next[idx] = {
-          id: `item_demo_${idx}`,
-          name: "Basic Incense",
-          effect: "+3% hatch speed",
-        };
+      next[idx] = next[idx]
+        ? null
+        : {
+            id: `item_demo_${idx}`,
+            name: "Basic Incense",
+            effect: "+3% hatch speed (later)",
+          };
       return next;
     });
   }
 
+  async function onHatchSelected() {
+    if (!selectedEgg) return;
+
+    try {
+      await hatchEgg();
+      const data = await fetchActivePet();
+      setActive(data);
+
+      // You’ll hook the “7 points allocation UI” on /pet using pet.unspent_points
+      navigate("/pet");
+    } catch (e: any) {
+      alert(e?.message ?? String(e));
+    }
+  }
+
   if (authLoading) return null;
+
+  const unspent = active?.pet?.unspent_points ?? 0;
 
   return (
     <div className="hatcheryPage">
       <div className="hatcheryLayout">
-        {/* LEFT: compact egg slots */}
         <aside className="leftCol">
           <div className="eggGrid">
             {slots.map((slot) => (
@@ -267,9 +421,14 @@ export default function HatcheryPage() {
               />
             ))}
           </div>
+
+          {loadErr ? (
+            <div className="muted" style={{ paddingTop: 10 }}>
+              Error: {loadErr}
+            </div>
+          ) : null}
         </aside>
 
-        {/* MIDDLE: selected egg + stats underneath */}
         <main className="midCol">
           <div className="selectedPanel">
             <div className="panelHeader">
@@ -278,7 +437,11 @@ export default function HatcheryPage() {
 
             <div className="panelBody">
               {!selectedEgg ? (
-                <div className="muted">No egg selected.</div>
+                <div className="muted">
+                  {selected.locked
+                    ? "Slot locked."
+                    : "No egg in this slot (yet)."}
+                </div>
               ) : (
                 <>
                   <div className="selectedRow">
@@ -291,8 +454,8 @@ export default function HatcheryPage() {
                           : `Hatches in ${formatDuration(selectedCd.remainingMs ?? 0)}`}
                       </div>
                       <div className="selectedMini">
-                        Speed +{selectedEgg.stats.hatchSpeedBonusPct}% • Luck +
-                        {selectedEgg.stats.luckBonus}
+                        Element: {selectedEgg.line ?? "—"} • Unspent points
+                        after hatch: {unspent}
                       </div>
                     </div>
                   </div>
@@ -301,7 +464,7 @@ export default function HatcheryPage() {
                     type="button"
                     className="primaryBtn"
                     disabled={!selectedCd.done}
-                    onClick={() => alert("HATCH! (wire backend later)")}
+                    onClick={onHatchSelected}
                   >
                     Hatch
                   </button>
@@ -310,10 +473,13 @@ export default function HatcheryPage() {
             </div>
           </div>
 
-          <SelectedEggStatsPanel egg={selectedEgg} />
+          <SelectedEggStatsPanel
+            egg={selectedEgg}
+            stats={active?.stats ?? null}
+            elements={active?.elements ?? null}
+          />
         </main>
 
-        {/* RIGHT: items + back */}
         <aside className="rightCol">
           <div className="itemsPanel">
             <div className="panelHeader">
