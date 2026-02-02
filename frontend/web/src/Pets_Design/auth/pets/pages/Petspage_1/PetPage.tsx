@@ -10,7 +10,7 @@ import { DailyCareCard } from "../../../../../DailyQuest/components/DailyCareCar
 import "../../Designs/stats.css";
 
 // ✅ exists: src/Pets_Design/auth/pets/StatsModal.tsx
-import { StatsModal } from "../../StatsModal";
+import { StatsModal } from "../../Stats/StatsModal";
 
 import {
   useServerCountdown,
@@ -130,7 +130,7 @@ export default function PetPage() {
       if (!res.ok) throw new Error(data?.error ?? "Hatch failed");
 
       await game.refresh();
-      setMsg("Hatched (stage = sprout)");
+      setMsg("Hatched (stage = baby)");
     } catch (e: any) {
       setMsg(`Hatch failed: ${e?.message ?? String(e)}`);
     } finally {
@@ -167,9 +167,7 @@ export default function PetPage() {
       {!pet ? (
         <div>
           <p>No pet found for this account.</p>
-          <button type="button" onClick={() => navigate("/create")}>
-            Go to Create
-          </button>
+          {/* ✅ removed "Go to Create" button */}
         </div>
       ) : (
         <div style={{ marginTop: 12, maxWidth: 520 }}>
@@ -206,7 +204,7 @@ export default function PetPage() {
             </div>
           ) : (
             <p style={{ marginTop: 14, opacity: 0.85 }}>
-              Sprout is alive. Next: bonding / home / fights.
+              Baby is alive. Next: bonding / home / fights.
             </p>
           )}
 
@@ -217,6 +215,22 @@ export default function PetPage() {
       {/* =========================================================
          TEMP DEV BUTTONS — DELETE THIS WHOLE BLOCK WHEN DONE ✅
          ========================================================= */}
+      <button
+        onClick={() => navigate("/inventory")}
+        style={{
+          marginTop: 12,
+          padding: "10px 14px",
+          borderRadius: 12,
+          fontWeight: 700,
+          border: "1px solid rgba(255,255,255,0.2)",
+          background: "rgba(255,255,255,0.08)",
+          color: "#fff",
+          cursor: "pointer",
+        }}
+      >
+        🧳 Inventory (TEST)
+      </button>
+
       <div
         style={{
           position: "fixed",
@@ -228,6 +242,40 @@ export default function PetPage() {
           gap: 10,
         }}
       >
+        <button
+          type="button"
+          onClick={() => navigate("/home")}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 12,
+            fontWeight: 700,
+            border: "2px dashed #4caf50",
+            background: "rgba(0,0,0,0.75)",
+            color: "white",
+            cursor: "pointer",
+          }}
+          aria-label="Go to Pet Home (TEMP)"
+        >
+          🏠 Pet Home (TEMP)
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate("/gym")}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 12,
+            fontWeight: 700,
+            border: "2px dashed #ff9800",
+            background: "rgba(0,0,0,0.75)",
+            color: "white",
+            cursor: "pointer",
+          }}
+          aria-label="Go to Gym (TEMP)"
+        >
+          🏋️ Gym (TEMP)
+        </button>
+
         <button
           type="button"
           className="openStatsBtn"

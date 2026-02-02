@@ -1,0 +1,1 @@
+alter table public.pets add column if not exists unspent_points int not null default 0;

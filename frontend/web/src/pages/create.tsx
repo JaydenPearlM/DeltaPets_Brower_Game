@@ -1,8 +1,10 @@
+// frontend/web/src/pages/create.tsx
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase/client";
 import { useAuth } from "../app/providers/useAuth";
-import eggBlueStripe from "../assets/eggs/egg_blue_stripe.svg";
+import { MYSTERY_EGG } from "@/assets/eggs/eggType";
 import "./create.css";
 
 type Phase =
@@ -153,13 +155,11 @@ export default function CreatePage() {
       setBubbleVisible(false);
 
       try {
-        // fade in
         setStatus("Cutscene: fade in…");
         setPhase("fadeInBlack");
         await sleep(TIMING.fadeInMs);
         if (!alive()) return;
 
-        // line 1 type (top-left)
         setStatus("Cutscene: line 1…");
         setPhase("typeLine1");
         await typeText(LINE_1, setLine1, TIMING.type1MsPerChar, alive);
@@ -168,30 +168,29 @@ export default function CreatePage() {
         await sleep(TIMING.pauseAfterLine1Ms);
         if (!alive()) return;
 
-        // line 1 delete
         setStatus("Cutscene: delete line 1…");
         setPhase("deleteLine1");
         await deleteText(LINE_1, setLine1, TIMING.delete1MsPerChar, alive);
         if (!alive()) return;
 
-        // short pause before line2
         setStatus("Cutscene: pause…");
         setPhase("pauseBeforeLine2");
         await sleep(TIMING.pauseBeforeLine2Ms);
         if (!alive()) return;
 
-        // line 2 type (center)
         setStatus("Cutscene: line 2…");
         setPhase("typeLine2");
         await typeText(LINE_2, setLine2, TIMING.type2MsPerChar, alive);
         if (!alive()) return;
 
-        // egg fades in AFTER line2 fully typed (no movement)
+        console.log("CUTSCENE MYSTERY_EGG:", MYSTERY_EGG);
+        console.log("CUTSCENE sprite value:", MYSTERY_EGG?.sprite);
+
         setStatus("Cutscene: egg fade in…");
         setPhase("eggFadeIn");
         setEggVisible(true);
+        console.log("CUTSCENE sprite:", MYSTERY_EGG.sprite);
 
-        // save egg only on first run (NON-FATAL)
         if (!replay) {
           setBusy(true);
           try {
@@ -203,9 +202,7 @@ export default function CreatePage() {
             const token = sessionData.session?.access_token;
             if (!token) throw new Error("No access token");
 
-            const url = new URL("/api/pets/ensure-egg", apiBase).toString();
-
-            const res = await fetch(url, {
+            const res = await fetch("/api/pets/ensure-egg", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -215,30 +212,41 @@ export default function CreatePage() {
             });
 
             const data = await res.json().catch(() => ({}) as any);
-            if (!res.ok) {
-              throw new Error(
-                data?.error || data?.message || `HTTP ${res.status}`,
-              );
+            if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
+
+            await fetch("/api/me/intro/seen", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const seenRes = await fetch("/api/me/intro/seen", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!seenRes.ok) {
+              const seenData = await seenRes.json().catch(() => ({}));
+              console.warn("intro/seen failed:", seenData);
             }
           } catch (err) {
-            console.warn("ensure-egg failed (continuing cutscene):", err);
+            console.warn(
+              "ensure-egg / intro-seen failed (continuing cutscene):",
+              err,
+            );
             setStatus("Backend offline — continuing (dev)");
           } finally {
             if (alive()) setBusy(false);
           }
         }
 
-        // let egg fade in smoothly while line2 sits
         await sleep(TIMING.pauseAfterLine2TypedMs);
         if (!alive()) return;
 
-        // delete line 2
         setStatus("Cutscene: delete line 2…");
         setPhase("deleteLine2");
         await deleteText(LINE_2, setLine2, TIMING.delete2MsPerChar, alive);
         if (!alive()) return;
 
-        // bubble pops AFTER line2 is fully gone (static text)
         await sleep(TIMING.bubblePopDelayMs);
         if (!alive()) return;
 
@@ -246,11 +254,9 @@ export default function CreatePage() {
         setPhase("bubblePop");
         setBubbleVisible(true);
 
-        // small beat to feel intentional
         await sleep(450);
         if (!alive()) return;
 
-        // goodluck types where line2 was (center)
         setStatus("Cutscene: goodluck…");
         setPhase("typeGoodluck");
         await typeText(
@@ -271,7 +277,7 @@ export default function CreatePage() {
         if (!alive()) return;
 
         setPhase("done");
-        navigate("/pet", { replace: true });
+        navigate("/hatchery", { replace: true });
       } catch (err: any) {
         console.error("Create cutscene crashed:", err);
         if (alive()) setFatalError(err?.message ?? "Cutscene crashed");
@@ -310,7 +316,6 @@ export default function CreatePage() {
 
       <div className={`dp-center ${centerFadesOut ? "dp-fade-out" : ""}`}>
         <div className="dp-stage dp-chatbox">
-          {/* Line 1 - TOP LEFT */}
           <div className="dp-slot-line1">
             <span className="dp-chat-text">{line1}</span>
             {showCursorLine1 ? (
@@ -318,7 +323,6 @@ export default function CreatePage() {
             ) : null}
           </div>
 
-          {/* Center line area (line2 then goodluck) */}
           <div className="dp-slot-center">
             <span className="dp-chat-text">{goodluck ? goodluck : line2}</span>
 
@@ -331,20 +335,24 @@ export default function CreatePage() {
             ) : null}
           </div>
 
-          {/* Egg + bubble row */}
           <div className="dp-slot-eggrow">
-            {/* Egg centered under line2 */}
             <div
               className={`dp-egg-wrap ${eggVisible ? "is-visible" : "is-hidden"}`}
             >
               <img
                 className="dp-egg-img"
-                src={eggBlueStripe}
-                alt="Blue striped egg"
+                src={MYSTERY_EGG.sprite}
+                alt={MYSTERY_EGG.name}
+                style={{
+                  width: 160,
+                  height: 160,
+                  objectFit: "contain",
+                  display: "Block",
+                  margin: "0 auto",
+                }}
               />
             </div>
 
-            {/* Bubble floats above/right like the egg is talking */}
             <div
               className={`dp-bubble ${bubbleVisible ? "is-visible" : "is-hidden"}`}
             >
@@ -352,10 +360,8 @@ export default function CreatePage() {
             </div>
           </div>
 
-          {/* Status inside the neon border */}
           <div className="dp-status">{fatalError ? "Error" : status}</div>
 
-          {/* Debug (only shows if error) */}
           {fatalError ? (
             <div className="dp-debug">
               <div className="dp-debug-row">

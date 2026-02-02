@@ -5,6 +5,8 @@ import PetPage from "../../Pets_Design/auth/pets/pages/Petspage_1/PetPage";
 import CreatePage from "../../pages/create";
 import AuthCallback from "./AuthCallback";
 import HatcheryPage from "../../components/Hatchery/pages/HatcheryPage";
+import PetHomePage from "../../pages/PetHomePage";
+import Gym from "../../pages/gym";
 
 function NotFound() {
   return <div style={{ padding: 16 }}>404 — Page not found</div>;
@@ -28,6 +30,9 @@ export const router = createBrowserRouter([
 
       //Hatchery
       { path: "hatchery", element: <HatcheryPage /> },
+      { path: "Secret Haven", element: <PetHomePage /> },
+
+      { path: "gym", element: <Gym /> },
     ],
   },
   { path: "*", element: <NotFound /> },

@@ -1,6 +1,6 @@
 // frontend/web/src/Pets_Design/auth/pets/StatsModal.tsx
 import { useEffect, useMemo, useState } from "react";
-import "./Designs/stats.css";
+import "../Designs/stats.css";
 
 export type ElementalLine =
   | "water"

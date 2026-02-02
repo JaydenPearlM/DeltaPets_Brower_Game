@@ -263,3 +263,16 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+.eggIconImg {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+}
+.eggBigImg {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  display: block;
+}

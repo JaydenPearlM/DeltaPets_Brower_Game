@@ -1,4 +1,8 @@
-export type CooldownKey = "feed" | "clean" | "play";
+// backend/server/src/lib/cooldowns.ts
+// Single source of truth for cooldowns.
+// Safe parsing, server-computed remaining_ms, easy to consume.
+
+export type CooldownKey = "feed" | "clean" | "play" | "bond";
 
 export type CooldownState = {
   ends_at: string | null; // ISO
@@ -12,12 +16,14 @@ const COL_BY_KEY: Record<CooldownKey, string> = {
   feed: "cd_feed_ends_at",
   clean: "cd_clean_ends_at",
   play: "cd_play_ends_at",
+  bond: "cd_bond_ends_at",
 };
 
 export const DEFAULT_COOLDOWN_MS: Record<CooldownKey, number> = {
-  feed: 60_000, // 1 min for testing; change later
-  clean: 90_000, // 1.5 min
-  play: 120_000, // 2 min
+  feed: 60_000,
+  clean: 90_000,
+  play: 120_000,
+  bond: 75_000,
 };
 
 function toIso(v: any): string | null {
@@ -37,24 +43,22 @@ export function cooldownsFromPetRow(pet: any, nowMs: number): CooldownsPayload {
     const remaining = Number.isFinite(endsMs) ? Math.max(0, endsMs - nowMs) : 0;
     const ready = remaining <= 0;
 
-    return {
-      ends_at: endsIso,
-      remaining_ms: remaining,
-      ready,
-    };
+    return { ends_at: endsIso, remaining_ms: remaining, ready };
   };
 
   return {
     feed: mk("feed"),
     clean: mk("clean"),
     play: mk("play"),
+    bond: mk("bond"),
   };
 }
 
 export function assertCooldownReady(pet: any, key: CooldownKey, nowMs: number) {
   const col = COL_BY_KEY[key];
   const endsIso = toIso(pet?.[col]);
-  if (!endsIso) return; // no cooldown set => ready
+  if (!endsIso) return;
+
   const endsMs = Date.parse(endsIso);
   if (!Number.isFinite(endsMs)) return;
 

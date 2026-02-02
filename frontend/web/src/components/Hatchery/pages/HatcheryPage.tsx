@@ -1,5 +1,3 @@
-// frontend/web/src/components/Hatchery/pages/HatcheryPage.tsx
-
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/useAuth";
@@ -9,13 +7,18 @@ import {
   useNow,
   useServerCountdown,
 } from "../../../Pets_Design/auth/Timers";
+
+import { MYSTERY_EGG } from "../../../assets/eggs/eggType";
+
 import "./HatcheryPage.css";
+
+console.log("Egg sprite URL:", MYSTERY_EGG.sprite);
 
 type PetStatsRow = {
   pet_id: string;
   hp: number;
   atk: number;
-  magic: number;
+  magi: number;
   def: number;
   spd: number;
   mana: number;
@@ -35,7 +38,7 @@ type PetElementsRow = {
   shadow: number;
 };
 
-type ActivePetResponse = {
+type HatcheryResponse = {
   server_now: string;
   pet: any | null;
   hatch: {
@@ -49,7 +52,7 @@ type ActivePetResponse = {
 
 type HatchEgg = {
   id: string;
-  name: string;
+  name: string; // "Gold Egg"
   hatch_ends_at: string; // ISO
   line?: string;
 };
@@ -74,17 +77,18 @@ async function getAccessToken(): Promise<string> {
   return token;
 }
 
-async function fetchActivePet(): Promise<ActivePetResponse> {
+// ✅ Hatchery uses /api/pets/hatchery (NOT /active)
+async function fetchHatchery(): Promise<HatcheryResponse> {
   const token = await getAccessToken();
 
-  const res = await fetch("/api/pets/active", {
+  const res = await fetch("/api/pets/hatchery", {
     headers: { Authorization: `Bearer ${token}` },
   });
 
   const data = (await res.json().catch(() => ({}))) as any;
   if (!res.ok)
-    throw new Error(data?.error ?? `Active pet failed (${res.status})`);
-  return data as ActivePetResponse;
+    throw new Error(data?.error ?? `Hatchery failed (${res.status})`);
+  return data as HatcheryResponse;
 }
 
 async function hatchEgg(): Promise<void> {
@@ -134,7 +138,15 @@ function EggSlotButton(props: {
       title={slot.egg ? slot.egg.name : `Egg ${slot.index}`}
     >
       <div className="eggSlotLeft">
-        <div className="eggIcon" />
+        {slot.egg ? (
+          <img
+            className="eggIconImg"
+            src={MYSTERY_EGG.sprite}
+            alt={MYSTERY_EGG.name}
+          />
+        ) : (
+          <div className="eggIcon" />
+        )}
       </div>
 
       <div className="eggSlotMain">
@@ -227,8 +239,8 @@ function SelectedEggStatsPanel(props: {
                 <div className="statValue">{stats.atk}</div>
               </div>
               <div className="statRow">
-                <div className="statLabel">MAGIC</div>
-                <div className="statValue">{stats.magic}</div>
+                <div className="statLabel">MAGI</div>
+                <div className="statValue">{stats.magi}</div>
               </div>
               <div className="statRow">
                 <div className="statLabel">DEF</div>
@@ -278,10 +290,9 @@ export default function HatcheryPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [active, setActive] = useState<ActivePetResponse | null>(null);
+  const [data, setData] = useState<HatcheryResponse | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
-  // serverNowBaseMs + drift based on local clock ticks
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
   const localNowMs = useNow(1000);
@@ -305,11 +316,11 @@ export default function HatcheryPage() {
     async function load() {
       setLoadErr(null);
       try {
-        const data = await fetchActivePet();
+        const next = await fetchHatchery();
         if (!alive) return;
-        setActive(data);
+        setData(next);
 
-        const serverMs = Date.parse(data.server_now);
+        const serverMs = Date.parse(next.server_now);
         if (Number.isFinite(serverMs)) {
           setServerNowBaseMs(serverMs);
           setFetchedAtLocalMs(Date.now());
@@ -321,27 +332,22 @@ export default function HatcheryPage() {
     }
 
     load();
-    const id = window.setInterval(load, 30_000);
-
+    const id = window.setInterval(load, 15_000);
     return () => {
       alive = false;
       window.clearInterval(id);
     };
   }, [authLoading, user]);
 
-  // 10 slots:
-  // - Slot 1: user's current egg (if stage === "egg")
-  // - Slot 2: open (placeholder for “found egg around the site”)
-  // - Slot 3-10: locked
   const slots: HatchSlot[] = useMemo(() => {
-    const pet = active?.pet;
-    const hatchEndsAt = active?.hatch?.hatch_ends_at ?? null;
+    const pet = data?.pet;
+    const hatchEndsAt = data?.hatch?.hatch_ends_at ?? null;
 
     const slot1Egg =
       pet && pet.stage === "egg" && hatchEndsAt
         ? ({
             id: pet.id,
-            name: "Warm Egg",
+            name: "Mystery Egg",
             hatch_ends_at: hatchEndsAt,
             line: pet.line ?? undefined,
           } satisfies HatchEgg)
@@ -349,10 +355,10 @@ export default function HatcheryPage() {
 
     const arr: HatchSlot[] = [];
     arr.push({ index: 1, locked: false, egg: slot1Egg });
-    arr.push({ index: 2, locked: false }); // open, empty for now
+    arr.push({ index: 2, locked: false });
     for (let i = 3; i <= 10; i++) arr.push({ index: i, locked: true });
     return arr;
-  }, [active]);
+  }, [data]);
 
   const [selectedSlot, setSelectedSlot] = useState<number>(1);
   const selected = slots.find((s) => s.index === selectedSlot) ?? slots[0];
@@ -392,19 +398,16 @@ export default function HatcheryPage() {
 
     try {
       await hatchEgg();
-      const data = await fetchActivePet();
-      setActive(data);
+      const next = await fetchHatchery();
+      setData(next);
 
-      // You’ll hook the “7 points allocation UI” on /pet using pet.unspent_points
-      navigate("/pet");
+      navigate("/inventory", { replace: true });
     } catch (e: any) {
       alert(e?.message ?? String(e));
     }
   }
 
   if (authLoading) return null;
-
-  const unspent = active?.pet?.unspent_points ?? 0;
 
   return (
     <div className="hatcheryPage">
@@ -445,7 +448,11 @@ export default function HatcheryPage() {
               ) : (
                 <>
                   <div className="selectedRow">
-                    <div className="eggBig" />
+                    <img
+                      className="eggBigImg"
+                      src={MYSTERY_EGG.sprite}
+                      alt={MYSTERY_EGG.name}
+                    />
                     <div className="selectedText">
                       <div className="selectedName">{selectedEgg.name}</div>
                       <div className="selectedSub">
@@ -454,8 +461,7 @@ export default function HatcheryPage() {
                           : `Hatches in ${formatDuration(selectedCd.remainingMs ?? 0)}`}
                       </div>
                       <div className="selectedMini">
-                        Element: {selectedEgg.line ?? "—"} • Unspent points
-                        after hatch: {unspent}
+                        Element: {selectedEgg.line ?? "—"}
                       </div>
                     </div>
                   </div>
@@ -475,8 +481,8 @@ export default function HatcheryPage() {
 
           <SelectedEggStatsPanel
             egg={selectedEgg}
-            stats={active?.stats ?? null}
-            elements={active?.elements ?? null}
+            stats={data?.stats ?? null}
+            elements={data?.elements ?? null}
           />
         </main>
 

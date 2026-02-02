@@ -30,7 +30,7 @@ exception when duplicate_object then null;
 end $$;
 
 do $$ begin
-  create type public.pet_stage as enum ('egg','sprout');
+  create type public.pet_stage as enum ('egg','baby', 'toddler', 'child', 'teen', 'adult', 'Legion', 'mythic_legendary');
 exception when duplicate_object then null;
 end $$;
 
@@ -46,11 +46,6 @@ end $$;
 
 do $$ begin
   create type public.currency_kind as enum ('dots','crystals');
-exception when duplicate_object then null;
-end $$;
-
-do $$ begin
-  create type public.age_stage as enum ('baby','teen','adult','late_adult','legion');
 exception when duplicate_object then null;
 end $$;
 
@@ -253,7 +248,7 @@ create table if not exists public.pet_stats (
 
   hp int not null default 5,
   atk int not null default 5,
-  magic int not null default 5,
+  magi int not null default 5,
   def int not null default 5,
   spd int not null default 5,
   mana int not null default 5,
@@ -263,7 +258,7 @@ create table if not exists public.pet_stats (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 
-  check (hp >= 0 and atk >= 0 and magic >= 0 and def >= 0 and spd >= 0 and mana >= 0)
+  check (hp >= 0 and atk >= 0 and magi >= 0 and def >= 0 and spd >= 0 and mana >= 0)
 );
 
 drop trigger if exists trg_pet_stats_updated_at on public.pet_stats;
@@ -279,14 +274,14 @@ create table if not exists public.pet_stat_allocations (
 
   hp int not null default 0,
   atk int not null default 0,
-  magic int not null default 0,
+  magi int not null default 0,
   def int not null default 0,
   spd int not null default 0,
   mana int not null default 0,
 
   created_at timestamptz not null default now(),
 
-  check (hp >= 0 and atk >= 0 and magic >= 0 and def >= 0 and spd >= 0 and mana >= 0),
+  check (hp >= 0 and atk >= 0 and magi >= 0 and def >= 0 and spd >= 0 and mana >= 0),
   unique (pet_id, level)
 );
 
@@ -551,9 +546,9 @@ begin
 
   if exists (
     select 1 from information_schema.columns
-    where table_schema='public' and table_name='pet_stats' and column_name='magic'
+    where table_schema='public' and table_name='pet_stats' and column_name='magi'
   ) then
-    alter table public.pet_stats rename column magic to base_magic;
+    alter table public.pet_stats rename column magi to base_magi;
   end if;
 
   if exists (
@@ -589,7 +584,7 @@ alter table public.pet_stats
   add constraint pet_stats_birth_caps check (
     base_hp between 0 and 10 and
     base_atk between 0 and 10 and
-    base_magic between 0 and 10 and
+    base_magi between 0 and 10 and
     base_def between 0 and 10 and
     base_spd between 0 and 10 and
     base_mana between 0 and 10
@@ -599,7 +594,7 @@ alter table public.pet_stats
   drop constraint if exists pet_stats_birth_sum;
 alter table public.pet_stats
   add constraint pet_stats_birth_sum check (
-    base_hp + base_atk + base_magic + base_def + base_spd + base_mana = base_total
+    base_hp + base_atk + base_magi + base_def + base_spd + base_mana = base_total
   );
 
 -- 6.3 Enforce “1 point per level” allocation rule
@@ -608,7 +603,7 @@ alter table public.pet_stat_allocations
 
 alter table public.pet_stat_allocations
   add constraint pet_alloc_one_point_per_level check (
-    (hp + atk + magic + def + spd + mana) = 1
+    (hp + atk + magi + def + spd + mana) = 1
   );
 
 -- 6.4 View: total stats = birth + allocations
@@ -617,7 +612,7 @@ select
   s.pet_id,
   (s.base_hp    + coalesce(sum(a.hp),    0)) as hp,
   (s.base_atk   + coalesce(sum(a.atk),   0)) as atk,
-  (s.base_magic + coalesce(sum(a.magic), 0)) as magic,
+  (s.base_magi + coalesce(sum(a.magi), 0)) as magi,
   (s.base_def   + coalesce(sum(a.def),   0)) as def,
   (s.base_spd   + coalesce(sum(a.spd),   0)) as spd,
   (s.base_mana  + coalesce(sum(a.mana),  0)) as mana,
@@ -628,7 +623,7 @@ left join public.pet_stat_allocations a
   on a.pet_id = s.pet_id
 group by
   s.pet_id,
-  s.base_hp, s.base_atk, s.base_magic, s.base_def, s.base_spd, s.base_mana,
+  s.base_hp, s.base_atk, s.base_magi, s.base_def, s.base_spd, s.base_mana,
   s.base_total;
 
 /* ============================================================================

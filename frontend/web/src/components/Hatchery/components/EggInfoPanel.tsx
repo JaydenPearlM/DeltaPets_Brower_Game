@@ -4,7 +4,7 @@ import {
   formatDuration,
   useServerCountdown,
 } from "../../../Pets_Design/auth/Timers";
-import type { HatcheryEggVM } from "../../../../../types";
+import type { HatcheryEggVM } from "../../../Pets_Design/auth/pets/Stats/elements";
 
 export function EggInfoPanel(props: {
   slot: HatcheryEggVM | null;
@@ -36,7 +36,7 @@ export function EggInfoPanel(props: {
   const total = {
     hp: base.hp + iv.hp,
     atk: base.atk + iv.atk,
-    magic: base.magic + iv.magic,
+    magi: base.magi + iv.magi,
     def: base.def + iv.def,
     spd: base.spd + iv.spd,
     mana: base.mana + iv.mana,
@@ -83,8 +83,8 @@ export function EggInfoPanel(props: {
         <span className="eggInfo__value">{total.atk}</span>
       </div>
       <div className="eggInfo__row">
-        <span>MAGIC</span>
-        <span className="eggInfo__value">{total.magic}</span>
+        <span>MAGI</span>
+        <span className="eggInfo__value">{total.magi}</span>
       </div>
       <div className="eggInfo__row">
         <span>DEF</span>
@@ -107,14 +107,14 @@ export function EggInfoPanel(props: {
       <div className="eggInfo__row">
         <span>Base</span>
         <span className="eggInfo__value">
-          HP {base.hp} • ATK {base.atk} • MAG {base.magic} • DEF {base.def} •
-          SPD {base.spd} • MANA {base.mana}
+          HP {base.hp} • ATK {base.atk} • MAG {base.magi} • DEF {base.def} • SPD{" "}
+          {base.spd} • MANA {base.mana}
         </span>
       </div>
       <div className="eggInfo__row">
         <span>IV</span>
         <span className="eggInfo__value">
-          HP {iv.hp} • ATK {iv.atk} • MAG {iv.magic} • DEF {iv.def} • SPD{" "}
+          HP {iv.hp} • ATK {iv.atk} • MAG {iv.magi} • DEF {iv.def} • SPD{" "}
           {iv.spd} • MANA {iv.mana}
         </span>
       </div>

@@ -6,6 +6,7 @@ import { authRouter } from "./auth";
 import { petsRouter } from "./pets";
 import { dailyCareRouter } from "./dailyCare";
 import { petActionsRouter } from "./petActions";
+import {} from "./pets";
 
 export const apiRouter = Router();
 

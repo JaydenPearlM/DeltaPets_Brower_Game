@@ -1,4 +1,4 @@
-// frontend/web/src/components/Hatchery/types.ts
+// frontend/web/src/components/Hatchery/element.ts
 // Single source of truth for Hatchery + shared pet/egg row shapes.
 // Safe replacement for your old root /src/types.ts
 
@@ -15,9 +15,16 @@ export type ElementalLine =
 // ✅ This was in your old types.ts — keep it so old imports don’t explode
 export type ElementalLineDisplay = ElementalLine | "null";
 
-// ✅ IMPORTANT: if your backend/DB returns "baby", using "sprout" will cause TS/runtime mismatches.
-// Keep "baby" as canonical. If you want to *display* "sprout", map it in UI.
-export type PetStage = "egg" | "baby" | "toddler" | "teen" | "adult";
+// ✅ IMPORTANT: if your backend/DB returns "baby", using "baby" will cause TS/runtime mismatches.
+// Keep "baby" as canonical. If you want to *display* "baby", map it in UI.
+export type PetStage =
+  | "egg"
+  | "baby"
+  | "toddler"
+  | "child"
+  | "teen"
+  | "adult"
+  | "mystic legendary";
 
 export type PetGender = "male" | "female" | "null";
 
@@ -84,7 +91,7 @@ export type PetStatsRow = {
   pet_id: string;
   base_hp: number;
   base_atk: number;
-  base_magic: number;
+  base_magi: number;
   base_def: number;
   base_spd: number;
   base_mana: number;
@@ -101,7 +108,7 @@ export type PetStatAllocRow = {
   level: number; // level 0 = IVs (Alpha convention)
   hp: number;
   atk: number;
-  magic: number;
+  magi: number;
   def: number;
   spd: number;
   mana: number;
@@ -112,7 +119,7 @@ export type PetStatAllocRow = {
  * This is what your UI components should use.
  *
  * ✅ Updated to match your old /src/types.ts:
- * base + iv include hp/atk/magic/def/spd/mana so nothing breaks later.
+ * base + iv include hp/atk/magi/def/spd/mana so nothing breaks later.
  */
 export type HatcheryEggVM = {
   slotIndex: number;
@@ -132,7 +139,7 @@ export type HatcheryEggVM = {
   base: {
     hp: number;
     atk: number;
-    magic: number;
+    magi: number;
     def: number;
     spd: number;
     mana: number;
@@ -141,7 +148,7 @@ export type HatcheryEggVM = {
   iv: {
     hp: number;
     atk: number;
-    magic: number;
+    magi: number;
     def: number;
     spd: number;
     mana: number;

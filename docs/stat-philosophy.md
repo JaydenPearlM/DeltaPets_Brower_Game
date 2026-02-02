@@ -17,9 +17,8 @@ These are saved in the database and treated as the source of truth.
 - Base stat roll (the pet's genetics / hatch roll):
   - base_hp
   - base_atk
-  - base_magic
+  - base_magi
   - base_def
-  - base_resist
   - base_speed
 - Personality (one trait)
 - Species / line / appearance seed (if used)
@@ -31,10 +30,9 @@ These are saved in the database and treated as the source of truth.
 - Stat allocation points spent by player:
   - alloc_hp
   - alloc_atk
-  - alloc_magic
+  - alloc_magi
   - alloc_def
-  - alloc_resist
-  - alloc_speed
+    \- alloc_speed
 - Element training progression:
   - element_xp per element
   - element_level per element (optional)
@@ -58,7 +56,7 @@ These are computed from raw values + rules. The frontend should NEVER invent bas
 
 - max_hp = base_hp + alloc_hp + gear_hp + buffs_hp
 - atk = base_atk + alloc_atk + gear_atk + buffs_atk
-- magic = base_magic + alloc_magic + gear_magic + buffs_magic
+- magi = base_magi + alloc_magi + gear_magi + buffs_magi
 - def = base_def + alloc_def + gear_def + buffs_def
 - resist = base_resist + alloc_resist + gear_resist + buffs_resist
 - speed = base_speed + alloc_speed + gear_speed + buffs_speed
@@ -78,7 +76,7 @@ These are computed from raw values + rules. The frontend should NEVER invent bas
 
 ## 3) What is immutable after hatch?
 
-Once the egg hatches into a sprout, these cannot change (Alpha rule):
+Once the egg hatches into a baby, these cannot change (Alpha rule):
 
 - base stat roll (the “genetics” numbers)
 - personality trait
