@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase/client";
 
 /**
- * Centralized entry logic (single source of truth for your current Alpha flow):
- * - not logged in -> /
- * - intro cutscene NOT seen -> /create
- * - intro seen + has an egg -> /hatchery
- * - intro seen + no egg -> /pet
+ * Centralized entry logic (single source of truth for Alpha):
+ *
+ * - not logged in            -> /
+ * - intro cutscene NOT seen  -> /create
+ * - intro seen + has egg     -> /hatchery
+ * - intro seen + no egg      -> /pet
+ *
+ * Backend is authoritative to avoid RLS issues.
  */
 export function useEnterGame() {
   const navigate = useNavigate();
@@ -16,35 +19,49 @@ export function useEnterGame() {
   async function getAccessToken() {
     const { data, error } = await supabase.auth.getSession();
     if (error) throw error;
+
     const token = data.session?.access_token;
     if (!token) throw new Error("Missing access token");
+
     return token;
   }
 
   const enterGame = useCallback(async () => {
     setLoading(true);
+
     try {
-      const { data, error: getUserErr } = await supabase.auth.getUser();
-      if (getUserErr) throw getUserErr;
+      // 1️⃣ Check auth
+      const { data, error: userErr } = await supabase.auth.getUser();
+      if (userErr) throw userErr;
+
       if (!data.user) {
         navigate("/", { replace: true });
         return;
       }
 
-      // Use backend for authoritative state (avoids RLS weirdness)
+      // 2️⃣ Ask backend for authoritative state
       const token = await getAccessToken();
 
-      const introRes = await fetch("/api/me/intro", {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch("/api/me/intro", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      const introData = (await introRes.json().catch(() => ({}))) as any;
-      if (!introRes.ok)
-        throw new Error(introData?.error ?? "Intro check failed");
+      const payload = (await res.json().catch(() => ({}))) as {
+        intro_seen?: boolean;
+        has_hatchery_egg?: boolean;
+        error?: string;
+      };
 
-      const introSeen = !!introData.intro_seen;
-      const hasEgg = !!introData.has_hatchery_egg;
+      if (!res.ok) {
+        throw new Error(payload?.error ?? "Intro state check failed");
+      }
 
+      const introSeen = !!payload.intro_seen;
+      const hasEgg = !!payload.has_hatchery_egg;
+
+      // 3️⃣ Route
       if (!introSeen) {
         navigate("/create", { replace: true });
         return;

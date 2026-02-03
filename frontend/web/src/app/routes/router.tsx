@@ -7,6 +7,7 @@ import AuthCallback from "./AuthCallback";
 import HatcheryPage from "../../components/Hatchery/pages/HatcheryPage";
 import PetHomePage from "../../pages/PetHomePage";
 import Gym from "../../pages/gym";
+import InventoryPage from "../../pages/inventory";
 
 function NotFound() {
   return <div style={{ padding: 16 }}>404 — Page not found</div>;
@@ -30,9 +31,10 @@ export const router = createBrowserRouter([
 
       //Hatchery
       { path: "hatchery", element: <HatcheryPage /> },
-      { path: "Secret Haven", element: <PetHomePage /> },
+      { path: "secretHaven", element: <PetHomePage /> },
 
       { path: "gym", element: <Gym /> },
+      { path: "inventory", element: <InventoryPage /> },
     ],
   },
   { path: "*", element: <NotFound /> },

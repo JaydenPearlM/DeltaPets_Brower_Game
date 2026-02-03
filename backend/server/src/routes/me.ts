@@ -1,12 +1,84 @@
+// backend/src/routes/me.ts
 import { Router } from "express";
-import { requireUser, type AuthedRequest } from "../middleware/auth";
 import type { Response } from "express";
+import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 
 export const meRouter = Router();
 
-meRouter.get("/me", requireUser, (req: AuthedRequest, res: Response) => {
-  res.json({ user: req.user });
+/**
+ * GET /api/me
+ * Returns authed user + profile row + most recent pet (if any).
+ */
+meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+
+    const [{ data: profile, error: pErr }, { data: pet, error: petErr }] =
+      await Promise.all([
+        supabaseAdmin
+          .from("profiles")
+          .select(
+            [
+              "user_id",
+              "username",
+              "display_name",
+              "is_admin",
+              "intro_seen",
+              "created_at",
+              "updated_at",
+            ].join(", "),
+          )
+          .eq("user_id", userId)
+          .maybeSingle(),
+
+        supabaseAdmin
+          .from("pets")
+          .select(
+            [
+              "id",
+              "user_id",
+              "name",
+              "line",
+              "stage",
+              "level",
+              "xp",
+              "hatched_at",
+              "hatch_ends_at",
+              "hunger",
+              "cleanliness",
+              "happiness",
+              "energy",
+              "atk",
+              "def",
+              "spd",
+              "hp_max",
+              "hp_cur",
+              "age",
+              "personality",
+              "created_at",
+            ].join(", "),
+          )
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+    // If your profiles table doesn't have intro_seen yet, don't blow up /me.
+    if (pErr && !String(pErr.message).includes("intro_seen")) {
+      return res.status(500).json({ error: pErr.message });
+    }
+    if (petErr) return res.status(500).json({ error: petErr.message });
+
+    return res.json({
+      user: req.user,
+      profile: profile ?? null,
+      pet: pet ?? null,
+    });
+  } catch (e: any) {
+    return res.status(500).json({ error: e?.message ?? "Server error" });
+  }
 });
 
 /**
@@ -28,6 +100,8 @@ meRouter.get(
             .select("intro_seen")
             .eq("user_id", userId)
             .maybeSingle(),
+
+          // "hatchery egg" = any pet row with stage = "egg"
           supabaseAdmin
             .from("pets")
             .select("id")

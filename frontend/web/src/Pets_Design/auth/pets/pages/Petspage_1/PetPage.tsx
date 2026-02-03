@@ -4,7 +4,8 @@ import { LogoutButton } from "../../../../../components/Authentication/LogoutBut
 import { useAuth } from "../../../../../app/providers/useAuth";
 import { useGame } from "../../../../../app/providers/GameProvider";
 import { supabase } from "../../../../../lib/supabase/client";
-import { DailyCareCard } from "../../../../../DailyQuest/components/DailyCareCard";
+import { DailyCareCard } from "../../../../../dailyQuest/components/DailyCareCard";
+import { useUI } from "../../../../../app/providers/UIProvider";
 
 // ✅ exists: src/Pets_Design/auth/pets/Designs/stats.css
 import "../../Designs/stats.css";
@@ -26,6 +27,7 @@ export default function PetPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [activePet, setActivePet] = useState<any | null>(null);
+  const { openInventory } = useUI();
 
   const [statsOpen, setStatsOpen] = useState(false);
 
@@ -215,6 +217,23 @@ export default function PetPage() {
       {/* =========================================================
          TEMP DEV BUTTONS — DELETE THIS WHOLE BLOCK WHEN DONE ✅
          ========================================================= */}
+
+      <button
+        type="button"
+        onClick={openInventory}
+        style={{
+          padding: "10px 14px",
+          borderRadius: 12,
+          border: "1px solid rgba(255,255,255,0.18)",
+          background: "rgba(255,255,255,0.06)",
+          color: "rgba(255,255,255,0.92)",
+          cursor: "pointer",
+          fontWeight: 800,
+        }}
+      >
+        Inventory (temp)
+      </button>
+
       <button
         onClick={() => navigate("/inventory")}
         style={{

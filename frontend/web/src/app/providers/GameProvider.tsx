@@ -7,19 +7,15 @@ import React, {
   useState,
 } from "react";
 import type { User } from "@supabase/supabase-js";
-import { supabase } from "../../lib/supabase/client";
 import { useAuth } from "./useAuth";
+import { api } from "../../lib/api";
 
-/**
- * Minimal types that match your migration schema:
- * - profiles: primary key user_id
- * - pets: has user_id, hatch_ends_at, etc.
- */
 export type ProfileRow = {
   user_id: string;
   username: string | null;
   display_name: string | null;
   is_admin: boolean;
+  intro_seen?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -29,8 +25,8 @@ export type PetRow = {
   user_id: string;
 
   name: string | null;
-  line: string; // public.elemental_line
-  stage: string; // public.pet_stage
+  line: string;
+  stage: string;
 
   level: number;
   xp: number;
@@ -44,85 +40,34 @@ export type PetRow = {
   energy: number;
 
   atk: number;
+  magi?: number;
   def: number;
   spd: number;
   hp_max: number;
   hp_cur: number;
 
-  age: string; // public.age_stage
-  personality: string; // public.personality_trait
+  age: string;
+  personality: string;
 
   created_at: string;
 };
 
 export type GameContextValue = {
   user: User | null;
-
   profile: ProfileRow | null;
   pet: PetRow | null;
-
   loading: boolean;
   error: string | null;
-
   refresh: () => Promise<void>;
 };
 
 const GameContext = createContext<GameContextValue | null>(null);
-
-async function fetchProfile(userId: string): Promise<ProfileRow | null> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("user_id, username, display_name, is_admin, created_at, updated_at")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ?? null;
-}
-
-async function fetchPet(userId: string): Promise<PetRow | null> {
-  const { data, error } = await supabase
-    .from("pets")
-    .select(
-      [
-        "id",
-        "user_id",
-        "name",
-        "line",
-        "stage",
-        "level",
-        "xp",
-        "hatched_at",
-        "hatch_ends_at",
-        "hunger",
-        "cleanliness",
-        "happiness",
-        "energy",
-        "atk",
-        "def",
-        "spd",
-        "hp_max",
-        "hp_cur",
-        "age",
-        "personality",
-        "created_at",
-      ].join(", "),
-    )
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ?? null;
-}
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
 
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [pet, setPet] = useState<PetRow | null>(null);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -139,24 +84,23 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      const [p, pt] = await Promise.all([
-        fetchProfile(user.id),
-        fetchPet(user.id),
-      ]);
-      setProfile(p);
-      setPet(pt);
+      const data = await api<{
+        user: User;
+        profile: ProfileRow | null;
+        pet: PetRow | null;
+      }>("/me");
+
+      setProfile(data.profile ?? null);
+      setPet(data.pet ?? null);
       setLoading(false);
     } catch (e: any) {
       setError(e?.message ?? "Failed to load game data");
       setLoading(false);
     }
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
-    // Wait for auth to finish deciding who the user is
     if (authLoading) return;
-
-    // When user changes (login/logout), re-load game data
     refresh();
   }, [authLoading, user?.id, refresh]);
 

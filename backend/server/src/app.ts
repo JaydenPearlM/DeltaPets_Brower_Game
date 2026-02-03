@@ -1,5 +1,5 @@
 import express from "express";
-import { apiRouter } from "./routes";
+import { apiRouter } from "./routes/api";
 import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
 
 export function createApp() {
