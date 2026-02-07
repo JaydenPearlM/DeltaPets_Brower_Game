@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
-import { AppProviders } from "./app/providers/AppProviders";
 import { router } from "./app/routes/router";
+import { AppProviders } from "./app/providers/AppProviders";
 import "./global.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

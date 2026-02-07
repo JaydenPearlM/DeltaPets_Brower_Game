@@ -1,10 +1,27 @@
+// backend/server/src/env.server.ts
+
 import path from "node:path";
+import fs from "node:fs";
 import dotenv from "dotenv";
 
-// Load backend/server/.env
-dotenv.config({
-  path: path.resolve(__dirname, "../.env"),
-});
+// Prefer .env in the current working directory (workspace-safe),
+// fallback to backend/server/.env relative to this file.
+const envByCwd = path.resolve(process.cwd(), ".env");
+const envByServerRoot = path.resolve(__dirname, "../.env"); // backend/server/.env
+
+const envPath = fs.existsSync(envByCwd) ? envByCwd : envByServerRoot;
+
+dotenv.config({ path: envPath });
+
+// Helpful dev log (safe: prints path, not secrets)
+if (process.env.NODE_ENV !== "production") {
+  console.log("[env] loaded from:", envPath);
+  console.log("[env] SUPABASE_URL present =", !!process.env.SUPABASE_URL);
+  console.log(
+    "[env] SUPABASE_SECRET_KEY present =",
+    !!process.env.SUPABASE_SECRET_KEY,
+  );
+}
 
 function required(name: string): string {
   const v = process.env[name];

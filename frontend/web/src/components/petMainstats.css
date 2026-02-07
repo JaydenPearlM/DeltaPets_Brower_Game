@@ -1,0 +1,117 @@
+.pet-mainstats {
+  width: 100%;
+  max-width: 820px;
+  margin: 18px auto 0;
+  padding: 16px 16px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 18, 26, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.pet-mainstats__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.pet-mainstats__name {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.1;
+  letter-spacing: 0.2px;
+}
+
+.pet-mainstats__sub {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pet-mainstats__dot {
+  opacity: 0.7;
+}
+
+.pet-mainstats__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pet-mainstats__card {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.22);
+  padding: 12px;
+}
+
+.pet-mainstats__cardTitle {
+  margin: 0 0 10px;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  opacity: 0.9;
+}
+
+.pet-mainstats__rows {
+  display: grid;
+  gap: 8px;
+}
+
+.pet-mainstats__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.pet-mainstats__elements {
+  display: grid;
+  gap: 6px;
+}
+
+.pet-mainstats__elementRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.pet-mainstats__elementName {
+  opacity: 0.9;
+}
+
+.pet-mainstats__elementVal {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.95;
+}
+
+.pet-mainstats__hint {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.pet-mainstats__empty {
+  opacity: 0.8;
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 860px) {
+  .pet-mainstats__grid {
+    grid-template-columns: 1fr;
+  }
+}

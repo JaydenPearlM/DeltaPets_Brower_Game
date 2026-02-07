@@ -1,4 +1,6 @@
 //Testing
+console.log("VITE_API_URL =", import.meta.env.VITE_API_URL);
+
 console.log("VITE_SUPABASE_URL =", import.meta.env.VITE_SUPABASE_URL);
 console.log(
   "VITE_SUPABASE_ANON_KEY present =",

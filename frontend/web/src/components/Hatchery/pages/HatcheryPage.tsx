@@ -77,30 +77,34 @@ async function getAccessToken(): Promise<string> {
   return token;
 }
 
-// ✅ Hatchery uses /api/pets/hatchery (NOT /active)
-async function fetchHatchery(): Promise<HatcheryResponse> {
-  const token = await getAccessToken();
-
-  const res = await fetch("/api/pets/hatchery", {
-    headers: { Authorization: `Bearer ${token}` },
+async function fetchJsonAuthed<T>(
+  url: string,
+  token: string,
+  init?: RequestInit,
+): Promise<T> {
+  const res = await fetch(url, {
+    ...init,
+    headers: {
+      ...(init?.headers ?? {}),
+      Authorization: `Bearer ${token}`,
+    },
+    credentials: "include",
   });
 
   const data = (await res.json().catch(() => ({}))) as any;
-  if (!res.ok)
-    throw new Error(data?.error ?? `Hatchery failed (${res.status})`);
-  return data as HatcheryResponse;
+  if (!res.ok) throw new Error(data?.error ?? `Request failed (${res.status})`);
+  return data as T;
+}
+
+// ✅ Hatchery uses /api/pets/hatchery (NOT /active)
+async function fetchHatchery(): Promise<HatcheryResponse> {
+  const token = await getAccessToken();
+  return fetchJsonAuthed<HatcheryResponse>("/api/pets/hatchery", token);
 }
 
 async function hatchEgg(): Promise<void> {
   const token = await getAccessToken();
-
-  const res = await fetch("/api/pets/hatch", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  const data = (await res.json().catch(() => ({}))) as any;
-  if (!res.ok) throw new Error(data?.error ?? `Hatch failed (${res.status})`);
+  await fetchJsonAuthed("/api/pets/hatch", token, { method: "POST" });
 }
 
 function EggSlotButton(props: {
@@ -293,19 +297,21 @@ export default function HatcheryPage() {
   const [data, setData] = useState<HatcheryResponse | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
+  // Server-time drift handling (your approach is good)
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
   const localNowMs = useNow(1000);
 
   const serverNowIso = useMemo(() => {
-    if (serverNowBaseMs == null || fetchedAtLocalMs == null)
+    if (serverNowBaseMs == null || fetchedAtLocalMs == null) {
       return new Date().toISOString();
+    }
     const driftedMs = serverNowBaseMs + (localNowMs - fetchedAtLocalMs);
     return new Date(driftedMs).toISOString();
   }, [serverNowBaseMs, fetchedAtLocalMs, localNowMs]);
 
   useEffect(() => {
-    if (!authLoading && !user) navigate("/");
+    if (!authLoading && !user) navigate("/", { replace: true });
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
@@ -318,11 +324,16 @@ export default function HatcheryPage() {
       try {
         const next = await fetchHatchery();
         if (!alive) return;
+
         setData(next);
 
         const serverMs = Date.parse(next.server_now);
         if (Number.isFinite(serverMs)) {
           setServerNowBaseMs(serverMs);
+          setFetchedAtLocalMs(Date.now());
+        } else {
+          // If backend didn't send a usable server time, just fall back to local
+          setServerNowBaseMs(Date.now());
           setFetchedAtLocalMs(Date.now());
         }
       } catch (e: any) {
@@ -398,10 +409,16 @@ export default function HatcheryPage() {
 
     try {
       await hatchEgg();
-      const next = await fetchHatchery();
-      setData(next);
 
-      navigate("/inventory", { replace: true });
+      // Optional but nice: refresh hatchery state once after hatching
+      try {
+        const next = await fetchHatchery();
+        setData(next);
+      } catch {
+        // ignore, since we're navigating anyway
+      }
+
+      navigate("/pet", { replace: true });
     } catch (e: any) {
       alert(e?.message ?? String(e));
     }

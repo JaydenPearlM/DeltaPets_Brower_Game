@@ -5,8 +5,6 @@ import type { Response } from "express";
 import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 import { cooldownsFromPetRow } from "../lib/cooldowns";
-
-// Optional runaway hook (keep if you have it)
 import { markRunawayIfNeeded } from "../lib/runaway";
 
 export const petsRouter = Router();
@@ -23,19 +21,16 @@ type ElementalLine =
   | "shadow";
 
 type EnsureEggBody = {
-  line?: string; // ignored for starters, but kept for backward compatibility
+  line?: string; // ignored for now, kept for compatibility
 };
 
 const BASIC_EGG_HATCH_MINUTES = 2;
 const HATCH_ALLOCATION_POINTS = 7;
 
-// -----------------------------
-// Character-based starter stats
-// -----------------------------
 type BaseStatsTemplate = {
   hp: number;
   atk: number;
-  magi: number;
+  magi: number; // maps to DB column base_magi
   def: number;
   spd: number;
   mana: number;
@@ -48,46 +43,45 @@ type Starter = {
   baseStats: BaseStatsTemplate;
 };
 
-// ⚠️ Replace these baseStats with your real character templates.
-// These are placeholders to show structure.
+// Egg base stats must total 10
 const STARTER_SPROUTS: Starter[] = [
   {
     name: "Centure",
     line: "water",
     baseStats: {
-      hp: 3,
-      atk: 2,
-      magi: 4,
+      hp: 2,
+      atk: 1,
+      magi: 3,
       def: 2,
       spd: 2,
       mana: 0,
-      base_total: 13,
+      base_total: 10,
     },
   },
   {
     name: "Corona",
     line: "fire",
     baseStats: {
-      hp: 3,
-      atk: 5,
+      hp: 2,
+      atk: 3,
       magi: 1,
       def: 1,
-      spd: 2,
+      spd: 3,
       mana: 0,
-      base_total: 12,
+      base_total: 10,
     },
   },
   {
     name: "Medidi",
     line: "earth",
     baseStats: {
-      hp: 5,
-      atk: 4,
+      hp: 3,
+      atk: 2,
       magi: 0,
-      def: 5,
-      spd: 1,
+      def: 3,
+      spd: 2,
       mana: 0,
-      base_total: 15,
+      base_total: 10,
     },
   },
   {
@@ -95,51 +89,51 @@ const STARTER_SPROUTS: Starter[] = [
     line: "air",
     baseStats: {
       hp: 1,
-      atk: 4,
-      magi: 5,
+      atk: 2,
+      magi: 3,
       def: 1,
-      spd: 4,
+      spd: 3,
       mana: 0,
-      base_total: 15,
+      base_total: 10,
     },
   },
   {
     name: "Crybit",
     line: "ice",
     baseStats: {
-      hp: 3,
-      atk: 2,
-      magi: 3,
+      hp: 2,
+      atk: 1,
+      magi: 2,
       def: 3,
-      spd: 1,
+      spd: 2,
       mana: 0,
-      base_total: 12,
+      base_total: 10,
     },
   },
   {
     name: "Ether",
     line: "storm",
     baseStats: {
-      hp: 2,
-      atk: 2,
-      magi: 5,
+      hp: 1,
+      atk: 1,
+      magi: 4,
       def: 1,
-      spd: 4,
+      spd: 3,
       mana: 0,
-      base_total: 14,
+      base_total: 10,
     },
   },
   {
     name: "Terra",
     line: "light",
     baseStats: {
-      hp: 4,
-      atk: 3,
-      magi: 3,
-      def: 4,
+      hp: 2,
+      atk: 2,
+      magi: 2,
+      def: 2,
       spd: 2,
       mana: 0,
-      base_total: 16,
+      base_total: 10,
     },
   },
   {
@@ -147,12 +141,12 @@ const STARTER_SPROUTS: Starter[] = [
     line: "shadow",
     baseStats: {
       hp: 2,
-      atk: 4,
-      magi: 3,
+      atk: 3,
+      magi: 2,
       def: 1,
-      spd: 5,
+      spd: 2,
       mana: 0,
-      base_total: 15,
+      base_total: 10,
     },
   },
 ];
@@ -180,12 +174,7 @@ function hatchPayload(pet: any, serverNowMs: number) {
   };
 }
 
-/**
- * You do NOT have a pet_elements table.
- * For pre-alpha we return a simple element map derived from the pet.line.
- * (Your DB has pet_element_affinities, but it needs an element lookup to map line -> element_id.)
- */
-function elementMapForLine(line: ElementalLine) {
+function elementMapForLine(_line: ElementalLine) {
   const base: Record<ElementalLine, number> = {
     null_element: 0,
     water: 0,
@@ -197,20 +186,13 @@ function elementMapForLine(line: ElementalLine) {
     light: 0,
     shadow: 0,
   };
-
-  if (line in base) base[line] = 10;
   return base;
 }
 
-/**
- * Your pet_stats table uses base_* columns:
- * base_hp, base_atk, base_magi (or sometimes your typo base_magiuc), base_def, base_spd, base_mana, base_total
- *
- * This helper:
- * - fetches the row
- * - maps it into the shape your frontend already expects: { hp, atk, magi, def, spd, mana, base_total }
- * - supports BOTH base_magi and base_magiuc to avoid breaking your current DB if it has the typo
- */
+// -----------------------------
+// Stats helpers (MATCH YOUR DB)
+// pet_stats columns: base_hp, base_atk, , base_def, base_spd, base_mana, base_total
+// -----------------------------
 async function fetchBaseStatsMapped(petId: string) {
   const { data, error } = await supabaseAdmin
     .from("pet_stats")
@@ -221,14 +203,18 @@ async function fetchBaseStatsMapped(petId: string) {
   if (error) throw error;
   if (!data) return null;
 
-  // Support typo: base_magiuc
-  const baseMagi = (data as any).base_magi ?? (data as any).base_magiuc ?? 0;
+  const baseMagi =
+    (data as any).base_magi ??
+    // keep compatibility with older typos just in case
+    (data as any).base_magi ??
+    (data as any).base_magi ??
+    0;
 
   return {
     pet_id: (data as any).pet_id,
     hp: (data as any).base_hp ?? 0,
     atk: (data as any).base_atk ?? 0,
-    magi: (data as any).base_Magi ?? 0,
+    magi: baseMagi,
     def: (data as any).base_def ?? 0,
     spd: (data as any).base_spd ?? 0,
     mana: (data as any).base_mana ?? 0,
@@ -236,72 +222,74 @@ async function fetchBaseStatsMapped(petId: string) {
   };
 }
 
-/**
- * Insert pet_stats using your base_* schema.
- * Supports BOTH base_magi and base_magiuc columns (in case your DB has the typo).
- */
 async function insertBaseStats(petId: string, s: BaseStatsTemplate) {
-  // Try correct column name first: base_magi
-  {
-    const { error } = await supabaseAdmin.from("pet_stats").insert({
-      pet_id: petId,
-      base_hp: s.hp,
-      base_atk: s.atk,
-      base_magi: s.magi,
-      base_def: s.def,
-      base_spd: s.spd,
-      base_mana: s.mana,
-      base_total: s.base_total,
-    } as any);
+  const { error } = await supabaseAdmin.from("pet_stats").insert({
+    pet_id: petId,
+    base_hp: s.hp,
+    base_atk: s.atk,
+    base_magi: s.magi, // ✅ correct DB column
+    base_def: s.def,
+    base_spd: s.spd,
+    base_mana: s.mana,
+    base_total: s.base_total,
+  } as any);
 
-    if (!error) return;
-
-    // If the DB doesn't have base_magi, we fall through and try base_magiuc
-    const msg = error.message?.toLowerCase?.() ?? "";
-    if (!msg.includes("base_magi") && !msg.includes("column")) {
-      // Some other error -> throw
-      throw error;
-    }
-  }
-
-  // Fallback: typo column base_magiuc
-  {
-    const { error } = await supabaseAdmin.from("pet_stats").insert({
-      pet_id: petId,
-      base_hp: s.hp,
-      base_atk: s.atk,
-      base_magiuc: s.magi,
-      base_def: s.def,
-      base_spd: s.spd,
-      base_mana: s.mana,
-      base_total: s.base_total,
-    } as any);
-
-    if (error) throw error;
-  }
+  if (error) throw error;
 }
 
-/**
- * Compatibility helpers:
- * - If you have pets.location, use it.
- * - Else fallback to pets.is_active.
- */
-async function fetchActivePet(userId: string) {
-  // Try "location = active"
-  {
-    const { data, error } = await supabaseAdmin
-      .from("pets")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("location", "active")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+async function updateBaseStats(petId: string, s: BaseStatsTemplate) {
+  const { error } = await supabaseAdmin
+    .from("pet_stats")
+    .update({
+      base_hp: s.hp,
+      base_atk: s.atk,
+      base_magi: s.magi, // ✅ correct DB column
+      base_def: s.def,
+      base_spd: s.spd,
+      base_mana: s.mana,
+      base_total: s.base_total,
+    } as any)
+    .eq("pet_id", petId);
 
-    if (!error) return { pet: data ?? null, used: "location" as const };
+  if (error) throw error;
+}
+
+function computeBaseTotal(
+  s: Pick<BaseStatsTemplate, "hp" | "atk" | "magi" | "def" | "spd" | "mana">,
+) {
+  return (
+    (s.hp ?? 0) +
+    (s.atk ?? 0) +
+    (s.magi ?? 0) +
+    (s.def ?? 0) +
+    (s.spd ?? 0) +
+    (s.mana ?? 0)
+  );
+}
+
+function allocateRandomHatchPoints(
+  base: BaseStatsTemplate,
+  points: number,
+): BaseStatsTemplate {
+  const out: BaseStatsTemplate = { ...base };
+  const keys: Array<
+    keyof Pick<BaseStatsTemplate, "hp" | "atk" | "magi" | "def" | "spd">
+  > = ["hp", "atk", "magi", "def", "spd"];
+
+  for (let i = 0; i < points; i++) {
+    const k = keys[Math.floor(Math.random() * keys.length)];
+    (out as any)[k] = ((out as any)[k] ?? 0) + 1;
   }
 
-  // Fallback: "is_active = true"
+  out.base_total = computeBaseTotal(out);
+  return out;
+}
+
+// -----------------------------
+// Active pet + hatchery egg (MATCH YOUR DB)
+// -----------------------------
+async function fetchActivePet(userId: string) {
+  // Primary: is_active = true (because your pets table has it)
   {
     const { data, error } = await supabaseAdmin
       .from("pets")
@@ -313,46 +301,45 @@ async function fetchActivePet(userId: string) {
       .maybeSingle();
 
     if (error) throw error;
-    return { pet: data ?? null, used: "is_active" as const };
+    if (data) return { pet: data, used: "is_active" as const };
   }
-}
 
-async function fetchHatcheryEgg(userId: string) {
-  // Try "location = hatchery"
+  // Fallback: newest non-egg pet (prevents pet:null softlock)
   {
     const { data, error } = await supabaseAdmin
       .from("pets")
       .select("*")
       .eq("user_id", userId)
-      .eq("stage", "egg")
-      .eq("location", "hatchery")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    if (!error) return { pet: data ?? null, used: "location" as const };
-  }
-
-  // Fallback: stage egg + has hatch timer set
-  {
-    const { data, error } = await supabaseAdmin
-      .from("pets")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("stage", "egg")
-      .not("hatch_ends_at", "is", null)
-      .order("created_at", { ascending: true })
+      .neq("stage", "egg")
+      .order("hatched_at", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (error) throw error;
-    return { pet: data ?? null, used: "hatch_ends_at" as const };
+    return { pet: data ?? null, used: "newest_non_egg" as const };
   }
 }
 
-/**
- * GET /api/pets/active
- */
+async function fetchHatcheryEgg(userId: string) {
+  // Your DB has hatch_ends_at, so use that.
+  const { data, error } = await supabaseAdmin
+    .from("pets")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("stage", "egg")
+    .not("hatch_ends_at", "is", null)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return { pet: data ?? null, used: "hatch_ends_at" as const };
+}
+
+// -----------------------------
+// Routes
+// -----------------------------
 petsRouter.get(
   "/active",
   requireUser,
@@ -395,30 +382,27 @@ petsRouter.get(
   },
 );
 
-/**
- * GET /api/pets/list
- */
 petsRouter.get(
   "/list",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
-    const userId = req.user!.id;
+    try {
+      const userId = req.user!.id;
 
-    const { data, error } = await supabaseAdmin
-      .from("pets")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: true });
+      const { data, error } = await supabaseAdmin
+        .from("pets")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
 
-    if (error) return res.status(500).json({ error: error.message });
-
-    return res.json({ pets: data ?? [] });
+      if (error) return res.status(500).json({ error: error.message });
+      return res.json({ pets: data ?? [] });
+    } catch (e: any) {
+      return res.status(500).json({ error: e?.message ?? "Server error" });
+    }
   },
 );
 
-/**
- * GET /api/pets/hatchery
- */
 petsRouter.get(
   "/hatchery",
   requireUser,
@@ -457,11 +441,6 @@ petsRouter.get(
   },
 );
 
-/**
- * POST /api/pets/ensure-egg
- * Creates a starter egg if none exists in hatchery.
- * Base stats are CHARACTER-based (starter identity), not elemental.
- */
 petsRouter.post(
   "/ensure-egg",
   requireUser,
@@ -469,7 +448,7 @@ petsRouter.post(
     try {
       const userId = req.user!.id;
       const serverNowMs = Date.now();
-      const _body = (req.body ?? {}) as EnsureEggBody; // kept for backwards compat
+      const _body = (req.body ?? {}) as EnsureEggBody;
 
       const { pet: existingEgg } = await fetchHatcheryEgg(userId);
 
@@ -483,55 +462,26 @@ petsRouter.post(
       }
 
       const starter = rollStarter();
-
       const hatchMs = BASIC_EGG_HATCH_MINUTES * 60 * 1000;
       const hatch_ends_at = new Date(serverNowMs + hatchMs).toISOString();
 
-      // Try insert with location=hatchery; if schema doesn't have it, fallback insert without location
-      let created: any | null = null;
+      const { data: created, error } = await supabaseAdmin
+        .from("pets")
+        .insert({
+          user_id: userId,
+          name: starter.name,
+          line: starter.line,
+          stage: "egg",
+          hatch_ends_at,
+          unspent_points: 0,
+          is_active: false, // eggs should not be active
+        } as any)
+        .select("*")
+        .single();
 
-      {
-        const { data, error } = await supabaseAdmin
-          .from("pets")
-          .insert({
-            user_id: userId,
-            name: starter.name,
-            line: starter.line,
-            stage: "egg",
-            location: "hatchery",
-            hatch_ends_at,
-            unspent_points: 0,
-          })
-          .select("*")
-          .single();
+      if (error) return res.status(500).json({ error: error.message });
 
-        if (!error) created = data;
-      }
-
-      if (!created) {
-        const { data, error } = await supabaseAdmin
-          .from("pets")
-          .insert({
-            user_id: userId,
-            name: starter.name,
-            line: starter.line,
-            stage: "egg",
-            hatch_ends_at,
-            unspent_points: 0,
-          })
-          .select("*")
-          .single();
-
-        if (error) return res.status(500).json({ error: error.message });
-        created = data;
-      }
-
-      // Insert CHARACTER-based base stats into pet_stats (base_* columns)
       await insertBaseStats(created.id, starter.baseStats);
-
-      // IMPORTANT:
-      // You don't have pet_elements table, so do NOT insert there.
-      // For now, the hatchery endpoint derives elements from pet.line (pre-alpha safe).
 
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
@@ -545,12 +495,6 @@ petsRouter.post(
   },
 );
 
-/**
- * POST /api/pets/hatch
- * Hatches oldest egg if ready.
- * Moves pet to ACTIVE if none exists, else STORAGE (if location exists).
- * If location doesn't exist, it just sets stage/unspent_points and leaves is_active untouched.
- */
 petsRouter.post(
   "/hatch",
   requireUser,
@@ -560,7 +504,6 @@ petsRouter.post(
       const serverNowMs = Date.now();
 
       const { pet: egg } = await fetchHatcheryEgg(userId);
-
       if (!egg) return res.status(404).json({ error: "No hatchery egg found" });
 
       const remaining = msUntil(egg.hatch_ends_at, serverNowMs);
@@ -572,62 +515,72 @@ petsRouter.post(
         });
       }
 
-      const { pet: activePet } = await fetchActivePet(userId);
+      // Deactivate any existing active pet (your DB supports is_active)
+      await supabaseAdmin
+        .from("pets")
+        .update({ is_active: false } as any)
+        .eq("user_id", userId)
+        .eq("is_active", true);
+
+      // Base stats + hatch points
+      const existingBase = await fetchBaseStatsMapped(egg.id);
+      const starterFallback = STARTER_SPROUTS.find(
+        (s) => s.name === (egg.name ?? ""),
+      )?.baseStats;
+
+      const baseForHatch: BaseStatsTemplate = {
+        hp: existingBase?.hp ?? starterFallback?.hp ?? 2,
+        atk: existingBase?.atk ?? starterFallback?.atk ?? 2,
+        magi: existingBase?.magi ?? starterFallback?.magi ?? 2,
+        def: existingBase?.def ?? starterFallback?.def ?? 2,
+        spd: existingBase?.spd ?? starterFallback?.spd ?? 2,
+        mana: existingBase?.mana ?? starterFallback?.mana ?? 0,
+        base_total:
+          existingBase?.base_total ??
+          starterFallback?.base_total ??
+          computeBaseTotal({
+            hp: existingBase?.hp ?? starterFallback?.hp ?? 2,
+            atk: existingBase?.atk ?? starterFallback?.atk ?? 2,
+            magi: existingBase?.magi ?? starterFallback?.magi ?? 2,
+            def: existingBase?.def ?? starterFallback?.def ?? 2,
+            spd: existingBase?.spd ?? starterFallback?.spd ?? 2,
+            mana: existingBase?.mana ?? starterFallback?.mana ?? 0,
+          }),
+      };
+
+      const hatchedStats = allocateRandomHatchPoints(
+        baseForHatch,
+        HATCH_ALLOCATION_POINTS,
+      );
+
+      if (existingBase) await updateBaseStats(egg.id, hatchedStats);
+      else await insertBaseStats(egg.id, hatchedStats);
 
       const nowIso = new Date(serverNowMs).toISOString();
 
-      // Try update with location support
-      {
-        const nextLocation = activePet ? "storage" : "active";
+      // Hatch the egg into the active pet (no "location" in your DB)
+      const { data: hatched, error } = await supabaseAdmin
+        .from("pets")
+        .update({
+          stage: "baby",
+          hatched_at: nowIso,
+          hatch_ends_at: null,
+          unspent_points: 0,
+          is_active: true,
+        } as any)
+        .eq("id", egg.id)
+        .eq("user_id", userId)
+        .select("*")
+        .single();
 
-        const { data, error } = await supabaseAdmin
-          .from("pets")
-          .update({
-            stage: "sprout",
-            location: nextLocation,
-            hatched_at: nowIso,
-            hatch_ends_at: null,
-            unspent_points: HATCH_ALLOCATION_POINTS,
-          })
-          .eq("id", egg.id)
-          .eq("user_id", userId)
-          .select("*")
-          .single();
+      if (error) return res.status(500).json({ error: error.message });
 
-        if (!error) {
-          return res.json({
-            server_now: nowIso,
-            pet: data,
-            awarded_points: HATCH_ALLOCATION_POINTS,
-            location: nextLocation,
-          });
-        }
-      }
-
-      // Fallback update (no location column)
-      {
-        const { data, error } = await supabaseAdmin
-          .from("pets")
-          .update({
-            stage: "sprout",
-            hatched_at: nowIso,
-            hatch_ends_at: null,
-            unspent_points: HATCH_ALLOCATION_POINTS,
-          })
-          .eq("id", egg.id)
-          .eq("user_id", userId)
-          .select("*")
-          .single();
-
-        if (error) return res.status(500).json({ error: error.message });
-
-        return res.json({
-          server_now: nowIso,
-          pet: data,
-          awarded_points: HATCH_ALLOCATION_POINTS,
-          location: activePet ? "storage" : "active",
-        });
-      }
+      return res.json({
+        server_now: nowIso,
+        pet: hatched,
+        awarded_points: HATCH_ALLOCATION_POINTS,
+        stats: hatchedStats,
+      });
     } catch (e: any) {
       return res.status(500).json({ error: e?.message ?? "Server error" });
     }

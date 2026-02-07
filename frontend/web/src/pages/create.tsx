@@ -1,10 +1,10 @@
 // frontend/web/src/pages/create.tsx
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase/client";
 import { useAuth } from "../app/providers/useAuth";
-import { MYSTERY_EGG } from "@/assets/eggs/eggType";
+import { MYSTERY_EGG } from "../assets/eggs/eggType";
 import "./create.css";
 
 type Phase =
@@ -103,6 +103,35 @@ async function deleteText(
   }
 }
 
+async function getAccessTokenOrThrow() {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
+
+  const token = data.session?.access_token;
+  if (!token) throw new Error("No access token");
+
+  return token;
+}
+
+async function postJson(
+  url: string,
+  token: string,
+  body?: unknown,
+): Promise<{ ok: boolean; status: number; data: any }> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: body === undefined ? JSON.stringify({}) : JSON.stringify(body),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data };
+}
+
 export default function CreatePage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -147,7 +176,7 @@ export default function CreatePage() {
 
       const GOODLUCK = `"Goodluck, ${playerName}"`;
 
-      // reset
+      // reset UI state
       setLine1("");
       setLine2("");
       setGoodluck("");
@@ -191,42 +220,30 @@ export default function CreatePage() {
         setEggVisible(true);
         console.log("CUTSCENE sprite:", MYSTERY_EGG.sprite);
 
+        // ✅ Backend actions (only when not replaying)
         if (!replay) {
           setBusy(true);
           try {
-            const apiBase =
-              (import.meta.env.VITE_API_URL as string | undefined) ??
-              "http://localhost:4000";
+            const token = await getAccessTokenOrThrow();
 
-            const { data: sessionData } = await supabase.auth.getSession();
-            const token = sessionData.session?.access_token;
-            if (!token) throw new Error("No access token");
+            // Ensure egg gets created/assigned in hatchery slot
+            const ensure = await postJson(
+              "/api/pets/ensure-egg",
+              token,
+              // keep your starterLine param (backend can ignore or use it)
+              { line: starterLine },
+            );
 
-            const res = await fetch("/api/pets/ensure-egg", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ line: starterLine }),
-            });
+            if (!ensure.ok) {
+              throw new Error(
+                ensure.data?.error ?? `ensure-egg HTTP ${ensure.status}`,
+              );
+            }
 
-            const data = await res.json().catch(() => ({}) as any);
-            if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
-
-            await fetch("/api/me/intro/seen", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
-            });
-
-            const seenRes = await fetch("/api/me/intro/seen", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (!seenRes.ok) {
-              const seenData = await seenRes.json().catch(() => ({}));
-              console.warn("intro/seen failed:", seenData);
+            // Mark intro as seen (ONLY ONCE)
+            const seen = await postJson("/api/me/intro/seen", token);
+            if (!seen.ok) {
+              console.warn("intro/seen failed:", seen.data);
             }
           } catch (err) {
             console.warn(
@@ -347,7 +364,7 @@ export default function CreatePage() {
                   width: 160,
                   height: 160,
                   objectFit: "contain",
-                  display: "Block",
+                  display: "block",
                   margin: "0 auto",
                 }}
               />

@@ -2,54 +2,37 @@
 import { supabase } from "./supabase/client";
 
 /**
- * Call your Express backend routes under /api.
- * Automatically attaches Supabase access token as:
- * Authorization: Bearer <token>
+ * IMPORTANT:
+ * Use RELATIVE URLs only (e.g. /api/me).
+ * Vite dev server proxies /api -> http://localhost:4000
+ * so the browser never talks to :4000 directly (no CORS).
  */
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
-  // Grab current session token from Supabase auth
-  const {
-    data: { session },
-    error: sessionErr,
-  } = await supabase.auth.getSession();
+export async function api(path: string, init: RequestInit = {}) {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
 
-  if (sessionErr) throw new Error(sessionErr.message);
-
-  const token = session?.access_token ?? null;
-
-  // Normalize to /api/<path>
-  const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  const url = `/api${cleanPath}`;
-
-  // Merge headers safely
   const headers = new Headers(init.headers);
-  if (!headers.has("Content-Type"))
-    headers.set("Content-Type", "application/json");
+
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(url, {
-    ...init,
-    headers,
-  });
-
-  if (!res.ok) {
-    // Try to parse JSON error
-    const contentType = res.headers.get("content-type") ?? "";
-    if (contentType.includes("application/json")) {
-      const body = await res.json().catch(() => null);
-      const msg =
-        body?.error ||
-        body?.message ||
-        `Request failed (${res.status} ${res.statusText})`;
-      throw new Error(msg);
-    }
-
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Request failed (${res.status} ${res.statusText})`);
+  if (init.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
 
-  // 204 No Content
-  if (res.status === 204) return undefined as unknown as T;
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return fetch(p, { ...init, headers });
+}
 
-  return (await res.json()) as T;
+export async function apiJson<T>(path: string, init: RequestInit = {}) {
+  const res = await api(path, init);
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`[api] ${res.status} ${res.statusText} ${text}`);
+  }
+
+  const ct = res.headers.get("content-type") || "";
+  if (ct.includes("application/json")) return (await res.json()) as T;
+
+  return (await res.text()) as unknown as T;
 }
