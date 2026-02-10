@@ -8,12 +8,8 @@ import { DailyCareCard } from "../../../../../dailyQuest/components/DailyCareCar
 import { useUI } from "../../../../../app/providers/UIProvider";
 import PetMainStats from "../../../../../components/petMainstats";
 
-// ✅ exists: src/Pets_Design/auth/pets/Designs/stats.css
 import "../../Designs/stats.css";
-
-// ✅ exists: src/Pets_Design/auth/pets/StatsModal.tsx
 import { StatsModal } from "../../Stats/StatsModal";
-
 import { useServerCountdown, formatDuration } from "../../../Timers/index";
 
 type PetStatsRow = {
@@ -40,17 +36,33 @@ type PetElementsRow = {
   shadow: number;
 };
 
+type PetPointsBundle = {
+  base: PetStatsRow;
+  alloc: { hp: number; atk: number; magi: number; def: number; spd: number };
+  total: {
+    hp: number;
+    atk: number;
+    magi: number;
+    def: number;
+    spd: number;
+    mana: number;
+  };
+  total_points: number;
+} | null;
+
 type ActivePetResponse = {
   server_now: string;
   pet: any | null;
-  // NOTE: /api/pets/active returns cooldowns, not hatch.
-  // Keep hatch optional for compatibility (it will be null/undefined).
+
   hatch?: {
     ready: boolean;
     hatch_ends_at: string | null;
     hatch_remaining_ms: number;
   } | null;
+
   stats: PetStatsRow | null;
+  points?: PetPointsBundle;
+
   elements: PetElementsRow | null;
   cooldowns?: any | null;
 };
@@ -77,20 +89,16 @@ async function fetchActive(): Promise<ActivePetResponse> {
   return data as ActivePetResponse;
 }
 
-/**
- * Merge server response into a "pet row" that the UI can consume easily.
- * PetMainStats + StatsModal should NOT depend on response shape.
- */
 function mergePetModel(resp: ActivePetResponse | null) {
   if (!resp?.pet) return null;
 
-  const stats = resp.stats ?? null;
-  const elements = resp.elements ?? null;
-
   return {
     ...resp.pet,
-    stats,
-    elements,
+    stats: resp.stats ?? null,
+    points: resp.points ?? null,
+    elements: resp.elements ?? null,
+    server_now: resp.server_now,
+    hatch: resp.hatch ?? null,
   };
 }
 
@@ -159,7 +167,6 @@ function EggBaseStatsCard({ stats }: { stats: PetStatsRow | null }) {
 export default function PetPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-
   const game = useGame();
   const { openInventory } = useUI();
 
@@ -172,19 +179,16 @@ export default function PetPage() {
   const [statsOpen, setStatsOpen] = useState(false);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
-  // AUTH REDIRECT
   useEffect(() => {
     if (!authLoading && !user) navigate("/", { replace: true });
   }, [authLoading, user, navigate]);
 
-  // Kick GameProvider once after login
   useEffect(() => {
     if (authLoading || !user) return;
     game.refresh?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user]);
 
-  // LOAD ACTIVE PET
   useEffect(() => {
     if (authLoading || !user) return;
 
@@ -199,9 +203,8 @@ export default function PetPage() {
         console.group("📡 [active] Response");
         console.log("raw =", resp);
         console.log("resp.pet =", resp?.pet);
-        console.log("resp.stats =", resp?.stats);
-        console.log("resp.elements =", resp?.elements);
-        console.log("resp.server_now =", resp?.server_now);
+        console.log("resp.stats (base) =", resp?.stats);
+        console.log("resp.points (total) =", resp?.points);
         console.groupEnd();
 
         setActiveResp(resp);
@@ -224,49 +227,30 @@ export default function PetPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user]);
 
-  // SOURCE OF TRUTH
   const pet = (petModel ?? (game as any)?.pet ?? null) as any | null;
-
-  useEffect(() => {
-    console.group("🐣 [PetPage] Pet Debug");
-    console.log("game.pet =", (game as any)?.pet);
-    console.log("activeResp =", activeResp);
-    console.log("petModel =", petModel);
-    console.log("pet used =", pet);
-    console.groupEnd();
-  }, [game, activeResp, petModel, pet]);
-
   const petName = pet?.name ?? "Your Pet";
 
   const petStats = useMemo(() => {
-    const s = pet?.stats ?? null;
-    if (s) {
-      return {
-        hp: Number(s.hp ?? 0),
-        atk: Number(s.atk ?? 0),
-        def: Number(s.def ?? 0),
-        magi: Number(s.magi ?? 0),
-        spd: Number(s.spd ?? 0),
-      };
-    }
-    if (!pet) return null;
+    const pts = pet?.points?.total;
+    const base = pet?.stats;
+
+    const s = pts ?? base ?? null;
+    if (!s) return null;
+
     return {
-      hp: Number(pet?.hp ?? pet?.stat_hp ?? 0),
-      atk: Number(pet?.atk ?? pet?.stat_atk ?? 0),
-      def: Number(pet?.def ?? pet?.stat_def ?? 0),
-      magi: Number(pet?.magi ?? pet?.stat_magi ?? 0),
-      spd: Number(pet?.spd ?? pet?.stat_spd ?? 0),
+      hp: Number(s.hp ?? 0),
+      atk: Number(s.atk ?? 0),
+      def: Number(s.def ?? 0),
+      magi: Number(s.magi ?? 0),
+      spd: Number(s.spd ?? 0),
     };
   }, [pet]);
 
-  // 🔒 DO NOT REVEAL ELEMENTS TO PLAYER
-  // const petElements = pet?.elements ?? null;
   const petElements = null;
 
-  // Timer fields (from server OR pet row)
   const hatchEndsAt =
     activeResp?.hatch?.hatch_ends_at ?? pet?.hatch_ends_at ?? null;
-  const serverNowIso = activeResp?.server_now ?? null;
+  const serverNowIso = activeResp?.server_now ?? pet?.server_now ?? null;
 
   const countdown = useServerCountdown(
     hatchEndsAt && serverNowIso
@@ -278,39 +262,42 @@ export default function PetPage() {
   const isReady = countdown.done;
   const prettyLeft = useMemo(() => formatDuration(msLeft), [msLeft]);
 
+  // ✅ FIXED: PetMainStats must use HP STAT points from resp.points.total.hp, not hp_cur snapshot.
   const petMainStatsModel = useMemo(() => {
     if (!pet) return null;
 
-    const s = pet?.stats ?? null;
-    const hpValue = Number((s?.hp ?? pet?.hp ?? pet?.stat_hp ?? 0) as any);
+    // Real HP snapshot values (for real HP UI elsewhere)
+    const hpMax = Number(pet?.hp_max ?? 0);
+    const hpCur = Number(pet?.hp_cur ?? 0);
 
-    const hpMax =
-      Number(pet?.hp_max ?? pet?.hpMax ?? pet?.stat_hp_max ?? 0) || hpValue;
-
-    const hpCur =
-      Number(pet?.hp_cur ?? pet?.hpCur ?? pet?.stat_hp_cur ?? 0) || hpValue;
-
-    const training =
-      pet?.training ??
-      pet?.training_elements ??
-      pet?.trainingElements ??
-      undefined;
+    // Stat points: totals if available, else base, else fallback
+    const pts = pet?.points?.total ?? null;
+    const base = pet?.stats ?? null;
+    const src = pts ?? base ?? pet;
 
     return {
       name: pet?.name ?? null,
-      // still pass line internally if your component uses it, but we removed element display inside the component earlier
       line: String(pet?.line ?? "null_element"),
       level: Number(pet?.level ?? 1),
 
       hp_max: hpMax,
       hp_cur: hpCur,
 
-      atk: Number((s?.atk ?? pet?.atk ?? pet?.stat_atk ?? 0) as any),
-      def: Number((s?.def ?? pet?.def ?? pet?.stat_def ?? 0) as any),
-      spd: Number((s?.spd ?? pet?.spd ?? pet?.stat_spd ?? 0) as any),
-      magi: Number((s?.magi ?? pet?.magi ?? pet?.stat_magi ?? 0) as any),
+      // ✅ THIS is the HP number used in "Main Stats" + Total = (hp+atk+def+spd+magi)
+      hp_stat: Number(src?.hp ?? 0),
 
-      training,
+      atk: Number(src?.atk ?? 0),
+      def: Number(src?.def ?? 0),
+      spd: Number(src?.spd ?? 0),
+      magi: Number(src?.magi ?? 0),
+
+      gender: pet?.gender ?? "null_gender",
+
+      training:
+        pet?.training ??
+        pet?.training_elements ??
+        pet?.trainingElements ??
+        undefined,
     };
   }, [pet]);
 
@@ -333,7 +320,6 @@ export default function PetPage() {
       console.group("🥚 [HATCH RESPONSE]");
       console.log("status =", res.status);
       console.log("body =", body);
-      console.log("body.pet =", (body as any)?.pet);
       console.groupEnd();
 
       if (!res.ok) throw new Error((body as any)?.error ?? "Hatch failed");
@@ -383,12 +369,6 @@ export default function PetPage() {
         <PetMainStats pet={petMainStatsModel} />
       </div>
 
-      {(game as any)?.error ? (
-        <p style={{ color: "crimson" }}>
-          Game load error: {(game as any)?.error}
-        </p>
-      ) : null}
-
       {!pet ? (
         <div>
           <p>No pet found for this account.</p>
@@ -399,10 +379,22 @@ export default function PetPage() {
             <strong>Stage:</strong> {pet.stage}
           </p>
 
-          {/* 🔒 Removed: do NOT show the pet's element/line */}
-          {/* <p style={{ margin: "6px 0 0" }}>
-            <strong>Line:</strong> {pet.line}
-          </p> */}
+          {/* Real HP snapshot */}
+          <p style={{ margin: "6px 0 0" }}>
+            <strong>HP:</strong> {Number(pet?.hp_cur ?? 0)} /{" "}
+            {Number(pet?.hp_max ?? 0)}
+          </p>
+
+          {/* Debug total points (canonical) */}
+          {pet?.points?.total_points != null ? (
+            <p style={{ margin: "6px 0 0", opacity: 0.85 }}>
+              <strong>Total Stat Points:</strong> {pet.points.total_points}
+              {"  "}
+              <small style={{ opacity: 0.8 }}>
+                (egg base 10 + IV 7 at hatch)
+              </small>
+            </p>
+          ) : null}
 
           {pet.stage === "egg" ? (
             <div
@@ -428,7 +420,6 @@ export default function PetPage() {
                 </button>
               </div>
 
-              {/* ✅ show egg base stats here */}
               <EggBaseStatsCard stats={pet?.stats ?? null} />
             </div>
           ) : (
@@ -441,9 +432,6 @@ export default function PetPage() {
         </div>
       )}
 
-      {/* =========================================================
-         TEMP DEV BUTTONS — DELETE THIS WHOLE BLOCK WHEN DONE ✅
-         ========================================================= */}
       <button
         type="button"
         onClick={openInventory}
@@ -549,14 +537,13 @@ export default function PetPage() {
         </button>
       </div>
 
-      {/* Stats Modal */}
       <StatsModal
         open={statsOpen}
         onClose={() => setStatsOpen(false)}
         petName={petName}
         stats={petStats}
         level={pet?.level ?? 0}
-        elements={petElements} // ✅ forced null
+        elements={petElements}
       />
 
       <div style={{ marginTop: 16 }}>

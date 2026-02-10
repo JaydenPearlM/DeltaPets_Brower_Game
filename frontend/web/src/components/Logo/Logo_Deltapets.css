@@ -196,3 +196,56 @@
     0 1px 0 rgba(0, 0, 0, 0.55),
     0 6px 10px rgba(0, 0, 0, 0.55);
 }
+
+.logo-deltapets-season {
+  position: absolute; /* place it over the triangle */
+  left: 39%;
+  top: 110%; /* tweak this up/down */
+  transform: translate(-50%, -50%) translateX(40px); /* "go over a little" */
+
+  z-index: 5;
+  font-family: "Quantico", system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 3px;
+
+  /* bright yellow inside */
+  color: #fff200;
+
+  /* red "border" (stroke effect) + shadow */
+  text-shadow:
+    -2px 0 0 #ff2b2b,
+    2px 0 0 #ff2b2b,
+    0 -2px 0 #ff2b2b,
+    0 2px 0 #ff2b2b,
+    -2px -2px 0 #ff2b2b,
+    2px -2px 0 #ff2b2b,
+    -2px 2px 0 #ff2b2b,
+    2px 2px 0 #ff2b2b,
+    0 6px 10px rgba(0, 0, 0, 0.55);
+}
+
+/* logo Hero or header */
+
+.dp-logo {
+  display: flex;
+  align-items: center;
+}
+
+.dp-logo.hero .dp-logo-text {
+  font-size: 42px;
+  font-weight: 800;
+  color: gold;
+}
+
+.dp-logo.header .dp-logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: gold;
+}
+
+.dp-logoLink {
+  display: inline-flex;
+  text-decoration: none;
+  color: inherit;
+}

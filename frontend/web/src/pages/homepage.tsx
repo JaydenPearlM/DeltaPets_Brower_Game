@@ -1,7 +1,7 @@
 import { useAuth } from "../app/providers/useAuth";
 import { LoginMenus } from "../components/Authentication/LoginMenus";
 import { LogoutButton } from "../components/Authentication/LogoutButton";
-import { LogoDeltapets } from "../components/Logo/Logo_Deltapets";
+import LogoDeltapets from "../components/Logo/Logo_Deltapets";
 import "./homepage.css";
 import "../global.css";
 
@@ -10,8 +10,6 @@ export default function Homepage() {
 
   return (
     <div className="homepage">
-      <LogoDeltapets />
-
       {/* 
         Homepage should NEVER auto-redirect.
         It is a decision point, not a router.

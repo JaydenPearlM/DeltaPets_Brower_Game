@@ -477,9 +477,6 @@ export default function HatcheryPage() {
                           ? "Ready to hatch"
                           : `Hatches in ${formatDuration(selectedCd.remainingMs ?? 0)}`}
                       </div>
-                      <div className="selectedMini">
-                        Element: {selectedEgg.line ?? "—"}
-                      </div>
                     </div>
                   </div>
 

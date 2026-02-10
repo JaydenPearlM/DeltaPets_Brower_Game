@@ -2,10 +2,16 @@
 
 import { Router } from "express";
 import type { Response } from "express";
+import { randomInt as cryptoRandomInt } from "crypto";
+
 import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 import { cooldownsFromPetRow } from "../lib/cooldowns";
 import { markRunawayIfNeeded } from "../lib/runaway";
+import { syncPetDerivedStats } from "../lib/syncPetDerivedStats";
+
+// ✅ IV helpers
+import { rollIV, sumStats } from "../lib/stats/individualValues";
 
 export const petsRouter = Router();
 
@@ -152,7 +158,9 @@ const STARTER_SPROUTS: Starter[] = [
 ];
 
 function rollStarter(): Starter {
-  return STARTER_SPROUTS[Math.floor(Math.random() * STARTER_SPROUTS.length)];
+  const n = STARTER_SPROUTS.length;
+  const idx = n > 0 ? cryptoRandomInt(n) : 0;
+  return STARTER_SPROUTS[idx] ?? STARTER_SPROUTS[0];
 }
 
 function msUntil(iso: string | null | undefined, nowMs: number) {
@@ -189,9 +197,30 @@ function elementMapForLine(_line: ElementalLine) {
   return base;
 }
 
+// ✅ NEW helpers: verify base stats sum to 10 before hatch applies IV
+function sumBase5(b: {
+  base_hp?: number | null;
+  base_atk?: number | null;
+  base_def?: number | null;
+  base_spd?: number | null;
+  base_magi?: number | null;
+}) {
+  return (
+    (b.base_hp ?? 0) +
+    (b.base_atk ?? 0) +
+    (b.base_def ?? 0) +
+    (b.base_spd ?? 0) +
+    (b.base_magi ?? 0)
+  );
+}
+
+function findStarterByName(name: string | null | undefined) {
+  const n = (name ?? "").trim().toLowerCase();
+  return STARTER_SPROUTS.find((s) => s.name.toLowerCase() === n) ?? null;
+}
+
 // -----------------------------
 // Stats helpers (MATCH YOUR DB)
-// pet_stats columns: base_hp, base_atk, , base_def, base_spd, base_mana, base_total
 // -----------------------------
 async function fetchBaseStatsMapped(petId: string) {
   const { data, error } = await supabaseAdmin
@@ -203,18 +232,11 @@ async function fetchBaseStatsMapped(petId: string) {
   if (error) throw error;
   if (!data) return null;
 
-  const baseMagi =
-    (data as any).base_magi ??
-    // keep compatibility with older typos just in case
-    (data as any).base_magi ??
-    (data as any).base_magi ??
-    0;
-
   return {
     pet_id: (data as any).pet_id,
     hp: (data as any).base_hp ?? 0,
     atk: (data as any).base_atk ?? 0,
-    magi: baseMagi,
+    magi: (data as any).base_magi ?? 0,
     def: (data as any).base_def ?? 0,
     spd: (data as any).base_spd ?? 0,
     mana: (data as any).base_mana ?? 0,
@@ -227,7 +249,7 @@ async function insertBaseStats(petId: string, s: BaseStatsTemplate) {
     pet_id: petId,
     base_hp: s.hp,
     base_atk: s.atk,
-    base_magi: s.magi, // ✅ correct DB column
+    base_magi: s.magi,
     base_def: s.def,
     base_spd: s.spd,
     base_mana: s.mana,
@@ -237,59 +259,65 @@ async function insertBaseStats(petId: string, s: BaseStatsTemplate) {
   if (error) throw error;
 }
 
-async function updateBaseStats(petId: string, s: BaseStatsTemplate) {
-  const { error } = await supabaseAdmin
-    .from("pet_stats")
-    .update({
-      base_hp: s.hp,
-      base_atk: s.atk,
-      base_magi: s.magi, // ✅ correct DB column
-      base_def: s.def,
-      base_spd: s.spd,
-      base_mana: s.mana,
-      base_total: s.base_total,
-    } as any)
-    .eq("pet_id", petId);
+/**
+ * ✅ IMPORTANT:
+ * ignore allocations with level <= 1
+ */
+async function fetchAllocTotals(petId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("pet_stat_allocations")
+    .select("level, hp, atk, magi, def, spd")
+    .eq("pet_id", petId)
+    .gt("level", 1);
 
   if (error) throw error;
-}
 
-function computeBaseTotal(
-  s: Pick<BaseStatsTemplate, "hp" | "atk" | "magi" | "def" | "spd" | "mana">,
-) {
-  return (
-    (s.hp ?? 0) +
-    (s.atk ?? 0) +
-    (s.magi ?? 0) +
-    (s.def ?? 0) +
-    (s.spd ?? 0) +
-    (s.mana ?? 0)
+  const rows = data ?? [];
+  const totals = rows.reduce(
+    (acc, r: any) => {
+      acc.hp += r.hp ?? 0;
+      acc.atk += r.atk ?? 0;
+      acc.magi += r.magi ?? 0;
+      acc.def += r.def ?? 0;
+      acc.spd += r.spd ?? 0;
+      return acc;
+    },
+    { hp: 0, atk: 0, magi: 0, def: 0, spd: 0 },
   );
+
+  return totals;
 }
 
-function allocateRandomHatchPoints(
-  base: BaseStatsTemplate,
-  points: number,
-): BaseStatsTemplate {
-  const out: BaseStatsTemplate = { ...base };
-  const keys: Array<
-    keyof Pick<BaseStatsTemplate, "hp" | "atk" | "magi" | "def" | "spd">
-  > = ["hp", "atk", "magi", "def", "spd"];
+async function fetchTotalPoints(petId: string) {
+  const base = await fetchBaseStatsMapped(petId);
+  const alloc = await fetchAllocTotals(petId);
 
-  for (let i = 0; i < points; i++) {
-    const k = keys[Math.floor(Math.random() * keys.length)];
-    (out as any)[k] = ((out as any)[k] ?? 0) + 1;
-  }
+  if (!base) return null;
 
-  out.base_total = computeBaseTotal(out);
-  return out;
+  const total = {
+    hp: (base.hp ?? 0) + alloc.hp,
+    atk: (base.atk ?? 0) + alloc.atk,
+    magi: (base.magi ?? 0) + alloc.magi,
+    def: (base.def ?? 0) + alloc.def,
+    spd: (base.spd ?? 0) + alloc.spd,
+    mana: base.mana ?? 0,
+  };
+
+  const total_points =
+    total.hp +
+    total.atk +
+    total.magi +
+    total.def +
+    total.spd +
+    (total.mana ?? 0);
+
+  return { base, alloc, total, total_points };
 }
 
 // -----------------------------
-// Active pet + hatchery egg (MATCH YOUR DB)
+// Active pet + hatchery egg
 // -----------------------------
 async function fetchActivePet(userId: string) {
-  // Primary: is_active = true (because your pets table has it)
   {
     const { data, error } = await supabaseAdmin
       .from("pets")
@@ -304,7 +332,6 @@ async function fetchActivePet(userId: string) {
     if (data) return { pet: data, used: "is_active" as const };
   }
 
-  // Fallback: newest non-egg pet (prevents pet:null softlock)
   {
     const { data, error } = await supabaseAdmin
       .from("pets")
@@ -322,7 +349,6 @@ async function fetchActivePet(userId: string) {
 }
 
 async function fetchHatcheryEgg(userId: string) {
-  // Your DB has hatch_ends_at, so use that.
   const { data, error } = await supabaseAdmin
     .from("pets")
     .select("*")
@@ -355,6 +381,7 @@ petsRouter.get(
           server_now: new Date(serverNowMs).toISOString(),
           pet: null,
           stats: null,
+          points: null,
           elements: null,
           cooldowns: null,
         });
@@ -364,7 +391,9 @@ petsRouter.get(
         ? await markRunawayIfNeeded({ supabaseAdmin, pet, serverNowMs })
         : pet;
 
-      const stats = await fetchBaseStatsMapped(petAfterRunaway.id);
+      const baseStats = await fetchBaseStatsMapped(petAfterRunaway.id);
+      const points = await fetchTotalPoints(petAfterRunaway.id);
+
       const elements = elementMapForLine(
         (petAfterRunaway.line ?? "null_element") as ElementalLine,
       );
@@ -372,7 +401,8 @@ petsRouter.get(
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
         pet: petAfterRunaway,
-        stats,
+        stats: baseStats,
+        points,
         elements,
         cooldowns: cooldownsFromPetRow(petAfterRunaway, serverNowMs),
       });
@@ -419,11 +449,14 @@ petsRouter.get(
           pet: null,
           hatch: null,
           stats: null,
+          points: null,
           elements: null,
         });
       }
 
-      const stats = await fetchBaseStatsMapped(egg.id);
+      const baseStats = await fetchBaseStatsMapped(egg.id);
+      const points = await fetchTotalPoints(egg.id);
+
       const elements = elementMapForLine(
         (egg.line ?? "null_element") as ElementalLine,
       );
@@ -432,7 +465,8 @@ petsRouter.get(
         server_now: new Date(serverNowMs).toISOString(),
         pet: egg,
         hatch: hatchPayload(egg, serverNowMs),
-        stats,
+        stats: baseStats,
+        points,
         elements,
       });
     } catch (e: any) {
@@ -474,7 +508,7 @@ petsRouter.post(
           stage: "egg",
           hatch_ends_at,
           unspent_points: 0,
-          is_active: false, // eggs should not be active
+          is_active: false,
         } as any)
         .select("*")
         .single();
@@ -515,50 +549,119 @@ petsRouter.post(
         });
       }
 
-      // Deactivate any existing active pet (your DB supports is_active)
       await supabaseAdmin
         .from("pets")
         .update({ is_active: false } as any)
         .eq("user_id", userId)
         .eq("is_active", true);
 
-      // Base stats + hatch points
-      const existingBase = await fetchBaseStatsMapped(egg.id);
-      const starterFallback = STARTER_SPROUTS.find(
-        (s) => s.name === (egg.name ?? ""),
-      )?.baseStats;
+      const baseRowMapped = await fetchBaseStatsMapped(egg.id);
+      if (!baseRowMapped) {
+        const starterFallback = STARTER_SPROUTS.find(
+          (s) => s.name === (egg.name ?? ""),
+        )?.baseStats;
 
-      const baseForHatch: BaseStatsTemplate = {
-        hp: existingBase?.hp ?? starterFallback?.hp ?? 2,
-        atk: existingBase?.atk ?? starterFallback?.atk ?? 2,
-        magi: existingBase?.magi ?? starterFallback?.magi ?? 2,
-        def: existingBase?.def ?? starterFallback?.def ?? 2,
-        spd: existingBase?.spd ?? starterFallback?.spd ?? 2,
-        mana: existingBase?.mana ?? starterFallback?.mana ?? 0,
-        base_total:
-          existingBase?.base_total ??
-          starterFallback?.base_total ??
-          computeBaseTotal({
-            hp: existingBase?.hp ?? starterFallback?.hp ?? 2,
-            atk: existingBase?.atk ?? starterFallback?.atk ?? 2,
-            magi: existingBase?.magi ?? starterFallback?.magi ?? 2,
-            def: existingBase?.def ?? starterFallback?.def ?? 2,
-            spd: existingBase?.spd ?? starterFallback?.spd ?? 2,
-            mana: existingBase?.mana ?? starterFallback?.mana ?? 0,
-          }),
+        const baseForEgg: BaseStatsTemplate = starterFallback ?? {
+          hp: 2,
+          atk: 2,
+          magi: 2,
+          def: 2,
+          spd: 2,
+          mana: 0,
+          base_total: 10,
+        };
+
+        await insertBaseStats(egg.id, baseForEgg);
+      }
+
+      const { data: baseRaw, error: baseRawErr } = await supabaseAdmin
+        .from("pet_stats")
+        .select(
+          "pet_id, base_hp, base_atk, base_magi, base_def, base_spd, base_mana, base_total",
+        )
+        .eq("pet_id", egg.id)
+        .maybeSingle();
+
+      if (baseRawErr)
+        return res.status(500).json({ error: baseRawErr.message });
+      if (!baseRaw)
+        return res
+          .status(500)
+          .json({ error: "Missing pet_stats row after ensure." });
+
+      // ✅ GUARDRAIL: base must be exactly 10 before we add IV
+      const baseSum = sumBase5({
+        base_hp: (baseRaw as any).base_hp,
+        base_atk: (baseRaw as any).base_atk,
+        base_def: (baseRaw as any).base_def,
+        base_spd: (baseRaw as any).base_spd,
+        base_magi: (baseRaw as any).base_magi,
+      });
+
+      if (baseSum !== 10) {
+        const starter = findStarterByName(egg.name);
+        if (starter) {
+          const { error: fixErr } = await supabaseAdmin
+            .from("pet_stats")
+            .update({
+              base_hp: starter.baseStats.hp,
+              base_atk: starter.baseStats.atk,
+              base_def: starter.baseStats.def,
+              base_spd: starter.baseStats.spd,
+              base_magi: starter.baseStats.magi,
+              base_mana: starter.baseStats.mana ?? 0,
+              base_total: 10,
+            } as any)
+            .eq("pet_id", egg.id);
+
+          if (fixErr) return res.status(500).json({ error: fixErr.message });
+
+          (baseRaw as any).base_hp = starter.baseStats.hp;
+          (baseRaw as any).base_atk = starter.baseStats.atk;
+          (baseRaw as any).base_def = starter.baseStats.def;
+          (baseRaw as any).base_spd = starter.baseStats.spd;
+          (baseRaw as any).base_magi = starter.baseStats.magi;
+          (baseRaw as any).base_total = 10;
+        } else {
+          console.warn("[hatch] baseSum != 10 but no starter match", {
+            petId: egg.id,
+            name: egg.name,
+            baseSum,
+          });
+        }
+      }
+
+      await supabaseAdmin
+        .from("pet_stat_allocations")
+        .delete()
+        .eq("pet_id", egg.id)
+        .eq("level", 1);
+
+      const iv = rollIV(HATCH_ALLOCATION_POINTS);
+      if (sumStats(iv) !== HATCH_ALLOCATION_POINTS) {
+        throw new Error("IV generation failed integrity check");
+      }
+
+      const nextBase = {
+        base_hp: ((baseRaw as any).base_hp ?? 0) + iv.hp,
+        base_atk: ((baseRaw as any).base_atk ?? 0) + iv.atk,
+        base_def: ((baseRaw as any).base_def ?? 0) + iv.def,
+        base_spd: ((baseRaw as any).base_spd ?? 0) + iv.spd,
+        base_magi: ((baseRaw as any).base_magi ?? 0) + iv.magi,
+        base_mana: (baseRaw as any).base_mana ?? 0,
+        base_total: 10 + HATCH_ALLOCATION_POINTS, // ✅ force 17
       };
 
-      const hatchedStats = allocateRandomHatchPoints(
-        baseForHatch,
-        HATCH_ALLOCATION_POINTS,
-      );
+      const { error: baseUpdateErr } = await supabaseAdmin
+        .from("pet_stats")
+        .update(nextBase as any)
+        .eq("pet_id", egg.id);
 
-      if (existingBase) await updateBaseStats(egg.id, hatchedStats);
-      else await insertBaseStats(egg.id, hatchedStats);
+      if (baseUpdateErr)
+        return res.status(500).json({ error: baseUpdateErr.message });
 
       const nowIso = new Date(serverNowMs).toISOString();
 
-      // Hatch the egg into the active pet (no "location" in your DB)
       const { data: hatched, error } = await supabaseAdmin
         .from("pets")
         .update({
@@ -575,11 +678,16 @@ petsRouter.post(
 
       if (error) return res.status(500).json({ error: error.message });
 
+      await syncPetDerivedStats(egg.id, { refillHp: true });
+
+      const points = await fetchTotalPoints(egg.id);
+
       return res.json({
         server_now: nowIso,
         pet: hatched,
         awarded_points: HATCH_ALLOCATION_POINTS,
-        stats: hatchedStats,
+        iv,
+        points,
       });
     } catch (e: any) {
       return res.status(500).json({ error: e?.message ?? "Server error" });
