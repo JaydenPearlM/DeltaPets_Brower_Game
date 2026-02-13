@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import "./petMainstats.css";
 
 type TrainingElements = {
-  null: number;
+  null_element: number;
   water: number;
   fire: number;
   earth: number;
@@ -16,16 +16,16 @@ type TrainingElements = {
 type PetMainStatsProps = {
   pet: {
     name: string | null;
-    line: string; // kept internally (DO NOT display)
+
+    line: string;
+    stage?: string;
     level: number;
 
     gender?: "male" | "female" | "null_gender";
 
-    // Real HP snapshot (health bar)
     hp_max: number;
     hp_cur: number;
 
-    // ✅ HP STAT points used for Main Stats math (base+IV+alloc)
     hp_stat: number;
 
     atk: number;
@@ -38,7 +38,7 @@ type PetMainStatsProps = {
 };
 
 const ELEMENT_ORDER: (keyof TrainingElements)[] = [
-  "null",
+  "null_element",
   "water",
   "fire",
   "earth",
@@ -55,12 +55,24 @@ function prettyGender(g?: string) {
   return g.charAt(0).toUpperCase() + g.slice(1);
 }
 
+function prettyElement(line?: string) {
+  if (!line) return "Null";
+  if (line === "null_element" || line === "null") return "Null";
+  return line.charAt(0).toUpperCase() + line.slice(1);
+}
+
+function prettyStage(stage?: string) {
+  if (!stage) return "Baby";
+  return stage.charAt(0).toUpperCase() + stage.slice(1);
+}
+
 export default function PetMainStats({ pet }: PetMainStatsProps) {
+  // ✅ default hidden
   const [showTraining, setShowTraining] = useState(false);
 
   const training = useMemo<TrainingElements>(() => {
     const base: TrainingElements = {
-      null: 0,
+      null_element: 0,
       water: 0,
       fire: 0,
       earth: 0,
@@ -80,8 +92,6 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
     return base;
   }, [pet]);
 
-  // ✅ Total STAT points (HP stat + atk/def/spd/magi)
-  // IMPORTANT: do NOT use hp_cur here — hp_cur is current HP (snapshot)
   const baseTotal = useMemo(() => {
     if (!pet) return 0;
     const hp = Number(pet.hp_stat ?? 0);
@@ -90,6 +100,11 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
     const spd = Number(pet.spd ?? 0);
     const magi = Number(pet.magi ?? 0);
     return hp + atk + def + spd + magi;
+  }, [pet]);
+
+  const babyHp = useMemo(() => {
+    if (!pet) return 0;
+    return Number(pet.hp_stat ?? 0) * 2;
   }, [pet]);
 
   return (
@@ -104,11 +119,16 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
                 {pet.name ?? "Unnamed Delta"}
               </h2>
 
-              {/* ✅ Level + Gender (NO element reveal) */}
               <div className="pet-mainstats__sub">
                 <span>Level {pet.level}</span>
                 <span className="pet-mainstats__dot">•</span>
                 <span>Gender: {prettyGender(pet.gender)}</span>
+                <span className="pet-mainstats__dot">•</span>
+                <span>Element: {prettyElement(pet.line)}</span>
+                <span className="pet-mainstats__dot">•</span>
+                <span>Stage: {prettyStage(pet.stage)}</span>
+                <span className="pet-mainstats__dot">•</span>
+                <span>Baby HP: {babyHp}</span>
 
                 <button
                   type="button"
@@ -128,12 +148,10 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
           </div>
         ) : (
           <div className="pet-mainstats__layout">
-            {/* Main stats card */}
             <div className="pet-mainstats__card pet-mainstats__card--main">
               <h3 className="pet-mainstats__cardTitle">Main Stats</h3>
 
               <div className="pet-mainstats__rows">
-                {/* ✅ HP STAT points (base+IV+alloc) */}
                 <div className="pet-mainstats__row pet-mainstats__row--tight">
                   <span>HP</span>
                   <span className="pet-mainstats__value">{pet.hp_stat}</span>
@@ -161,7 +179,6 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
                   </div>
                 )}
 
-                {/* ✅ Total points (should be 17 at level 1) */}
                 <div className="pet-mainstats__row pet-mainstats__row--total">
                   <span>Total</span>
                   <span className="pet-mainstats__value">{baseTotal}</span>
@@ -169,42 +186,36 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
               </div>
             </div>
 
-            {/* Training flyout */}
-            <aside
-              className={`pet-mainstats__flyout ${showTraining ? "is-open" : ""}`}
-            >
-              <div className="pet-mainstats__flyoutInner">
-                <div className="pet-mainstats__flyoutHeader">
-                  <h3
-                    className="pet-mainstats__cardTitle"
-                    style={{ margin: 0 }}
-                  >
-                    Training Elements
-                  </h3>
-                </div>
-
-                {pet.level <= 1 ? (
-                  <div className="pet-mainstats__hint">
-                    Training starts later — level 1 is all zeros.
+            {/* ✅ KEY FIX: Training is not rendered AT ALL unless open */}
+            {showTraining ? (
+              <aside className="pet-mainstats__flyout is-open">
+                <div className="pet-mainstats__flyoutInner">
+                  <div className="pet-mainstats__flyoutHeader">
+                    <h3
+                      className="pet-mainstats__cardTitle"
+                      style={{ margin: 0 }}
+                    >
+                      Training Elements
+                    </h3>
                   </div>
-                ) : null}
 
-                <div className="pet-mainstats__elements">
-                  {ELEMENT_ORDER.map((k) => (
-                    <div key={k} className="pet-mainstats__elementRow">
-                      <span className="pet-mainstats__elementName">
-                        {k === "null"
-                          ? "Null"
-                          : k[0].toUpperCase() + k.slice(1)}
-                      </span>
-                      <span className="pet-mainstats__elementVal">
-                        {training[k]}
-                      </span>
-                    </div>
-                  ))}
+                  <div className="pet-mainstats__elements">
+                    {ELEMENT_ORDER.map((k) => (
+                      <div key={k} className="pet-mainstats__elementRow">
+                        <span className="pet-mainstats__elementName">
+                          {k === "null_element"
+                            ? "Null"
+                            : k[0].toUpperCase() + k.slice(1)}
+                        </span>
+                        <span className="pet-mainstats__elementVal">
+                          {training[k]}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </aside>
+              </aside>
+            ) : null}
           </div>
         )}
       </section>

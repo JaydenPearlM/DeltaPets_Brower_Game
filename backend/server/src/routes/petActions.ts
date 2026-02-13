@@ -7,7 +7,7 @@ import {
   calcNewCooldownEndsAtIso,
   colNameForKey,
   cooldownsFromPetRow,
-} from "../lib/cooldowns";
+} from "../pets/cooldowns";
 
 export const petActionsRouter = Router();
 

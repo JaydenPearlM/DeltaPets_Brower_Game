@@ -6,6 +6,8 @@ import { authRouter } from "./auth";
 import { petsRouter } from "./pets";
 import { dailyCareRouter } from "./dailyCare";
 import { petActionsRouter } from "./petActions";
+import { rewardsRouter } from "./rewards";
+
 export const apiRouter = Router();
 
 // Core routes
@@ -29,4 +31,7 @@ apiRouter.use("/pets/actions", petActionsRouter);
 
 // NOTE: rewardsDaily router exists, but it's intentionally NOT mounted yet
 // until the corresponding DB table is added to the migration.
+
+apiRouter.use("/rewards", rewardsRouter);
+
 export default apiRouter;

@@ -1,5 +1,5 @@
 // backend/server/src/lib/runaway.ts
-import { nowIsoFromMs, toIso, toMsFromIso } from "./time";
+import { nowIsoFromMs, toIso, toMsFromIso } from "../lib/time";
 
 // Keep this in one place so gameplay tuning is easy.
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;

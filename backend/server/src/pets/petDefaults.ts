@@ -1,5 +1,5 @@
 // backend/server/src/lib/petDefaults.ts
-import { nowIsoFromMs } from "./time";
+import { nowIsoFromMs } from "../lib/time";
 
 export function defaultFeedFields(serverNowMs: number) {
   const nowIso = nowIsoFromMs(serverNowMs);

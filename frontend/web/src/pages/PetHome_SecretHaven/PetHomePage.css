@@ -1,0 +1,629 @@
+/* =========================================================
+   Secret Haven / Pet Home (Top-down editor)
+   Cool-toned, no brown. Grid-forward. Alpha clean vibes.
+   ========================================================= */
+
+.petHome {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: rgba(235, 245, 255, 0.92);
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+/* Top bar */
+.petHome__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+
+  padding: 14px 16px;
+  border-radius: 16px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(20, 34, 66, 0.92) 0%,
+    rgba(10, 16, 28, 0.92) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.petHome__title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.petHome__subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(185, 210, 255, 0.7);
+}
+
+.petHome__nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Buttons */
+.petHome__btn {
+  appearance: none;
+  cursor: pointer;
+
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(220, 235, 255, 0.92);
+
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+.petHome__btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.petHome__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.petHome__btn--hot {
+  border-color: rgba(175, 255, 245, 0.35);
+  box-shadow:
+    0 0 0 3px rgba(120, 255, 245, 0.1),
+    0 16px 36px rgba(0, 0, 0, 0.45);
+}
+
+/* Tabs */
+.petHome__tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(120, 220, 255, 0.1),
+      transparent 55%
+    ),
+    linear-gradient(180deg, rgba(11, 14, 20, 0.85), rgba(6, 8, 12, 0.85));
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+
+.tabBtn {
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  color: rgba(190, 220, 255, 0.85);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tabBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tabBtn--active {
+  color: rgba(235, 245, 255, 0.95);
+  border-color: rgba(175, 255, 245, 0.35);
+  box-shadow: 0 0 0 3px rgba(120, 255, 245, 0.1);
+}
+
+.tabsSpacer {
+  flex: 1;
+}
+
+.budget {
+  font-size: 12px;
+  color: rgba(220, 235, 255, 0.8);
+}
+
+.budget__ok {
+  margin-left: 6px;
+  color: rgba(175, 255, 245, 0.9);
+}
+
+.budget__bad {
+  margin-left: 6px;
+  color: rgba(255, 140, 170, 0.95);
+}
+
+/* Main split layout */
+.petHome__grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .petHome__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left room container */
+.roomWrap {
+  border-radius: 18px;
+  padding: 14px;
+
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(120, 220, 255, 0.08),
+      transparent 55%
+    ),
+    linear-gradient(180deg, rgba(11, 14, 20, 0.85), rgba(6, 8, 12, 0.85));
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+}
+
+.roomHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.roomHeader__title {
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(235, 245, 255, 0.95);
+}
+
+.roomHeader__hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(185, 210, 255, 0.7);
+}
+
+.roomHeader__right {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* The actual room canvas (top-down floor) */
+.roomTop {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -18px 60px rgba(0, 0, 0, 0.35);
+}
+
+/* Care vs Bond floor styles (both cool-toned) */
+.roomTop--care {
+  background:
+    radial-gradient(
+      120% 120% at 20% 10%,
+      rgba(120, 255, 245, 0.14),
+      transparent 45%
+    ),
+    radial-gradient(
+      120% 120% at 85% 65%,
+      rgba(160, 130, 255, 0.12),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(18, 28, 50, 0.95) 0%,
+      rgba(10, 14, 24, 0.98) 100%
+    );
+}
+
+.roomTop--bond {
+  background:
+    radial-gradient(
+      120% 120% at 25% 20%,
+      rgba(160, 130, 255, 0.14),
+      transparent 50%
+    ),
+    radial-gradient(
+      120% 120% at 80% 70%,
+      rgba(120, 255, 245, 0.12),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(16, 20, 44, 0.96) 0%,
+      rgba(8, 10, 18, 0.98) 100%
+    );
+}
+
+/* Grid overlay (edit mode only) */
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(rgba(170, 255, 250, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(190, 170, 255, 0.16) 1px, transparent 1px);
+
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+
+/* Furniture blocks */
+.furn {
+  position: absolute;
+  border-radius: 14px;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(120, 255, 245, 0.1),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.04)
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
+}
+
+.furn__label {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(235, 245, 255, 0.92);
+  padding: 8px 10px;
+}
+
+/* Kind flavors */
+.furn--trough {
+  border-color: rgba(120, 255, 245, 0.22);
+}
+.furn--wash {
+  border-color: rgba(120, 220, 255, 0.22);
+}
+.furn--bed {
+  border-color: rgba(160, 130, 255, 0.22);
+}
+.furn--couch {
+  border-color: rgba(255, 190, 230, 0.18);
+}
+.furn--table {
+  border-color: rgba(190, 170, 255, 0.2);
+}
+.furn--chair {
+  border-color: rgba(175, 255, 245, 0.18);
+}
+.furn--rug {
+  border-color: rgba(210, 200, 255, 0.18);
+}
+
+/* Ghost placement */
+.ghost {
+  position: absolute;
+  border-radius: 14px;
+  pointer-events: none;
+
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ghost__label {
+  font-size: 12px;
+  font-weight: 900;
+  padding: 8px 10px;
+  color: rgba(235, 245, 255, 0.85);
+}
+
+.ghost--ok {
+  border-color: rgba(175, 255, 245, 0.55);
+  background: rgba(120, 255, 245, 0.08);
+}
+
+.ghost--bad {
+  border-color: rgba(255, 140, 170, 0.7);
+  background: rgba(255, 80, 120, 0.06);
+}
+
+/* Pet placeholder */
+.petSprite {
+  position: absolute;
+  width: 140px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.petSprite__blob {
+  width: 70px;
+  height: 70px;
+  border-radius: 999px;
+
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(235, 245, 255, 0.35),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 55% 60%,
+      rgba(120, 255, 245, 0.22),
+      transparent 55%
+    ),
+    linear-gradient(180deg, rgba(160, 130, 255, 0.22), rgba(0, 0, 0, 0));
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.petSprite__name {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(235, 245, 255, 0.85);
+}
+
+/* Right panel */
+.panel {
+  border-radius: 18px;
+  padding: 14px;
+
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(160, 130, 255, 0.08),
+      transparent 55%
+    ),
+    linear-gradient(180deg, rgba(11, 14, 20, 0.85), rgba(6, 8, 12, 0.85));
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+}
+
+.panel__empty {
+  font-size: 12px;
+  color: rgba(185, 210, 255, 0.75);
+}
+
+.panel__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.panel__petName {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.panel__meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: rgba(185, 210, 255, 0.75);
+}
+
+.panel__alert {
+  padding: 10px 12px;
+  border-radius: 14px;
+  margin: 10px 0;
+
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel__alert--bad {
+  border-color: rgba(255, 80, 120, 0.35);
+}
+
+.panelBlock {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panelBlock__title {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(220, 235, 255, 0.9);
+  margin-bottom: 10px;
+}
+
+.panelBlock__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Picker */
+.picker__label {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(185, 210, 255, 0.8);
+  margin-bottom: 8px;
+}
+
+.picker__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.pickBtn {
+  cursor: pointer;
+  text-align: left;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(220, 235, 255, 0.9);
+}
+
+.pickBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pickBtn--active {
+  border-color: rgba(175, 255, 245, 0.35);
+  box-shadow: 0 0 0 3px rgba(120, 255, 245, 0.1);
+}
+
+.pickBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pickBtn__name {
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.pickBtn__meta {
+  margin-top: 4px;
+  font-size: 11px;
+  color: rgba(185, 210, 255, 0.75);
+}
+
+/* Picker info */
+.picker__info {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.picker__infoTitle {
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.picker__infoDesc {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(185, 210, 255, 0.75);
+}
+
+.picker__infoMeta {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(175, 255, 245, 0.85);
+}
+
+.picker__locked {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 190, 230, 0.85);
+}
+
+/* Stats + actions */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stat {
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stat__k {
+  font-size: 11px;
+  color: rgba(185, 210, 255, 0.75);
+  font-weight: 900;
+}
+
+.stat__v {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.actionBtn {
+  cursor: pointer;
+  padding: 12px 12px;
+  border-radius: 14px;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  color: rgba(235, 245, 255, 0.95);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+.actionBtn:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.actionBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.panel__msg {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  background: rgba(255, 80, 120, 0.06);
+  border: 1px solid rgba(255, 80, 120, 0.22);
+
+  font-size: 12px;
+  color: rgba(255, 190, 210, 0.95);
+}
+
+.panel__note {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(185, 210, 255, 0.7);
+}

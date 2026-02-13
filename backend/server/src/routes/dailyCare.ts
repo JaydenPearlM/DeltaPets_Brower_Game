@@ -5,6 +5,60 @@ import { supabaseAdmin } from "../lib/supabaseAdmin";
 export const dailyCareRouter = Router();
 
 /**
+ * Award the Alpha Tester ribbon ONCE (idempotent).
+ * - Requires tables: awards, pet_awards
+ * - Requires daily_care column: alpha_ribbon_awarded (you already have it)
+ *
+ * This attaches the ribbon to the user's current pet.
+ */
+async function awardAlphaTesterRibbon(userId: string, earnedAtIso: string) {
+  // Attach to the user's pet.
+  // If later you support multiple pets, you can change this to "active pet" logic.
+  const { data: pet, error: petErr } = await supabaseAdmin
+    .from("pets")
+    .select("id")
+    .eq("user_id", userId)
+    .single();
+
+  if (petErr) throw new Error(petErr.message);
+  if (!pet?.id)
+    throw new Error("No pet found for this account to award ribbon.");
+
+  // Ensure award exists (safe even if you already seeded it).
+  const { data: award, error: awardErr } = await supabaseAdmin
+    .from("awards")
+    .upsert(
+      {
+        key: "alpha_tester",
+        name: "Alpha Tester",
+        type: "ribbon",
+        rarity: "special",
+        description:
+          "Awarded for participating in the Alpha deployment testing.",
+      },
+      { onConflict: "key" },
+    )
+    .select("id")
+    .single();
+
+  if (awardErr) throw new Error(awardErr.message);
+  if (!award?.id) throw new Error("Failed to resolve award id.");
+
+  // Log award to pet (idempotent: requires unique (pet_id, award_id)).
+  const { error: paErr } = await supabaseAdmin.from("pet_awards").upsert(
+    {
+      pet_id: pet.id,
+      award_id: award.id,
+      earned_at: earnedAtIso,
+      context: { source: "daily_care", deployment: "alpha" },
+    },
+    { onConflict: "pet_id,award_id" },
+  );
+
+  if (paErr) throw new Error(paErr.message);
+}
+
+/**
  * Next reset boundary: 8:00 AM America/New_York (EST/EDT safe)
  * We compute the next 8am in Eastern time, then return it as a real UTC ms value.
  */
@@ -139,6 +193,19 @@ dailyCareRouter.post(
       .single();
 
     if (upErr) return res.status(500).json({ error: upErr.message });
+
+    // ✅ Log the ribbon into the ribbons system.
+    // Keep daily care working even if awards fails (it shouldn't block gameplay).
+    if (shouldAward) {
+      try {
+        await awardAlphaTesterRibbon(userId, nowIso);
+      } catch (e: any) {
+        console.warn(
+          "[dailyCare] Failed to award Alpha Tester ribbon:",
+          e?.message ?? e,
+        );
+      }
+    }
 
     return res.json({
       server_now: nowIso,

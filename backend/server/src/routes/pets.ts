@@ -3,12 +3,13 @@
 import { Router } from "express";
 import type { Response } from "express";
 import { randomInt as cryptoRandomInt } from "crypto";
+import { applyHungerDecay } from "../pets/hunger";
 
 import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
-import { cooldownsFromPetRow } from "../lib/cooldowns";
-import { markRunawayIfNeeded } from "../lib/runaway";
-import { syncPetDerivedStats } from "../lib/syncPetDerivedStats";
+import { cooldownsFromPetRow } from "../pets/cooldowns";
+import { markRunawayIfNeeded } from "../pets/runaway";
+import { syncPetDerivedStats } from "../pets/syncPetDerivedStats";
 
 // ✅ IV helpers
 import { rollIV, sumStats } from "../lib/stats/individualValues";
@@ -48,6 +49,37 @@ type Starter = {
   line: ElementalLine;
   baseStats: BaseStatsTemplate;
 };
+
+type PetGender = "male" | "female" | "null_gender";
+
+/**
+ * male 40%
+ * female 50%
+ * null_gender 10%
+ */
+function rollGender(): PetGender {
+  const r = cryptoRandomInt(100); // 0..99
+  if (r < 40) return "male"; // 40%
+  if (r < 90) return "female"; // next 50%
+  return "null_gender"; // last 10%
+}
+
+// ----------------------------
+// Random Personality
+// ----------------------------
+async function getRandomPersonalityId() {
+  const { data, error } = await supabaseAdmin
+    .from("personalities")
+    .select("id")
+    .order("random()")
+    .limit(1);
+
+  if (error || !data || data.length === 0) {
+    throw new Error("Failed to fetch random personality");
+  }
+
+  return data[0].id;
+}
 
 // Egg base stats must total 10
 const STARTER_SPROUTS: Starter[] = [
@@ -197,7 +229,7 @@ function elementMapForLine(_line: ElementalLine) {
   return base;
 }
 
-// ✅ NEW helpers: verify base stats sum to 10 before hatch applies IV
+// ✅ verify base stats sum to 10 before hatch applies IV
 function sumBase5(b: {
   base_hp?: number | null;
   base_atk?: number | null;
@@ -214,6 +246,7 @@ function sumBase5(b: {
   );
 }
 
+// ✅ single source of truth for matching by name (case-insensitive)
 function findStarterByName(name: string | null | undefined) {
   const n = (name ?? "").trim().toLowerCase();
   return STARTER_SPROUTS.find((s) => s.name.toLowerCase() === n) ?? null;
@@ -387,9 +420,17 @@ petsRouter.get(
         });
       }
 
+      // ✅ Apply hunger decay first (so runaway logic & UI uses real hunger)
+      const decayedHunger = await applyHungerDecay(pet.id);
+      const petWithDecay = { ...(pet as any), hunger: decayedHunger };
+
       const petAfterRunaway = markRunawayIfNeeded
-        ? await markRunawayIfNeeded({ supabaseAdmin, pet, serverNowMs })
-        : pet;
+        ? await markRunawayIfNeeded({
+            supabaseAdmin,
+            pet: petWithDecay,
+            serverNowMs,
+          })
+        : petWithDecay;
 
       const baseStats = await fetchBaseStatsMapped(petAfterRunaway.id);
       const points = await fetchTotalPoints(petAfterRunaway.id);
@@ -454,17 +495,21 @@ petsRouter.get(
         });
       }
 
-      const baseStats = await fetchBaseStatsMapped(egg.id);
-      const points = await fetchTotalPoints(egg.id);
+      // ✅ Optional but consistent: eggs also decay hunger over time if they have hunger
+      const decayedHunger = await applyHungerDecay(egg.id);
+      const eggWithDecay = { ...(egg as any), hunger: decayedHunger };
+
+      const baseStats = await fetchBaseStatsMapped(eggWithDecay.id);
+      const points = await fetchTotalPoints(eggWithDecay.id);
 
       const elements = elementMapForLine(
-        (egg.line ?? "null_element") as ElementalLine,
+        (eggWithDecay.line ?? "null_element") as ElementalLine,
       );
 
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
-        pet: egg,
-        hatch: hatchPayload(egg, serverNowMs),
+        pet: eggWithDecay,
+        hatch: hatchPayload(eggWithDecay, serverNowMs),
         stats: baseStats,
         points,
         elements,
@@ -509,6 +554,7 @@ petsRouter.post(
           hatch_ends_at,
           unspent_points: 0,
           is_active: false,
+          gender: "null_gender",
         } as any)
         .select("*")
         .single();
@@ -557,21 +603,8 @@ petsRouter.post(
 
       const baseRowMapped = await fetchBaseStatsMapped(egg.id);
       if (!baseRowMapped) {
-        const starterFallback = STARTER_SPROUTS.find(
-          (s) => s.name === (egg.name ?? ""),
-        )?.baseStats;
-
-        const baseForEgg: BaseStatsTemplate = starterFallback ?? {
-          hp: 2,
-          atk: 2,
-          magi: 2,
-          def: 2,
-          spd: 2,
-          mana: 0,
-          base_total: 10,
-        };
-
-        await insertBaseStats(egg.id, baseForEgg);
+        const starter = findStarterByName(egg.name) ?? STARTER_SPROUTS[0];
+        await insertBaseStats(egg.id, starter.baseStats);
       }
 
       const { data: baseRaw, error: baseRawErr } = await supabaseAdmin
@@ -589,7 +622,6 @@ petsRouter.post(
           .status(500)
           .json({ error: "Missing pet_stats row after ensure." });
 
-      // ✅ GUARDRAIL: base must be exactly 10 before we add IV
       const baseSum = sumBase5({
         base_hp: (baseRaw as any).base_hp,
         base_atk: (baseRaw as any).base_atk,
@@ -661,6 +693,7 @@ petsRouter.post(
         return res.status(500).json({ error: baseUpdateErr.message });
 
       const nowIso = new Date(serverNowMs).toISOString();
+      const genderToSet = rollGender();
 
       const { data: hatched, error } = await supabaseAdmin
         .from("pets")
@@ -670,6 +703,7 @@ petsRouter.post(
           hatch_ends_at: null,
           unspent_points: 0,
           is_active: true,
+          gender: genderToSet,
         } as any)
         .eq("id", egg.id)
         .eq("user_id", userId)
@@ -688,6 +722,7 @@ petsRouter.post(
         awarded_points: HATCH_ALLOCATION_POINTS,
         iv,
         points,
+        gender: genderToSet,
       });
     } catch (e: any) {
       return res.status(500).json({ error: e?.message ?? "Server error" });

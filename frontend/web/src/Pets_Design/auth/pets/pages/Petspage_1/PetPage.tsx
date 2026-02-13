@@ -7,6 +7,7 @@ import { supabase } from "../../../../../lib/supabase/client";
 import { DailyCareCard } from "../../../../../dailyQuest/components/DailyCareCard";
 import { useUI } from "../../../../../app/providers/UIProvider";
 import PetMainStats from "../../../../../components/petMainstats";
+import { WeeklyRewardsBar } from "../../../../../components/rewards/weeklyRewardsBar";
 
 import "../../Designs/stats.css";
 import { StatsModal } from "../../Stats/StatsModal";
@@ -25,7 +26,7 @@ type PetStatsRow = {
 
 type PetElementsRow = {
   pet_id: string;
-  null: number;
+  null_element: number;
   water: number;
   fire: number;
   earth: number;
@@ -164,6 +165,207 @@ function EggBaseStatsCard({ stats }: { stats: PetStatsRow | null }) {
   );
 }
 
+/** ============================
+ *  Awards Modal (inline)
+ *  ============================ */
+
+type AwardRow = {
+  id: string;
+  name: string;
+  type: "ribbon" | "trophy";
+  icon_url: string | null;
+  rarity: string | null;
+};
+
+type PetAwardRow = {
+  id: string;
+  earned_at: string;
+  awards: AwardRow | null; // joined
+};
+
+function AwardsModal({
+  petId,
+  onClose,
+}: {
+  petId: string;
+  onClose: () => void;
+}) {
+  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState<PetAwardRow[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      setLoading(true);
+      setErr(null);
+
+      const { data, error } = await supabase
+        .from("pet_awards")
+        .select(
+          `
+            id,
+            earned_at,
+            awards:award_id (
+              id,
+              name,
+              type,
+              icon_url,
+              rarity
+            )
+          `,
+        )
+        .eq("pet_id", petId)
+        .order("earned_at", { ascending: false });
+
+      if (!alive) return;
+
+      if (error) {
+        setErr(error.message);
+        setRows([]);
+      } else {
+        setRows(((data as any) ?? []) as PetAwardRow[]);
+      }
+
+      setLoading(false);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [petId]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.65)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 10001,
+        padding: 16,
+      }}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(950px, 100%)",
+          borderRadius: 16,
+          padding: 14,
+          background: "rgba(10, 16, 28, 0.95)",
+          border: "1px solid rgba(255,255,255,0.10)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 10,
+          }}
+        >
+          <div style={{ fontWeight: 900, letterSpacing: 0.2 }}>
+            🎀 Ribbons & Trophies
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.18)",
+              background: "rgba(255,255,255,0.06)",
+              color: "rgba(255,255,255,0.92)",
+              cursor: "pointer",
+              fontWeight: 800,
+            }}
+          >
+            Close
+          </button>
+        </div>
+
+        {loading ? <p>Loading awards…</p> : null}
+        {err ? <p style={{ color: "crimson" }}>{err}</p> : null}
+
+        {!loading && !err && rows.length === 0 ? (
+          <p style={{ opacity: 0.9 }}>
+            No awards yet. Go commit violence in the arena 😈
+          </p>
+        ) : null}
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+            gap: 12,
+            marginTop: 12,
+          }}
+        >
+          {rows.map((r) => {
+            const a = r.awards;
+            return (
+              <div
+                key={r.id}
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  padding: 10,
+                  borderRadius: 12,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(0,0,0,0.25)",
+                }}
+              >
+                {a?.icon_url ? (
+                  <img
+                    src={a.icon_url}
+                    alt={a.name}
+                    style={{
+                      width: 52,
+                      height: 52,
+                      objectFit: "contain",
+                      borderRadius: 12,
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: 12,
+                      background: "rgba(255,255,255,0.08)",
+                    }}
+                  />
+                )}
+
+                <div>
+                  <div style={{ fontWeight: 900 }}>
+                    {a?.name ?? "Unknown Award"}
+                  </div>
+                  <div style={{ opacity: 0.85, fontSize: 12 }}>
+                    {(a?.type ?? "ribbon") + " • " + (a?.rarity ?? "common")}
+                  </div>
+                  <div style={{ opacity: 0.75, fontSize: 12, marginTop: 4 }}>
+                    Earned: {new Date(r.earned_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PetPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -177,6 +379,9 @@ export default function PetPage() {
   const [petModel, setPetModel] = useState<any | null>(null);
 
   const [statsOpen, setStatsOpen] = useState(false);
+  const [rewardsOpen, setRewardsOpen] = useState(false);
+  const [awardsOpen, setAwardsOpen] = useState(false);
+
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -200,13 +405,6 @@ export default function PetPage() {
         const resp = await fetchActive();
         if (!alive) return;
 
-        console.group("📡 [active] Response");
-        console.log("raw =", resp);
-        console.log("resp.pet =", resp?.pet);
-        console.log("resp.stats (base) =", resp?.stats);
-        console.log("resp.points (total) =", resp?.points);
-        console.groupEnd();
-
         setActiveResp(resp);
         setPetModel(mergePetModel(resp));
 
@@ -228,25 +426,20 @@ export default function PetPage() {
   }, [authLoading, user]);
 
   const pet = (petModel ?? (game as any)?.pet ?? null) as any | null;
-  const petName = pet?.name ?? "Your Pet";
 
-  const petStats = useMemo(() => {
-    const pts = pet?.points?.total;
-    const base = pet?.stats;
-
-    const s = pts ?? base ?? null;
-    if (!s) return null;
-
-    return {
-      hp: Number(s.hp ?? 0),
-      atk: Number(s.atk ?? 0),
-      def: Number(s.def ?? 0),
-      magi: Number(s.magi ?? 0),
-      spd: Number(s.spd ?? 0),
-    };
-  }, [pet]);
-
-  const petElements = null;
+  const activePetId = useMemo(() => {
+    const p = petModel ?? (game as any)?.pet ?? null;
+    return (
+      p?.id ??
+      p?.pet_id ??
+      p?.petId ??
+      p?.petID ??
+      p?.petID ??
+      activeResp?.pet?.id ??
+      activeResp?.pet?.pet_id ??
+      null
+    );
+  }, [petModel, game, activeResp]);
 
   const hatchEndsAt =
     activeResp?.hatch?.hatch_ends_at ?? pet?.hatch_ends_at ?? null;
@@ -262,28 +455,26 @@ export default function PetPage() {
   const isReady = countdown.done;
   const prettyLeft = useMemo(() => formatDuration(msLeft), [msLeft]);
 
-  // ✅ FIXED: PetMainStats must use HP STAT points from resp.points.total.hp, not hp_cur snapshot.
   const petMainStatsModel = useMemo(() => {
     if (!pet) return null;
 
-    // Real HP snapshot values (for real HP UI elsewhere)
-    const hpMax = Number(pet?.hp_max ?? 0);
-    const hpCur = Number(pet?.hp_cur ?? 0);
-
-    // Stat points: totals if available, else base, else fallback
     const pts = pet?.points?.total ?? null;
     const base = pet?.stats ?? null;
     const src = pts ?? base ?? pet;
 
     return {
       name: pet?.name ?? null,
+
+      // ✅ display these now
       line: String(pet?.line ?? "null_element"),
+      stage: String(pet?.stage ?? "baby"),
       level: Number(pet?.level ?? 1),
 
-      hp_max: hpMax,
-      hp_cur: hpCur,
+      // health bar snapshot (optional UI use)
+      hp_max: Number(pet?.hp_max ?? 0),
+      hp_cur: Number(pet?.hp_cur ?? 0),
 
-      // ✅ THIS is the HP number used in "Main Stats" + Total = (hp+atk+def+spd+magi)
+      // ✅ HP STAT used to compute “Baby HP”
       hp_stat: Number(src?.hp ?? 0),
 
       atk: Number(src?.atk ?? 0),
@@ -293,7 +484,9 @@ export default function PetPage() {
 
       gender: pet?.gender ?? "null_gender",
 
+      // ✅ training values come from pet_elements row
       training:
+        pet?.elements ??
         pet?.training ??
         pet?.training_elements ??
         pet?.trainingElements ??
@@ -316,12 +509,6 @@ export default function PetPage() {
       });
 
       const body = await res.json().catch(() => ({}));
-
-      console.group("🥚 [HATCH RESPONSE]");
-      console.log("status =", res.status);
-      console.log("body =", body);
-      console.groupEnd();
-
       if (!res.ok) throw new Error((body as any)?.error ?? "Hatch failed");
 
       await game.refresh?.();
@@ -340,13 +527,36 @@ export default function PetPage() {
 
   if (authLoading || (game as any)?.loading) return null;
 
+  // ✅ StatsModal wants a stats-like object (hp/atk/magi/def/spd)
+  const statsForModal = (pet?.points?.total ?? pet?.stats ?? null) as
+    | any
+    | null;
+
+  const elementsForModal = (pet?.elements ?? null) as any | null;
+
   return (
     <div style={{ padding: 16 }}>
-      <h1>Pet Page</h1>
+      <h1>User and Pets Page (gotta find a new name for this page.)</h1>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+      <div
+        style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}
+      >
         <button type="button" onClick={() => navigate("/hatchery")}>
           Hatchery (test)
+        </button>
+
+        <button type="button" onClick={() => setRewardsOpen(true)}>
+          🎁 Daily Rewards
+        </button>
+
+        <button
+          type="button"
+          className="dp-tab"
+          onClick={() => setAwardsOpen(true)}
+          disabled={!activePetId}
+          title={!activePetId ? "No active pet yet" : "View ribbons & trophies"}
+        >
+          🎀 Ribbons
         </button>
       </div>
 
@@ -375,27 +585,7 @@ export default function PetPage() {
         </div>
       ) : (
         <div style={{ marginTop: 12, maxWidth: 820 }}>
-          <p style={{ margin: 0 }}>
-            <strong>Stage:</strong> {pet.stage}
-          </p>
-
-          {/* Real HP snapshot */}
-          <p style={{ margin: "6px 0 0" }}>
-            <strong>HP:</strong> {Number(pet?.hp_cur ?? 0)} /{" "}
-            {Number(pet?.hp_max ?? 0)}
-          </p>
-
-          {/* Debug total points (canonical) */}
-          {pet?.points?.total_points != null ? (
-            <p style={{ margin: "6px 0 0", opacity: 0.85 }}>
-              <strong>Total Stat Points:</strong> {pet.points.total_points}
-              {"  "}
-              <small style={{ opacity: 0.8 }}>
-                (egg base 10 + IV 7 at hatch)
-              </small>
-            </p>
-          ) : null}
-
+          {/* Egg flow stays here */}
           {pet.stage === "egg" ? (
             <div
               style={{
@@ -423,9 +613,7 @@ export default function PetPage() {
               <EggBaseStatsCard stats={pet?.stats ?? null} />
             </div>
           ) : (
-            <p style={{ marginTop: 14, opacity: 0.85 }}>
-              Baby is alive. Next: bonding / home / fights.
-            </p>
+            <p style={{ marginTop: 14, opacity: 0.85 }}>Baby is alive.</p>
           )}
 
           {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
@@ -478,7 +666,7 @@ export default function PetPage() {
       >
         <button
           type="button"
-          onClick={() => navigate("/home")}
+          onClick={() => navigate("/secretHaven")}
           style={{
             padding: "10px 14px",
             borderRadius: 12,
@@ -488,9 +676,9 @@ export default function PetPage() {
             color: "white",
             cursor: "pointer",
           }}
-          aria-label="Go to Pet Home (TEMP)"
+          aria-label="Go to Pet Secret Haven (TEMP)"
         >
-          🏠 Pet Home (TEMP)
+          🏠 Pet Secret Haven (TEMP)
         </button>
 
         <button
@@ -537,13 +725,81 @@ export default function PetPage() {
         </button>
       </div>
 
+      {rewardsOpen && (
+        <div
+          onClick={() => setRewardsOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.65)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10000,
+            padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(1150px, 100%)",
+              borderRadius: 16,
+              padding: 14,
+              background: "rgba(10, 16, 28, 0.95)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+                marginBottom: 10,
+              }}
+            >
+              <div style={{ fontWeight: 900, letterSpacing: 0.2 }}>
+                Daily Rewards
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setRewardsOpen(false)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 12,
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "rgba(255,255,255,0.92)",
+                  cursor: "pointer",
+                  fontWeight: 800,
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <WeeklyRewardsBar />
+          </div>
+        </div>
+      )}
+
+      {awardsOpen && activePetId ? (
+        <AwardsModal
+          petId={String(activePetId)}
+          onClose={() => setAwardsOpen(false)}
+        />
+      ) : null}
+
+      {/* ✅ FIXED: pass real pet info, not activePetId (string) */}
       <StatsModal
         open={statsOpen}
         onClose={() => setStatsOpen(false)}
-        petName={petName}
-        stats={petStats}
-        level={pet?.level ?? 0}
-        elements={petElements}
+        petName={pet?.name ?? null}
+        level={Number(pet?.level ?? 1)}
+        stats={statsForModal ?? undefined}
+        elements={elementsForModal ?? undefined}
       />
 
       <div style={{ marginTop: 16 }}>

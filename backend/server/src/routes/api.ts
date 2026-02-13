@@ -7,6 +7,7 @@ import { authRouter } from "./auth";
 import { petsRouter } from "./pets";
 import { dailyCareRouter } from "./dailyCare";
 import { petActionsRouter } from "./petActions";
+import { rewardsRouter } from "./rewards";
 
 export const apiRouter = Router();
 
@@ -21,3 +22,8 @@ apiRouter.use("/pets/actions", petActionsRouter);
 
 // Daily care routes
 apiRouter.use("/daily/care", dailyCareRouter);
+
+// ✅ Daily Rewards routes
+// GET  /api/rewards/status
+// POST /api/rewards/claim
+apiRouter.use("/rewards", rewardsRouter);
