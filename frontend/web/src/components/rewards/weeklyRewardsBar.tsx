@@ -4,7 +4,7 @@ import {
   claimReward,
   getRewardsStatus,
   type RewardsStatus,
-} from "../../lib/rewards";
+} from "./claimRewards";
 import "./weeklyRewardsBar.css";
 
 const WEEK1_LABELS = [

@@ -2,17 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/useAuth";
 import { supabase } from "../../../lib/supabase/client";
-import {
-  formatDuration,
-  useNow,
-  useServerCountdown,
-} from "../../../Pets_Design/auth/Timers";
 
-import { MYSTERY_EGG } from "../../../assets/eggs/eggType";
+import { formatDuration } from "../../../lib/timers/time";
+import { useNow } from "../../../lib/timers/useNow";
+import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 
+import goldEggPng from "../../../Pets_Creation/assets/eggs/goldEgg.png";
 import "./HatcheryPage.css";
 
-console.log("Egg sprite URL:", MYSTERY_EGG.sprite);
+const MYSTERY_EGG = {
+  id: "mystery_egg",
+  name: "Mystery Egg",
+  sprite: goldEggPng,
+};
+
+console.log("Egg sprite URL:", goldEggPng);
 
 type PetStatsRow = {
   pet_id: string;
@@ -47,7 +51,7 @@ type HatcheryResponse = {
     hatch_remaining_ms: number;
   } | null;
   stats: PetStatsRow | null;
-  elements: PetElementsRow | null;
+  elements: PetElementsRow | null; // still present because backend returns it; we just don't show it here
 };
 
 type HatchEgg = {
@@ -195,30 +199,15 @@ function ItemSlotButton(props: {
   );
 }
 
+/**
+ * ✅ Egg stats panel: ONLY main stats + total.
+ * No elements/training display here.
+ */
 function SelectedEggStatsPanel(props: {
   egg: HatchEgg | null;
   stats: PetStatsRow | null;
-  elements: PetElementsRow | null;
 }) {
-  const { egg, stats, elements } = props;
-
-  const elementPairs = useMemo(() => {
-    if (!elements) return [];
-    const keys: Array<keyof PetElementsRow> = [
-      "water",
-      "fire",
-      "earth",
-      "air",
-      "ice",
-      "storm",
-      "light",
-      "shadow",
-    ];
-    return keys
-      .map((k) => [k, elements[k] as number] as const)
-      .filter(([, v]) => v > 0)
-      .sort((a, b) => b[1] - a[1]);
-  }, [elements]);
+  const { egg, stats } = props;
 
   return (
     <div className="statsPanel">
@@ -232,58 +221,39 @@ function SelectedEggStatsPanel(props: {
         ) : !stats ? (
           <div className="muted">Stats not loaded yet.</div>
         ) : (
-          <>
-            <div className="statsGrid">
-              <div className="statRow">
-                <div className="statLabel">HP</div>
-                <div className="statValue">{stats.hp}</div>
-              </div>
-              <div className="statRow">
-                <div className="statLabel">ATK</div>
-                <div className="statValue">{stats.atk}</div>
-              </div>
-              <div className="statRow">
-                <div className="statLabel">MAGI</div>
-                <div className="statValue">{stats.magi}</div>
-              </div>
-              <div className="statRow">
-                <div className="statLabel">DEF</div>
-                <div className="statValue">{stats.def}</div>
-              </div>
-              <div className="statRow">
-                <div className="statLabel">SPD</div>
-                <div className="statValue">{stats.spd}</div>
-              </div>
-              <div className="statRow">
-                <div className="statLabel">MANA</div>
-                <div className="statValue">{stats.mana}</div>
-              </div>
-              <div className="statRow">
-                <div className="statLabel">Total</div>
-                <div className="statValue">{stats.base_total}</div>
-              </div>
+          <div className="statsGrid">
+            <div className="statRow">
+              <div className="statLabel">HP</div>
+              <div className="statValue">{stats.hp}</div>
+            </div>
+            <div className="statRow">
+              <div className="statLabel">ATK</div>
+              <div className="statValue">{stats.atk}</div>
+            </div>
+            <div className="statRow">
+              <div className="statLabel">MAGI</div>
+              <div className="statValue">{stats.magi}</div>
+            </div>
+            <div className="statRow">
+              <div className="statLabel">DEF</div>
+              <div className="statValue">{stats.def}</div>
+            </div>
+            <div className="statRow">
+              <div className="statLabel">SPD</div>
+              <div className="statValue">{stats.spd}</div>
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <div className="muted" style={{ marginBottom: 6 }}>
-                Elements
-              </div>
-              {elementPairs.length === 0 ? (
-                <div className="muted">None</div>
-              ) : (
-                <div className="eggMiniStats">
-                  {elementPairs.map(([k, v], idx) => (
-                    <span key={String(k)}>
-                      {String(k)} {v}
-                      {idx < elementPairs.length - 1 ? (
-                        <span className="dot">•</span>
-                      ) : null}
-                    </span>
-                  ))}
-                </div>
-              )}
+            {/* If you don't want mana on eggs, keep this commented */}
+            {/* <div className="statRow">
+              <div className="statLabel">MANA</div>
+              <div className="statValue">{stats.mana}</div>
+            </div> */}
+
+            <div className="statRow">
+              <div className="statLabel">Total</div>
+              <div className="statValue">{stats.base_total}</div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
@@ -297,7 +267,7 @@ export default function HatcheryPage() {
   const [data, setData] = useState<HatcheryResponse | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
-  // Server-time drift handling (your approach is good)
+  // Server-time drift handling
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
   const localNowMs = useNow(1000);
@@ -332,7 +302,6 @@ export default function HatcheryPage() {
           setServerNowBaseMs(serverMs);
           setFetchedAtLocalMs(Date.now());
         } else {
-          // If backend didn't send a usable server time, just fall back to local
           setServerNowBaseMs(Date.now());
           setFetchedAtLocalMs(Date.now());
         }
@@ -410,7 +379,6 @@ export default function HatcheryPage() {
     try {
       await hatchEgg();
 
-      // Optional but nice: refresh hatchery state once after hatching
       try {
         const next = await fetchHatchery();
         setData(next);
@@ -475,7 +443,9 @@ export default function HatcheryPage() {
                       <div className="selectedSub">
                         {selectedCd.done
                           ? "Ready to hatch"
-                          : `Hatches in ${formatDuration(selectedCd.remainingMs ?? 0)}`}
+                          : `Hatches in ${formatDuration(
+                              selectedCd.remainingMs ?? 0,
+                            )}`}
                       </div>
                     </div>
                   </div>
@@ -493,10 +463,10 @@ export default function HatcheryPage() {
             </div>
           </div>
 
+          {/* ✅ Stats only (no elements) */}
           <SelectedEggStatsPanel
             egg={selectedEgg}
             stats={data?.stats ?? null}
-            elements={data?.elements ?? null}
           />
         </main>
 

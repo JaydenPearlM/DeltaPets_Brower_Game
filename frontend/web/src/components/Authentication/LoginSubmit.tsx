@@ -34,17 +34,7 @@ export function useLoginSubmit({
       const pass = password;
 
       if (!raw || !pass) {
-        onMessage("Missing email and password.");
-        return;
-      }
-
-      // Only require Turnstile if site key exists
-      const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as
-        | string
-        | undefined;
-
-      if (siteKey && !captchaToken) {
-        onMessage("Please complete the Turnstile check.");
+        onMessage("Missing username/email and password.");
         return;
       }
 

@@ -6,7 +6,7 @@ export type AuthContextValue = {
   user: User | null;
   loading: boolean;
 
-  // ✅ EMAIL LOGIN ONLY (Alpha-safe)
+  // ✅ Username OR Email login
   signIn: (args: {
     identifier: string;
     password: string;
@@ -31,8 +31,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data, error }) => {
       if (!mounted) return;
+      if (error) {
+        console.error("getSession error:", error);
+      }
       setUser(data.session?.user ?? null);
       setLoading(false);
     });
@@ -54,18 +57,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       loading,
 
-      // 🔐 EMAIL-ONLY SIGN IN (no username lookup)
+      // 🔐 Username OR Email sign in
+      // Supabase password auth requires email, so we resolve username -> email
+      // using the `profiles` table.
       signIn: async ({ identifier, password, captchaToken }) => {
-        const email = identifier.trim().toLowerCase();
+        const raw = identifier.trim();
+        if (!raw || !password) {
+          return { error: { message: "Missing username/email and password." } };
+        }
 
-        if (!email.includes("@")) {
-          return {
-            error: { message: "Please log in using your email address." },
-          };
+        const normalized = raw.toLowerCase();
+        let emailToUse = normalized;
+
+        // If it doesn't look like an email, treat it as a username and resolve it.
+        if (!normalized.includes("@")) {
+          const username = normalized;
+
+          const { data, error: lookupErr } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("username", username)
+            .maybeSingle();
+
+          if (lookupErr) {
+            console.error("username lookup error:", lookupErr);
+            return {
+              error: {
+                message:
+                  "Could not look up that username right now. Try again in a sec.",
+              },
+            };
+          }
+
+          if (!data?.email) {
+            return { error: { message: "Unknown username." } };
+          }
+
+          emailToUse = String(data.email).trim().toLowerCase();
         }
 
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: emailToUse,
           password,
           options: captchaToken ? { captchaToken } : undefined,
         });

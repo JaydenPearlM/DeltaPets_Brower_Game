@@ -1,14 +1,11 @@
-// frontend/web/src/app/routes/router.tsx
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App";
-
-import Homepage from "../../pages/homepage";
-import CreatePage from "../../pages/create";
-import Gym from "../../pages/gym";
-import InventoryPage from "../../pages/inventory";
+import Homepage from "../../pages/Homepage/homepage";
+import CreatePage from "../../pages/cutscene/create";
+import Gym from "../../pages/gym/gym";
+import InventoryPage from "../../components/inventory/inventory";
 import PetHomePage from "../../pages/PetHome_SecretHaven/PetHomePage";
-
-import PetPage from "../../Pets_Design/auth/pets/pages/Petspage_1/PetPage";
+import PetPage from "../../pages/petsPage/PetPage";
 import AuthCallback from "./AuthCallback";
 import HatcheryPage from "../../components/Hatchery/pages/HatcheryPage";
 
@@ -26,7 +23,6 @@ export const router = createBrowserRouter([
       { path: "home", element: <Homepage /> },
 
       // Auth callbacks
-      { path: "auth/callback", element: <AuthCallback /> },
       { path: "authcallback", element: <AuthCallback /> },
 
       // Core pages

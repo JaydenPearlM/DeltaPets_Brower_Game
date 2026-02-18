@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "./LoginForm.css";
 
 type LoginFormProps = {
   identifier: string;
@@ -20,7 +19,7 @@ export function LoginForm({
     <>
       <div>
         <label>
-          Just Your Email Please! Thank you!
+          Username or Email
           <input
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}

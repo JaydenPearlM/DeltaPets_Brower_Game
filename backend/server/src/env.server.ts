@@ -59,9 +59,4 @@ export const env = {
     optional("AUTH_RATE_LIMIT_WINDOW_MS", "60000"),
   ),
   AUTH_RATE_LIMIT_MAX: Number(optional("AUTH_RATE_LIMIT_MAX", "20")),
-
-  // ---------------------------------------------------------------------------
-  // Bot protection (Cloudflare Turnstile)
-  // ---------------------------------------------------------------------------
-  TURNSTILE_SECRET_KEY: optional("TURNSTILE_SECRET_KEY"),
 };

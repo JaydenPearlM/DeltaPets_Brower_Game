@@ -1,8 +1,32 @@
+// src/pages/PetHome_SecretHaven/PetHomePage.tsx
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase/client";
 import { useAuth } from "../../app/providers/useAuth";
 import "./PetHomePage.css";
+
+import { FURNITURE, TILE, roomDefaults } from "./secretHaven.data";
+import {
+  clamp,
+  getItemSizeTiles,
+  rectsOverlap,
+  safeParseJSON,
+  storageKey,
+  tilesUsed,
+} from "./secretHaven.utils";
+import type {
+  ActivePetResponse,
+  Cooldowns,
+  FurnitureKind,
+  RoomKey,
+  RoomLayout,
+  PlacedFurniture,
+} from "./secretHaven.types";
+
+import { RoomTopDown } from "./petHomeComponents/roomTopDown";
+import { FurniturePicker } from "./petHomeComponents/furniturePicker";
+import { PetCarePanel } from "./petHomeComponents/petCarePanel";
 
 // =============================================================================
 // Pet Home (Top-down room editor)
@@ -11,209 +35,6 @@ import "./PetHomePage.css";
 // - Click to place, right-click to remove
 // - Local persistence (localStorage) keyed per-user
 // =============================================================================
-
-type CooldownState = {
-  ends_at: string | null;
-  remaining_ms: number;
-  ready: boolean;
-};
-type Cooldowns = {
-  feed: CooldownState;
-  clean: CooldownState;
-  play: CooldownState;
-  bond: CooldownState;
-};
-
-type ActivePetResponse = {
-  server_now: string;
-  pet: any | null;
-  cooldowns?: Cooldowns | null;
-};
-
-type RoomKey = "care" | "bond";
-
-type FurnitureKind =
-  | "trough"
-  | "wash"
-  | "bed"
-  | "couch"
-  | "table"
-  | "chair"
-  | "rug";
-
-type FurnitureDef = {
-  kind: FurnitureKind;
-  label: string;
-  w: number; // tiles
-  h: number; // tiles
-  tilesCost: number; // placement budget
-  description: string;
-  buffs: Record<string, number>; // future use
-};
-
-type PlacedFurniture = {
-  id: string;
-  kind: FurnitureKind;
-  x: number; // tile coords
-  y: number;
-  rot: 0 | 90;
-};
-
-type RoomLayout = {
-  roomKey: RoomKey;
-  width: number;
-  height: number;
-  maxTilesBudget: number;
-  items: PlacedFurniture[];
-};
-
-const TILE = 48;
-
-const FURNITURE: Record<FurnitureKind, FurnitureDef> = {
-  trough: {
-    kind: "trough",
-    label: "Trough",
-    w: 2,
-    h: 1,
-    tilesCost: 2,
-    description: "Feeds your pet. Later: increases hunger buffer.",
-    buffs: { hunger_decay_modifier: -0.1 },
-  },
-  wash: {
-    kind: "wash",
-    label: "Wash Station",
-    w: 2,
-    h: 1,
-    tilesCost: 2,
-    description: "Cleans your pet. Later: faster cleanliness recovery.",
-    buffs: { cleanliness_gain: 1 },
-  },
-  bed: {
-    kind: "bed",
-    label: "Pet Bed",
-    w: 2,
-    h: 2,
-    tilesCost: 4,
-    description: "Rest spot. Later: passive energy regen.",
-    buffs: { energy_regen: 1 },
-  },
-  couch: {
-    kind: "couch",
-    label: "Couch",
-    w: 2,
-    h: 1,
-    tilesCost: 2,
-    description: "Bonding furniture. Later: bond gain bonus.",
-    buffs: { bond_gain: 0.1 },
-  },
-  table: {
-    kind: "table",
-    label: "Table",
-    w: 2,
-    h: 2,
-    tilesCost: 4,
-    description: "Decor / crafting surface. Later: boosts daily quest rewards.",
-    buffs: { daily_bonus: 0.05 },
-  },
-  chair: {
-    kind: "chair",
-    label: "Chair",
-    w: 1,
-    h: 1,
-    tilesCost: 1,
-    description: "A tiny throne. Later: small bond bonus.",
-    buffs: { bond_gain: 0.03 },
-  },
-  rug: {
-    kind: "rug",
-    label: "Rug",
-    w: 3,
-    h: 2,
-    tilesCost: 6,
-    description: "Cozy vibes. Later: happiness gain.",
-    buffs: { happiness_gain: 0.1 },
-  },
-};
-
-function fmt(ms: number) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  if (m <= 0) return `${r}s`;
-  return `${m}m ${r}s`;
-}
-
-function storageKey(userId: string, roomKey: RoomKey) {
-  return `deltapets.home.${userId}.${roomKey}`;
-}
-
-function safeParseJSON<T>(raw: string | null): T | null {
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
-
-function rectsOverlap(
-  a: { x: number; y: number; w: number; h: number },
-  b: { x: number; y: number; w: number; h: number },
-) {
-  return !(
-    a.x + a.w <= b.x ||
-    b.x + b.w <= a.x ||
-    a.y + a.h <= b.y ||
-    b.y + b.h <= a.y
-  );
-}
-
-function getItemSizeTiles(item: PlacedFurniture) {
-  const def = FURNITURE[item.kind];
-  if (item.rot === 90) return { w: def.h, h: def.w };
-  return { w: def.w, h: def.h };
-}
-
-function tilesUsed(items: PlacedFurniture[]) {
-  return items.reduce(
-    (sum, it) => sum + (FURNITURE[it.kind]?.tilesCost ?? 0),
-    0,
-  );
-}
-
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
-}
-
-function roomDefaults(roomKey: RoomKey): RoomLayout {
-  // Slightly different vibes per room
-  if (roomKey === "care") {
-    return {
-      roomKey,
-      width: 12,
-      height: 9,
-      maxTilesBudget: 28,
-      items: [
-        { id: crypto.randomUUID(), kind: "trough", x: 1, y: 6, rot: 0 },
-        { id: crypto.randomUUID(), kind: "wash", x: 9, y: 1, rot: 0 },
-        { id: crypto.randomUUID(), kind: "bed", x: 2, y: 1, rot: 0 },
-      ],
-    };
-  }
-  return {
-    roomKey,
-    width: 12,
-    height: 9,
-    maxTilesBudget: 28,
-    items: [
-      { id: crypto.randomUUID(), kind: "couch", x: 2, y: 6, rot: 0 },
-      { id: crypto.randomUUID(), kind: "table", x: 6, y: 5, rot: 0 },
-      { id: crypto.randomUUID(), kind: "chair", x: 5, y: 7, rot: 0 },
-      { id: crypto.randomUUID(), kind: "chair", x: 9, y: 7, rot: 0 },
-      { id: crypto.randomUUID(), kind: "rug", x: 4, y: 2, rot: 0 },
-    ],
-  };
-}
 
 export default function PetHomePage() {
   const { user, loading: authLoading } = useAuth();
@@ -255,14 +76,14 @@ export default function PetHomePage() {
   }, []);
 
   async function loadActivePet() {
-    const apiBase = import.meta.env.VITE_API_URL;
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData.session?.access_token;
     if (!token) return;
 
-    const res = await fetch(`${apiBase}/api/pets/active`, {
+    const res = await fetch(`/api/pets/active`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error ?? "Failed to load pet");
     setData(json as ActivePetResponse);
@@ -315,6 +136,7 @@ export default function PetHomePage() {
       JSON.stringify(careLayout),
     );
   }, [careLayout, user?.id]);
+
   useEffect(() => {
     if (!user?.id) return;
     localStorage.setItem(
@@ -362,12 +184,11 @@ export default function PetHomePage() {
     setMsg(null);
     setBusy(action);
     try {
-      const apiBase = import.meta.env.VITE_API_URL;
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
       if (!token) throw new Error("Not logged in");
 
-      const res = await fetch(`${apiBase}/api/pets/actions/do`, {
+      const res = await fetch(`/api/pets/actions/do`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -532,6 +353,7 @@ export default function PetHomePage() {
         >
           Care Room
         </button>
+
         <button
           className={`tabBtn ${roomKey === "bond" ? "tabBtn--active" : ""}`}
           onClick={() => {
@@ -589,6 +411,7 @@ export default function PetHomePage() {
               >
                 {editMode ? "Done" : "Edit Room"}
               </button>
+
               <button
                 className="petHome__btn"
                 disabled={!editMode}
@@ -596,6 +419,7 @@ export default function PetHomePage() {
               >
                 Rotate (R)
               </button>
+
               <button
                 className="petHome__btn"
                 disabled={!editMode}
@@ -606,73 +430,23 @@ export default function PetHomePage() {
             </div>
           </div>
 
-          <div
-            ref={roomRef}
-            className={`roomTop ${roomKey === "care" ? "roomTop--care" : "roomTop--bond"}`}
-            style={{ width: layout.width * TILE, height: layout.height * TILE }}
+          <RoomTopDown
+            layout={layout}
+            roomKey={roomKey}
+            editMode={editMode}
+            roomRef={roomRef}
             onMouseMove={onRoomMouseMove}
             onMouseLeave={() => setHoverTile(null)}
             onClick={onRoomClick}
             onContextMenu={onRoomContextMenu}
-          >
-            {/* grid overlay */}
-            {editMode ? (
-              <div
-                className="gridOverlay"
-                style={{ backgroundSize: `${TILE}px ${TILE}px` }}
-                aria-hidden="true"
-              />
-            ) : null}
-
-            {/* placed furniture */}
-            {layout.items.map((it) => {
-              const def = FURNITURE[it.kind];
-              const s = getItemSizeTiles(it);
-              return (
-                <div
-                  key={it.id}
-                  className={`furn furn--${it.kind}`}
-                  style={{
-                    left: it.x * TILE,
-                    top: it.y * TILE,
-                    width: s.w * TILE,
-                    height: s.h * TILE,
-                  }}
-                  title={`${def.label} — ${def.description}`}
-                >
-                  <div className="furn__label">{def.label}</div>
-                </div>
-              );
-            })}
-
-            {/* ghost placement */}
-            {editMode && hoverTile ? (
-              <div
-                className={`ghost ${canPlaceAt(hoverTile.x, hoverTile.y, selectedKind, rot) ? "ghost--ok" : "ghost--bad"}`}
-                style={{
-                  left: hoverTile.x * TILE,
-                  top: hoverTile.y * TILE,
-                  width: selectedSize.w * TILE,
-                  height: selectedSize.h * TILE,
-                }}
-              >
-                <div className="ghost__label">{selectedDef.label}</div>
-              </div>
-            ) : null}
-
-            {/* pet (hidden during edit) */}
-            {!editMode ? (
-              <div
-                className="petSprite"
-                style={{ left: 6 * TILE, top: 4 * TILE }}
-              >
-                <div className="petSprite__blob" />
-                <div className="petSprite__name">
-                  {pet?.is_runaway ? "Gone..." : (pet?.name ?? "Your Pet")}
-                </div>
-              </div>
-            ) : null}
-          </div>
+            hoverTile={hoverTile}
+            selectedKind={selectedKind}
+            rot={rot}
+            selectedSize={selectedSize}
+            selectedDef={selectedDef}
+            canPlaceAt={canPlaceAt}
+            pet={pet}
+          />
         </div>
 
         {/* PANEL */}
@@ -697,103 +471,20 @@ export default function PetHomePage() {
                 </div>
               ) : null}
 
-              <div className="panelBlock">
-                <div className="panelBlock__title">Room Edit</div>
-                <div className="panelBlock__body">
-                  <div className="picker">
-                    <div className="picker__label">Furniture</div>
-                    <div className="picker__grid">
-                      {(Object.keys(FURNITURE) as FurnitureKind[]).map((k) => {
-                        const def = FURNITURE[k];
-                        const active = selectedKind === k;
-                        const disabled = !editMode;
-                        return (
-                          <button
-                            key={k}
-                            className={`pickBtn ${active ? "pickBtn--active" : ""}`}
-                            disabled={disabled}
-                            onClick={() => setSelectedKind(k)}
-                            title={`${def.label} • costs ${def.tilesCost} tiles`}
-                          >
-                            <div className="pickBtn__name">{def.label}</div>
-                            <div className="pickBtn__meta">
-                              {def.w}×{def.h} • {def.tilesCost} tiles
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+              <FurniturePicker
+                editMode={editMode}
+                selectedKind={selectedKind}
+                setSelectedKind={setSelectedKind}
+                selectedDef={selectedDef}
+                selectedSize={selectedSize}
+              />
 
-                    <div className="picker__info">
-                      <div className="picker__infoTitle">
-                        {selectedDef.label}
-                      </div>
-                      <div className="picker__infoDesc">
-                        {selectedDef.description}
-                      </div>
-                      <div className="picker__infoMeta">
-                        Size: {selectedSize.w}×{selectedSize.h} • Cost:{" "}
-                        {selectedDef.tilesCost}
-                      </div>
-                      {!editMode ? (
-                        <div className="picker__locked">
-                          Turn on <b>Edit Room</b> to place stuff.
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="panelBlock">
-                <div className="panelBlock__title">Pet Care</div>
-                <div className="panelBlock__body">
-                  <div className="stats">
-                    <div className="stat">
-                      <div className="stat__k">Hunger</div>
-                      <div className="stat__v">{pet.hunger}</div>
-                    </div>
-                    <div className="stat">
-                      <div className="stat__k">Clean</div>
-                      <div className="stat__v">{pet.cleanliness}</div>
-                    </div>
-                    <div className="stat">
-                      <div className="stat__k">Happy</div>
-                      <div className="stat__v">{pet.happiness}</div>
-                    </div>
-                    <div className="stat">
-                      <div className="stat__k">Bond</div>
-                      <div className="stat__v">{pet.bond ?? 0}</div>
-                    </div>
-                  </div>
-
-                  <div className="actions">
-                    <button
-                      className="actionBtn"
-                      disabled={!!busy || pet.is_runaway || cd.feed > 0}
-                      onClick={() => doAction("feed")}
-                    >
-                      Feed {cd.feed > 0 ? `(${fmt(cd.feed)})` : ""}
-                    </button>
-
-                    <button
-                      className="actionBtn"
-                      disabled={!!busy || pet.is_runaway || cd.clean > 0}
-                      onClick={() => doAction("clean")}
-                    >
-                      Clean {cd.clean > 0 ? `(${fmt(cd.clean)})` : ""}
-                    </button>
-
-                    <button
-                      className="actionBtn"
-                      disabled={!!busy || pet.is_runaway || cd.bond > 0}
-                      onClick={() => doAction("bond")}
-                    >
-                      Sit / Bond {cd.bond > 0 ? `(${fmt(cd.bond)})` : ""}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <PetCarePanel
+                pet={pet}
+                busy={busy}
+                cd={{ feed: cd.feed, clean: cd.clean, bond: cd.bond }}
+                doAction={doAction}
+              />
 
               {msg ? <div className="panel__msg">{msg}</div> : null}
 

@@ -1,5 +1,5 @@
 // frontend/web/src/components/Inventory/InventoryOverlay.tsx
-import { InventoryPanel } from "../../pages/inventory";
+import { InventoryPanel } from "./inventory";
 import { useUI } from "../../app/providers/UIProvider";
 import "./inventoryOverlay.css";
 
