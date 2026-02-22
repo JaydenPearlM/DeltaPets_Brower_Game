@@ -1,7 +1,7 @@
 import type React from "react";
-import { FURNITURE, TILE } from "../secretHaven.data";
-import { getItemSizeTiles } from "../secretHaven.utils";
-import type { FurnitureKind, RoomKey, RoomLayout } from "../secretHaven.types";
+import { FURNITURE, TILE } from "./secretHaven.data";
+import { getItemSizeTiles } from "./secretHaven.utils";
+import type { FurnitureKind, RoomKey, RoomLayout } from "./secretHaven.types";
 
 type Props = {
   layout: RoomLayout;

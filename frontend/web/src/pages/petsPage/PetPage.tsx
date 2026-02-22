@@ -8,6 +8,7 @@ import { useGame } from "../../app/providers/GameProvider";
 import { supabase } from "../../lib/supabase/client";
 import { DailyCareCard } from "../../dailyQuest/components/DailyCareCard/DailyCareCard";
 import { useUI } from "../../app/providers/UIProvider";
+import { CareRoom } from "./components/petHomeComponents/careRoom";
 
 import PetMainStats from "../../Pets_Creation/registry/Stats/mainStats/petMainstats";
 import { WeeklyRewardsBar } from "../../components/rewards/weeklyRewardsBar";
@@ -18,7 +19,7 @@ import { formatDuration } from "../../lib/timers/time";
 import { AwardsModal } from "../../components/awardModels/awardsModel";
 import { PetPageHeader } from "./components/petPageHeader";
 import { PetTempNavButtons } from "./components/petTempNavButtons";
-import { EggSection } from "./components/eggSection";
+import { EggSection } from "./components/eggsStats/eggSection";
 
 /** -----------------------------
  * Types (kept here for copy/paste)
@@ -378,8 +379,12 @@ export default function PetPage() {
         <p style={{ color: "crimson", marginTop: 10 }}>Load error: {loadErr}</p>
       ) : null}
 
-      <div style={{ marginTop: 12, maxWidth: 520 }}>
+      <div style={{ marginTop: 12, maxWidth: 820 }}>
         <DailyCareCard />
+
+        <div style={{ marginTop: 12 }}>
+          <CareRoom />
+        </div>
       </div>
 
       <div

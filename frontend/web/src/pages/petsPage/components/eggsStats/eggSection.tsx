@@ -1,6 +1,6 @@
 import React from "react";
 import { EggBaseStatsCard } from "./eggBaseStatsCard";
-import type { PetStatsRow } from "../petTypes";
+import type { PetStatsRow } from "../../petTypes";
 
 export function EggSection({
   pet,

@@ -1,30 +1,13 @@
 /* =============================================================================
-   Deltapets – Global Styles (global.css)
-   Goals:
-   - One source of truth (no Vite starter conflicts)
-   - Global typography + font variables
-   - Resolution-safe game shell (16:9)
-   - Clean base defaults (links/buttons) without layout side-effects
+   DeltaPets — Global Styles (global.css)
+   - Dark Steel base tokens
+   - Blue/Purple "cloudy steel" background (NO images)
+   - Accent buttons (Red / Blue / Purple) with tasteful gradients
+   - Fixed 1920 stage + INTERNAL scrollbar
 ============================================================================= */
 
-/* ------------------------------------- 
-    Lock Scrolling and set background
--------------------------------------- */
-
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-}
-
-body {
-  background: #0b0f1a; /* same as --dp-bg */
-  overflow: hidden;    /* prevent body scrollbar */
-}
-
 /* -------------------------
-   Base / Reset
+   Base Reset
 -------------------------- */
 *,
 *::before,
@@ -34,38 +17,29 @@ body {
 
 html,
 body,
-#root {  
-  height: 100%;  
-  padding: 0;
-}
-body {
+#root {
+  height: 100%;
+  width: 100%;
   margin: 0;
-  overflow: hidden; 
-  background: #05080f;
   padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
-
-//Vertical Scrolling
-overflow-x: hidden;
-overflow-y: auto;
 
 /* Prevent mobile text autosizing weirdness */
 html {
   -webkit-text-size-adjust: 100%;
 }
 
-/* Smoother text rendering (safe defaults) */
+/* -------------------------
+   Theme Tokens + Fonts
+-------------------------- */
 :root {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
   /* Fonts */
-  /*
-    NOTE: You said you're using Quantico for the DeltaPets logo + in-game headers.
-    This variable is the single source of truth. If Quantico isn't loaded yet,
-    it will fall back cleanly.
-  */
   --font-logo: "Quantico", "New Rocker", system-ui, sans-serif;
   --font-heading:
     "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
@@ -74,18 +48,56 @@ html {
     "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     sans-serif;
 
-  /* Theme tokens */
-  --bg: #0b0e14;
+  /* =========================
+     DARK STEEL (BASE)
+  ========================= */
+  --color-bg-deep: #0f141c;
+  --color-bg-primary: #111827;
+  --color-bg-secondary: #1b2433;
+  --color-panel: #374151;
+
+  /* =========================
+     ACCENTS (Option A)
+     - No teal / no yellow
+     - "Cool fighter" vibe
+  ========================= */
+
+  --color-accent-red: #8b1e2d;
+  --color-accent-red-hi: #a62838;
+
+  --color-accent-yellow: #ffeb3b; /* strong bright yellow */
+  --color-accent-yellow-hi: #fff176;
+
+  --color-accent-blue: #3b82f6;
+  --color-accent-blue-hi: #60a5fa;
+
+  --color-accent-purple: #8b5cf6;
+  --color-accent-purple-hi: #a78bfa;
+
+  /* Text */
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+
+  /* Lighting helpers */
+  --color-glow-blue: #1e3a8a;
+  --color-glow-cyan: #0ea5e9; /* tiny highlight if desired */
+  --color-shadow-dark: #000000;
+
+  /* Aliases */
+  --bg: var(--color-bg-primary);
   --bg-elev: rgba(255, 255, 255, 0.05);
   --bg-elev-2: rgba(255, 255, 255, 0.08);
-  --border: rgba(255, 255, 255, 0.14);
-  --border-strong: rgba(255, 255, 255, 0.22);
-  --text: #e6e8ee;
-  --muted: rgba(230, 232, 238, 0.78);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --text: var(--color-text-primary);
+  --muted: var(--color-text-secondary);
 
   --radius-sm: 10px;
   --radius-md: 14px;
-  --focus: rgba(255, 255, 255, 0.35);
+  --focus: rgba(96, 165, 250, 0.35); /* blue focus ring */
 
   /* Responsive type scale */
   --text-xs: clamp(12px, 1vw, 13px);
@@ -95,19 +107,146 @@ html {
   --text-xl: clamp(18px, 1.8vw, 22px);
   --text-2xl: clamp(22px, 2.4vw, 28px);
   --text-3xl: clamp(28px, 3vw, 36px);
+
+  /* Background tuning knobs */
+  --bg-grain-opacity: 0.028;
+  --bg-glow-indigo: 0.22;
+  --bg-glow-violet: 0.18;
+  --bg-glow-blue: 0.16;
+  --bg-glow-cyan: 0.06;
+
+  /* =========================
+     STAGE SETTINGS
+  ========================= */
+  --stage-width: 1920px;
+  --stage-radius: 18px;
+  --stage-header-height: 110px; /* tweak if your banner is taller */
 }
 
 /* -------------------------
-   Global Typography
+   Global Typography + Background
 -------------------------- */
 body {
+  margin: 0;
+  overflow: hidden; /* page does NOT scroll; stage scrolls */
+
   font-family: var(--font-body);
   font-size: var(--text-md);
   line-height: 1.5;
-
-  /* Deltapets default theme */
-  background-color: var(--bg);
   color: var(--text);
+
+  background:
+    radial-gradient(
+      1200px 800px at 22% 18%,
+      rgba(59, 130, 246, 0.38),
+      transparent 35%
+    ),
+    radial-gradient(
+      1100px 750px at 18% 62%,
+      rgba(14, 165, 233, 0.26),
+      transparent 45%
+    ),
+    radial-gradient(
+      1200px 820px at 82% 22%,
+      rgba(139, 92, 246, 0.34),
+      transparent 40%
+    ),
+    radial-gradient(
+      1000px 720px at 74% 62%,
+      rgba(167, 139, 250, 0.18),
+      transparent 40%
+    ),
+    radial-gradient(
+      800px 540px at 52% 82%,
+      rgba(236, 72, 153, 0.1),
+      transparent 40%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.1) 0px,
+      rgba(255, 255, 255, 0.1) 1px,
+      transparent 7px,
+      transparent 7px
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-bg-secondary) 0%,
+      var(--color-bg-primary) 60%,
+      var(--color-bg-deep) 90%
+    );
+
+  background-blend-mode:
+    screen, screen, screen, screen, screen, overlay, normal;
+  background-color: var(--bg);
+}
+
+/* =========================
+   Stage Logo (Token Driven)
+========================= */
+
+.dp-logoWrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center; /* centers tagline under logo */
+  text-align: center;
+}
+
+/* MAIN TITLE */
+.dp-logo {
+  position: relative;
+  display: inline-block;
+
+  font-family: var(--font-logo);
+  font-weight: 900;
+  font-size: 150px;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  user-select: none;
+  color: #ffeb38;
+
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-yellow-hi) 70%,
+    var(--color-accent-yellow) 70%
+  );
+  -webkit-background-clip: text;
+
+  /* Red outline */
+  -webkit-text-stroke: 2px var(--color-accent-red);
+
+  /* Controlled shadow (not too heavy) */
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.25),
+    0 8px 20px rgba(0, 0, 0, 0.25),
+    0 0 10px rgba(251, 191, 36, 0.18);
+}
+
+/* TAGLINE */
+.dp-logoTag {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  font-size: 14px;
+  margin-top: -14px;
+
+  color: rgba(249, 250, 251, 0.92);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* BOND emphasis */
+.dp-logoBond {
+  font-family: var(--font-logo);
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  font-size: 1.5em;
+
+  color: var(--color-accent-yellow-hi);
+  -webkit-text-stroke: 1px var(--color-accent-red);
+
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.25),
+    0 0 10px rgba(237, 251, 36, 0.2);
 }
 
 h1,
@@ -135,7 +274,118 @@ h1 {
 }
 
 /* -------------------------
-   Forms (global baseline)
+   FIXED 1920 STAGE + INTERNAL SCROLL
+   Use in your layout:
+   <div className="dp-viewport">
+     <div className="dp-stage">
+       <header className="dp-stageHeader">...</header>
+       <main className="dp-stageScroll">...</main>
+     </div>
+   </div>
+-------------------------- */
+
+.dp-viewport {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+}
+
+.dp-stage {
+  width: var(--stage-width); /* ✅ 1920 wide */
+  height: calc(100vh - 24px); /* fits inside viewport padding */
+  max-height: 100%;
+
+  border-radius: var(--stage-radius);
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+
+  /* Subtle stage “glass steel” overlay so content pops */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.22)),
+    rgba(0, 0, 0, 0.2);
+}
+
+/* If the screen is smaller than 1920, shrink stage without reflow chaos */
+@media (max-width: 1920px) {
+  .dp-stage {
+    width: min(var(--stage-width), calc(100vw - 24px));
+  }
+}
+
+.dp-stageHeader {
+  height: var(--stage-header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      900px 140px at 25% 0%,
+      rgba(59, 130, 246, 0.18),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 140px at 75% 0%,
+      rgba(139, 92, 246, 0.16),
+      transparent 62%
+    ),
+    linear-gradient(
+      to bottom,
+      var(--color-bg-secondary),
+      var(--color-bg-primary)
+    );
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.dp-headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* IMPORTANT:
+   Your LogoDeltapets is a banner DIV, not an <img>.
+   So we style it like a container and scale it safely. */
+.dp-headerLogo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* this keeps it from cropping */
+  max-height: calc(var(--stage-header-height) - 18px);
+  max-width: 420px;
+
+  /* prevent the Link wrapper from causing weird sizing */
+  line-height: 0;
+}
+
+/* Make sure the clickable link doesn’t add default styling */
+.dp-logoLink {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.dp-stageScroll {
+  height: calc(100% - var(--stage-header-height));
+  overflow-y: auto; /* ✅ scroll INSIDE the stage */
+  overflow-x: hidden;
+  padding: 18px;
+}
+
+/* -------------------------
+   Forms (baseline)
 -------------------------- */
 label {
   display: block;
@@ -146,11 +396,6 @@ select,
 textarea {
   font: inherit;
   color: inherit;
-}
-
-input,
-select,
-textarea {
   width: 100%;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
@@ -176,7 +421,6 @@ a {
   color: inherit;
   text-decoration: none;
 }
-
 a:hover {
   text-decoration: underline;
 }
@@ -209,7 +453,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Optional button variants (use via className when you start caring about UI) */
+/* Helpers */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -217,12 +461,143 @@ button:disabled {
   gap: 8px;
 }
 
-.btn-ghost {
-  background: transparent;
+/* Accent Buttons (Gradients) */
+.btn-red {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(
+      140% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.1),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-accent-red-hi) 0%,
+      var(--color-accent-red) 60%,
+      #651523 100%
+    );
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.btn-red:hover {
+  background:
+    radial-gradient(
+      140% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.14),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      #c03346 0%,
+      var(--color-accent-red-hi) 55%,
+      var(--color-accent-red) 100%
+    );
+}
+
+.btn-blue {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(
+      140% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.1),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-accent-blue-hi) 0%,
+      var(--color-accent-blue) 58%,
+      #1e40af 100%
+    );
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.btn-blue:hover {
+  background:
+    radial-gradient(
+      140% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.14),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      #93c5fd 0%,
+      var(--color-accent-blue-hi) 55%,
+      var(--color-accent-blue) 100%
+    );
+}
+
+.btn-purple {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(
+      140% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.1),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-accent-purple-hi) 0%,
+      var(--color-accent-purple) 58%,
+      #4c1d95 100%
+    );
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.btn-purple:hover {
+  background:
+    radial-gradient(
+      140% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.14),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      #ddd6fe 0%,
+      var(--color-accent-purple-hi) 55%,
+      var(--color-accent-purple) 100%
+    );
+}
+
+.btn-yellow-red-mix {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+
+  font-weight: 700;
+  letter-spacing: 0.04em;
+
+  color: #111; /* dark text works better on yellow */
+
+  background: linear-gradient(
+    180deg,
+    #fcd34d 0%,
+    /* light yellow */ #fbbf24 50%,
+    /* gold */ #d9480f 100% /* reddish-orange */
+  );
+
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-yellow-red-mix:hover {
+  background: linear-gradient(180deg, #fde68a 0%, #fbbf24 50%, #c2410c 100%);
+
+  transform: translateY(-1px);
 }
 
 /* -------------------------
-   Shared “card” surface helper
+   Shared Surface helper
 -------------------------- */
 .surface {
   border-radius: var(--radius-md);
@@ -231,117 +606,51 @@ button:disabled {
 }
 
 /* -------------------------
-   Resolution-safe Game Shell
+   INTERNAL SCROLLBAR STYLING (Stage scroll)
+   - Gradient thumb with red → gold → blue
 -------------------------- */
-/* Full-viewport center wrapper */
 
-body {
-  overflow: hidden;
+/* Chrome/Edge */
+.dp-stageScroll::-webkit-scrollbar {
+  width: 12px;
 }
 
-/* Background behind the 16:9 canvas */
-.game-shell {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: max(12px, env(safe-area-inset-top))
-    max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
-    max(12px, env(safe-area-inset-left));
-
-  background-color: var(--bg);
+.dp-stageScroll::-webkit-scrollbar-track {
+  background: rgba(5, 8, 15, 0.7);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Locked 16:9 game area that scales uniformly */
-.game-canvas {
-  aspect-ratio: 16 / 9;
+.dp-stageScroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 3px solid rgba(5, 8, 15, 0.85);
 
-  width: min(100vw, calc(100vh * 16 / 9));
-  height: min(100vh, calc(100vw * 9 / 16));
-
- .game-canvas {
-  width: 100%;
-  max-width: 1920px;
-
-  /* 👇 THIS is the key change */
-  min-height: 1920px;
-  height: auto;
-
-  margin: 0 auto;
-  padding: 32px 24px;
-
-  box-sizing: border-box;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,0.02),
-      rgba(0,0,0,0.25)
-    );
-
-  border-left: 1px solid rgba(255,255,255,0.06);
-  border-right: 1px solid rgba(255,255,255,0.06);
-}
-
-.game-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-
-  backdrop-filter: blur(8px);
-  background: rgba(5, 10, 20, 0.75);
-}
-
-/* Overlay for HUD/menus (does not affect gameplay scaling) */
-.ui-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.ui-layer * {
-  pointer-events: auto;
-}
-
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #05080f;
-}
-
-::-webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
-    #3ddc97,
-    #1fa2ff
-  );
-  border-radius: 8px;
-  border: 2px solid #05080f;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    180deg,
-    #5cffb2,
-    #3ab8ff
+    var(--color-accent-red),
+    #fbbf24,
+    var(--color-accent-blue)
   );
 }
 
-* {
+.dp-stageScroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-red-hi),
+    #fcd34d,
+    var(--color-accent-blue-hi)
+  );
+}
+
+/* Firefox */
+.dp-stageScroll {
   scrollbar-width: thin;
-  scrollbar-color: #3ddc97 #05080f;
+  scrollbar-color: var(--color-accent-blue) rgba(5, 8, 15, 0.7);
 }
 
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #0b0f1a;
-  color: white;
-  font-family: system-ui, sans-serif;
+/*----------------------------
+        Hide from Homepage only
+--------------------------------*/
+/* Hide header logo only when homepage is active */
+.homepage ~ .dp-viewport .dp-headerLogo {
+  display: none;
 }

@@ -1,6 +1,6 @@
 import { Router, Response } from "express";
-import { requireUser, AuthedRequest } from "../middleware/requireUser";
-import { supabaseAdmin } from "../lib/supabaseAdmin";
+import { requireUser, AuthedRequest } from "./../../middleware/requireUser";
+import { supabaseAdmin } from "./../../lib/supabaseAdmin";
 
 export const dailyCareRouter = Router();
 

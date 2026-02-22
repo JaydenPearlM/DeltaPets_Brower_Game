@@ -1,0 +1,1 @@
+export { StageLogo } from "./stageLogo";

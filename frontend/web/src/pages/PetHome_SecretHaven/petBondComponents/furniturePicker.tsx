@@ -1,5 +1,5 @@
-import { FURNITURE } from "../secretHaven.data";
-import type { FurnitureKind } from "../secretHaven.types";
+import { FURNITURE } from "./secretHaven.data";
+import type { FurnitureKind } from "./secretHaven.types";
 
 type Props = {
   editMode: boolean;

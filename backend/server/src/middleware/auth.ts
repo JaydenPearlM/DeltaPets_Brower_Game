@@ -1,6 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 
+/**
+ * Request type with user attached by auth middleware.
+ */
 export type AuthedRequest = Request & {
   user?: {
     id: string;
@@ -15,6 +18,10 @@ function getBearerToken(req: Request) {
   return m ? m[1] : null;
 }
 
+/**
+ * Middleware: requires a valid Supabase bearer token.
+ * Attaches req.user = { id, email }.
+ */
 export async function requireUser(
   req: AuthedRequest,
   res: Response,
@@ -34,8 +41,14 @@ export async function requireUser(
       email: data.user.email ?? undefined,
     };
 
-    next();
-  } catch (e) {
+    return next();
+  } catch {
     return res.status(401).json({ error: "Unauthorized" });
   }
 }
+
+/**
+ * Alias for requireUser so routes can import requireAuth if they prefer.
+ * Keeps naming consistent across the project.
+ */
+export const requireAuth = requireUser;

@@ -1,6 +1,7 @@
 import express from "express";
 import { apiRouter } from "./routes/api";
 import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
+import { careRouter } from "./routes/care/care";
 
 export function createApp() {
   const app = express();
@@ -11,6 +12,8 @@ export function createApp() {
 
   // Basic request shaping (avoid huge payload spam)
   app.use(express.json({ limit: "100kb" }));
+
+  app.use("/api/care", careRouter);
 
   app.get("/", (_req, res) => {
     res.type("text").send("DeltaPets Backend ✅\nTry GET /api/health");

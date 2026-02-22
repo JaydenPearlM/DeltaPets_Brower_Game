@@ -4,7 +4,7 @@ import { healthRouter } from "./health";
 import { meRouter } from "./me";
 import { authRouter } from "./auth";
 import { petsRouter } from "./routePets/routePets";
-import { dailyCareRouter } from "./dailyCare";
+import { dailyCareRouter } from "./care/dailyCare";
 import { petActionsRouter } from "./petActions";
 import { rewardsRouter } from "./rewards/rewards";
 

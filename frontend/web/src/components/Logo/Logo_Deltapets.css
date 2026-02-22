@@ -1,8 +1,14 @@
+/* =============================================================================
+   Logo_Deltapets.css
+   - Default = HERO (big banner)
+   - Header variant = compact, never crops
+============================================================================= */
+
 /* ===== Banner wrapper (plate) ===== */
 .dp-banner {
   position: relative;
   display: inline-block;
-  padding: 45px 25px;
+  padding: 45px 25px; /* HERO default */
   border-radius: 999px;
   isolation: isolate;
   overflow: hidden;
@@ -48,7 +54,7 @@
 .dp-banner::after {
   content: "";
   position: absolute;
-  inset: 30px; /* <-- scaled down by 10px */
+  inset: 30px; /* HERO default */
   border-radius: 980px;
 
   /* same darkest colors (unchanged), just layered */
@@ -73,7 +79,7 @@
   align-items: center;
   line-height: 1;
   user-select: none;
-  padding: 6px 10px;
+  padding: 6px 10px; /* HERO default */
 }
 
 /* ===== Triangle wrapper (centered behind DeltaPets) ===== */
@@ -83,7 +89,7 @@
   top: 50%;
   transform: translate(-50%, -55%) translateY(18px);
 
-  width: 300px;
+  width: 300px; /* HERO default */
   height: 300px;
 
   display: grid;
@@ -139,7 +145,7 @@
 .dp-tri::after {
   content: "";
   position: absolute;
-  inset: 24px;
+  inset: 24px; /* HERO default */
   clip-path: polygon(50% 6%, 6% 92%, 94% 92%);
 
   background:
@@ -154,25 +160,22 @@
   opacity: 1;
 }
 
-/* ===== DeltaPets text: NO transparency, brightest, white top stroke ===== */
+/* ===== DeltaPets text: bright yellow, white top stroke ===== */
 .logo-deltapets-text {
   position: relative;
   z-index: 4;
 
   font-family: "Quantico", system-ui, sans-serif;
-  font-size: 72px;
+  font-size: 72px; /* HERO default */
   font-weight: 900;
   letter-spacing: 0.8px;
 
-  /* SOLID bright yellow (no bleed-through) */
   color: #fff200;
 
-  /* White top stroke + crisp shadow below */
   text-shadow:
-    /* white highlight “stroke” at top */
     0 -1px 0 rgba(255, 255, 255, 0.95),
     0 -2px 0 rgba(255, 255, 255, 0.7),
-    /* dark drop shadow underneath */ 0 2px 0 rgba(0, 0, 0, 0.65),
+    0 2px 0 rgba(0, 0, 0, 0.65),
     0 4px 0 rgba(0, 0, 0, 0.5),
     0 10px 14px rgba(0, 0, 0, 0.35);
 }
@@ -182,9 +185,9 @@
   position: relative;
   z-index: 4;
 
-  margin-top: 10px;
+  margin-top: 10px; /* HERO default */
   font-family: "Space Mono", ui-monospace, monospace;
-  font-size: 20px;
+  font-size: 20px; /* HERO default */
   letter-spacing: 2px;
   font-weight: 700;
 
@@ -197,22 +200,21 @@
     0 6px 10px rgba(0, 0, 0, 0.55);
 }
 
+/* ===== BOND ===== */
 .logo-deltapets-season {
-  position: absolute; /* place it over the triangle */
+  position: absolute;
   left: 39%;
-  top: 110%; /* tweak this up/down */
-  transform: translate(-50%, -50%) translateX(40px); /* "go over a little" */
+  top: 110%;
+  transform: translate(-50%, -50%) translateX(40px);
 
   z-index: 5;
   font-family: "Quantico", system-ui, sans-serif;
-  font-size: 30px;
+  font-size: 30px; /* HERO default */
   font-weight: 900;
   letter-spacing: 3px;
 
-  /* bright yellow inside */
   color: #fff200;
 
-  /* red "border" (stroke effect) + shadow */
   text-shadow:
     -2px 0 0 #ff2b2b,
     2px 0 0 #ff2b2b,
@@ -225,27 +227,99 @@
     0 6px 10px rgba(0, 0, 0, 0.55);
 }
 
-/* logo Hero or header */
-
-.dp-logo {
-  display: flex;
-  align-items: center;
-}
-
-.dp-logo.hero .dp-logo-text {
-  font-size: 42px;
-  font-weight: 800;
-  color: gold;
-}
-
-.dp-logo.header .dp-logo-text {
-  font-size: 24px;
-  font-weight: 700;
-  color: gold;
-}
-
+/* Clickable link wrapper */
 .dp-logoLink {
   display: inline-flex;
   text-decoration: none;
   color: inherit;
+}
+
+/* =============================================================================
+   HEADER VARIANT (compact, never crops)
+   Use: <LogoDeltapets variant="header" ... />
+============================================================================= */
+
+.dp-banner--header {
+  padding: 12px 14px;
+  transform: scale(1.15); /* ~5% larger — visually about 2–4px bump */
+  transform-origin: left center; /* keeps it anchored properly */
+
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(255, 210, 60, 0.55),
+    0 0 0 4px rgba(0, 0, 0, 0.16);
+}
+
+.dp-banner--header::before {
+  inset: -8px;
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.55),
+    0 0 18px rgba(120, 90, 255, 0.14);
+}
+
+.dp-banner--header::after {
+  inset: 16px;
+  opacity: 0.5;
+}
+
+.dp-banner--header .dp-banner-inner {
+  padding: 2px 6px;
+}
+
+/* Smaller triangle for header */
+.dp-banner--header .dp-triWrap {
+  width: 120px;
+  height: 120px;
+  transform: translate(-50%, -55%) translateY(8px);
+}
+
+.dp-banner--header .dp-tri {
+  width: 78%;
+  height: 78%;
+  filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.5));
+}
+
+.dp-banner--header .dp-tri::after {
+  inset: 12px;
+}
+
+/* Smaller text for header */
+.dp-banner--header .logo-deltapets-text {
+  font-size: 34px;
+  letter-spacing: 0.6px;
+
+  text-shadow:
+    0 -1px 0 rgba(255, 255, 255, 0.95),
+    0 -2px 0 rgba(255, 255, 255, 0.55),
+    0 2px 0 rgba(0, 0, 0, 0.65),
+    0 4px 0 rgba(0, 0, 0, 0.45),
+    0 8px 12px rgba(0, 0, 0, 0.32);
+}
+
+.dp-banner--header .logo-deltapets-alpha {
+  margin-top: 1px;
+  font-size: 11px;
+  letter-spacing: 2.6px;
+}
+
+/* Re-anchor BOND so it doesn't drift in header size */
+.dp-banner--header .logo-deltapets-season {
+  left: 50%;
+  top: 112%;
+  transform: translate(-50%, -50%);
+
+  font-size: 16px;
+  letter-spacing: 2px;
+
+  text-shadow:
+    -1px 0 0 #ff2b2b,
+    1px 0 0 #ff2b2b,
+    0 -1px 0 #ff2b2b,
+    0 1px 0 #ff2b2b,
+    -1px -1px 0 #ff2b2b,
+    1px -1px 0 #ff2b2b,
+    -1px 1px 0 #ff2b2b,
+    1px 1px 0 #ff2b2b,
+    0 5px 8px rgba(0, 0, 0, 0.55);
 }

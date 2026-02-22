@@ -1,5 +1,5 @@
 import React from "react";
-import type { PetStatsRow } from "../petTypes";
+import type { PetStatsRow } from "../../petTypes";
 
 function StatRow({ label, value }: { label: string; value: number }) {
   return (
