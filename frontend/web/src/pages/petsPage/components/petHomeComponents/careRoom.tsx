@@ -1,6 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../../../lib/supabase/client";
 import "./careRoom.css";
+
+type CareRoomMode = "auth" | "preview";
+
+type CareRoomProps = {
+  mode?: CareRoomMode;
+};
 
 function clamp01to100(n: number) {
   if (!Number.isFinite(n)) return 0;
@@ -24,43 +30,42 @@ function Bar({ label, value }: { label: string; value: number }) {
   );
 }
 
-/**
- * Alpha food storage (local-only)
- * Later you’ll swap this to real Inventory tables.
- */
-const FOOD_KEY = "deltapets_food_chicken";
+function makePreviewPet() {
+  const names = ["Aquarie", "Raylite", "Shadeimp", "Sparvolt", "Glimmeroot"];
+  const name = names[Math.floor(Math.random() * names.length)];
 
-function readFoodCount(): number {
-  try {
-    const raw = localStorage.getItem(FOOD_KEY);
-    if (raw == null) return 3; // ✅ starter amount so feeding works in Alpha
-    const n = Number(raw);
-    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 3;
-  } catch {
-    return 3;
-  }
+  return {
+    name,
+    hunger: 45 + Math.floor(Math.random() * 45),
+    cleanliness: 40 + Math.floor(Math.random() * 50),
+    happiness: 50 + Math.floor(Math.random() * 45),
+  };
 }
 
-function writeFoodCount(n: number) {
-  try {
-    localStorage.setItem(FOOD_KEY, String(Math.max(0, Math.floor(n))));
-  } catch {
-    // ignore
-  }
-}
-
-export function CareRoom() {
+export function CareRoom({ mode = "auth" }: CareRoomProps) {
   const [pet, setPet] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
 
-  // ✅ local “inventory” for food (temporary)
-  const [food, setFood] = useState<number>(() => readFoodCount());
+  const previewPet = useMemo(() => makePreviewPet(), []);
 
   async function load() {
+    // ✅ PREVIEW MODE (no auth, no API)
+    if (mode === "preview") {
+      setPet(previewPet);
+      setLoading(false);
+      return;
+    }
+
+    // ✅ AUTH MODE (your existing behavior)
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData.session?.access_token;
-    if (!token) return;
+
+    if (!token) {
+      setPet(null);
+      setLoading(false);
+      return;
+    }
 
     const res = await fetch("/api/care/current", {
       headers: { Authorization: `Bearer ${token}` },
@@ -71,20 +76,18 @@ export function CareRoom() {
     setLoading(false);
   }
 
+  useEffect(() => {
+    setLoading(true);
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
   async function doAction(action: "feed" | "clean") {
     setMsg(null);
 
-    // ✅ Feed consumes food from “inventory” (localStorage for now)
-    if (action === "feed") {
-      if (food <= 0) {
-        setMsg("No food available. Go find some first.");
-        return;
-      }
-
-      // spend locally first (feels instant)
-      const nextFood = food - 1;
-      setFood(nextFood);
-      writeFoodCount(nextFood);
+    if (mode === "preview") {
+      setMsg("Log in to interact with your own pet.");
+      return;
     }
 
     const { data: sessionData } = await supabase.auth.getSession();
@@ -96,34 +99,17 @@ export function CareRoom() {
 
     const res = await fetch(`/api/care/${action}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     const json = await res.json().catch(() => ({}));
-
-    // if server rejects feed, refund food (so you don’t lose items)
     if (!res.ok) {
-      if (action === "feed") {
-        const refund = food; // note: state updates async, but we have intent
-        const actual = readFoodCount();
-        const restored = actual + 1;
-        setFood(restored);
-        writeFoodCount(restored);
-      }
-
       setMsg((json as any).error ?? "Action failed");
       return;
     }
 
     await load();
   }
-
-  useEffect(() => {
-    load();
-  }, []);
 
   if (loading) return null;
 
@@ -136,10 +122,10 @@ export function CareRoom() {
           <>
             <div className="tamaPetName">{pet.name}</div>
 
-            <div className="tamaPetSprite">🐣</div>
-
-            {/* ✅ tiny “inventory” line */}
-            <div className="tamaFoodLine">Food: {food}</div>
+            {/* Replace this emoji later with sprite */}
+            <div className="tamaPetSprite" aria-hidden>
+              🐣
+            </div>
 
             <div className="tamaBars">
               <Bar label="Hunger" value={Number(pet.hunger ?? 0)} />
@@ -151,9 +137,12 @@ export function CareRoom() {
       </div>
 
       <div className="tamaButtons">
-        {/* ✅ removed emojis, keep it clean */}
-        <button onClick={() => doAction("feed")}>Feed</button>
-        <button onClick={() => doAction("clean")}>Clean</button>
+        <button onClick={() => doAction("feed")} disabled={mode === "preview"}>
+          Feed
+        </button>
+        <button onClick={() => doAction("clean")} disabled={mode === "preview"}>
+          Clean
+        </button>
       </div>
 
       {msg && <div className="tamaMsg">{msg}</div>}

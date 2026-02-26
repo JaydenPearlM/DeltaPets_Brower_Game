@@ -1,5 +1,5 @@
 import "./Logo_Deltapets.css";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../app/providers/useAuth";
 
 type Props = {
@@ -9,6 +9,8 @@ type Props = {
 
 export default function LogoDeltapets({ variant = "hero", className }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   const to = user ? "/pet" : "/";
 
   const content = (
@@ -28,12 +30,24 @@ export default function LogoDeltapets({ variant = "hero", className }: Props) {
     </div>
   );
 
-  // ✅ Only the header version is clickable
+  // ✅ Header is clickable, but NOT an <a> (prevents nested anchor errors)
   if (variant === "header") {
+    const go = () => navigate(to);
+
     return (
-      <Link to={to} className="dp-logoLink" aria-label="Go to pets page">
+      <div
+        className="dp-logoLink"
+        role="link"
+        tabIndex={0}
+        aria-label="Go to pets page"
+        onClick={go}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") go();
+        }}
+        style={{ cursor: "pointer" }}
+      >
         {content}
-      </Link>
+      </div>
     );
   }
 
