@@ -1,0 +1,427 @@
+/* =============================================================================
+   NotebookPaper.css — DeltaPets "Bond Ledger" parchment card
+
+   Rules:
+   - Texture lives on the OUTER paper only
+   - Inner content panels are smooth
+   - Glow is BEHIND the paper, not on top of text
+============================================================================= */
+
+.dp-paper {
+  --paper-radius: 18px;
+  --paper-pad: 18px;
+
+  /* parchment (slightly cooled to sit inside Dark Steel UI) */
+  --parchment-0: #f4efe2;
+  --parchment-1: #e8dcc2;
+  --parchment-2: #dcc79a;
+
+  /* ink (warm slate, not black) */
+  --ink: rgba(30, 41, 59, 0.92);
+  --ink-soft: rgba(30, 41, 59, 0.82);
+  --ink-muted: rgba(30, 41, 59, 0.66);
+
+  /* steel accents */
+  --steel-hi: rgba(203, 213, 225, 0.18);
+
+  /* glow accents */
+  --neon-blue-soft: rgba(59, 130, 246, 0.25);
+  --neon-cyan: rgba(34, 211, 238, 0.22);
+  --warm-lift: rgba(251, 191, 36, 0.1);
+
+  --drop: rgba(0, 0, 0, 0.78);
+
+  position: relative;
+  border-radius: var(--paper-radius);
+  padding: var(--paper-pad);
+  overflow: hidden;
+  isolation: isolate;
+  border: none;
+
+  box-shadow:
+    0 32px 92px var(--drop),
+    inset 0 0 0 1px var(--steel-hi),
+    inset 0 -24px 40px rgba(15, 20, 28, 0.12);
+
+  /* PAPER surface (texture lives here) */
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 255, 255, 0.48),
+      transparent 62%
+    ),
+    radial-gradient(
+      120% 110% at 60% 120%,
+      rgba(17, 24, 39, 0.14),
+      transparent 60%
+    ),
+    radial-gradient(
+      120% 100% at 0% 0%,
+      rgba(90, 70, 30, 0.14),
+      transparent 56%
+    ),
+    radial-gradient(
+      120% 100% at 100% 0%,
+      rgba(90, 70, 30, 0.12),
+      transparent 58%
+    ),
+    radial-gradient(
+      120% 100% at 0% 100%,
+      rgba(90, 70, 30, 0.1),
+      transparent 60%
+    ),
+    radial-gradient(
+      120% 100% at 100% 100%,
+      rgba(90, 70, 30, 0.09),
+      transparent 62%
+    ),
+    radial-gradient(
+      140% 120% at 14% 22%,
+      rgba(100, 70, 20, 0.1),
+      transparent 30%
+    ),
+    radial-gradient(
+      160% 140% at 88% 32%,
+      rgba(100, 70, 20, 0.08),
+      transparent 60%
+    ),
+    radial-gradient(
+      170% 150% at 54% 92%,
+      rgba(100, 70, 20, 0.07),
+      transparent 68%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(60, 40, 10, 0.055) 0 1px,
+      transparent 1px 8px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(60, 40, 10, 0.028) 0 1px,
+      transparent 1px 16px
+    ),
+    radial-gradient(
+      2px 2px at 12% 18%,
+      rgba(30, 41, 59, 0.05),
+      transparent 60%
+    ),
+    radial-gradient(
+      2px 2px at 78% 26%,
+      rgba(30, 41, 59, 0.04),
+      transparent 60%
+    ),
+    radial-gradient(
+      2px 2px at 44% 74%,
+      rgba(30, 41, 59, 0.04),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      var(--parchment-0),
+      var(--parchment-1) 55%,
+      var(--parchment-2)
+    );
+
+  /* ========= Layout lock (NO scrollbars, stable footer placement) ========= */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Glow BEHIND the paper */
+.dp-paper::before {
+  content: "";
+  position: absolute;
+  inset: -26px;
+  border-radius: calc(var(--paper-radius) + 26px);
+  pointer-events: none;
+  z-index: 0;
+
+  background:
+    radial-gradient(60% 55% at 50% 20%, var(--neon-blue-soft), transparent 68%),
+    radial-gradient(55% 60% at 30% 60%, var(--neon-cyan), transparent 72%),
+    radial-gradient(60% 60% at 70% 62%, var(--warm-lift), transparent 74%);
+
+  filter: blur(10px);
+  opacity: 0.9;
+}
+
+/* Neon-ish edge ring */
+.dp-paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(34, 211, 238, 0.18),
+      rgba(59, 130, 246, 0.32) 40%,
+      rgba(59, 130, 246, 0.18)
+    ),
+    radial-gradient(
+      120% 100% at 80% 35%,
+      rgba(59, 130, 246, 0.22),
+      transparent 62%
+    ),
+    radial-gradient(
+      120% 100% at 18% 70%,
+      rgba(148, 163, 184, 0.18),
+      transparent 64%
+    );
+
+  -webkit-mask:
+    linear-gradient(#000, #000) content-box,
+    linear-gradient(#000, #000);
+  mask:
+    linear-gradient(#000, #000) content-box,
+    linear-gradient(#000, #000);
+  padding: 10px;
+
+  box-shadow:
+    0 0 0 2px rgba(148, 163, 184, 0.26),
+    0 0 26px rgba(59, 130, 246, 0.3),
+    0 0 60px rgba(59, 130, 246, 0.18);
+
+  opacity: 0.95;
+}
+
+/* Scratches (mounted via <div class="dp-paperScratchMount" />) */
+.dp-paperScratchMount {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dp-paperScratchMount::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+        18deg,
+        transparent 0 47%,
+        rgba(30, 41, 59, 0.11) 48%,
+        transparent 49%
+      )
+      0 32% / 120% 20% no-repeat,
+    linear-gradient(
+        14deg,
+        transparent 0 58%,
+        rgba(30, 41, 59, 0.095) 59%,
+        transparent 60%
+      )
+      0 54% / 120% 20% no-repeat,
+    linear-gradient(
+        22deg,
+        transparent 0 66%,
+        rgba(30, 41, 59, 0.085) 67%,
+        transparent 68%
+      )
+      0 74% / 120% 20% no-repeat;
+
+  opacity: 0.26;
+  filter: blur(0.25px);
+}
+
+/* Content above overlays */
+.dp-paperTitle,
+.dp-paperBody,
+.dp-paperFooter {
+  position: relative;
+  z-index: 3;
+  color: var(--ink);
+}
+
+.dp-paperTitle {
+  font-family: var(--font-heading, system-ui);
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  margin: 0 0 10px;
+  color: rgba(30, 41, 59, 0.94);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* Make body consume available vertical space so footer can sit lower */
+.dp-paperBody {
+  font-family: var(--font-body, system-ui);
+  color: var(--ink-soft);
+
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.dp-paperFooter {
+  margin-top: auto; /* pushes footer down */
+  padding-top: 10px;
+  padding-bottom: 6px; /* your requested bottom breathing room */
+  border-top: 1px solid rgba(30, 41, 59, 0.16);
+  display: flex;
+  justify-content: center;
+}
+
+/* Smooth inner panel for each list item */
+.dp-paperItem {
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(30, 41, 59, 0.14);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 10px 18px rgba(0, 0, 0, 0.1);
+
+  background-clip: padding-box;
+}
+
+.dp-paperList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.dp-paperItem strong {
+  display: inline-block;
+  font-weight: 950;
+  letter-spacing: 0.2px;
+  color: rgba(30, 41, 59, 0.94);
+}
+
+.dp-paperMeta {
+  opacity: 0.74;
+  font-size: 12px;
+  margin-top: 2px;
+  color: var(--ink-muted);
+}
+
+.dp-paperNote {
+  margin-top: 10px;
+}
+
+/* Markdown tuning */
+.dp-paper .dp-markdown {
+  color: var(--ink-soft);
+}
+
+.dp-paper .dp-markdown,
+.dp-paper .dp-markdown * {
+  background: transparent;
+}
+
+.dp-paper .dp-markdown :is(h1, h2, h3) {
+  color: rgba(30, 41, 59, 0.94);
+}
+
+/* =============================================================================
+   Steel skin for Announcements (matches global.css Dark Steel)
+============================================================================= */
+
+.dp-paper.dp-announcements--steel {
+  --paper-radius: 18px;
+  --paper-pad: 18px;
+
+  /* remap “parchment” to dark steel */
+  --parchment-0: var(--color-bg-secondary);
+  --parchment-1: var(--color-bg-primary);
+  --parchment-2: var(--color-bg-deep);
+
+  /* ink becomes light */
+  --ink: var(--color-text-primary);
+  --ink-soft: var(--color-text-secondary);
+  --ink-muted: var(--color-text-muted);
+
+  --steel-hi: var(--border-strong);
+  --neon-blue-soft: rgba(59, 130, 246, 0.18);
+  --neon-cyan: rgba(139, 92, 246, 0.16);
+  --warm-lift: rgba(255, 235, 59, 0.1);
+
+  border: 1px solid var(--border-strong);
+
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 255, 255, 0.08),
+      transparent 62%
+    ),
+    radial-gradient(
+      120% 100% at 18% 22%,
+      rgba(59, 130, 246, 0.14),
+      transparent 52%
+    ),
+    radial-gradient(
+      120% 100% at 86% 34%,
+      rgba(139, 92, 246, 0.12),
+      transparent 56%
+    ),
+    linear-gradient(
+      180deg,
+      var(--parchment-0),
+      var(--parchment-1) 60%,
+      var(--parchment-2)
+    );
+
+  box-shadow:
+    0 26px 80px rgba(0, 0, 0, 0.72),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 -22px 34px rgba(0, 0, 0, 0.35);
+}
+
+/* Title text adapts for dark background */
+.dp-paper.dp-announcements--steel .dp-paperTitle {
+  color: var(--color-text-primary);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* Footer divider for dark mode */
+.dp-paper.dp-announcements--steel .dp-paperFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Donate link styling */
+.dp-donateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.dp-donateBtn:hover {
+  text-decoration: none;
+}
+
+.dp-donateIcon {
+  opacity: 0.95;
+}
+
+.dp-donateClick {
+  color: var(--color-accent-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dp-donateBtn:hover .dp-donateClick {
+  color: var(--color-accent-blue-hi);
+}
+
+/* =============================================================================
+   Triangle positioning helper (for your DOM triangle element)
+   IMPORTANT: This is NOT the neon ring. Apply this class to the triangle element.
+============================================================================= */
+
+.dp-annTriangle {
+  display: grid;
+  place-items: center;
+  margin-top: 10px; /* moves it down from the divider area */
+  padding-bottom: 6px; /* matches your “bottom 6 padding” vibe */
+}

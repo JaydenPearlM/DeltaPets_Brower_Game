@@ -44,6 +44,13 @@ const LINE_1 = `"Every bond begins with a chance..."`;
 const LINE_2 = `"You look around and something catches your eye."`;
 const BUBBLE_TEXT = `"Oh you found an egg, how peculiar!"`;
 
+// Vite dev flag (frontend only)
+const DEV = import.meta.env.DEV;
+// Dev-only logger (keeps terminal useful without polluting prod)
+const dlog = (...args: unknown[]) => {
+  if (DEV) console.log(...args);
+};
+
 function pickRandomStarterLine() {
   const lines = [
     "water",
@@ -212,27 +219,27 @@ export default function CreatePage() {
         await typeText(LINE_2, setLine2, TIMING.type2MsPerChar, alive);
         if (!alive()) return;
 
-        console.log("CUTSCENE MYSTERY_EGG:", MYSTERY_EGG);
-        console.log("CUTSCENE sprite value:", MYSTERY_EGG?.sprite);
+        // Dev-only cutscene diagnostics (keeps your terminal useful, not noisy)
+        dlog("[create] CUTSCENE MYSTERY_EGG:", MYSTERY_EGG);
+        dlog("[create] CUTSCENE sprite value:", MYSTERY_EGG?.sprite);
 
         setStatus("Cutscene: egg fade in…");
         setPhase("eggFadeIn");
         setEggVisible(true);
-        console.log("CUTSCENE sprite:", MYSTERY_EGG.sprite);
 
-        // ✅ Backend actions (only when not replaying)
+        // Safe access (won't crash even if sprite is missing)
+        dlog("[create] CUTSCENE sprite:", MYSTERY_EGG?.sprite);
+
+        // Backend actions (only when not replaying)
         if (!replay) {
           setBusy(true);
           try {
             const token = await getAccessTokenOrThrow();
 
             // Ensure egg gets created/assigned in hatchery slot
-            const ensure = await postJson(
-              "/api/pets/ensure-egg",
-              token,
-              // keep your starterLine param (backend can ignore or use it)
-              { line: starterLine },
-            );
+            const ensure = await postJson("/api/pets/ensure-egg", token, {
+              line: starterLine,
+            });
 
             if (!ensure.ok) {
               throw new Error(
@@ -243,14 +250,23 @@ export default function CreatePage() {
             // Mark intro as seen (ONLY ONCE)
             const seen = await postJson("/api/me/intro/seen", token);
             if (!seen.ok) {
-              console.warn("intro/seen failed:", seen.data);
+              console.warn("[create] intro/seen failed", {
+                status: seen.status,
+                data: seen.data,
+              });
             }
           } catch (err) {
             console.warn(
-              "ensure-egg / intro-seen failed (continuing cutscene):",
+              "[create] ensure-egg / intro-seen failed (continuing cutscene)",
               err,
             );
-            setStatus("Backend offline — continuing (dev)");
+
+            // "dev" status in dev, more neutral in prod
+            setStatus(
+              DEV
+                ? "Backend offline — continuing (dev)"
+                : "Backend unavailable — continuing",
+            );
           } finally {
             if (alive()) setBusy(false);
           }
@@ -296,7 +312,7 @@ export default function CreatePage() {
         setPhase("done");
         navigate("/hatchery", { replace: true });
       } catch (err: any) {
-        console.error("Create cutscene crashed:", err);
+        console.error("[create] cutscene crashed:", err);
         if (alive()) setFatalError(err?.message ?? "Cutscene crashed");
       }
     }

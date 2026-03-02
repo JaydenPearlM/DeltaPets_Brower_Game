@@ -1,30 +1,46 @@
 // frontend/web/src/app/App.tsx
-import { Link, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { UIProvider } from "./providers/UIProvider";
+import { useAuth } from "./providers/useAuth";
 import { InventoryOverlay } from "../components/inventory/inventoryOverlay";
-import LogoDeltapets from "../components/Logo/Logo_Deltapets";
+
+import { LoginMenus } from "../components/Authentication/LoginMenus";
+import { LogoutButton } from "../components/Authentication/LogoutButton";
+
+import "./App.css";
 
 export default function App() {
+  const auth = useAuth();
+  const isLoggedIn = Boolean(auth.user);
+
   return (
     <UIProvider>
-      {/* ✅ Global Stage Wrapper: ALL pages render inside this */}
       <div className="dp-viewport">
         <div className="dp-stage">
-          <header className="dp-stageHeader">
+          <header className="dp-stageHeader dp-stageHeader--appFix">
+            {/* LEFT */}
             <div className="dp-headerLeft">
-              <Link className="dp-logoLink" to="/">
-                <LogoDeltapets variant="header" className="dp-headerLogo" />
-              </Link>
-
-              {/* Shows even when the homepage hides the big logo */}
               <div className="dp-alphaBadge" title={__APP_VERSION__}>
                 <span className="dp-alphaBadgeLabel">ALPHA</span>
                 <span className="dp-alphaBadgeVer">v{__APP_VERSION__}</span>
               </div>
             </div>
 
-            {/* Right side reserved for later (profile, settings, etc.) */}
-            <div style={{ marginLeft: "auto" }} />
+            {/* CENTER (force true center via App.css) */}
+            <div
+              className="dp-headerCenterTagline dp-headerCenterTagline--appFix"
+              aria-hidden
+            >
+              <div className="dp-headerTaglineTitle">Bond begins here.</div>
+              <div className="dp-headerTaglineSub">
+                Hatch eggs. Raise Deltas. Build Haven. Fight against evil.
+              </div>
+            </div>
+
+            {/* RIGHT */}
+            <div className="dp-headerRight dp-headerRight--auth">
+              {isLoggedIn ? <LogoutButton /> : <LoginMenus />}
+            </div>
           </header>
 
           <main className="dp-stageScroll">
@@ -33,7 +49,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* ✅ Keep overlay outside stage so it can float above everything */}
       <InventoryOverlay />
     </UIProvider>
   );

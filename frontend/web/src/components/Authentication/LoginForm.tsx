@@ -17,17 +17,21 @@ export function LoginForm({
 
   return (
     <>
-      <div>
-        <label>
-          Username or Email
+      <div className="dp-field">
+        <div className="dp-label">Username or Email</div>
+
+        <div className="dp-inputRow auth-row-match">
           <input
+            className="dp-input"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             autoComplete="username"
-            placeholder="you@example.com or coolUsername"
             required
           />
-        </label>
+
+          {/* Spacer to match the eye button size */}
+          <span className="auth-eyeSpacer" aria-hidden="true" />
+        </div>
       </div>
 
       <div>
@@ -38,8 +42,8 @@ export function LoginForm({
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              placeholder="••••••••"
+              autoComplete=""
+              placeholder=""
               style={{ flex: 1 }}
               required
             />
@@ -54,6 +58,8 @@ export function LoginForm({
                 placeItems: "center",
                 width: 40,
                 height: 40,
+                padding: 0, // KILLS global button padding
+                lineHeight: 0, // KILLS baseline drift
                 borderRadius: 10,
                 border: "1px solid rgba(255,255,255,0.18)",
                 background: "transparent",
@@ -70,6 +76,7 @@ export function LoginForm({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
+                style={{ display: "block" }} // avoids inline SVG baseline weirdness
               >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
                 <circle cx="12" cy="12" r="3" />

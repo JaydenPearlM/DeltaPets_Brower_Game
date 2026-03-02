@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "./stats.css";
 
 /**
- * ✅ Match your database columns (pet_elements has null_element)
+ *  Match your database columns (pet_elements has null_element)
  */
 export type ElementalLine =
   | "null_element"
@@ -17,7 +17,7 @@ export type ElementalLine =
   | "shadow";
 
 /**
- * ✅ UI stats keys (what this modal displays/edits)
+ *  UI stats keys (what this modal displays/edits)
  */
 export type PetStats = {
   hp: number;
@@ -53,7 +53,7 @@ function titleCase(s: string) {
 }
 
 /**
- * ✅ DB/API-friendly stat shape:
+ *  DB/API-friendly stat shape:
  * Your responses/rows might include extra keys (mana, base_total, pet_id, base_hp, etc.)
  * We only care about the 5 UI keys.
  */
@@ -75,7 +75,7 @@ type StatsLike =
   | undefined;
 
 /**
- * ✅ DB row shape for pet_elements (from your schema image)
+ *  DB row shape for pet_elements (from your schema image)
  */
 type ElementsRowLike =
   | Partial<Record<ElementalLine, number>>
@@ -120,7 +120,7 @@ export function StatsModal(props: {
   petName?: string | null;
 
   /**
-   * ✅ Pass DB/API stats directly:
+   *  Pass DB/API stats directly:
    * - ActivePetResponse.stats (if it has hp/atk/magi/def/spd)
    * - or your UI PetStats
    */
@@ -130,7 +130,7 @@ export function StatsModal(props: {
   level?: number;
 
   /**
-   * ✅ Pass DB/API elements directly:
+   *  Pass DB/API elements directly:
    * - ActivePetResponse.elements (pet_elements row)
    * - or Partial<Record<ElementalLine, number>>
    */

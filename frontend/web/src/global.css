@@ -22,7 +22,7 @@ body,
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow-x: hidden; /* fixed (removed stray 0) */
   overflow-y: auto;
 }
 
@@ -58,10 +58,9 @@ html {
 
   /* =========================
      ACCENTS (Option A)
-     - No teal / no yellow
+     - No teal / no yellow (except logo)
      - "Cool fighter" vibe
   ========================= */
-
   --color-accent-red: #8b1e2d;
   --color-accent-red-hi: #a62838;
 
@@ -78,6 +77,8 @@ html {
   --color-text-primary: #f9fafb;
   --color-text-secondary: #cbd5e1;
   --color-text-muted: #94a3b8;
+  --color-accent-neon-green: #39ff14;
+  --color-accent-neon-green-hi: #7dff6a;
 
   /* Lighting helpers */
   --color-glow-blue: #1e3a8a;
@@ -183,7 +184,6 @@ body {
 /* =========================
    Stage Logo (Token Driven)
 ========================= */
-
 .dp-logoWrapper {
   display: inline-flex;
   flex-direction: column;
@@ -275,15 +275,7 @@ h1 {
 
 /* -------------------------
    FIXED 1920 STAGE + INTERNAL SCROLL
-   Use in your layout:
-   <div className="dp-viewport">
-     <div className="dp-stage">
-       <header className="dp-stageHeader">...</header>
-       <main className="dp-stageScroll">...</main>
-     </div>
-   </div>
 -------------------------- */
-
 .dp-viewport {
   width: 100vw;
   height: 100vh;
@@ -293,7 +285,7 @@ h1 {
 }
 
 .dp-stage {
-  width: var(--stage-width); /* ✅ 1920 wide */
+  width: var(--stage-width); /* 1920 wide */
   height: calc(100vh - 24px); /* fits inside viewport padding */
   max-height: 100%;
 
@@ -353,19 +345,45 @@ h1 {
   min-width: 0;
 }
 
+/* Build label (no panel) */
+.dp-alphaBadge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+
+  font-family: var(--font-heading);
+  font-size: 14px;
+  line-height: 1;
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.dp-alphaBadgeLabel {
+  font-weight: 950;
+  letter-spacing: 0.5px;
+  opacity: 0.92;
+}
+
+.dp-alphaBadgeVer {
+  font-weight: 800;
+  opacity: 0.78;
+}
+
 /* IMPORTANT:
-   Your LogoDeltapets is a banner DIV, not an <img>.
-   So we style it like a container and scale it safely. */
+   Your LogoDeltapets is a banner DIV, not an <img>. */
 .dp-headerLogo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  /* this keeps it from cropping */
   max-height: calc(var(--stage-header-height) - 18px);
   max-width: 420px;
 
-  /* prevent the Link wrapper from causing weird sizing */
   line-height: 0;
 }
 
@@ -379,9 +397,87 @@ h1 {
 
 .dp-stageScroll {
   height: calc(100% - var(--stage-header-height));
-  overflow-y: auto; /* ✅ scroll INSIDE the stage */
+  overflow-y: auto; /* scroll INSIDE the stage */
   overflow-x: hidden;
   padding: 18px;
+}
+
+/* =============================================================================
+   Stage Header Layout (GRID MODIFIER)
+   Use on header: class="dp-stageHeader dp-stageHeader--centerAuth"
+   - Left: ALPHA version
+   - Center: tagline + LoginMenus (menus to the RIGHT of tagline)
+   - Right: spacer column so center stays truly centered
+============================================================================= */
+.dp-stageHeader.dp-stageHeader--centerAuth {
+  /* override base flex */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Left column */
+.dp-stageHeader.dp-stageHeader--centerAuth .dp-headerLeft {
+  justify-self: start;
+}
+
+/* Center column: tagline + auth */
+.dp-stageHeader.dp-stageHeader--centerAuth .dp-headerCenter {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.dp-stageHeader.dp-stageHeader--centerAuth .dp-headerTagline {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  line-height: 1.1;
+  max-width: min(720px, 52vw);
+  padding: 0 10px;
+}
+
+.dp-stageHeader.dp-stageHeader--centerAuth .dp-headerTaglineTitle {
+  font-family: var(--font-heading);
+  font-weight: 950;
+  letter-spacing: 0.25px;
+  opacity: 0.95;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dp-stageHeader.dp-stageHeader--centerAuth .dp-headerTaglineSub {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 2px;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dp-stageHeader.dp-stageHeader--centerAuth .dp-headerAuth {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+/* Right spacer column */
+.dp-stageHeader.dp-stageHeader--centerAuth .dp-headerRight {
+  justify-self: end;
+}
+
+/* Compact header buttons */
+.dp-stageHeader.dp-stageHeader--centerAuth button,
+.dp-stageHeader.dp-stageHeader--centerAuth a {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
 }
 
 /* -------------------------
@@ -563,6 +659,11 @@ button:disabled {
       var(--color-accent-purple) 100%
     );
 }
+.btn-yellow {
+  color: #fbff0b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: radial-gradient(140% 120% at 30% 20%);
+}
 
 .btn-yellow-red-mix {
   height: 40px;
@@ -573,14 +674,9 @@ button:disabled {
   font-weight: 700;
   letter-spacing: 0.04em;
 
-  color: #111; /* dark text works better on yellow */
+  color: #111;
 
-  background: linear-gradient(
-    180deg,
-    #fcd34d 0%,
-    /* light yellow */ #fbbf24 50%,
-    /* gold */ #d9480f 100% /* reddish-orange */
-  );
+  background: linear-gradient(180deg, #fcd34d 0%, #fbbf24 50%, #d9480f 100%);
 
   box-shadow:
     0 6px 16px rgba(0, 0, 0, 0.35),
@@ -592,7 +688,6 @@ button:disabled {
 
 .btn-yellow-red-mix:hover {
   background: linear-gradient(180deg, #fde68a 0%, #fbbf24 50%, #c2410c 100%);
-
   transform: translateY(-1px);
 }
 
@@ -605,9 +700,301 @@ button:disabled {
   background: var(--bg-elev);
 }
 
+/* =============================================================================
+   Global UI Primitives
+============================================================================= */
+
+.dp-surface {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 255, 255, 0.08),
+      transparent 60%
+    ),
+    linear-gradient(180deg, var(--color-bg-secondary), var(--color-bg-primary));
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -18px 28px rgba(0, 0, 0, 0.35),
+    0 18px 36px rgba(0, 0, 0, 0.35);
+}
+
+.dp-surface--tight {
+  padding: 12px;
+}
+
+.dp-surface--flat {
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ---- Buttons (dp-*) ---- */
+.dp-btn {
+  appearance: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 10px 14px;
+
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: var(--text);
+
+  background:
+    radial-gradient(
+      140% 120% at 50% 0%,
+      rgba(255, 255, 255, 0.16),
+      transparent 60%
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.18));
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 20px rgba(0, 0, 0, 0.28);
+
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease,
+    filter 120ms ease;
+}
+
+.dp-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+.dp-btn:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+
+.dp-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.dp-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--focus),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 20px rgba(0, 0, 0, 0.28);
+}
+
+.dp-btn--blue {
+  border-color: rgba(96, 165, 250, 0.45);
+  background:
+    radial-gradient(
+      120% 140% at 50% 0%,
+      rgba(96, 165, 250, 0.32),
+      transparent 60%
+    ),
+    linear-gradient(180deg, rgba(59, 130, 246, 0.38), rgba(17, 24, 39, 0.92));
+}
+
+.dp-btn--purple {
+  border-color: rgba(167, 139, 250, 0.42);
+  background:
+    radial-gradient(
+      120% 140% at 50% 0%,
+      rgba(167, 139, 250, 0.28),
+      transparent 60%
+    ),
+    linear-gradient(180deg, rgba(139, 92, 246, 0.35), rgba(17, 24, 39, 0.92));
+}
+
+.dp-btn--red {
+  border-color: rgba(220, 38, 38, 0.6);
+  color: #ffffff;
+
+  background: linear-gradient(180deg, #ef4444, #991b1b);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+.dp-btn--red:hover {
+  filter: brightness(1.05);
+}
+
+.dp-btn--ghost {
+  background: transparent;
+  border-color: var(--border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Yellow primary button */
+.dp-btn--yellow {
+  border-color: rgba(234, 179, 8, 0.55);
+  color: #1a1a1a;
+
+  background:
+    radial-gradient(
+      120% 140% at 50% 0%,
+      rgba(255, 255, 255, 0.22),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-accent-yellow-hi),
+      var(--color-accent-yellow)
+    );
+}
+
+.dp-btn--yellow:hover {
+  filter: brightness(1.04);
+}
+
+.dp-btn--sm {
+  padding: 8px 12px;
+  border-radius: 11px;
+  font-size: var(--text-sm);
+}
+
+/* ---- Inputs / Forms (dp-*) ---- */
+.dp-form {
+  display: grid;
+  gap: 12px;
+}
+
+.dp-field {
+  display: grid;
+  gap: 6px;
+}
+
+.dp-label {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--text-sm);
+  opacity: 0.92;
+}
+
+.dp-input {
+  width: 100%;
+  height: 42px;
+  padding: 10px 12px;
+
+  border-radius: 12px;
+  border: 1px solid var(--border);
+
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.dp-input::placeholder {
+  color: rgba(203, 213, 225, 0.65);
+}
+
+.dp-input:focus {
+  outline: none;
+  border-color: rgba(96, 165, 250, 0.55);
+  box-shadow:
+    0 0 0 3px var(--focus),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.dp-inputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dp-iconBtn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+}
+
+/* ---- Modal ---- */
+.dp-modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 999;
+}
+
+.dp-modal {
+  width: 100%;
+  max-width: 560px;
+  border-radius: 16px;
+  border: 1px solid var(--border-strong);
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 255, 255, 0.08),
+      transparent 60%
+    ),
+    linear-gradient(180deg, var(--color-bg-secondary), var(--color-bg-primary));
+  padding: 12px;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.62);
+}
+
+.dp-modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 6px 10px;
+}
+
+.dp-modalHeader h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+/* ---- StageLogo variants ---- */
+.dp-logoWrapper--left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.dp-logoWrapper--center {
+  align-items: center;
+  text-align: center;
+}
+
+.dp-logoWrapper--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.dp-logo--sm {
+  font-size: 64px;
+}
+
+.dp-logo--md {
+  font-size: 96px;
+}
+
+.dp-logo--lg {
+  font-size: 132px;
+}
+
+.dp-logoTag {
+  max-width: 760px;
+}
+
 /* -------------------------
    INTERNAL SCROLLBAR STYLING (Stage scroll)
-   - Gradient thumb with red → gold → blue
 -------------------------- */
 
 /* Chrome/Edge */
@@ -647,10 +1034,9 @@ button:disabled {
   scrollbar-color: var(--color-accent-blue) rgba(5, 8, 15, 0.7);
 }
 
-/*----------------------------
-        Hide from Homepage only
---------------------------------*/
-/* Hide header logo only when homepage is active */
-.homepage ~ .dp-viewport .dp-headerLogo {
-  display: none;
+/* ----------------------------
+   Hide header logo on Homepage
+----------------------------- */
+body.dp-homepage .dp-headerLogo {
+  display: none !important;
 }

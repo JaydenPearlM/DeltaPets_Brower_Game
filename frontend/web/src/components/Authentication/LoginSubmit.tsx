@@ -20,7 +20,7 @@ export function useLoginSubmit({
 }: UseLoginSubmitArgs) {
   const { signIn } = useAuth();
 
-  // ✅ routing decision lives in enterGame()
+  //  routing decision lives in enterGame()
   const { enterGame } = useEnterGame();
 
   const [loading, setLoading] = useState(false);
@@ -52,7 +52,7 @@ export function useLoginSubmit({
           return;
         }
 
-        // ✅ After successful login:
+        //  After successful login:
         // - if user has no pet yet => /create (cutscene)
         // - else => /pet
         await enterGame();

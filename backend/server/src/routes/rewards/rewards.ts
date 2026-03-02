@@ -225,7 +225,7 @@ async function giveXPToActivePet(user_id: string, amount: number) {
 }
 
 /**
- * ✅ One trough only:
+ * One trough only:
  * - Only grant if user has NO trough yet (capacity <= 0)
  * - Set capacity = 50 and fill = 50 when granted
  * - Never upgrade, never refill, never grant again

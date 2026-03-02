@@ -16,10 +16,10 @@ export function createApp() {
   app.use("/api/care", careRouter);
 
   app.get("/", (_req, res) => {
-    res.type("text").send("DeltaPets Backend ✅\nTry GET /api/health");
+    res.type("text").send("DeltaPets Backend \nTry GET /api/health");
   });
 
-  // ✅ Rate limiting + request shaping applied to ALL /api routes
+  // Rate limiting + request shaping applied to ALL /api routes
   // NOTE: apiRouter is the *single* place that mounts sub-routers (pets, dailies, etc).
   app.use("/api", apiLimiter, apiSpeedLimiter, apiRouter);
 

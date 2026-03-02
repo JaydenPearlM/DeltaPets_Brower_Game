@@ -30,7 +30,7 @@ export default function LogoDeltapets({ variant = "hero", className }: Props) {
     </div>
   );
 
-  // ✅ Header is clickable, but NOT an <a> (prevents nested anchor errors)
+  //  Header is clickable, but NOT an <a> (prevents nested anchor errors)
   if (variant === "header") {
     const go = () => navigate(to);
 

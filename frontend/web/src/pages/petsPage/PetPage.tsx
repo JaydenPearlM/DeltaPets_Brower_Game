@@ -144,7 +144,7 @@ export default function PetPage() {
 
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
-  // ✅ personality display name resolved from Supabase if needed
+  //  personality display name resolved from Supabase if needed
   const [personalityName, setPersonalityName] = useState<string | null>(null);
 
   /** Redirect if not logged in */
@@ -306,7 +306,7 @@ export default function PetPage() {
       spd: Number(src?.spd ?? 0),
       magi: Number(src?.magi ?? 0),
 
-      // ✅ ADD: mana + personality
+      //  ADD: mana + personality
       mana: Number(src?.mana ?? pet?.mana ?? 0),
       personality:
         (typeof personalityName === "string" ? personalityName : null) ??
@@ -352,7 +352,7 @@ export default function PetPage() {
       setActiveResp(resp);
       setPetModel(mergePetModel(resp));
 
-      setMsg("Hatched ✅");
+      setMsg("Hatched ");
     } catch (e: any) {
       setMsg(`Hatch failed: ${e?.message ?? String(e)}`);
     } finally {

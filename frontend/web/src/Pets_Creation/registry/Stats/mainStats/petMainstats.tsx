@@ -34,10 +34,10 @@ type PetMainStatsProps = {
     spd: number;
     magi?: number;
 
-    // ✅ includes mana
+    //  includes mana
     mana: number;
 
-    // ✅ add personality (passed in from PetPage)
+    //  add personality (passed in from PetPage)
     personality_id?: string | null;
 
     training?: Partial<TrainingElements>;
@@ -84,7 +84,7 @@ function prettyPersonality(p?: string | null) {
 }
 
 export default function PetMainStats({ pet }: PetMainStatsProps) {
-  // ✅ default hidden
+  //  default hidden
   const [showTraining, setShowTraining] = useState(false);
 
   const training = useMemo<TrainingElements>(() => {
@@ -118,7 +118,7 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
     const magi = Number(pet.magi ?? 0);
     const mana = Number(pet.mana ?? 0);
 
-    // ✅ include mana in total
+    //  include mana in total
     return hp + atk + def + spd + magi + mana;
   }, [pet]);
 
@@ -201,7 +201,7 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
                   </div>
                 )}
 
-                {/* ✅ Mana row */}
+                {/*  Mana row */}
                 <div className="pet-mainstats__row pet-mainstats__row--tight">
                   <span>MANA</span>
                   <span className="pet-mainstats__value">
@@ -216,7 +216,7 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
               </div>
             </div>
 
-            {/* ✅ Training flyout only renders if open */}
+            {/*  Training flyout only renders if open */}
             {showTraining ? (
               <aside className="pet-mainstats__flyout is-open">
                 <div className="pet-mainstats__flyoutInner">

@@ -16,7 +16,7 @@ export default function AuthCallback() {
       if (cancelled) return;
 
       if (error) {
-        console.error("auth callback error:", error);
+        console.error("[auth] callback failed:", error.message ?? error);
         setMsg("Auth failed. Try logging in again.");
         window.setTimeout(() => navigate("/", { replace: true }), 1200);
         return;
@@ -29,7 +29,7 @@ export default function AuthCallback() {
         return;
       }
 
-      setMsg("Verified ✅ Redirecting…");
+      setMsg("Verified Redirecting…");
       window.setTimeout(() => navigate("/", { replace: true }), 600);
     })();
 

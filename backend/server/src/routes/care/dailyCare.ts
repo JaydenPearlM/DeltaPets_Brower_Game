@@ -194,14 +194,14 @@ dailyCareRouter.post(
 
     if (upErr) return res.status(500).json({ error: upErr.message });
 
-    // ✅ Log the ribbon into the ribbons system.
+    // Log the ribbon into the ribbons system.
     // Keep daily care working even if awards fails (it shouldn't block gameplay).
     if (shouldAward) {
       try {
         await awardAlphaTesterRibbon(userId, nowIso);
       } catch (e: any) {
         console.warn(
-          "[dailyCare] Failed to award Alpha Tester ribbon:",
+          "[dailyCare] Failed to award Alpha Tester ribbon:", //For the Ribbons, making sure they upload correctly and showing me if there's an Issue.
           e?.message ?? e,
         );
       }

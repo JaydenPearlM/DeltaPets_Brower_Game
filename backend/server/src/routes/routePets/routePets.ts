@@ -8,7 +8,7 @@ import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { cooldownsFromPetRow } from "../../pets/cooldowns";
 import { markRunawayIfNeeded } from "../../pets/runaway";
-import { syncPetDerivedStats } from "../../pets/syncPetDerivedStats";
+// import { syncPetDerivedStats } from "../../pets/syncPetDerivedStats"; // <- do NOT use on hatch now
 
 // IV helpers
 import { rollIV, sumStats } from "../../lib/stats/individualValues";
@@ -35,6 +35,24 @@ import {
 } from "./petsRepo";
 
 export const petsRouter = Router();
+
+/**
+ * Random personality assignment (DB-driven)
+ * Uses personalities.key and stores it into pets.personality_key
+ */
+async function rollRandomPersonalityKey(): Promise<string> {
+  const { data, error } = await supabaseAdmin
+    .from("personalities")
+    .select("key");
+
+  if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error("No personalities found in database.");
+  }
+
+  const idx = Math.floor(Math.random() * data.length);
+  return (data[idx] as any).key;
+}
 
 // -----------------------------
 // Routes
@@ -208,6 +226,7 @@ petsRouter.post(
           unspent_points: 0,
           is_active: false,
           gender: "null_gender",
+          // personality_key intentionally not set until hatch
         } as any)
         .select("*")
         .single();
@@ -307,48 +326,49 @@ petsRouter.post(
           (baseRaw as any).base_def = starter.baseStats.def;
           (baseRaw as any).base_spd = starter.baseStats.spd;
           (baseRaw as any).base_magi = starter.baseStats.magi;
+          (baseRaw as any).base_mana = starter.baseStats.mana ?? 0;
           (baseRaw as any).base_total = 10;
         } else {
-          console.warn("[hatch] baseSum != 10 but no starter match", {
+          console.warn("[hatch] invalid baseSum for starter egg", {
             petId: egg.id,
             name: egg.name,
             baseSum,
+            expected: 10,
           });
         }
       }
 
-      // clear lvl 1 allocations just in case
-      await supabaseAdmin
-        .from("pet_stat_allocations")
-        .delete()
-        .eq("pet_id", egg.id)
-        .eq("level", 1);
+      // ---------------------------------------------
+      // HATCH BONUS (7 random points):
+      // - Base stats stay in pet_stats (sum=10)
+      // - Hatch bonus is NOT a "level allocation" (DB constraint = 1 per level)
+      // - We apply hatch bonus directly to the pet snapshot stats
+      // ---------------------------------------------
 
       const iv = rollIV(HATCH_ALLOCATION_POINTS);
       if (sumStats(iv) !== HATCH_ALLOCATION_POINTS) {
         throw new Error("IV generation failed integrity check");
       }
 
-      const nextBase = {
-        base_hp: ((baseRaw as any).base_hp ?? 0) + iv.hp,
-        base_atk: ((baseRaw as any).base_atk ?? 0) + iv.atk,
-        base_def: ((baseRaw as any).base_def ?? 0) + iv.def,
-        base_spd: ((baseRaw as any).base_spd ?? 0) + iv.spd,
-        base_magi: ((baseRaw as any).base_magi ?? 0) + iv.magi,
-        base_mana: (baseRaw as any).base_mana ?? 0,
-        base_total: 10 + HATCH_ALLOCATION_POINTS, // force 17
-      };
+      const baseHp = Number((baseRaw as any).base_hp ?? 0);
+      const baseAtk = Number((baseRaw as any).base_atk ?? 0);
+      const baseDef = Number((baseRaw as any).base_def ?? 0);
+      const baseSpd = Number((baseRaw as any).base_spd ?? 0);
+      const baseMagi = Number((baseRaw as any).base_magi ?? 0);
+      const baseMana = Number((baseRaw as any).base_mana ?? 0);
 
-      const { error: baseUpdateErr } = await supabaseAdmin
-        .from("pet_stats")
-        .update(nextBase as any)
-        .eq("pet_id", egg.id);
+      const totalHp = baseHp + iv.hp;
+      const totalAtk = baseAtk + iv.atk;
+      const totalDef = baseDef + iv.def;
+      const totalSpd = baseSpd + iv.spd;
+      const totalMagi = baseMagi + iv.magi;
+      const totalMana = baseMana + iv.mana;
 
-      if (baseUpdateErr)
-        return res.status(500).json({ error: baseUpdateErr.message });
+      const hpMax = Math.max(1, totalHp * 2);
 
       const nowIso = new Date(serverNowMs).toISOString();
       const genderToSet = rollGender();
+      const personalityKey = await rollRandomPersonalityKey();
 
       const { data: hatched, error } = await supabaseAdmin
         .from("pets")
@@ -359,6 +379,18 @@ petsRouter.post(
           unspent_points: 0,
           is_active: true,
           gender: genderToSet,
+          personality_key: personalityKey,
+
+          // snapshot stats (base + hatch bonus)
+          atk: totalAtk,
+          def: totalDef,
+          spd: totalSpd,
+          magi: totalMagi,
+          mana: totalMana,
+
+          // derived hp
+          hp_max: hpMax,
+          hp_cur: hpMax,
         } as any)
         .eq("id", egg.id)
         .eq("user_id", userId)
@@ -367,7 +399,8 @@ petsRouter.post(
 
       if (error) return res.status(500).json({ error: error.message });
 
-      await syncPetDerivedStats(egg.id, { refillHp: true });
+      // DO NOT call syncPetDerivedStats here (it would overwrite snapshot with base+alloc only)
+      // await syncPetDerivedStats(egg.id, { refillHp: true });
 
       const points = await fetchTotalPoints(egg.id);
 
@@ -378,6 +411,7 @@ petsRouter.post(
         iv,
         points,
         gender: genderToSet,
+        personality_key: personalityKey,
       });
     } catch (e: any) {
       return res.status(500).json({ error: e?.message ?? "Server error" });

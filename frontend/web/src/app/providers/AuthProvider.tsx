@@ -6,7 +6,7 @@ export type AuthContextValue = {
   user: User | null;
   loading: boolean;
 
-  // ✅ Username OR Email login
+  // Username OR Email login
   signIn: (args: {
     identifier: string;
     password: string;
@@ -33,9 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(({ data, error }) => {
       if (!mounted) return;
+
       if (error) {
-        console.error("getSession error:", error);
+        console.error("[auth] getSession failed:", error.message ?? error);
       }
+
       setUser(data.session?.user ?? null);
       setLoading(false);
     });
@@ -80,7 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .maybeSingle();
 
           if (lookupErr) {
-            console.error("username lookup error:", lookupErr);
+            console.error("[auth] username lookup failed", {
+              error: lookupErr,
+            });
+
             return {
               error: {
                 message:

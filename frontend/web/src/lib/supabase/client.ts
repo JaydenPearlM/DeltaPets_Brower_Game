@@ -14,9 +14,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 if (import.meta.env.DEV) {
-  console.log("VITE_API_URL =", import.meta.env.VITE_API_URL);
-  console.log("VITE_SUPABASE_URL =", supabaseUrl);
-  console.log("VITE_SUPABASE_ANON_KEY present =", !!supabaseAnonKey);
+  console.log("[supabase] client initialized");
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {

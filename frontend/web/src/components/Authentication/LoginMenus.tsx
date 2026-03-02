@@ -1,9 +1,9 @@
+// LoginMenus.tsx
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import { createPortal } from "react-dom";
 import "./LoginMenus.css";
 
-import { LoginButton } from "./LoginButton";
-import { SignupButton } from "./SignupButton";
 import { LoginForm } from "./LoginForm";
 import { LoginSubmitButton } from "./LoginSubmitButton";
 import { useLoginSubmit } from "./LoginSubmit";
@@ -27,7 +27,7 @@ function PasswordField({
   value,
   onChange,
   autoComplete,
-  placeholder = "••••••••",
+  placeholder = "",
 }: {
   label: string;
   value: string;
@@ -37,57 +37,55 @@ function PasswordField({
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
-  return (
-    <div>
-      <label>
-        {label}
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input
-            type={showPassword ? "text" : "password"}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            autoComplete={autoComplete}
-            placeholder={placeholder}
-            style={{ flex: 1 }}
-            required
-          />
+  // When label is empty, we assume the parent already provides dp-field + dp-label
+  const hasOwnField = Boolean(label);
 
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-            title={showPassword ? "Hide password" : "Show password"}
-            style={{
-              display: "grid",
-              placeItems: "center",
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.18)",
-              background: "transparent",
-              cursor: "pointer",
-            }}
+  const content = (
+    <>
+      {label ? <div className="dp-label">{label}</div> : null}
+
+      {/* FIX: make the row a positioning context */}
+      <div className="dp-inputRow dp-inputRow--withIcon">
+        <input
+          className="dp-input dp-input--withIcon"
+          type={showPassword ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+          required
+        />
+
+        {/*  FIX: button is absolutely centered */}
+        <button
+          type="button"
+          className="dp-iconBtnEye"
+          onClick={() => setShowPassword((v) => !v)}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+          title={showPassword ? "Hide password" : "Show password"}
+        >
+          <svg
+            className="dp-eyeIcon"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
-              <circle cx="12" cy="12" r="3" />
-              {showPassword ? null : <path d="M3 3l18 18" />}
-            </svg>
-          </button>
-        </div>
-      </label>
-    </div>
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
+            <circle cx="12" cy="12" r="3" />
+            {showPassword ? null : <path d="M3 3l18 18" />}
+          </svg>
+        </button>
+      </div>
+    </>
   );
+
+  return hasOwnField ? <div className="dp-field">{content}</div> : content;
 }
 
 function LoginPanel({
@@ -136,9 +134,16 @@ function LoginPanel({
           setPassword={setPassword}
         />
 
-        <div className="login-actions" style={{ marginTop: 12 }}>
+        <div className="auth-actions">
           <LoginSubmitButton loading={loginLoading} />
-          <button type="button" onClick={closeLogin} disabled={loginLoading}>
+
+          {/*  FIX: this must NOT be submit */}
+          <button
+            type="button"
+            className="dp-btn dp-btn--blue"
+            onClick={closeLogin}
+            disabled={loginLoading}
+          >
             Close
           </button>
         </div>
@@ -154,7 +159,6 @@ function normalizeUsername(raw: string) {
 }
 
 function isValidUsername(u: string) {
-  // keep it simple for Alpha: letters, numbers, underscore, 3-20 chars
   return /^[a-z0-9_]{3,20}$/.test(u);
 }
 
@@ -173,7 +177,6 @@ function SignupPanel({
 }) {
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
-
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -185,59 +188,38 @@ function SignupPanel({
     e.preventDefault();
     setMessage(null);
 
-    if (!displayName.trim()) {
-      setMessage("Name is required.");
-      return;
-    }
-
-    if (!email || !email.includes("@")) {
-      setMessage("Please enter a valid email address.");
-      return;
-    }
-
-    if (!usernameNorm) {
-      setMessage("Username is required.");
-      return;
-    }
-
-    if (!isValidUsername(usernameNorm)) {
-      setMessage(
-        "Username must be 3–20 chars and use only letters, numbers, underscore.",
-      );
-      return;
-    }
-
-    if (!password || password.length < 8) {
-      setMessage("Password must be at least 8 characters.");
-      return;
-    }
-
-    if (password !== confirm) {
-      setMessage("Passwords do not match.");
-      return;
-    }
+    if (!displayName.trim()) return setMessage("Name is required.");
+    if (!email || !email.includes("@"))
+      return setMessage("Please enter a valid email address.");
+    if (!usernameNorm) return setMessage("Username is required.");
+    if (!isValidUsername(usernameNorm))
+      return setMessage(" 3–20 chars with letters, numbers, underscore.");
+    if (!password || password.length < 8)
+      return setMessage("Password must be at least 8 characters.");
+    if (password !== confirm) return setMessage("Passwords do not match.");
 
     setLoading(true);
     try {
-      // 1) Pre-check: no duplicate usernames
-      const { data: existing, error: existingErr } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .select("user_id")
         .eq("username", usernameNorm)
         .maybeSingle();
 
-      if (existingErr) {
-        console.error(existingErr);
+      if (error) {
+        console.error("[signup] username availability check failed", {
+          username: usernameNorm,
+          error: Error,
+        });
         setMessage("Could not verify username. Please try again.");
         return;
       }
 
-      if (existing?.user_id) {
+      if (data) {
         setMessage("That username is already taken.");
         return;
       }
 
-      // 2) Create auth user
       const { data: signUpData, error: signUpErr } = await supabase.auth.signUp(
         {
           email,
@@ -258,35 +240,38 @@ function SignupPanel({
 
       const userId = signUpData.user?.id ?? null;
 
-      // 3) Create profile row (only if we have the user id immediately)
-      // If your Supabase requires email confirmation, userId may still exist,
-      // but session might be null — that's okay.
-      if (userId) {
-        const { error: profileErr } = await supabase.from("profiles").insert({
-          user_id: userId,
-          username: usernameNorm,
-          display_name: displayName.trim(),
-          email,
-        });
-
-        if (profileErr) {
-          // If this fails, you REALLY want a DB unique constraint on username too.
-          console.error(profileErr);
-          setMessage(
-            "Account created, but profile setup failed. Please contact support.",
-          );
-          return;
-        }
+      if (!userId) {
+        // This can happen if email confirmation is required and no user object is returned.
+        setMessage(
+          "Account created. Please check your email to confirm, then sign in.",
+        );
+        return;
       }
 
-      // 4) Close modal + force the user to press Login next (your requested flow)
-      // If Supabase auto-signed them in, sign them out so they must login.
-      await supabase.auth.signOut();
+      const { error: profileErr } = await supabase.from("profiles").insert({
+        user_id: userId,
+        username: usernameNorm,
+        display_name: displayName.trim(),
+        email,
+      });
 
-      setMessage("Account created! Now press Login.");
+      if (profileErr) {
+        console.error("[signup] profile creation failed", {
+          username: usernameNorm,
+          error: profileErr,
+        });
+
+        setMessage(
+          "Account created, but profile setup failed. Please contact support.",
+        );
+        return;
+      }
+
+      await supabase.auth.signOut();
+      setMessage("Account created! Now press Sign in.");
       closeSignup();
     } catch (err) {
-      console.error("Signup failed:", err);
+      console.error("[signup] failed:", err);
       setMessage("Signup failed. Please try again.");
     } finally {
       setLoading(false);
@@ -294,68 +279,87 @@ function SignupPanel({
   }
 
   return (
-    <form onSubmit={onSubmit}>
-      <div>
-        <label>
-          Name
-          <input
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            autoComplete="name"
-            placeholder="Jayden"
-            required
-          />
-        </label>
+    <form onSubmit={onSubmit} className="dp-form">
+      <div className="dp-field">
+        <div className="dp-label">Name</div>
+        <input
+          className="dp-input"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          autoComplete="name"
+          placeholder="Your display name"
+          required
+        />
       </div>
 
-      <div>
-        <label>
-          UserName
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
-            placeholder="jayden_6790"
-            required
-          />
-        </label>
-        <p style={{ fontSize: 12, opacity: 0.8, marginTop: 6 }}>
-          3–20 chars. Letters/numbers/underscore only.
-        </p>
+      <div className="dp-field">
+        <div className="dp-label">Username</div>
+        <input
+          className="dp-input"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
+          placeholder="3–20 chars"
+          required
+        />
+        <div className="auth-hint">
+          3–20 chars with letters, numbers, and underscore.
+        </div>
       </div>
 
-      <div>
-        <label>
-          Email
-          <input
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            autoComplete="email"
-            placeholder="you@example.com"
-            required
-          />
-        </label>
+      <div className="dp-field">
+        <div className="dp-label">Email</div>
+        <input
+          className="dp-input"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          autoComplete="email"
+          inputMode="email"
+          placeholder=""
+          required
+        />
       </div>
 
-      <PasswordField
-        label="Password"
-        value={password}
-        onChange={setPassword}
-        autoComplete="new-password"
-      />
+      {/*  Password */}
+      <div className="dp-field">
+        <div className="dp-label">Password</div>
+        <PasswordField
+          label=""
+          value={password}
+          onChange={setPassword}
+          autoComplete="new-password"
+          placeholder="At least 8 characters"
+        />
+        <div className="auth-hint">8-12+ chars</div>
+      </div>
 
-      <PasswordField
-        label="Confirm Password"
-        value={confirm}
-        onChange={setConfirm}
-        autoComplete="new-password"
-      />
+      {/*  Confirm */}
+      <div className="dp-field">
+        <div className="dp-label">Confirm Password</div>
+        <PasswordField
+          label=""
+          value={confirm}
+          onChange={setConfirm}
+          autoComplete="new-password"
+          placeholder="Repeat password"
+        />
+      </div>
 
-      <div className="login-actions" style={{ marginTop: 12 }}>
-        <button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create Account"}
+      <div className="auth-actions auth-actions--tight">
+        <button
+          type="submit"
+          disabled={loading}
+          className="dp-btn dp-btn--yellow"
+        >
+          {loading ? "Creating..." : "Sign up"}
         </button>
-        <button type="button" onClick={closeSignup} disabled={loading}>
+
+        <button
+          type="button"
+          onClick={closeSignup}
+          disabled={loading}
+          className="dp-btn dp-btn--red dp-btn--sm"
+        >
           Close
         </button>
       </div>
@@ -378,6 +382,8 @@ export function LoginMenus() {
     localStorage.setItem("dp_login_identifier", identifier);
   }, [identifier]);
 
+  const portalTarget = typeof document !== "undefined" ? document.body : null;
+
   function openLogin() {
     setMessage(null);
     setMode("login");
@@ -386,6 +392,8 @@ export function LoginMenus() {
 
   function openSignup() {
     setMessage(null);
+    setIdentifier("");
+    localStorage.removeItem("dp_login_identifier");
     setSignupOpen(true);
     setMode("none");
   }
@@ -397,60 +405,106 @@ export function LoginMenus() {
 
   function closeSignup() {
     setSignupOpen(false);
-    // do NOT clear message here — we want "Account created! Now press Login."
-    // to remain visible on the main screen.
   }
 
+  const loginModal =
+    mode === "login" && portalTarget
+      ? createPortal(
+          <div
+            className="auth-modal-backdrop"
+            role="presentation"
+            onClick={closeLogin}
+          >
+            <div
+              className="auth-modal neon-border"
+              role="dialog"
+              aria-modal="true"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="auth-modal-header">
+                <h3>Sign in</h3>
+                <button type="button" onClick={closeLogin} aria-label="Close">
+                  X
+                </button>
+              </div>
+
+              <LoginPanel
+                identifier={identifier}
+                setIdentifier={setIdentifier}
+                message={message}
+                setMessage={setMessage}
+                closeLogin={closeLogin}
+              />
+            </div>
+          </div>,
+          portalTarget,
+        )
+      : null;
+
+  const signupModal =
+    signupOpen && portalTarget
+      ? createPortal(
+          <div
+            className="auth-modal-backdrop"
+            role="presentation"
+            onClick={() => setSignupOpen(false)}
+          >
+            <div
+              className="auth-modal signup-neon"
+              role="dialog"
+              aria-modal="true"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="auth-modal-header">
+                <h3>Sign up</h3>
+                <button
+                  type="button"
+                  onClick={() => setSignupOpen(false)}
+                  aria-label="Close"
+                >
+                  X
+                </button>
+              </div>
+
+              <SignupPanel
+                identifier={identifier}
+                setIdentifier={setIdentifier}
+                message={message}
+                setMessage={setMessage}
+                closeSignup={closeSignup}
+              />
+            </div>
+          </div>,
+          portalTarget,
+        )
+      : null;
+
   return (
-    <div className="auth-shell">
-      <div className="auth-shell-top">
-        <LoginButton onClick={openLogin} />
-        <SignupButton onClick={openSignup} />
+    <>
+      <div className="auth-shell">
+        <div className="auth-shell-top">
+          <button
+            type="button"
+            className="auth-trigger auth-trigger--signin"
+            onClick={openLogin}
+          >
+            Sign in
+          </button>
+
+          <button
+            type="button"
+            className="auth-trigger auth-trigger--signup"
+            onClick={openSignup}
+          >
+            Sign up
+          </button>
+        </div>
+
+        {message ? <p className="auth-message">{message}</p> : null}
       </div>
 
-      {message ? <p className="auth-message">{message}</p> : null}
-
-      {mode === "login" && (
-        <LoginPanel
-          identifier={identifier}
-          setIdentifier={setIdentifier}
-          message={message}
-          setMessage={setMessage}
-          closeLogin={closeLogin}
-        />
-      )}
-
-      {signupOpen && (
-        <div
-          className="auth-modal-backdrop"
-          role="presentation"
-          onClick={() => {
-            setSignupOpen(false);
-          }}
-        >
-          <div
-            className="auth-modal"
-            role="dialog"
-            aria-modal="true"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="auth-modal-header">
-              <h3>Create Account</h3>
-              <button type="button" onClick={() => setSignupOpen(false)}>
-                X
-              </button>
-            </div>
-
-            <SignupPanel
-              identifier={identifier}
-              setIdentifier={setIdentifier}
-              message={null}
-              setMessage={setMessage}
-              closeSignup={closeSignup}
-            />
-          </div>
-        </div>
-      )}
-    </div>
+      {loginModal}
+      {signupModal}
+    </>
   );
 }

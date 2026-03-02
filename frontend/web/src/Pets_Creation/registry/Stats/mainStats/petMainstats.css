@@ -71,7 +71,7 @@
 }
 
 .pet-mainstats__grid--tight {
-  grid-template-columns: 1fr; /* ✅ single column = shorter + stops overlap issues */
+  grid-template-columns: 1fr; /*  single column = shorter + stops overlap issues */
 }
 
 /* cards */

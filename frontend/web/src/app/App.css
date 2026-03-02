@@ -1,42 +1,70 @@
+/* frontend/web/src/app/App.css */
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  text-align: initial;
+}
+
+/* Header positioning context */
+.dp-stageHeader--appFix {
+  position: relative;
+}
+
+/* True center the Bond block */
+.dp-headerCenterTagline--appFix {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  display: grid;
+  justify-items: center;
   text-align: center;
+
+  max-width: min(760px, 60vw);
+  padding: 0 10px;
+
+  pointer-events: none;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* MAIN LINE */
+.dp-headerTaglineTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg); /* uses global scale */
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  color: var(--text);
+
+  margin-bottom: 4px; /* exactly 4px spacing */
+  line-height: 1.1;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* SUB LINE */
+.dp-headerTaglineSub {
+  font-family: var(--font-body);
+  font-size: var(--text-sm); /* smaller, global scale */
+  font-weight: 500;
+  color: var(--muted);
+
+  line-height: 1.2;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Right side auth alignment */
+.dp-headerRight--auth {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  white-space: nowrap;
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+/* Slight header button refinement */
+.dp-headerRight--auth button,
+.dp-headerRight--auth a {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
 }

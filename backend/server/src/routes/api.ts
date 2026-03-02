@@ -9,7 +9,6 @@ import { petsRouter } from "./routePets/routePets";
 import { petActionsRouter } from "./petActions";
 import { rewardsRouter } from "./rewards/rewards";
 
-// ✅ FIXED PATHS
 import { dailyCareRouter } from "./care/dailyCare";
 import { careRouter } from "./care/care";
 
@@ -24,10 +23,10 @@ apiRouter.use(authRouter);
 apiRouter.use("/pets", petsRouter);
 apiRouter.use("/pets/actions", petActionsRouter);
 
-// ✅ Care Room API (used by CareRoom component on /pet)
+// Care Room API (used by CareRoom component on /pet)
 apiRouter.use("/care", careRouter);
 
-// ✅ Daily care/streak endpoints (if you’re using them)
+// Daily care/streak endpoints (if you’re using them)
 apiRouter.use("/daily/care", dailyCareRouter);
 
 // Rewards

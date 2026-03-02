@@ -111,7 +111,7 @@ export default function InventoryPage() {
 
 type InventoryPanelProps = {
   mode: "page" | "overlay";
-  onRequestClose?: () => void; // ✅ allow overlay to close
+  onRequestClose?: () => void; //  allow overlay to close
   // later: you can pass context like { pick: "egg", from: "hatchery" }
 };
 
@@ -181,7 +181,7 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
 
       if (isTyping) return;
 
-      // ✅ ESC should always work (even if inBattle)
+      //  ESC should always work (even if inBattle)
       if (e.key === "Escape") {
         if (mode === "overlay") {
           onRequestClose?.();

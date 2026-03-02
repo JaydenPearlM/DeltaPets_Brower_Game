@@ -1,283 +1,260 @@
-/* =========================
-   2-column layout
-========================= */
-.home2col {
-  min-height: 100%;
-  padding: 22px;
+/* =============================================================================
+   homepage.css — Pre-login homepage grid (matches your annotated layout)
+   - Left: Haven (top), WhatsNext (bottom)
+   - Right: DeltaPets Block (info + brand + announcements + previews)
+============================================================================= */
 
+.homeWrap {
   display: grid;
-  grid-template-columns: 0.95fr 1.05fr; /* left smaller, right bigger */
-  gap: 22px;
+  gap: 16px;
+}
+
+.homeGrid {
+  display: grid;
+  grid-template-columns: minmax(520px, 1fr) minmax(760px, 1.25fr);
+  grid-template-areas:
+    "haven dp"
+    "next  dp";
+  gap: 16px;
   align-items: start;
 }
 
-.homeLeft {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.homeHaven {
+  grid-area: haven;
+  padding: 14px;
 }
 
-.homeRight {
+.homeNext {
+  grid-area: next;
+}
+
+/* Shared header/body primitives */
+.homePanelHeader {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.homePanelTitle {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  color: var(--color-text-primary);
+}
+
+.homePanelHint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.homePanelBody {
+  border-radius: var(--radius-md);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+}
+
+/* -------------------------
+   DeltaPets Block
+-------------------------- */
+
+.dpBlock {
+  grid-area: dp;
+  padding: 14px;
+}
+
+.dpBlockGrid {
+  display: grid;
+  grid-template-columns: minmax(300px, 360px) 1fr;
+
+  /* Info spans both rows so bottoms line up cleanly. */
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "info brand"
+    "info ann"
+    "prev prev";
+
+  gap: 10px;
   align-items: stretch;
 }
 
-/* =========================
-   Surface panel base (Dark Steel)
-========================= */
-.surface {
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px;
+/* Info (left column, spans top+ann rows) */
+.dpInfo {
+  grid-area: info;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  text-align: center;
 
   background:
     radial-gradient(
-      120% 90% at 50% 0%,
-      rgba(255, 255, 255, 0.08),
+      120% 110% at 18% 22%,
+      rgba(59, 130, 246, 0.1),
+      transparent 55%
+    ),
+    radial-gradient(
+      120% 110% at 82% 80%,
+      rgba(139, 92, 246, 0.12),
+      transparent 55%
+    ),
+    linear-gradient(180deg, var(--color-bg-secondary), var(--color-bg-primary));
+
+  border: 1px solid var(--border-strong);
+}
+
+.dpInfoKicker {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+
+.dpInfoTitle {
+  margin: 0 0 10px;
+  font-family: var(--font-heading);
+  font-weight: 950;
+  color: var(--color-accent-neon-green);
+  text-shadow:
+    0 0 10px rgba(57, 255, 20, 0.18),
+    0 0 18px rgba(57, 255, 20, 0.1);
+}
+
+.dpInfoText {
+  margin: 0 0 10px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+/* “In the box” */
+.dpInfoBox {
+  margin: 10px auto 12px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  width: min(100%, 320px);
+
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.dpInfoBoxItem {
+  color: var(--color-text-secondary);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dpInfoBoxItem:last-child {
+  border-bottom: none;
+}
+
+.dpInfoNote {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+/* Brand (top-right) */
+.dpBrand {
+  grid-area: brand;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 2px 2px 0 2px;
+  margin-bottom: 0;
+}
+
+/* Announcements (right column) — moved up and stretched */
+.dpAnn {
+  grid-area: ann;
+  display: flex;
+  min-height: 0;
+}
+
+/* Make the AnnouncementsPanel fill this area */
+.dpAnn > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* If your AnnouncementsPanel uses NotebookPaper (.dp-paper), stretch it too */
+.dpAnn .dp-paper {
+  height: 100%;
+}
+
+/* Previews INSIDE block */
+.dpPreviews {
+  grid-area: prev;
+}
+
+.dpPreviewsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dpPreviewCard {
+  border-radius: var(--radius-md);
+  padding: 12px;
+  min-height: 160px;
+  border: 1px solid var(--border-strong);
+
+  background:
+    radial-gradient(
+      120% 100% at 20% 20%,
+      rgba(59, 130, 246, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(
+      120% 100% at 80% 80%,
+      rgba(139, 92, 246, 0.18),
       transparent 60%
     ),
     linear-gradient(180deg, var(--color-bg-secondary), var(--color-bg-primary));
 
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    inset 0 -18px 28px rgba(0, 0, 0, 0.35),
-    0 18px 36px rgba(0, 0, 0, 0.35);
+  display: grid;
+  align-content: space-between;
 }
 
-/* =========================
-   Right hero (no panel behind)
-========================= */
-.homeHeroRight {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  padding: 0;
-
-  display: flex;
-  justify-content: flex-end;
+.dpPreviewPill {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--color-text-primary);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
 }
 
-/* =========================
-   Announcements: TORN PAPER (CSS only)
-========================= */
-.homeAnnouncements {
-  border-radius: 14px;
-  padding: 18px 18px 16px 18px;
-  position: relative;
-  overflow: hidden;
-
-  /* Smaller box like you wanted */
-  min-height: 260px;
-
-  /* Paper base */
-  background:
-    radial-gradient(
-      120% 80% at 50% 0%,
-      rgba(255, 255, 255, 0.55),
-      transparent 55%
-    ),
-    linear-gradient(180deg, #f7f2e6 0%, #e9e1cf 100%);
-
-  border: 1px solid rgba(0, 0, 0, 0.25);
-
-  box-shadow:
-    0 18px 36px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+.dpPreviewHint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.35;
 }
 
-/* Make paper feel less "flat" */
-.homeAnnouncements.torn {
-  background:
-    radial-gradient(
-      140% 90% at 50% 0%,
-      rgba(255, 255, 255, 0.65),
-      transparent 58%
-    ),
-    radial-gradient(
-      140% 110% at 50% 120%,
-      rgba(0, 0, 0, 0.08),
-      transparent 55%
-    ),
-    linear-gradient(180deg, #f7f2e6 0%, #e9e1cf 100%);
-}
-
-/* Torn edge: use a mask when available */
-.homeAnnouncements.torn {
-  -webkit-mask-image: radial-gradient(
-    circle 10px at 10px 10px,
-    #000 98%,
-    transparent 101%
-  );
-  mask-image: radial-gradient(
-    circle 10px at 10px 10px,
-    #000 98%,
-    transparent 101%
-  );
-}
-
-/* Better torn effect using CSS mask + repeating pattern */
-@supports (
-  -webkit-mask-image: radial-gradient(circle at 0 0, #000, transparent)
-) {
-  .homeAnnouncements.torn {
-    -webkit-mask:
-      /* Tear along top */
-      repeating-radial-gradient(
-          circle at 12px 8px,
-          transparent 0 8px,
-          #000 8.5px 40px
-        )
-        top / 24px 18px repeat-x,
-      /* Rest of paper */ linear-gradient(#000 0 0) bottom / 100%
-        calc(100% - 14px) no-repeat;
-    mask:
-      repeating-radial-gradient(
-          circle at 12px 8px,
-          transparent 0 8px,
-          #000 8.5px 40px
-        )
-        top / 24px 18px repeat-x,
-      linear-gradient(#000 0 0) bottom / 100% calc(100% - 14px) no-repeat;
-  }
-}
-
-/* If mask isn't supported, fake it with a ripped shadow strip */
-@supports not (
-  -webkit-mask-image: radial-gradient(circle at 0 0, #000, transparent)
-) {
-  .homeAnnouncements.torn::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 16px;
-    width: 100%;
-
-    background: repeating-linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.12) 0 10px,
-      rgba(0, 0, 0, 0.06) 10px 18px,
-      rgba(0, 0, 0, 0.12) 18px 28px
-    );
-
-    opacity: 0.35;
-    pointer-events: none;
-  }
-}
-
-/* Text on paper should be dark */
-.homeAnnouncements .homePanelTitle,
-.homeAnnouncements .homeList,
-.homeAnnouncements .homeNote {
-  color: rgba(15, 20, 28, 0.92);
-}
-
-/* Slightly "handwritten-ish" feel without changing fonts */
-.homeAnnouncements .homePanelTitle {
-  letter-spacing: 0.35px;
-}
-
-/* Optional: subtle torn fiber texture */
-.homeAnnouncements.torn::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.05) 0 6px,
-    rgba(0, 0, 0, 0.03) 6px 12px
-  );
-  opacity: 0.25;
-  pointer-events: none;
-}
-
-/* =========================
-   Login block (under announcements)
-========================= */
-.homeLoginBelow {
-  border-radius: 16px;
-}
-
-.homeLoginTitle {
-  font-weight: 900;
-  margin-bottom: 10px;
-  letter-spacing: 0.2px;
-  opacity: 0.92;
-}
-
-.homeLoggedInBox {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.homeQuickUser {
-  font-weight: 700;
-  opacity: 0.92;
-}
-
-/* If LoginMenus contains its own wrapper “surface/panel/card/box”, flatten it here */
-.dp-homepage .homeLoginBelow :is(.surface, .panel, .card, .box) {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-}
-
-/* =========================
-   Care Room (centered)
-========================= */
-.homeCarePlain {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  padding: 0;
-  min-height: 420px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* 👈 centers horizontally */
-}
-
-.homeCareInner {
-  margin-top: 12px;
-
-  display: flex;
-  justify-content: center; /* 👈 double insurance */
-  width: 100%;
-}
-
-/* =========================
-   Homepage-only: hide the logo in the top-left header
-========================= */
-.dp-homepage
-  :is(
-    .dp-top-banner .dp-banner,
-    .dp-top-banner .dp-logo,
-    .dp-top-banner .dp-banner-inner,
-    header .dp-banner,
-    header .dp-logo
-  ) {
-  display: none !important;
-}
-
-/* =========================
-   Responsive
-========================= */
-@media (max-width: 980px) {
-  .home2col {
+/* Responsive */
+@media (max-width: 1200px) {
+  .homeGrid {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "dp"
+      "haven"
+      "next";
   }
 
-  .homeHeroRight {
-    justify-content: flex-start;
+  .dpBlockGrid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "brand"
+      "info"
+      "ann"
+      "prev";
+    grid-template-rows: auto auto auto auto;
   }
 
-  .homeLoggedInBox {
-    flex-direction: column;
-    align-items: flex-start;
+  .dpBrand {
+    justify-content: center;
   }
 }

@@ -13,16 +13,6 @@ const envPath = fs.existsSync(envByCwd) ? envByCwd : envByServerRoot;
 
 dotenv.config({ path: envPath });
 
-// Helpful dev log (safe: prints path, not secrets)
-if (process.env.NODE_ENV !== "production") {
-  console.log("[env] loaded from:", envPath);
-  console.log("[env] SUPABASE_URL present =", !!process.env.SUPABASE_URL);
-  console.log(
-    "[env] SUPABASE_SECRET_KEY present =",
-    !!process.env.SUPABASE_SECRET_KEY,
-  );
-}
-
 function required(name: string): string {
   const v = process.env[name];
   if (!v) {

@@ -61,7 +61,7 @@ export function WeeklyRewardsBar() {
     }
   }
 
-  // ✅ If API fails, show the real error instead of infinite "Loading..."
+  //  If API fails, show the real error instead of infinite "Loading..."
   if (!status) {
     return (
       <div className="wr-wrap">

@@ -17,7 +17,7 @@ export function LogoutButton() {
         setBusy(false);
 
         if (!error) {
-          navigate("/"); // ✅ bounce back to homepage
+          navigate("/"); //  bounce back to homepage
         } else {
           console.error("Logout failed:", error);
         }

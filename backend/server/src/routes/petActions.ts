@@ -28,7 +28,6 @@ petActionsRouter.post(
     const nowIso = new Date(nowMs).toISOString();
     const { action } = (req.body ?? {}) as Body;
 
-    // ✅ allow bond now
     if (
       action !== "feed" &&
       action !== "clean" &&
@@ -48,7 +47,6 @@ petActionsRouter.post(
     if (error) return res.status(500).json({ error: error.message });
     if (!pet) return res.status(404).json({ error: "No pet found" });
 
-    // ✅ block actions if runaway
     if (pet.is_runaway) {
       return res.status(409).json({
         error: "Your pet ran away.",
@@ -86,7 +84,7 @@ petActionsRouter.post(
     if (action === "feed") {
       patch.hunger = clamp(hunger + 30, 0, 100);
       patch.happiness = clamp(happiness + 5, 0, 100);
-      patch.last_fed_at = nowIso; // ✅ runaway timer anchor
+      patch.last_fed_at = nowIso; //runaway timer anchor
     }
 
     if (action === "clean") {

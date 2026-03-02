@@ -16,7 +16,9 @@ const MYSTERY_EGG = {
   sprite: goldEggPng,
 };
 
-console.log("Egg sprite URL:", goldEggPng);
+if (import.meta.env.DEV) {
+  console.log("Egg sprite URL:", goldEggPng);
+}
 
 type PetStatsRow = {
   pet_id: string;
@@ -100,7 +102,7 @@ async function fetchJsonAuthed<T>(
   return data as T;
 }
 
-// ✅ Hatchery uses /api/pets/hatchery (NOT /active)
+//  Hatchery uses /api/pets/hatchery (NOT /active)
 async function fetchHatchery(): Promise<HatcheryResponse> {
   const token = await getAccessToken();
   return fetchJsonAuthed<HatcheryResponse>("/api/pets/hatchery", token);
@@ -200,7 +202,7 @@ function ItemSlotButton(props: {
 }
 
 /**
- * ✅ Egg stats panel: ONLY main stats + total.
+ *  Egg stats panel: ONLY main stats + total.
  * No elements/training display here.
  */
 function SelectedEggStatsPanel(props: {
@@ -463,7 +465,7 @@ export default function HatcheryPage() {
             </div>
           </div>
 
-          {/* ✅ Stats only (no elements) */}
+          {/*  Stats only (no elements) */}
           <SelectedEggStatsPanel
             egg={selectedEgg}
             stats={data?.stats ?? null}

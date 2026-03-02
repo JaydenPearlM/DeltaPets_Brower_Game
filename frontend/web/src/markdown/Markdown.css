@@ -14,11 +14,17 @@
 }
 
 /* Headings */
-.dp-markdown h1,
+.dp-markdown h1 {
+  margin: 10px 0 5px;
+  line-height: 2;
+  font-weight: 800;
+  font-size: 100px;
+}
+
 .dp-markdown h2,
 .dp-markdown h3 {
   margin: 12px 0 6px;
-  line-height: 1.2;
+  line-height: 1.5;
   font-weight: 800;
 }
 
