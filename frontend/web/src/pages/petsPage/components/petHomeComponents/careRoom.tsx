@@ -8,6 +8,7 @@ type CareRoomProps = { mode?: CareRoomMode };
 type PetRow = {
   id?: string;
   name?: string | null;
+  nickname?: string | null;
 
   hunger?: number | null;
   cleanliness?: number | null;
@@ -18,7 +19,9 @@ type PetRow = {
   gender?: string | null;
   line?: string | null;
   stage?: string | null;
+
   personality?: string | null;
+  personality_key?: string | null;
 
   hp_cur?: number | null;
   hp_max?: number | null;
@@ -49,7 +52,7 @@ type CareCurrentResponse = {
   pet: PetRow | null;
   stats: StatTotals | null;
   total_points: number | null;
-  hp_display: number | null; // still allowed from backend, but NOT used in stats panel
+  hp_display: number | null;
   elements: ElementTotals | null;
 };
 
@@ -131,12 +134,10 @@ function Bar({
 }
 
 function makePreview(): CareCurrentResponse {
-  // IMPORTANT: Stats panel should sum to total_points (17)
-  // HP here is the STAT HP (points), not the derived HP max.
-  // Derived HP is shown via hp_cur/hp_max (hp_stat * 2).
   return {
     pet: {
       name: "Mason",
+      nickname: null,
       level: 1,
       gender: "male",
       line: "shadow",
@@ -178,24 +179,39 @@ function sumTotals(t: StatTotals | null) {
   );
 }
 
+function isEggStage(stage: unknown) {
+  return String(stage ?? "")
+    .toLowerCase()
+    .includes("egg");
+}
+
 export function CareRoom({ mode = "auth" }: CareRoomProps) {
   const [data, setData] = useState<CareCurrentResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
 
+  const [nickDraft, setNickDraft] = useState("");
+  const [nickBusy, setNickBusy] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
+
   const previewData = useMemo(() => makePreview(), []);
+
+  async function getToken() {
+    const { data: sessionData } = await supabase.auth.getSession();
+    return sessionData.session?.access_token ?? null;
+  }
 
   async function load() {
     setMsg(null);
 
+    // ✅ Preview mode never calls API/Supabase
     if (mode === "preview") {
       setData(previewData);
       setLoading(false);
       return;
     }
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
+    const token = await getToken();
 
     if (!token) {
       setData({
@@ -215,6 +231,10 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
 
     const json = (await res.json().catch(() => ({}))) as CareCurrentResponse;
     setData(json);
+
+    const nick = String(json?.pet?.nickname ?? "").trim();
+    setNickDraft(nick);
+
     setLoading(false);
   }
 
@@ -224,7 +244,7 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
-  async function doAction(action: "feed" | "clean" | "play") {
+  async function doAction(action: "feed" | "clean" | "play" | "pet") {
     setMsg(null);
 
     if (mode === "preview") {
@@ -232,26 +252,69 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
       return;
     }
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-
+    const token = await getToken();
     if (!token) {
       setMsg("Not logged in.");
       return;
     }
 
-    const res = await fetch(`/api/care/${action}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    setActionBusy(true);
+    try {
+      const res = await fetch(`/api/care/${action}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setMsg((json as any).error ?? "Action failed");
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsg((json as any).error ?? "Action failed");
+        return;
+      }
+
+      await load();
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function saveNickname() {
+    setMsg(null);
+
+    if (mode === "preview") {
+      setMsg("Log in to set a nickname.");
       return;
     }
 
-    await load();
+    const token = await getToken();
+    if (!token) {
+      setMsg("Not logged in.");
+      return;
+    }
+
+    const next = nickDraft.trim();
+
+    setNickBusy(true);
+    try {
+      const res = await fetch("/api/care/nickname", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nickname: next }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsg((json as any).error ?? "Nickname update failed");
+        return;
+      }
+
+      await load();
+      setMsg("Nickname saved.");
+    } finally {
+      setNickBusy(false);
+    }
   }
 
   if (loading) return null;
@@ -270,7 +333,6 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
   const hpCur = Number(pet?.hp_cur ?? 0);
   const hpMax = Number(pet?.hp_max ?? 0);
 
-  // ✅ FIX: Stats panel should use raw stat HP (points), NOT hp_display (hp*2)
   const sHP = totals?.hp ?? 0;
   const sATK = totals?.atk ?? 0;
   const sDEF = totals?.def ?? 0;
@@ -281,7 +343,14 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
   const computedTotal = sumTotals(totals);
   const shownTotal = totalPoints ?? computedTotal;
 
-  const nickname = "—";
+  const personalityShown = prettyEnum(pet?.personality ?? pet?.personality_key);
+
+  const sprite = pet ? (isEggStage(pet.stage) ? "🥚" : "🐣") : "—";
+  const disableCare = mode === "preview" || !pet || actionBusy || nickBusy;
+
+  // ✅ One-time nickname behavior
+  const existingNick = String(pet?.nickname ?? "").trim();
+  const nicknameLocked = Boolean(existingNick);
 
   return (
     <div className="crWrap">
@@ -301,7 +370,7 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
               <div className="tamaPetPanel" aria-label="Pet display">
                 <div className="tamaPetFrame">
                   <div className="tamaPetSprite" aria-hidden>
-                    🐣
+                    {sprite}
                   </div>
                 </div>
                 <div className="tamaPetHint">Sprite placeholder</div>
@@ -311,39 +380,86 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
         </div>
 
         <div className="tamaButtons">
-          <button
-            onClick={() => doAction("feed")}
-            disabled={mode === "preview" || !pet}
-          >
+          <button onClick={() => doAction("feed")} disabled={disableCare}>
             Feed
           </button>
-          <button
-            onClick={() => doAction("clean")}
-            disabled={mode === "preview" || !pet}
-          >
+          <button onClick={() => doAction("clean")} disabled={disableCare}>
             Clean
           </button>
         </div>
 
-        <div className="tamaPlayRow">
-          <button
-            className="tamaPlayRect"
-            onClick={() => doAction("play")}
-            disabled={mode === "preview" || !pet}
-          >
+        <div className="tamaButtons" style={{ marginTop: 10 }}>
+          <button onClick={() => doAction("play")} disabled={disableCare}>
             Play
+          </button>
+          <button onClick={() => doAction("pet")} disabled={disableCare}>
+            Pet
           </button>
         </div>
 
+        {/* ✅ Pet info first */}
         <div className="tamaIdentity">
           <KV k="Name:" v={pet?.name ?? "—"} />
-          <KV k="NickName:" v={nickname} />
+          <KV k="NickName:" v={existingNick ? existingNick : "—"} />
           <KV k="Level:" v={level} />
           <KV k="Gender:" v={displayGender(pet?.gender)} />
           <KV k="Element:" v={prettyEnum(pet?.line)} />
           <KV k="Stage:" v={displayStage(pet?.stage)} />
           <KV k="HP:" v={hpMax ? `${hpCur} / ${hpMax}` : "—"} />
-          <KV k="Personality:" v={prettyEnum(pet?.personality)} />
+          <KV k="Personality:" v={personalityShown} />
+        </div>
+
+        {/* ✅ Nickname input BELOW the info panel */}
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 6 }}>
+            Nickname {nicknameLocked ? "(locked)" : "(one-time)"}
+          </div>
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              value={nickDraft}
+              onChange={(e) => setNickDraft(e.target.value)}
+              placeholder={nicknameLocked ? "Nickname locked" : "Set nickname…"}
+              disabled={
+                mode === "preview" ||
+                !pet ||
+                nickBusy ||
+                actionBusy ||
+                nicknameLocked
+              }
+              style={{
+                flex: 1,
+                padding: "10px 12px",
+                borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.18)",
+                background: "rgba(255,255,255,0.06)",
+                color: "rgba(255,255,255,0.92)",
+                outline: "none",
+                opacity: nicknameLocked ? 0.65 : 1,
+              }}
+            />
+
+            <button
+              type="button"
+              onClick={saveNickname}
+              disabled={
+                mode === "preview" ||
+                !pet ||
+                nickBusy ||
+                actionBusy ||
+                nicknameLocked ||
+                !nickDraft.trim()
+              }
+            >
+              {nickBusy ? "Saving…" : "Save"}
+            </button>
+          </div>
+
+          <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
+            {nicknameLocked
+              ? "Nickname is locked for this pet."
+              : "You can only set your nickname once. Choose wisely."}
+          </div>
         </div>
 
         {msg && <div className="tamaMsg">{msg}</div>}

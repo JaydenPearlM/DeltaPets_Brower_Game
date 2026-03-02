@@ -350,6 +350,28 @@ petsRouter.post(
         throw new Error("IV generation failed integrity check");
       }
 
+      // ✅ Persist hatch IV as the Level 1 allocation so totals = base(10) + iv(7) = 17.
+      // fetchTotalPoints() reads pet_stat_allocations(level >= 1). Without this, UI shows 10 forever.
+      const { error: ivUpsertErr } = await supabaseAdmin
+        .from("pet_stat_allocations")
+        .upsert(
+          {
+            pet_id: egg.id,
+            level: 1,
+            hp: iv.hp,
+            atk: iv.atk,
+            def: iv.def,
+            spd: iv.spd,
+            magi: iv.magi,
+            mana: iv.mana,
+          } as any,
+          { onConflict: "pet_id,level" },
+        );
+
+      if (ivUpsertErr) {
+        return res.status(500).json({ error: ivUpsertErr.message });
+      }
+
       const baseHp = Number((baseRaw as any).base_hp ?? 0);
       const baseAtk = Number((baseRaw as any).base_atk ?? 0);
       const baseDef = Number((baseRaw as any).base_def ?? 0);

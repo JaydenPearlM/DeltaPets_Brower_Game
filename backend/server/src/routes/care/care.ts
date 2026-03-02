@@ -329,3 +329,93 @@ careRouter.post("/play", requireAuth, async (req: AuthedRequest, res) => {
 
   return res.json({ success: true });
 });
+
+/**
+ * POST /api/care/pet
+ * Simple "pet" action:
+ * - +bond
+ * - +happiness
+ * (No item consumption)
+ */
+careRouter.post("/pet", requireAuth, async (req: AuthedRequest, res) => {
+  const userId = req.user!.id;
+
+  const petRes = await supabaseAdmin
+    .from("pets")
+    .select("id,happiness,bond")
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .single();
+
+  if (petRes.error || !petRes.data)
+    return res.status(400).json({ error: "No active pet" });
+
+  const pet = petRes.data as any;
+
+  const newBond = Math.min(100, (pet.bond ?? 0) + 8);
+  const newHappy = Math.min(100, (pet.happiness ?? 0) + 6);
+
+  const petUp = await supabaseAdmin
+    .from("pets")
+    .update({ bond: newBond, happiness: newHappy })
+    .eq("id", pet.id);
+
+  if (petUp.error) return res.status(500).json({ error: petUp.error.message });
+
+  return res.json({ success: true });
+});
+
+/**
+ /**
+ * POST /api/care/nickname
+ * Body: { nickname: string }
+ *
+ * Rules:
+ * - Nickname is optional (can be null) but:
+ * - You can only SET it once ever.
+ * - After it's been set (non-empty), further changes are blocked.
+ */
+careRouter.post("/nickname", requireAuth, async (req: AuthedRequest, res) => {
+  const userId = req.user!.id;
+  const nicknameRaw = String((req.body as any)?.nickname ?? "").trim();
+
+  if (nicknameRaw.length > 24) {
+    return res.status(400).json({ error: "Nickname too long (max 24)" });
+  }
+
+  // Load active pet AND its current nickname
+  const petRes = await supabaseAdmin
+    .from("pets")
+    .select("id,nickname")
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .single();
+
+  if (petRes.error || !petRes.data) {
+    return res.status(400).json({ error: "No active pet" });
+  }
+
+  const pet = petRes.data as any;
+  const existing = String(pet.nickname ?? "").trim();
+
+  // If it's already set, block edits forever
+  if (existing) {
+    return res.status(403).json({
+      error: "Nickname already set. You can only change your name once.",
+    });
+  }
+
+  // If they try to set empty, just no-op
+  if (!nicknameRaw) {
+    return res.json({ success: true, nickname: null });
+  }
+
+  const petUp = await supabaseAdmin
+    .from("pets")
+    .update({ nickname: nicknameRaw })
+    .eq("id", pet.id);
+
+  if (petUp.error) return res.status(500).json({ error: petUp.error.message });
+
+  return res.json({ success: true, nickname: nicknameRaw });
+});

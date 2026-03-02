@@ -7,8 +7,8 @@ import { WhatsNextPanel } from "@/components/NextLogs/nextLogsPanel";
 import "./homepage.css";
 
 export default function Homepage() {
-  const auth = useAuth();
-  const isLoggedIn = Boolean(auth.user);
+  const { user } = useAuth();
+  const isLoggedIn = Boolean(user);
 
   useEffect(() => {
     document.body.classList.add("dp-homepage");
@@ -28,7 +28,8 @@ export default function Homepage() {
           </div>
 
           <div className="homePanelBody">
-            <CareRoom mode={isLoggedIn ? "auth" : "preview"} />
+            {/* ✅ Homepage preview should ALWAYS be preview mode */}
+            <CareRoom mode="preview" />
           </div>
         </section>
 

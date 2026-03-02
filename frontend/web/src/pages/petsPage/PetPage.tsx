@@ -22,7 +22,7 @@ import { PetTempNavButtons } from "./components/petTempNavButtons";
 import { EggSection } from "./components/eggsStats/eggSection";
 
 /** -----------------------------
- * Types (kept here for copy/paste)
+ * Types
  * ------------------------------ */
 
 type PetStatsRow = {
@@ -144,7 +144,6 @@ export default function PetPage() {
 
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
-  //  personality display name resolved from Supabase if needed
   const [personalityName, setPersonalityName] = useState<string | null>(null);
 
   /** Redirect if not logged in */
@@ -201,7 +200,6 @@ export default function PetPage() {
       setPersonalityName(null);
       if (!pet) return;
 
-      // 1) prefer direct payload fields
       const direct =
         pet?.personality_name ??
         pet?.personalityName ??
@@ -215,7 +213,6 @@ export default function PetPage() {
         return;
       }
 
-      // 2) resolve by id/key using Supabase table `personalities`
       const pid = pet?.personality_id ?? pet?.personalityId ?? null;
       const pkey = pet?.personality_key ?? pet?.personalityKey ?? null;
 
@@ -306,7 +303,6 @@ export default function PetPage() {
       spd: Number(src?.spd ?? 0),
       magi: Number(src?.magi ?? 0),
 
-      //  ADD: mana + personality
       mana: Number(src?.mana ?? pet?.mana ?? 0),
       personality:
         (typeof personalityName === "string" ? personalityName : null) ??
@@ -331,6 +327,8 @@ export default function PetPage() {
 
   async function hatchNow() {
     if (!pet) return;
+
+    // ✅ Manual hatch only — EggSection controls whether button is enabled.
     setMsg(null);
     setBusy(true);
 
@@ -352,7 +350,7 @@ export default function PetPage() {
       setActiveResp(resp);
       setPetModel(mergePetModel(resp));
 
-      setMsg("Hatched ");
+      setMsg("Hatched");
     } catch (e: any) {
       setMsg(`Hatch failed: ${e?.message ?? String(e)}`);
     } finally {
@@ -383,7 +381,8 @@ export default function PetPage() {
         <DailyCareCard />
 
         <div style={{ marginTop: 12 }}>
-          <CareRoom />
+          {/* ✅ Explicitly real care room */}
+          <CareRoom mode="auth" />
         </div>
       </div>
 
