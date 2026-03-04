@@ -350,7 +350,7 @@ petsRouter.post(
         throw new Error("IV generation failed integrity check");
       }
 
-      // ✅ Persist hatch IV as the Level 1 allocation so totals = base(10) + iv(7) = 17.
+      //  Persist hatch IV as the Level 1 allocation so totals = base(10) + iv(7) = 17.
       // fetchTotalPoints() reads pet_stat_allocations(level >= 1). Without this, UI shows 10 forever.
       const { error: ivUpsertErr } = await supabaseAdmin
         .from("pet_stat_allocations")

@@ -1,419 +1,656 @@
+/* ============================================================================
+   CareRoom — Global.css-driven look
+   - Uses your tokens: --color-bg-primary/secondary, --border, --radius-md,
+     --color-accent-* etc.
+   - Does NOT touch pet sprite imagery or element “glow” colors.
+============================================================================ */
+
+/* -------------------------------------------------
+   Root layout
+-------------------------------------------------- */
+
 .crWrap {
-  display: flex;
+  --cr-accent: var(--color-accent-blue);
+  --cr-accent-hi: var(--color-accent-blue-hi);
+
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
   gap: 18px;
-  align-items: stretch;
-  width: 100%;
+  align-items: center;
+
+  position: relative;
 }
 
-/* LEFT */
+@media (max-width: 1100px) {
+  .crWrap {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Subtle element-tinted aura behind the whole component */
+.crWrap::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  pointer-events: none;
+  border-radius: calc(var(--radius-md) + 14px);
+
+  background:
+    radial-gradient(
+      900px 520px at 18% 18%,
+      color-mix(in srgb, var(--cr-accent) 18%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 520px at 82% 22%,
+      color-mix(in srgb, var(--cr-accent-hi) 12%, transparent),
+      transparent 62%
+    );
+
+  filter: blur(10px);
+  opacity: 0.9;
+  z-index: 0;
+}
+
+.crWrap > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* -------------------------------------------------
+   Element → Accent mapping (for tint + subtle borders)
+-------------------------------------------------- */
+
+.crAccent--null {
+  --cr-accent: rgba(255, 255, 255, 0.22);
+  --cr-accent-hi: rgba(255, 255, 255, 0.35);
+}
+.crAccent--water {
+  --cr-accent: var(--color-accent-blue);
+  --cr-accent-hi: var(--color-accent-blue-hi);
+}
+.crAccent--ice {
+  --cr-accent: var(--color-accent-blue-hi);
+  --cr-accent-hi: rgba(160, 210, 255, 1);
+}
+.crAccent--storm {
+  --cr-accent: var(--color-accent-blue);
+  --cr-accent-hi: var(--color-accent-blue-hi);
+}
+.crAccent--air {
+  --cr-accent: var(--color-accent-blue);
+  --cr-accent-hi: var(--color-accent-blue-hi);
+}
+.crAccent--fire {
+  --cr-accent: var(--color-accent-red);
+  --cr-accent-hi: var(--color-accent-red-hi);
+}
+.crAccent--earth {
+  --cr-accent: var(--color-accent-purple);
+  --cr-accent-hi: var(--color-accent-purple-hi);
+}
+.crAccent--shadow {
+  --cr-accent: var(--color-accent-purple);
+  --cr-accent-hi: var(--color-accent-purple-hi);
+}
+.crAccent--light {
+  --cr-accent: var(--color-accent-yellow);
+  --cr-accent-hi: var(--color-accent-yellow-hi);
+}
+
+/* -------------------------------------------------
+   “Announcements-style” reusable card treatment
+   - Matches your Announcement Square vibe (blue glass)
+   - Still allows element tint through borders/shadows (via --cr-accent)
+-------------------------------------------------- */
+
+.crPaperCard {
+  border: 1px solid color-mix(in srgb, var(--cr-accent) 25%, var(--border));
+  border-radius: 16px;
+
+  background:
+    radial-gradient(
+      140% 120% at 20% 0%,
+      rgba(255, 255, 255, 0.1),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(
+        in srgb,
+        var(--color-accent-blue) 55%,
+        var(--color-bg-secondary)
+      ),
+      color-mix(in srgb, var(--color-bg-primary) 92%, #000)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 38px rgba(0, 0, 0, 0.45);
+}
+
+/* -------------------------
+   Left main shell (Tama)
+-------------------------- */
+
 .tamaShell {
-  width: 420px;
-  padding: 18px;
-  border-radius: 22px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
   background:
     radial-gradient(
       120% 90% at 50% 0%,
-      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.08),
       transparent 60%
     ),
     linear-gradient(180deg, var(--color-bg-secondary), var(--color-bg-primary));
-  box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    inset 0 -18px 30px rgba(0, 0, 0, 0.35);
-}
 
-.tamaScreen {
-  border-radius: 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -18px 28px rgba(0, 0, 0, 0.35),
+    0 18px 36px rgba(0, 0, 0, 0.35);
+
   padding: 16px;
+}
   background:
     radial-gradient(
-      120% 90% at 50% 0%,
-      rgba(255, 255, 255, 0.06),
-      transparent 55%
+      120% 110% at 50% 0%,
+      color-mix(in srgb, var(--cr-accent) 26%, transparent),
+      transparent 60%
     ),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.22));
-  border: 1px solid var(--border);
-  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.45);
+    linear-gradient(180deg, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.16));
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.18),
+    0 16px 38px rgba(0, 0, 0, 0.38),
+    0 0 28px color-mix(in srgb, var(--cr-accent) 18%, transparent);
 }
 
-.tamaSharedPanel {
+.tamaEmpty {
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+}
+
+/*  Unified panel behind bars + sprite (single background) */
+.tamaUnifiedPanel {
   display: grid;
-  grid-template-columns: 1fr 160px;
+  grid-template-columns: 1fr 220px;
   gap: 14px;
-  align-items: start;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  padding: 12px;
+  align-items: center;
+
+  border-radius: 14px;
+  padding: 14px;
+
+  /* SOLID element color */
+  background-color: color-mix(in srgb, var(--cr-accent) 22%, #0b0f18);
+
+  /* Clean border */
+  border: 1px solid color-mix(in srgb, var(--cr-accent) 45%, #111827);
+
+  /* No glow */
+  box-shadow: none;
 }
 
-/* Bars */
 .tamaBars {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
-.tamaBarTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 6px;
+.tamaBarRow {
+  display: grid;
+  gap: 6px;
 }
 
 .tamaBarLabel {
-  font-family: var(--font-heading);
-  font-size: var(--text-sm);
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  color: rgba(249, 250, 251, 0.92);
+  opacity: 0.92;
 }
 
 .tamaBarValue {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 800;
-  color: rgba(249, 250, 251, 0.72);
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
 }
 
 .tamaBarTrack {
-  width: 100%;
   height: 10px;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.12),
+    0 0 18px color-mix(in srgb, var(--cr-accent) 18%, transparent);
 }
 
 .tamaBarFill {
   height: 100%;
   border-radius: 999px;
-  transition: width 0.25s ease;
+  width: 0%;
+  transition: width 420ms ease;
 }
 
 .tamaBarFill--blue {
   background: linear-gradient(
     90deg,
-    var(--color-accent-blue),
-    var(--color-accent-blue-hi)
+    var(--color-accent-blue-hi),
+    var(--color-accent-blue)
   );
 }
 .tamaBarFill--purple {
   background: linear-gradient(
     90deg,
-    var(--color-accent-purple),
-    var(--color-accent-purple-hi)
+    var(--color-accent-purple-hi),
+    var(--color-accent-purple)
   );
 }
 .tamaBarFill--red {
   background: linear-gradient(
     90deg,
-    var(--color-accent-red),
-    var(--color-accent-red-hi)
+    var(--color-accent-red-hi),
+    var(--color-accent-red)
   );
 }
 .tamaBarFill--gold {
-  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-yellow-hi),
+    var(--color-accent-yellow)
+  );
 }
 
-/* Sprite */
 .tamaPetPanel {
   display: grid;
-  gap: 8px;
   justify-items: center;
+  gap: 8px;
 }
 
 .tamaPetFrame {
-  width: 150px;
-  height: 150px;
+  width: 220px;
+  height: 180px;
+
   border-radius: 18px;
-  border: 1px solid var(--border);
-  background:
-    radial-gradient(
-      90% 90% at 50% 0%,
-      rgba(255, 255, 255, 0.07),
-      transparent 60%
-    ),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0.18));
-  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(216, 216, 216, 0.18);
+
   display: grid;
   place-items: center;
+
+  /* Muted white background at 90% opacity */
+  background: rgba(131, 131, 131, 0.9);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 14px 30px rgba(0, 0, 0, 0.32);
+}
+
+/* Pet name label inside the sprite card (AUTH mode only) */
+.tamaPetNameTag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+
+  max-width: calc(100% - 20px);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cr-accent) 45%, var(--border));
+
+  background: color-mix(in srgb, var(--color-bg-secondary) 80%, transparent);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.18),
+    0 12px 24px rgba(0, 0, 0, 0.25);
+
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  color: var(--color-text-primary);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tamaPetSprite {
-  font-size: 56px;
+  font-size: 64px;
   line-height: 1;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
 }
 
 .tamaPetHint {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  color: rgba(249, 250, 251, 0.65);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  opacity: 0.85;
 }
 
-/* Feed/Clean */
+/* Buttons */
 .tamaButtons {
-  margin-top: 16px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  margin-top: 14px;
 }
-
-.tamaButtons button {
-  font-family: var(--font-heading);
-  font-weight: 900;
-  letter-spacing: 0.03em;
-  padding: 12px 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-elev);
-  color: var(--color-text-primary);
-  transition:
-    transform 0.12s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.tamaButtons button:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-elev-2);
-  transform: translateY(-1px);
-}
-
-.tamaButtons button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* PLAY button centered */
-.tamaPlayRow {
+.tamaButtons--secondRow {
   margin-top: 10px;
-  display: flex;
-  justify-content: center;
 }
 
-.tamaPlayBtn {
-  width: 58px;
-  height: 58px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(249, 250, 251, 0.92);
-  font-family: var(--font-heading);
-  font-weight: 900;
-  font-size: 20px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  transition:
-    transform 0.12s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
+/* Local dp-btn variants (safe even if global has them) */
+.dp-btn.dp-btn--red {
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-red-hi),
+    var(--color-accent-red)
+  );
+}
+.dp-btn.dp-btn--blue {
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-blue-hi),
+    var(--color-accent-blue)
+  );
+}
+.dp-btn.dp-btn--purple {
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-purple-hi),
+    var(--color-accent-purple)
+  );
+}
+.dp-btn.dp-btn--yellow {
+  color: #121826;
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-yellow-hi),
+    var(--color-accent-yellow)
+  );
 }
 
-.tamaPlayBtn:hover {
-  border-color: var(--border-strong);
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-1px);
+.dp-btn.dp-btn--softDisabled {
+  opacity: 0.55;
+  filter: grayscale(0.2);
 }
 
-.tamaPlayBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.dp-btn:hover {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--cr-accent) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 20px rgba(0, 0, 0, 0.28);
 }
 
-/* Element Stats centered header */
-.tamaElemHeader {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(249, 250, 251, 0.88);
-  font-family: var(--font-heading);
-  font-weight: 900;
-  letter-spacing: 0.03em;
-  text-align: center;
-}
+/* -------------------------
+   Identity panel (Name, etc.)
+-------------------------- */
 
-.tamaElemBox {
-  margin-top: 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  padding: 12px;
-  display: grid;
-  gap: 8px;
-}
-
-/* Identity block */
 .tamaIdentity {
-  margin-top: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
+  margin-top: 14px;
   padding: 12px;
-  display: grid;
-  gap: 8px;
 }
 
 .crKV {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 140px 1fr;
   gap: 10px;
+  padding: 8px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: 6px;
 }
 
 .crKV:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .crK {
   font-family: var(--font-heading);
   font-weight: 900;
-  font-size: var(--text-sm);
-  color: rgba(249, 250, 251, 0.82);
+  opacity: 0.92;
 }
 
 .crV {
-  font-family: var(--font-body);
-  font-weight: 900;
-  font-size: var(--text-sm);
-  color: rgba(249, 250, 251, 0.72);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+  opacity: 0.92;
 }
 
+/* Nickname block */
+.crNickBlock {
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.crNickRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.crNickInput {
+  height: 42px;
+}
+
+/* Message toast */
 .tamaMsg {
-  margin-top: 10px;
-  text-align: center;
-  font-size: var(--text-sm);
-  font-weight: 800;
-  color: rgba(249, 250, 251, 0.85);
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--cr-accent) 55%, var(--border));
+  background: color-mix(
+    in srgb,
+    var(--cr-accent) 14%,
+    rgba(255, 255, 255, 0.02)
+  );
+  color: var(--color-text-primary);
 }
 
-.tamaEmpty {
-  opacity: 0.75;
-  text-align: center;
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+/*  Success / error toasts (global neon-green vibe) */
+.tamaMsg--success {
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent-neon-green) 70%,
+    var(--border)
+  );
+  background: color-mix(
+    in srgb,
+    var(--color-accent-neon-green) 14%,
+    rgba(0, 0, 0, 0.12)
+  );
+  box-shadow:
+    0 0 0 3px
+      color-mix(in srgb, var(--color-accent-neon-green) 22%, transparent),
+    0 18px 40px rgba(0, 0, 0, 0.35);
+
+  animation: dpGlowPop 520ms ease;
 }
 
-/* RIGHT stats panel (your existing styles likely already cover this) */
+.tamaMsg--error {
+  border-color: color-mix(in srgb, var(--color-accent-red) 70%, var(--border));
+  background: color-mix(
+    in srgb,
+    var(--color-accent-red) 12%,
+    rgba(0, 0, 0, 0.12)
+  );
+}
+
+@keyframes dpGlowPop {
+  0% {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+/* -------------------------
+   Right Stats shell
+-------------------------- */
+
 .crStatsShell {
-  flex: 1 1 auto;
-  min-width: 320px;
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
   background:
     radial-gradient(
       120% 90% at 50% 0%,
-      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.08),
       transparent 60%
     ),
     linear-gradient(180deg, var(--color-bg-secondary), var(--color-bg-primary));
+
   box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -18px 28px rgba(0, 0, 0, 0.35),
+    0 18px 36px rgba(0, 0, 0, 0.35);
 
-.crStatsHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.crStatsTitle {
-  font-family: var(--font-heading);
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  font-size: var(--text-md);
-  color: rgba(249, 250, 251, 0.92);
-}
-
-.crStatsMeta {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  color: rgba(249, 250, 251, 0.65);
+  padding: 16px;
 }
 
 .crStatsCard {
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
   overflow: hidden;
 }
 
 .crStatRow {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 11px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .crStatRow:last-child {
-  border-bottom: 0;
+  border-bottom: none;
 }
 
 .crStatLabel {
   font-family: var(--font-heading);
   font-weight: 900;
-  font-size: var(--text-sm);
-  color: rgba(249, 250, 251, 0.85);
+  opacity: 0.92;
 }
 
 .crStatValue {
-  font-family: var(--font-body);
-  font-weight: 900;
-  font-size: var(--text-sm);
-  color: rgba(249, 250, 251, 0.78);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
 }
 
-@media (max-width: 980px) {
-  .crWrap {
-    flex-direction: column;
-  }
-  .tamaShell {
-    width: 100%;
-  }
+/* Center divider between Stats + Element Stats */
+.crSectionDivider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
 }
 
-.tamaPlayRow {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
+.crSectionDivider::before,
+.crSectionDivider::after {
+  content: "";
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.tamaPlayRect {
-  width: 220px;
-  padding: 12px 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-elev);
-  color: var(--color-text-primary);
-
+.crSectionDivider span {
   font-family: var(--font-heading);
-  font-weight: 900;
-  letter-spacing: 0.03em;
+  font-weight: 950;
+  font-size: var(--text-sm);
+  letter-spacing: 0.35px;
+  opacity: 0.92;
 
-  transition:
-    transform 0.12s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
+  /* Match Homepage "Info about game" glow (requested) */
+  color: var(--color-accent-neon-green);
+  text-shadow:
+    0 0 10px rgba(57, 255, 20, 0.18),
+    0 0 18px rgba(57, 255, 20, 0.1);
+
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cr-accent) 30%, var(--border));
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.tamaPlayRect:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-elev-2);
-  transform: translateY(-1px);
+/* Top pill divider spacing */
+.crSectionDivider--top {
+  margin: 4px 0 14px;
 }
 
-.tamaPlayRect:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Preview-only description above the Stats pill */
+.crLoreText {
+  margin: 6px 2px 10px;
+  padding: 0 2px;
+
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.35;
+  letter-spacing: 0.1px;
+
+  color: var(--color-text-secondary);
+  opacity: 0.95;
+
+  /* Clamp to 3 lines (you can set to 4 later) */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Element stats hover */
+.crElementCard .crStatRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* =====================================================
+   Element Highlight Colors (Main Element Only)
+   Opacity = 0.90 as requested
+===================================================== */
+
+.crAccent--null .crElementCard .crStatRow:nth-child(1) {
+  background: rgba(192, 192, 192, 0.9);
+  border-left: 4px solid #d9d9d9;
+}
+
+.crAccent--water .crElementCard .crStatRow:nth-child(2) {
+  background: rgba(59, 130, 246, 0.9);
+  border-left: 4px solid #93c5fd;
+}
+
+.crAccent--fire .crElementCard .crStatRow:nth-child(3) {
+  background: rgba(220, 38, 38, 0.9);
+  border-left: 4px solid #f87171;
+}
+
+.crAccent--earth .crElementCard .crStatRow:nth-child(4) {
+  background: rgba(120, 72, 32, 0.9);
+  border-left: 4px solid #a16207;
+}
+
+.crAccent--air .crElementCard .crStatRow:nth-child(5) {
+  background: rgba(255, 255, 255, 0.9);
+  color: #111;
+  border-left: 4px solid #ffffff;
+}
+
+.crAccent--ice .crElementCard .crStatRow:nth-child(6) {
+  background: rgba(125, 211, 252, 0.9);
+  border-left: 4px solid #e0f2fe;
+}
+
+.crAccent--storm .crElementCard .crStatRow:nth-child(7) {
+  background: rgba(255, 255, 0, 0.9);
+  color: #111;
+  border-left: 4px solid #fff700;
+}
+
+.crAccent--light .crElementCard .crStatRow:nth-child(8) {
+  background: rgba(255, 255, 153, 0.9);
+  color: #111;
+  border-left: 4px solid #ffffcc;
+}
+
+.crAccent--shadow .crElementCard .crStatRow:nth-child(9) {
+  background: rgba(75, 0, 130, 0.9);
+  border-left: 4px solid #a855f7;
 }

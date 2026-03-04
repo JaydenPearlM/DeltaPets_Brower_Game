@@ -18,17 +18,24 @@ export default function Homepage() {
   return (
     <section className="homeWrap">
       <section className="homeGrid">
-        {/* LEFT TOP: Haven Preview (STAYS) */}
+        {/* LEFT TOP: Haven Preview */}
         <section className="homeHaven surface">
-          <div className="homePanelHeader">
-            <div className="homePanelTitle">Haven Preview</div>
-            <div className="homePanelHint">
-              {isLoggedIn ? "Live" : "Guest (limited)"}
+          {/* ✅ Title ABOVE preview, centered to RIGHT column (Pet Description panel width) */}
+          <div className="homeHavenTop">
+            <div className="homeHavenTitleRow">
+              {/* Column 1 spacer */}
+              <div />
+
+              {/* Column 2: Title centered */}
+              <div className="deltaHearthTitle">The Delta Hearth</div>
+
+              {/* Column 3: Live badge aligned right (or spacer when logged out) */}
+              {isLoggedIn ? <div className="homePanelHint">Live</div> : <div />}
             </div>
           </div>
 
+          {/* ✅ CareRoom stays INSIDE the haven panel */}
           <div className="homePanelBody">
-            {/* ✅ Homepage preview should ALWAYS be preview mode */}
             <CareRoom mode="preview" />
           </div>
         </section>
@@ -84,7 +91,7 @@ export default function Homepage() {
               />
             </section>
 
-            {/* PREVIEWS (still inside the DeltaPets block) */}
+            {/* PREVIEWS */}
             <section className="dpPreviews" aria-label="Preview blocks">
               <div className="dpPreviewsGrid">
                 <div className="dpPreviewCard">
@@ -106,7 +113,7 @@ export default function Homepage() {
           </div>
         </section>
 
-        {/* LEFT BOTTOM: Whats Next (reusable component) */}
+        {/* LEFT BOTTOM: Whats Next */}
         <section className="homeNext">
           <WhatsNextPanel
             direction="right"

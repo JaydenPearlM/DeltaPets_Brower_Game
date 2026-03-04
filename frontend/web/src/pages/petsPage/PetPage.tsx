@@ -328,7 +328,7 @@ export default function PetPage() {
   async function hatchNow() {
     if (!pet) return;
 
-    // ✅ Manual hatch only — EggSection controls whether button is enabled.
+    //  Manual hatch only — EggSection controls whether button is enabled.
     setMsg(null);
     setBusy(true);
 
@@ -381,7 +381,7 @@ export default function PetPage() {
         <DailyCareCard />
 
         <div style={{ marginTop: 12 }}>
-          {/* ✅ Explicitly real care room */}
+          {/*  Explicitly real care room */}
           <CareRoom mode="auth" />
         </div>
       </div>

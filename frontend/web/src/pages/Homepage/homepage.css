@@ -1,7 +1,7 @@
 /* =============================================================================
    homepage.css — Pre-login homepage grid (matches your annotated layout)
-   - Left: Haven (top), WhatsNext (bottom)
-   - Right: DeltaPets Block (info + brand + announcements + previews)
+   - Left: DeltaPets Block (info + brand + announcements + previews)
+   - Right: Haven (top), WhatsNext (bottom)
 ============================================================================= */
 
 .homeWrap {
@@ -11,10 +11,15 @@
 
 .homeGrid {
   display: grid;
-  grid-template-columns: minmax(520px, 1fr) minmax(760px, 1.25fr);
+  /*
+    Swap layout emphasis for left-to-right reading:
+    - Left column: DeltaPets block (spans both rows)
+    - Right column: Secret Haven (top) + What's Next (bottom)
+  */
+  grid-template-columns: minmax(760px, 1.25fr) minmax(520px, 1fr);
   grid-template-areas:
-    "haven dp"
-    "next  dp";
+    "dp haven"
+    "dp next";
   gap: 16px;
   align-items: start;
 }
@@ -47,13 +52,6 @@
 .homePanelHint {
   font-size: 12px;
   color: var(--color-text-muted);
-}
-
-.homePanelBody {
-  border-radius: var(--radius-md);
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
 }
 
 /* -------------------------
@@ -164,6 +162,75 @@
   align-items: flex-start;
   padding: 2px 2px 0 2px;
   margin-bottom: 0;
+}
+
+/* Haven title sits above the entire CareRoom preview */
+.deltaHearthTitle {
+  grid-column: 2;
+  justify-self: center;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  margin-bottom: -22px;
+
+  font-size: clamp(34px, 2.4vw, 34px);
+  letter-spacing: 1px;
+
+  /* Logo yellow */
+  color: #ffd84d;
+
+  /* Correct DeltaPets red outline */
+  -webkit-text-stroke: 0.5px #e13b2f;
+
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.45);
+
+
+  /* Bigger than before, but not competing with StageLogo */
+  font-size: clamp(34px, 2.4vw, 34px);
+  letter-spacing: 1px;
+
+  /* Same family as brand (global accent blue) */
+  color: #ffd84d;
+
+  /* Optional: if your logo has a crisp pop, this helps match it */
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.homeHavenTitleRow {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr; /* same ratio as CareRoom grid */
+  align-items: center;
+}
+
+
+.homeHavenTitle {
+  grid-column: 2;
+  justify-self:
+  font-family: var(--font-heading);
+  font-weight: 900;
+
+  font-size: clamp(28px, 2.4vw, 34px);
+  letter-spacing: 1px;
+
+  /* Logo yellow */
+  color: #ffd84d;
+
+  /* Correct DeltaPets red outline */
+  -webkit-text-stroke: 0.5px #e13b2f;
+
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+  /* Bigger than before, but not competing with StageLogo */
+  font-size: clamp(28px, 2.4vw, 34px);
+  letter-spacing: 1px;
+
+  /* Same family as brand (global accent blue) */
+  color: #ffd84d;
+
+  /* Optional: if your logo has a crisp pop, this helps match it */
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
 /* Announcements (right column) — moved up and stretched */
