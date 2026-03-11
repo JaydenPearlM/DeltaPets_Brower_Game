@@ -19,13 +19,7 @@ export type ElementLine =
 /**
  * Lifecycle stages (egg -> mythical)
  */
-export type PetStage =
-  | "egg"
-  | "baby"
-  | "toddler"
-  | "child"
-  | "legion"
-  | "mythical";
+export type PetStage = "egg" | "baby" | "child" | "legion" | "mythical";
 
 /**
  * Base template stats for egg stage.

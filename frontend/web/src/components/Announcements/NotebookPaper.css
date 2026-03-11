@@ -425,3 +425,86 @@
   margin-top: 10px; /* moves it down from the divider area */
   padding-bottom: 6px; /* matches your “bottom 6 padding” vibe */
 }
+
+.nextLogsItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border-radius: 999px;
+  padding: 14px 20px; /* bigger pill */
+
+  overflow: hidden;
+
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 18px rgba(0, 0, 0, 0.22);
+}
+
+/* keep glow ring */
+.nextLogsItem::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(34, 211, 238, 0.18),
+      rgba(59, 130, 246, 0.32) 40%,
+      rgba(59, 130, 246, 0.18)
+    ),
+    radial-gradient(
+      120% 100% at 80% 35%,
+      rgba(59, 130, 246, 0.22),
+      transparent 62%
+    ),
+    radial-gradient(
+      120% 100% at 18% 70%,
+      rgba(148, 163, 184, 0.18),
+      transparent 64%
+    );
+
+  -webkit-mask:
+    linear-gradient(#000, #000) content-box,
+    linear-gradient(#000, #000);
+  mask:
+    linear-gradient(#000, #000) content-box,
+    linear-gradient(#000, #000);
+
+  padding: 10px; /* slightly thicker glow ring */
+
+  box-shadow:
+    0 0 0 2px rgba(148, 163, 184, 0.22),
+    0 0 18px rgba(59, 130, 246, 0.24),
+    0 0 44px rgba(59, 130, 246, 0.14);
+
+  opacity: 0.95;
+}
+
+/* keep content above glow */
+.check,
+.label {
+  position: relative;
+  z-index: 1;
+}
+
+.check {
+  color: var(--color-accent-neon-green-hi);
+  font-weight: 950;
+  font-size: 1.2rem; /* bigger check */
+  line-height: 1;
+}
+
+.label {
+  color: var(--color-text-primary);
+  opacity: 0.98;
+  font-size: 1rem; /* bigger readable text */
+  font-weight: 600;
+}

@@ -1,128 +1,289 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
 import "./nextLogsPanel.css";
 
-// Auto version from frontend/web/package.json
-import pkg from "../../../package.json";
+type Page = 0 | 1 | 2;
+type LogCategory = "complete" | "coming_next" | "patch";
 
-type Page = {
+type LogRow = {
+  id: string;
+  category: LogCategory;
   title: string;
-  tagline: string;
-  items: string[];
+  description: string | null;
+  patch_html: string | null;
+  display_order: number | null;
+  is_active: boolean | null;
+  created_at: string | null;
 };
 
-type WhatsNextPanelProps = {
+type NextLogsPanelProps = {
   className?: string;
 };
 
-export function WhatsNextPanel({ className = "" }: WhatsNextPanelProps) {
-  const version =
-    (pkg as any)?.version ??
-    (import.meta as any)?.env?.VITE_APP_VERSION ??
-    "0.0.0-alpha.0";
+function formatDate(dateString: string | null) {
+  if (!dateString) return "Unknown date";
 
-  const versionLabel = useMemo(() => `ALPHA v${version}`, [version]);
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "Unknown date";
 
-  const pages: Page[] = [
-    {
-      title: "Alpha Information",
-      tagline: "Patch notes, what’s happening now, and what’s coming soon.",
-      items: [
-        "Tech stack locked (Frontend, Backend, Database)",
-        "Data models defined (User, Sprout, Item)",
-        "Project folder structure created",
-        "Hosting & environment configured",
-        "Alpha scope frozen",
-        "Authentication (login / register)",
-        "Homepage & character creation",
-        "App routing & navigation",
-        "Global state management",
-        "Timers (hatch, dailies, cooldowns)",
-        "Hatchery UI layout",
-        "Egg hatch timer (5 minutes)",
-        "Feed action",
-        "Clean action",
-        "Sit / bond action",
-        "Food trough (2000 capacity)",
-        "Pet hunger decay",
-        "Pet runaway logic",
-      ],
-    },
-    {
-      title: "Currently Working On",
-      tagline: "Active tasks in progress right now.",
-      items: [
-        "UI polish pass (spacing, alignment, mobile)",
-        "CareRoom layout cleanup",
-        "Homepage panel consistency (global.css tokens)",
-        "Hatchery UX improvements",
-        "Bug fixes + remove dead/legacy code",
-      ],
-    },
-    {
-      title: "Waiting / Up Next",
-      tagline: "Queued tasks (Trello backlog / pending).",
-      items: [
-        "Pet leveling system",
-        "Evolution stages + growth rules",
-        "Personality bonuses applied to stats",
-        "Daily quests / rewards loop",
-        "Inventory + item usage",
-        "CareRoom furniture buffs",
-        "Element bonuses pass",
-        "PvE encounters prototype",
-      ],
-    },
-    {
-      title: "Deployment & Patch Notes",
-      tagline: "Release pipeline + what changed when.",
-      items: [
-        "Deployment checklist (env, build, migrations)",
-        "Patch notes formatting (versioned changelog)",
-        "Smoke tests (auth, hatch, care loop)",
-        "Performance pass (bundle + lazy loading)",
-        "Production sanity checks + monitoring",
-      ],
-    },
-  ];
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
 
-  const [pageIndex, setPageIndex] = useState(0);
-  const page = pages[pageIndex];
+export function NextLogsPanel({ className = "" }: NextLogsPanelProps) {
+  const [page, setPage] = useState<Page>(0);
+  const [rows, setRows] = useState<LogRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorText, setErrorText] = useState("");
+  const [activePatch, setActivePatch] = useState<LogRow | null>(null);
 
-  const nextPage = () => setPageIndex((i) => (i + 1) % pages.length);
+  useEffect(() => {
+    let alive = true;
+
+    async function loadLogs() {
+      setLoading(true);
+      setErrorText("");
+
+      const { data, error } = await supabase
+        .from("homepage_logs")
+        .select(
+          "id, category, title, description, patch_html, display_order, is_active, created_at",
+        )
+        .eq("is_active", true)
+        .order("display_order", { ascending: true })
+        .order("created_at", { ascending: false });
+
+      console.log("[homepage_logs] data:", data);
+      console.log("[homepage_logs] error:", error);
+
+      if (!alive) return;
+
+      if (error) {
+        console.error("homepage_logs fetch error:", error);
+        setRows([]);
+        setErrorText(error.message || "Could not load homepage logs.");
+        setLoading(false);
+        return;
+      }
+
+      setRows((data as LogRow[]) ?? []);
+      setLoading(false);
+    }
+
+    loadLogs();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const completeLogs = useMemo(
+    () => rows.filter((row) => row.category === "complete"),
+    [rows],
+  );
+
+  const nextLogs = useMemo(
+    () => rows.filter((row) => row.category === "coming_next"),
+    [rows],
+  );
+
+  const patchLogs = useMemo(
+    () => rows.filter((row) => row.category === "patch"),
+    [rows],
+  );
+
+  function prev() {
+    setPage((current) => (current === 0 ? 2 : ((current - 1) as Page)));
+  }
+
+  function next() {
+    setPage((current) => (current === 2 ? 0 : ((current + 1) as Page)));
+  }
+
+  function renderStateRow(message: string) {
+    return (
+      <li className="nextLogsItem">
+        <div className="nextLogsTextBlock">
+          <span className="label">{message}</span>
+        </div>
+      </li>
+    );
+  }
+
+  function renderStandardList(
+    items: LogRow[],
+    emptyText: string,
+    showCheck = false,
+  ) {
+    if (loading) {
+      return <ul className="nextLogsList">{renderStateRow("Loading...")}</ul>;
+    }
+
+    if (errorText) {
+      return <ul className="nextLogsList">{renderStateRow(errorText)}</ul>;
+    }
+
+    if (items.length === 0) {
+      return <ul className="nextLogsList">{renderStateRow(emptyText)}</ul>;
+    }
+
+    return (
+      <ul className="nextLogsList">
+        {items.map((item) => (
+          <li key={item.id} className="nextLogsItem">
+            {showCheck ? <span className="check">✓</span> : null}
+
+            <div className="nextLogsTextBlock">
+              <span className="label labelTitle">{item.title}</span>
+
+              {item.description ? (
+                <span className="labelSubtext">{item.description}</span>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  function renderPatchList(items: LogRow[]) {
+    if (loading) {
+      return <ul className="nextLogsList">{renderStateRow("Loading...")}</ul>;
+    }
+
+    if (errorText) {
+      return <ul className="nextLogsList">{renderStateRow(errorText)}</ul>;
+    }
+
+    if (items.length === 0) {
+      return (
+        <ul className="nextLogsList">
+          {renderStateRow("No patch notes yet.")}
+        </ul>
+      );
+    }
+
+    return (
+      <ul className="nextLogsList">
+        {items.map((patch) => (
+          <li key={patch.id} className="nextLogsItem nextLogsItem--patch">
+            <button
+              type="button"
+              className="patchRowBtn"
+              onClick={() => setActivePatch(patch)}
+            >
+              <div className="patchRowTop">
+                <span className="patchRowTitle">{patch.title}</span>
+                <span className="patchRowDate">
+                  {formatDate(patch.created_at)}
+                </span>
+              </div>
+
+              {patch.description ? (
+                <div className="patchRowDesc">{patch.description}</div>
+              ) : null}
+            </button>
+          </li>
+        ))}
+      </ul>
+    );
+  }
 
   return (
-    <section className={`nextLogsOuterPanel ${className}`}>
-      <div className="nextLogsInnerPanel">
-        <header className="nextLogsHeader">
-          <div className="alphaTitleRow">
-            <h2 className="alphaTitle">{page.title}</h2>
-            <div className="alphaVersion">{versionLabel}</div>
+    <>
+      <div className={`nextLogsOuterPanel ${className}`.trim()}>
+        <div className="nextLogsInnerPanel">
+          <div className="nextLogsHeader">
+            <div className="alphaTitleRow">
+              <h3 className="alphaTitle">
+                {page === 0 && "What's Complete"}
+                {page === 1 && "What's Coming Next"}
+                {page === 2 && "Deployment & Patch Notes"}
+              </h3>
+
+              <span className="alphaVersion">ALPHA v0.0.1</span>
+            </div>
+
+            <div className="taglineRow">
+              <p className="alphaTagline">
+                {page === 0 && "Systems that are stable and live."}
+                {page === 1 && "Features currently under development."}
+                {page === 2 && "Release pipeline + what changed when."}
+              </p>
+            </div>
           </div>
 
-          <p className="alphaTagline">{page.tagline}</p>
-        </header>
+          {page === 0 &&
+            renderStandardList(completeLogs, "No completed systems yet.", true)}
 
-        <ul className="nextLogsList" aria-label="Alpha info list">
-          {page.items.map((label, i) => (
-            <li key={`${pageIndex}-${label}-${i}`} className="nextLogsItem">
-              <span className="check" aria-hidden="true">
-                ✔
-              </span>
-              <span className="label">{label}</span>
-            </li>
-          ))}
-        </ul>
+          {page === 1 &&
+            renderStandardList(nextLogs, "Nothing queued yet.", false)}
 
-        <button
-          type="button"
-          className="nextPageArrow"
-          onClick={nextPage}
-          aria-label="Next page"
-          title="Next"
-        >
-          ➜
-        </button>
+          {page === 2 && renderPatchList(patchLogs)}
+
+          <div className="nextLogsPager">
+            <button type="button" className="nextLogsArrow" onClick={prev}>
+              ←
+            </button>
+
+            <div className="nextLogsDots" aria-hidden="true">
+              <span className={`nextLogsDot ${page === 0 ? "active" : ""}`} />
+              <span className={`nextLogsDot ${page === 1 ? "active" : ""}`} />
+              <span className={`nextLogsDot ${page === 2 ? "active" : ""}`} />
+            </div>
+
+            <button type="button" className="nextLogsArrow" onClick={next}>
+              →
+            </button>
+          </div>
+        </div>
       </div>
-    </section>
+
+      {activePatch && (
+        <div
+          className="patchModalOverlay"
+          onClick={() => setActivePatch(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="patch-modal-title"
+        >
+          <div className="patchModal" onClick={(e) => e.stopPropagation()}>
+            <div className="patchModalHeader">
+              <div>
+                <h2 id="patch-modal-title" className="patchModalTitle">
+                  {activePatch.title}
+                </h2>
+                <p className="patchModalMeta">
+                  Released {formatDate(activePatch.created_at)}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="patchClose"
+                onClick={() => setActivePatch(null)}
+              >
+                Close
+              </button>
+            </div>
+
+            {activePatch.description ? (
+              <p className="patchModalDesc">{activePatch.description}</p>
+            ) : null}
+
+            <div
+              className="patchContent"
+              dangerouslySetInnerHTML={{
+                __html:
+                  activePatch.patch_html?.trim() || "<p>No patch body yet.</p>",
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

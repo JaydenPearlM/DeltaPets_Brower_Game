@@ -325,3 +325,110 @@
     justify-content: center;
   }
 }
+
+
+@keyframes dpGreenBlink {
+  0%,
+  100% {
+    opacity: 1;
+    text-shadow:
+      0 0 8px rgba(57, 255, 20, 0.2),
+      0 0 16px rgba(57, 255, 20, 0.12);
+  }
+
+  50% {
+    opacity: 0.45;
+    text-shadow:
+      0 0 3px rgba(57, 255, 20, 0.08),
+      0 0 6px rgba(57, 255, 20, 0.05);
+  }
+}
+.dpInfoBoxHeading {
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  font-weight: 900;
+  color: var(--color-accent-neon-green);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  text-shadow:
+    0 0 8px rgba(57, 255, 20, 0.2),
+    0 0 16px rgba(57, 255, 20, 0.12);
+}
+
+.dpInfoBoxHeading--blink {
+  animation: dpGreenBlink 6s infinite ease-in-out;
+}
+
+@keyframes dpGreenBlink {
+  0%,
+  100% {
+    opacity: 1;
+    text-shadow:
+      0 0 8px rgba(57, 255, 20, 0.2),
+      0 0 16px rgba(57, 255, 20, 0.12);
+  }
+
+  50% {
+    opacity: 0.35;
+    text-shadow:
+      0 0 2px rgba(57, 255, 20, 0.06),
+      0 0 6px rgba(57, 255, 20, 0.05);
+  }
+}
+
+.bondRepositoryTitle {
+  margin: 0 0 12px 0;
+  font-family: "Quantico", "Space Grotesk", "Inter", sans-serif;
+  font-size: clamp(1.65rem, 2vw, 2.35rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  
+
+  color: #ffd84d; /* yellow fill */
+  -webkit-text-stroke: 2px #d94b2b; /* red stroke */
+  paint-order: stroke fill;
+
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.35),
+    0 4px 10px rgba(0, 0, 0, 0.28);
+
+  display: inline-block;
+}
+.deltaRepoRightColumn {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.deltaRepositoryHeader {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.bondRepositoryTitle {
+  margin: 0;
+  font-family: "Quantico", "Space Grotesk", "Inter", sans-serif;
+  font-size: clamp(1.7rem, 2vw, 2.4rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.04em;
+
+  color: #ffd84d;
+  -webkit-text-stroke: 2px #d94b2b;
+  paint-order: stroke fill;
+
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.35),
+    0 4px 10px rgba(0, 0, 0, 0.28);
+
+  text-align: center;
+  display: inline-block;
+}
+
+.deltaRepositoryInfoCard {
+  width: 100%;
+}

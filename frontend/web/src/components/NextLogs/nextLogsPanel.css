@@ -1,120 +1,42 @@
-/* =========================================
-   Alpha Info Header
-========================================= */
+/* =========================================================
+   nextLogsPanel.css
+========================================================= */
 
-.alphaTitle {
-  font-family: "Quantico", sans-serif;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #7dff8c;
-
-  text-shadow:
-    0 0 6px #29ff66,
-    0 0 12px #29ff66,
-    0 0 24px rgba(41, 255, 102, 0.6);
-
-  margin-bottom: 6px;
-
-  animation: alphaFireGlow 3.5s infinite ease-in-out;
-}
-
-@keyframes alphaFireGlow {
-  0% {
-    text-shadow:
-      0 0 3px #2cff78,
-      0 0 8px rgba(44, 255, 120, 0.45),
-      0 0 14px rgba(44, 255, 120, 0.25);
-  }
-
-  25% {
-    text-shadow:
-      0 0 4px #35ff88,
-      0 0 10px rgba(44, 255, 120, 0.55),
-      0 0 18px rgba(44, 255, 120, 0.3);
-  }
-
-  50% {
-    text-shadow:
-      0 0 2px #26ff70,
-      0 0 7px rgba(44, 255, 120, 0.4),
-      0 0 12px rgba(44, 255, 120, 0.22);
-  }
-
-  75% {
-    text-shadow:
-      0 0 5px #3cff8f,
-      0 0 12px rgba(44, 255, 120, 0.6),
-      0 0 20px rgba(44, 255, 120, 0.35);
-  }
-
-  100% {
-    text-shadow:
-      0 0 3px #2cff78,
-      0 0 8px rgba(44, 255, 120, 0.45),
-      0 0 14px rgba(44, 255, 120, 0.25);
-  }
-}
-
-.alphaTagline {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  margin-bottom: 14px;
-}
-
-/* =========================================
-   List
-========================================= */
-
-.nextLogsList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.nextLogsItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  padding: 8px 10px;
-  margin-bottom: 6px;
-
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
-
-  font-size: 0.9rem;
-}
-
-.nextLogsItem .check {
-  color: #57ff78;
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-.nextLogsItem .label {
-  opacity: 0.95;
-}
-
-/* Outer wrap (keeps layout simple; card holds the styling) */
-.whatsNextWrap {
+.nextLogsOuterPanel {
   width: 100%;
-}
-
-/* Inner panel/card behind title + tagline + list */
-.whatsNextCard {
-  position: relative;
-
-  /* Use your global tokens so it matches preview squares */
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--border);
   border-radius: var(--radius-md);
-
-  padding: 16px;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  align-content: space-between;
 }
 
-/* Header */
-.alphaHeader {
-  margin-bottom: 10px;
+.nextLogsInnerPanel {
+  border-radius: calc(var(--radius-md) - 2px);
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background:
+    radial-gradient(
+      120% 100% at 20% 20%,
+      rgba(59, 130, 246, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(
+      120% 100% at 80% 80%,
+      rgba(139, 92, 246, 0.18),
+      transparent 60%
+    ),
+    linear-gradient(180deg, var(--color-bg-secondary), var(--color-bg-primary));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 -18px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ================= HEADER ================= */
+
+.nextLogsHeader {
+  margin-bottom: 12px;
 }
 
 .alphaTitleRow {
@@ -124,291 +46,393 @@
   gap: 12px;
 }
 
-/* Title: DeltaPets-ish font + subtle animated glow */
-.alphaInfoTitle {
-  font-family: "Quantico", sans-serif;
+.alphaTitle {
+  font-family: var(--font-heading);
   font-size: 1.55rem;
-  letter-spacing: 0.03em;
-
-  color: #68ff9f;
-  margin: 0;
-
-  animation: alphaFireGlow 3.5s infinite ease-in-out;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+  margin: 0 0 6px 0;
+  color: var(--color-accent-neon-green-hi);
+  animation: alphaNeonPulse 2.6s infinite ease-in-out;
 }
 
-/* Version line on the right */
 .alphaVersion {
-  font-family: "Quantico", sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.95rem;
+  font-weight: 850;
   letter-spacing: 0.04em;
-
-  color: #7bffab;
-  opacity: 0.9;
-
-  /* smaller glow than the title */
-  text-shadow:
-    0 0 2px rgba(44, 255, 120, 0.35),
-    0 0 6px rgba(44, 255, 120, 0.2);
+  color: rgba(203, 213, 225, 0.9);
 }
 
-.alphaTagline {
-  margin: 8px 0 0 0;
-  font-size: 0.9rem;
-  opacity: 0.75;
-}
-
-/* LIST
-   Show ~5 items and scroll through the rest.
-   Item height is roughly ~36-40px, so max-height ~ 5 * 40 = 200px.
-*/
-.alphaList {
-  margin-top: 12px;
-
-  max-height: 200px; /* ~5 items visible */
-  overflow-y: auto;
-
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  padding-right: 8px; /* space for scrollbar */
-}
-
-/* Scrollbar (safe + subtle) */
-.alphaList::-webkit-scrollbar {
-  width: 10px;
-}
-.alphaList::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  border: 2px solid rgba(0, 0, 0, 0);
-  background-clip: padding-box;
-}
-.alphaList::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.16);
-}
-
-/* Each row */
-.alphaItem {
+.taglineRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-
-  padding: 8px 10px;
-
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.alphaCheck {
-  color: #54ff7f;
-  font-weight: 800;
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.alphaLabel {
-  font-size: 0.92rem;
-  opacity: 0.95;
-}
-
-/* Animated “fire-ish” glow, but toned down */
-@keyframes alphaFireGlow {
-  0% {
-    text-shadow:
-      0 0 2px rgba(44, 255, 120, 0.35),
-      0 0 7px rgba(44, 255, 120, 0.22),
-      0 0 12px rgba(44, 255, 120, 0.14);
-  }
-
-  25% {
-    text-shadow:
-      0 0 3px rgba(53, 255, 136, 0.4),
-      0 0 9px rgba(44, 255, 120, 0.26),
-      0 0 14px rgba(44, 255, 120, 0.16);
-  }
-
-  50% {
-    text-shadow:
-      0 0 2px rgba(38, 255, 112, 0.3),
-      0 0 6px rgba(44, 255, 120, 0.2),
-      0 0 10px rgba(44, 255, 120, 0.13);
-  }
-
-  75% {
-    text-shadow:
-      0 0 4px rgba(60, 255, 143, 0.45),
-      0 0 10px rgba(44, 255, 120, 0.28),
-      0 0 16px rgba(44, 255, 120, 0.17);
-  }
-
-  100% {
-    text-shadow:
-      0 0 2px rgba(44, 255, 120, 0.35),
-      0 0 7px rgba(44, 255, 120, 0.22),
-      0 0 12px rgba(44, 255, 120, 0.14);
-  }
-}
-
-/* ================================
-   OUTER PANEL (wrapper underneath)
-   ================================ */
-
-.nextLogsOuterPanel {
-  width: 100%;
-
-  /* Uses global.css tokens */
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-
-  padding: 14px;
-}
-
-/* ================================
-   INNER PANEL (content block)
-   ================================ */
-
-.nextLogsInnerPanel {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: calc(var(--radius-md) - 2px);
-
-  padding: 14px;
-}
-
-/* ================================
-   HEADER
-   ================================ */
-
-.nextLogsHeader {
-  margin-bottom: 12px;
-}
-
-/* Title: DeltaPets-ish font + animated glow (slightly reduced) */
-.alphaTitle {
-  font-family: "Quantico", sans-serif;
-  font-size: 1.55rem;
-  letter-spacing: 0.03em;
-  margin: 0 0 6px 0;
-
-  color: #68ff9f;
-
-  animation: alphaFireGlow 3.5s infinite ease-in-out;
-}
-
-/* Tagline */
 .alphaTagline {
   margin: 0;
   font-size: 0.92rem;
-  opacity: 0.75;
+  opacity: 0.78;
+  color: var(--color-text-secondary);
 }
 
-/* ================================
-   LIST: show ~5 items + scroll
-   ================================ */
+/* ================= LIST ================= */
 
 .nextLogsList {
   list-style: none;
   padding: 0;
   margin: 0;
-
   display: flex;
   flex-direction: column;
-  gap: 8px;
-
-  /* ~5 items visible then scroll */
-  max-height: 200px;
+  gap: 10px;
+  max-height: 210px;
   overflow-y: auto;
-
-  padding-right: 8px; /* room for scrollbar */
+  padding-right: 8px;
 }
 
-/* Scrollbar (subtle) */
-.nextLogsList::-webkit-scrollbar {
-  width: 10px;
-}
-.nextLogsList::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  border: 2px solid rgba(0, 0, 0, 0);
-  background-clip: padding-box;
-}
-.nextLogsList::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
-}
-
-/* ================================
-   LIST ITEM
-   ================================ */
+/* ================= ITEM ================= */
 
 .nextLogsItem {
+  --paper-radius: 18px;
+  --parchment-0: var(--color-bg-secondary);
+  --parchment-1: var(--color-bg-primary);
+  --parchment-2: var(--color-bg-deep);
+  --ink: var(--color-text-primary);
+  --ink-soft: var(--color-text-secondary);
+
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
-
-  padding: 8px 10px;
-
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: var(--paper-radius);
+  border: 1px solid var(--border-strong);
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 255, 255, 0.08),
+      transparent 62%
+    ),
+    radial-gradient(
+      120% 100% at 18% 22%,
+      rgba(59, 130, 246, 0.14),
+      transparent 52%
+    ),
+    radial-gradient(
+      120% 100% at 86% 34%,
+      rgba(139, 92, 246, 0.12),
+      transparent 56%
+    ),
+    linear-gradient(
+      180deg,
+      var(--parchment-0),
+      var(--parchment-1) 60%,
+      var(--parchment-2)
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 -18px 24px rgba(0, 0, 0, 0.25);
   font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.nextLogsItem--patch {
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.nextLogsTextBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
 .check {
-  color: #54ff7f;
-  font-weight: 800;
+  color: var(--color-accent-neon-green-hi);
+  font-weight: 950;
   font-size: 1rem;
-  line-height: 1;
+  line-height: 1.4;
+  margin-top: 1px;
 }
 
 .label {
-  opacity: 0.95;
+  color: var(--color-text-secondary);
 }
 
-/* Tone support (optional) */
-.tone-new .label {
-  opacity: 1;
-  font-weight: 700;
+.labelTitle {
+  font-weight: 800;
+  color: var(--color-text-primary);
 }
 
-/* ================================
-   Animated glow: “fire-ish” but toned down
-   ================================ */
+.labelSubtext {
+  color: var(--color-text-secondary);
+  opacity: 0.88;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
 
-@keyframes alphaFireGlow {
+/* ================= PAGER ================= */
+
+.nextLogsPager {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.nextLogsArrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  min-width: 60px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 235, 59, 0.55);
+  background:
+    radial-gradient(
+      120% 140% at 50% 0%,
+      rgba(255, 241, 118, 0.42),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-accent-yellow-hi),
+      var(--color-accent-yellow)
+    );
+  color: #141414;
+  font-size: 1.6rem;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(255, 235, 59, 0.25);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.nextLogsArrow:hover {
+  transform: translateY(-1px);
+}
+
+.nextLogsDots {
+  display: flex;
+  gap: 8px;
+}
+
+.nextLogsDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.nextLogsDot.active {
+  background: rgba(104, 255, 159, 0.9);
+  box-shadow: 0 0 10px rgba(104, 255, 159, 0.35);
+}
+
+/* ================= PATCH BUTTON ================= */
+
+.patchRowBtn {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border-strong);
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 255, 255, 0.08),
+      transparent 62%
+    ),
+    radial-gradient(
+      120% 100% at 18% 22%,
+      rgba(59, 130, 246, 0.14),
+      transparent 52%
+    ),
+    radial-gradient(
+      120% 100% at 86% 34%,
+      rgba(139, 92, 246, 0.12),
+      transparent 56%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-bg-secondary),
+      var(--color-bg-primary) 60%,
+      var(--color-bg-deep)
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 -18px 24px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.patchRowBtn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(104, 255, 159, 0.32);
+}
+
+.patchRowTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.patchRowTitle {
+  font-weight: 900;
+  color: #b9ffd4;
+}
+
+.patchRowDate {
+  opacity: 0.75;
+  font-size: 0.84rem;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+
+.patchRowDesc {
+  margin-top: 6px;
+  color: var(--color-text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+/* ================= PATCH MODAL ================= */
+
+.patchModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.68);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  padding: 20px;
+}
+
+.patchModal {
+  width: min(760px, 100%);
+  max-height: 85vh;
+  overflow-y: auto;
+  background: linear-gradient(
+    180deg,
+    rgba(13, 18, 36, 0.98),
+    rgba(8, 12, 24, 0.98)
+  );
+  border-radius: 18px;
+  border: 1px solid var(--border-strong);
+  padding: 22px;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.patchModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.patchModalTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  color: var(--color-text-primary);
+}
+
+.patchModalMeta {
+  margin: 6px 0 0 0;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  opacity: 0.82;
+}
+
+.patchModalDesc {
+  margin: 14px 0 0 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.patchContent {
+  line-height: 1.7;
+  margin-top: 16px;
+  color: var(--color-text-primary);
+}
+
+.patchContent h1,
+.patchContent h2,
+.patchContent h3 {
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  color: #b9ffd4;
+}
+
+.patchContent p,
+.patchContent li {
+  color: var(--color-text-primary);
+}
+
+.patchContent ul {
+  padding-left: 1.2rem;
+}
+
+.patchClose {
+  border: 1px solid rgba(255, 235, 59, 0.55);
+  background:
+    radial-gradient(
+      120% 140% at 50% 0%,
+      rgba(255, 241, 118, 0.42),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-accent-yellow-hi),
+      var(--color-accent-yellow)
+    );
+  color: #141414;
+  font-weight: 900;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+/* ================= TITLE ANIMATION ================= */
+
+@keyframes alphaNeonPulse {
   0% {
+    opacity: 0.55;
     text-shadow:
-      0 0 2px rgba(44, 255, 120, 0.35),
-      0 0 7px rgba(44, 255, 120, 0.22),
-      0 0 12px rgba(44, 255, 120, 0.14);
+      0 0 4px rgba(44, 255, 120, 0.35),
+      0 0 8px rgba(44, 255, 120, 0.18);
   }
 
-  25% {
+  40% {
+    opacity: 1;
     text-shadow:
-      0 0 3px rgba(53, 255, 136, 0.4),
-      0 0 9px rgba(44, 255, 120, 0.26),
-      0 0 14px rgba(44, 255, 120, 0.16);
-  }
-
-  50% {
-    text-shadow:
-      0 0 2px rgba(38, 255, 112, 0.3),
-      0 0 6px rgba(44, 255, 120, 0.2),
-      0 0 10px rgba(44, 255, 120, 0.13);
-  }
-
-  75% {
-    text-shadow:
-      0 0 4px rgba(60, 255, 143, 0.45),
-      0 0 10px rgba(44, 255, 120, 0.28),
-      0 0 16px rgba(44, 255, 120, 0.17);
+      0 0 6px rgba(44, 255, 120, 0.6),
+      0 0 14px rgba(44, 255, 120, 0.35),
+      0 0 22px rgba(44, 255, 120, 0.18);
   }
 
   100% {
+    opacity: 0.55;
     text-shadow:
-      0 0 2px rgba(44, 255, 120, 0.35),
-      0 0 7px rgba(44, 255, 120, 0.22),
-      0 0 12px rgba(44, 255, 120, 0.14);
+      0 0 4px rgba(44, 255, 120, 0.35),
+      0 0 8px rgba(44, 255, 120, 0.18);
   }
 }

@@ -167,7 +167,6 @@ function Bar({
     <div className="tamaBarRow">
       <div className="tamaBarTop">
         <span className="tamaBarLabel">{label}</span>
-        <span className="tamaBarValue">{v}</span>
       </div>
 
       <div
@@ -620,10 +619,14 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
                   )}
 
                   <div className="tamaPetSprite" aria-hidden>
-                    {sprite}
+                    <div className="tempPet">
+                      <div className="tempPetBody"></div>
+                      <div className="tempPetEye left"></div>
+                      <div className="tempPetEye right"></div>
+                      <div className="tempPetBeak"></div>
+                    </div>
                   </div>
                 </div>
-                <div className="tamaPetHint">Sprite placeholder</div>
               </div>
             </div>
           )}

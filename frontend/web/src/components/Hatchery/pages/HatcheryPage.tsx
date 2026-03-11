@@ -16,10 +16,6 @@ const MYSTERY_EGG = {
   sprite: goldEggPng,
 };
 
-if (import.meta.env.DEV) {
-  console.log("Egg sprite URL:", goldEggPng);
-}
-
 type PetStatsRow = {
   pet_id: string;
   hp: number;
@@ -46,20 +42,25 @@ type PetElementsRow = {
 
 type HatcheryResponse = {
   server_now: string;
-  pet: any | null;
+  pet: {
+    id: string;
+    name?: string | null;
+    stage?: string | null;
+    line?: string | null;
+  } | null;
   hatch: {
     ready: boolean;
     hatch_ends_at: string | null;
     hatch_remaining_ms: number;
   } | null;
   stats: PetStatsRow | null;
-  elements: PetElementsRow | null; // still present because backend returns it; we just don't show it here
+  elements: PetElementsRow | null;
 };
 
 type HatchEgg = {
   id: string;
-  name: string; // "Gold Egg"
-  hatch_ends_at: string; // ISO
+  name: string;
+  hatch_ends_at: string;
   line?: string;
 };
 
@@ -75,11 +76,24 @@ type HatchItem = {
   effect: string;
 };
 
+const EMPTY_STATS: PetStatsRow = {
+  pet_id: "",
+  hp: 0,
+  atk: 0,
+  magi: 0,
+  def: 0,
+  spd: 0,
+  mana: 0,
+  base_total: 0,
+};
+
 async function getAccessToken(): Promise<string> {
   const { data, error } = await supabase.auth.getSession();
   if (error) throw new Error(error.message);
+
   const token = data.session?.access_token;
   if (!token) throw new Error("Missing access token. Are you logged in?");
+
   return token;
 }
 
@@ -98,11 +112,14 @@ async function fetchJsonAuthed<T>(
   });
 
   const data = (await res.json().catch(() => ({}))) as any;
-  if (!res.ok) throw new Error(data?.error ?? `Request failed (${res.status})`);
+
+  if (!res.ok) {
+    throw new Error(data?.error ?? `Request failed (${res.status})`);
+  }
+
   return data as T;
 }
 
-//  Hatchery uses /api/pets/hatchery (NOT /active)
 async function fetchHatchery(): Promise<HatcheryResponse> {
   const token = await getAccessToken();
   return fetchJsonAuthed<HatcheryResponse>("/api/pets/hatchery", token);
@@ -166,11 +183,11 @@ function EggSlotButton(props: {
         </div>
 
         <div className="eggName">
-          {slot.locked ? "Locked" : (slot.egg?.name ?? "No egg")}
+          {slot.locked ? "Locked" : slot.egg ? slot.egg.name : "No egg"}
         </div>
 
         <div className="eggMiniStats muted">
-          {slot.locked ? "—" : slot.egg ? "Select" : "Empty slot"}
+          {slot.locked ? "—" : slot.egg ? "Click to inspect" : "Empty slot"}
         </div>
       </div>
     </button>
@@ -187,78 +204,40 @@ function ItemSlotButton(props: {
   return (
     <button type="button" className="itemSlot" onClick={onClick}>
       <div className="itemSlotInner">
-        <div className="itemSlotIndex">{index + 1}</div>
+        <div className="itemSlotIndex">Shelf {index + 1}</div>
+
         {item ? (
           <div className="itemSlotContent">
             <div className="itemName">{item.name}</div>
             <div className="itemEffect">{item.effect}</div>
           </div>
         ) : (
-          <div className="itemSlotEmpty">Empty</div>
+          <div className="itemSlotEmpty">
+            {index === 0 ? "Available shelf" : "Locked"}
+          </div>
         )}
       </div>
     </button>
   );
 }
 
-/**
- *  Egg stats panel: ONLY main stats + total.
- * No elements/training display here.
- */
-function SelectedEggStatsPanel(props: {
-  egg: HatchEgg | null;
-  stats: PetStatsRow | null;
-}) {
-  const { egg, stats } = props;
-
+function PetStoragePanel() {
   return (
-    <div className="statsPanel">
+    <aside className="storagePanel">
       <div className="panelHeader">
-        <div className="panelTitle">Selected Egg Stats</div>
+        <div className="panelTitle">Pet Storage</div>
       </div>
 
-      <div className="panelBody">
-        {!egg ? (
-          <div className="muted">Select an egg to see stats.</div>
-        ) : !stats ? (
-          <div className="muted">Stats not loaded yet.</div>
-        ) : (
-          <div className="statsGrid">
-            <div className="statRow">
-              <div className="statLabel">HP</div>
-              <div className="statValue">{stats.hp}</div>
-            </div>
-            <div className="statRow">
-              <div className="statLabel">ATK</div>
-              <div className="statValue">{stats.atk}</div>
-            </div>
-            <div className="statRow">
-              <div className="statLabel">MAGI</div>
-              <div className="statValue">{stats.magi}</div>
-            </div>
-            <div className="statRow">
-              <div className="statLabel">DEF</div>
-              <div className="statValue">{stats.def}</div>
-            </div>
-            <div className="statRow">
-              <div className="statLabel">SPD</div>
-              <div className="statValue">{stats.spd}</div>
-            </div>
-
-            {/* If you don't want mana on eggs, keep this commented */}
-            {/* <div className="statRow">
-              <div className="statLabel">MANA</div>
-              <div className="statValue">{stats.mana}</div>
-            </div> */}
-
-            <div className="statRow">
-              <div className="statLabel">Total</div>
-              <div className="statValue">{stats.base_total}</div>
-            </div>
+      <div className="panelBody storagePanelBody">
+        <div className="storagePlaceholder">
+          <div className="storagePlaceholderTitle">Stored Pets Box</div>
+          <div className="storagePlaceholderText">
+            This side can hold your stored pets, future party management, or
+            quick pet selection.
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </aside>
   );
 }
 
@@ -269,7 +248,6 @@ export default function HatcheryPage() {
   const [data, setData] = useState<HatcheryResponse | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
-  // Server-time drift handling
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
   const localNowMs = useNow(1000);
@@ -278,12 +256,15 @@ export default function HatcheryPage() {
     if (serverNowBaseMs == null || fetchedAtLocalMs == null) {
       return new Date().toISOString();
     }
+
     const driftedMs = serverNowBaseMs + (localNowMs - fetchedAtLocalMs);
     return new Date(driftedMs).toISOString();
   }, [serverNowBaseMs, fetchedAtLocalMs, localNowMs]);
 
   useEffect(() => {
-    if (!authLoading && !user) navigate("/", { replace: true });
+    if (!authLoading && !user) {
+      navigate("/", { replace: true });
+    }
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
@@ -293,6 +274,7 @@ export default function HatcheryPage() {
 
     async function load() {
       setLoadErr(null);
+
       try {
         const next = await fetchHatchery();
         if (!alive) return;
@@ -315,6 +297,7 @@ export default function HatcheryPage() {
 
     load();
     const id = window.setInterval(load, 15_000);
+
     return () => {
       alive = false;
       window.clearInterval(id);
@@ -329,7 +312,7 @@ export default function HatcheryPage() {
       pet && pet.stage === "egg" && hatchEndsAt
         ? ({
             id: pet.id,
-            name: "Mystery Egg",
+            name: pet.name?.trim() || "Mystery Egg",
             hatch_ends_at: hatchEndsAt,
             line: pet.line ?? undefined,
           } satisfies HatchEgg)
@@ -338,32 +321,54 @@ export default function HatcheryPage() {
     const arr: HatchSlot[] = [];
     arr.push({ index: 1, locked: false, egg: slot1Egg });
     arr.push({ index: 2, locked: false });
-    for (let i = 3; i <= 10; i++) arr.push({ index: i, locked: true });
+
+    for (let i = 3; i <= 10; i += 1) {
+      arr.push({ index: i, locked: true });
+    }
+
     return arr;
   }, [data]);
 
-  const [selectedSlot, setSelectedSlot] = useState<number>(1);
-  const selected = slots.find((s) => s.index === selectedSlot) ?? slots[0];
-  const selectedEgg = selected.egg ?? null;
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+
+  const selected =
+    selectedSlot == null
+      ? null
+      : (slots.find((slot) => slot.index === selectedSlot) ?? null);
+
+  const selectedEgg = selected?.egg ?? null;
 
   const selectedCd = useServerCountdown(
     selectedEgg ? { serverNowIso, endsAtIso: selectedEgg.hatch_ends_at } : null,
   );
 
+  const countdownText = selectedEgg
+    ? selectedCd.done
+      ? "Ready to hatch"
+      : `Hatches in ${formatDuration(selectedCd.remainingMs ?? 0)}`
+    : "";
+
+  const displayedStats = useMemo(() => {
+    if (!selectedEgg) return EMPTY_STATS;
+    return data?.stats ?? EMPTY_STATS;
+  }, [selectedEgg, data?.stats]);
+
   const [itemSlots, setItemSlots] = useState<Array<HatchItem | null>>(() => {
-    const arr = new Array(10).fill(null) as Array<HatchItem | null>;
+    const arr = new Array(6).fill(null) as Array<HatchItem | null>;
     arr[0] = {
       id: "item_1",
       name: "Heat Lamp",
       effect: "+10% hatch speed (later)",
     };
-    arr[1] = { id: "item_2", name: "Lucky Charm", effect: "+2 luck (later)" };
     return arr;
   });
 
   function handleClickItemSlot(idx: number) {
     setItemSlots((prev) => {
       const next = [...prev];
+
+      if (idx !== 0 && !next[idx]) return prev;
+
       next[idx] = next[idx]
         ? null
         : {
@@ -371,6 +376,7 @@ export default function HatcheryPage() {
             name: "Basic Incense",
             effect: "+3% hatch speed (later)",
           };
+
       return next;
     });
   }
@@ -384,8 +390,9 @@ export default function HatcheryPage() {
       try {
         const next = await fetchHatchery();
         setData(next);
+        setSelectedSlot(null);
       } catch {
-        // ignore, since we're navigating anyway
+        // no-op
       }
 
       navigate("/pet", { replace: true });
@@ -398,110 +405,162 @@ export default function HatcheryPage() {
 
   return (
     <div className="hatcheryPage">
-      <div className="hatcheryLayout">
-        <aside className="leftCol">
-          <div className="eggGrid">
-            {slots.map((slot) => (
-              <EggSlotButton
-                key={slot.index}
-                slot={slot}
-                isSelected={slot.index === selectedSlot}
-                serverNowIso={serverNowIso}
-                onSelect={() => setSelectedSlot(slot.index)}
-              />
-            ))}
-          </div>
-
-          {loadErr ? (
-            <div className="muted" style={{ paddingTop: 10 }}>
-              Error: {loadErr}
-            </div>
-          ) : null}
-        </aside>
-
-        <main className="midCol">
-          <div className="selectedPanel">
+      <div className="hatcheryTwoColumnLayout">
+        <main className="hatcheryMainColumn">
+          <section className="selectedEggPanel">
             <div className="panelHeader">
               <div className="panelTitle">Selected Egg</div>
             </div>
 
-            <div className="panelBody">
-              {!selectedEgg ? (
-                <div className="muted">
-                  {selected.locked
-                    ? "Slot locked."
-                    : "No egg in this slot (yet)."}
-                </div>
-              ) : (
-                <>
-                  <div className="selectedRow">
+            <div className="selectedEggTopStrip">
+              <div className="selectedEggPreviewArea">
+                {!selectedEgg ? (
+                  <div className="selectedPreviewEmpty">
+                    <div className="selectedPreviewEmptyTitle">
+                      No egg selected.
+                    </div>
+                    <div className="selectedPreviewEmptyText">
+                      Click an egg from the rack below to inspect it and view
+                      its stats.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="selectedPreviewFilled">
                     <img
                       className="eggBigImg"
                       src={MYSTERY_EGG.sprite}
                       alt={MYSTERY_EGG.name}
                     />
+
                     <div className="selectedText">
                       <div className="selectedName">{selectedEgg.name}</div>
-                      <div className="selectedSub">
-                        {selectedCd.done
-                          ? "Ready to hatch"
-                          : `Hatches in ${formatDuration(
-                              selectedCd.remainingMs ?? 0,
-                            )}`}
-                      </div>
+                      <div className="selectedSub">{countdownText}</div>
                     </div>
                   </div>
+                )}
+              </div>
 
+              <section className="selectedEggStatsInset">
+                <div className="panelTitle panelTitleSmall">
+                  Selected Egg Stats
+                </div>
+
+                <div className="statsIntro">
+                  {selectedEgg ? (
+                    <span className="muted">
+                      Viewing stats for <strong>{selectedEgg.name}</strong>.
+                    </span>
+                  ) : (
+                    <span className="muted">
+                      Select an egg to see stats. Values stay at 0 until one is
+                      clicked.
+                    </span>
+                  )}
+                </div>
+
+                <div className="statsGrid compactStatsGrid">
+                  <div className="statRow">
+                    <div className="statLabel">HP</div>
+                    <div className="statValue">{displayedStats.hp}</div>
+                  </div>
+                  <div className="statRow">
+                    <div className="statLabel">ATK</div>
+                    <div className="statValue">{displayedStats.atk}</div>
+                  </div>
+                  <div className="statRow">
+                    <div className="statLabel">MAGI</div>
+                    <div className="statValue">{displayedStats.magi}</div>
+                  </div>
+                  <div className="statRow">
+                    <div className="statLabel">DEF</div>
+                    <div className="statValue">{displayedStats.def}</div>
+                  </div>
+                  <div className="statRow">
+                    <div className="statLabel">SPD</div>
+                    <div className="statValue">{displayedStats.spd}</div>
+                  </div>
+                  <div className="statRow">
+                    <div className="statLabel">MANA</div>
+                    <div className="statValue">{displayedStats.mana}</div>
+                  </div>
+                  <div className="statRow statRowTotal">
+                    <div className="statLabel">TOTAL</div>
+                    <div className="statValue">{displayedStats.base_total}</div>
+                  </div>
+                </div>
+
+                {selectedEgg ? (
                   <button
                     type="button"
-                    className="primaryBtn"
+                    className="primaryBtn hatchActionBtn"
                     disabled={!selectedCd.done}
                     onClick={onHatchSelected}
                   >
                     Hatch
                   </button>
-                </>
-              )}
+                ) : null}
+              </section>
+
+              <aside className="incubationInsetPanel">
+                <div className="incubationInsetHeader">
+                  <div className="panelTitle panelTitleSmall">
+                    Incubation Shelf
+                  </div>
+
+                  <button
+                    type="button"
+                    className="smallBtn"
+                    onClick={() => navigate("/pet")}
+                  >
+                    Back to Pet
+                  </button>
+                </div>
+
+                <div className="itemsGrid">
+                  {itemSlots.map((item, idx) => (
+                    <ItemSlotButton
+                      key={idx}
+                      index={idx}
+                      item={item}
+                      onClick={() => handleClickItemSlot(idx)}
+                    />
+                  ))}
+                </div>
+
+                <div className="muted itemsHint">
+                  Hatchery items will live here later. Shelf 1 is open first,
+                  and the others unlock over time.
+                </div>
+              </aside>
             </div>
-          </div>
+          </section>
 
-          {/*  Stats only (no elements) */}
-          <SelectedEggStatsPanel
-            egg={selectedEgg}
-            stats={data?.stats ?? null}
-          />
-        </main>
-
-        <aside className="rightCol">
-          <div className="itemsPanel">
+          <section className="rackPanel">
             <div className="panelHeader">
-              <div className="panelTitle">Egg Items</div>
-              <button
-                type="button"
-                className="smallBtn"
-                onClick={() => navigate("/pet")}
-              >
-                Back to Pet
-              </button>
+              <div className="panelTitle">Egg Rack</div>
             </div>
 
             <div className="panelBody">
-              <div className="itemsGrid">
-                {itemSlots.map((item, idx) => (
-                  <ItemSlotButton
-                    key={idx}
-                    index={idx}
-                    item={item}
-                    onClick={() => handleClickItemSlot(idx)}
+              <div className="eggGrid">
+                {slots.map((slot) => (
+                  <EggSlotButton
+                    key={slot.index}
+                    slot={slot}
+                    isSelected={slot.index === selectedSlot}
+                    serverNowIso={serverNowIso}
+                    onSelect={() => setSelectedSlot(slot.index)}
                   />
                 ))}
               </div>
-              <div className="muted itemsHint">
-                Click a slot to toggle an item (demo).
-              </div>
+
+              {loadErr ? (
+                <div className="muted hatcheryError">Error: {loadErr}</div>
+              ) : null}
             </div>
-          </div>
-        </aside>
+          </section>
+        </main>
+
+        <PetStoragePanel />
       </div>
     </div>
   );

@@ -175,7 +175,7 @@
   color: var(--color-text-secondary);
 }
 
-/*  Unified panel behind bars + sprite (single background) */
+/* ✅ Unified panel behind bars + sprite (single background) */
 .tamaUnifiedPanel {
   display: grid;
   grid-template-columns: 1fr 220px;
@@ -186,7 +186,7 @@
   padding: 14px;
 
   /* SOLID element color */
-  background-color: color-mix(in srgb, var(--cr-accent) 22%, #0b0f18);
+  background-color: color-mix(in srgb, var(--cr-accent) 80%, #0b0f18);
 
   /* Clean border */
   border: 1px solid color-mix(in srgb, var(--cr-accent) 45%, #111827);
@@ -446,7 +446,7 @@
   color: var(--color-text-primary);
 }
 
-/*  Success / error toasts (global neon-green vibe) */
+/* ✅ Success / error toasts (global neon-green vibe) */
 .tamaMsg--success {
   border-color: color-mix(
     in srgb,
@@ -653,4 +653,106 @@
 .crAccent--shadow .crElementCard .crStatRow:nth-child(9) {
   background: rgba(75, 0, 130, 0.9);
   border-left: 4px solid #a855f7;
+}
+
+/* ================================
+   TEMP PET PLACEHOLDER
+================================ */
+
+.tempPet {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: auto;
+
+  /* bounce starts after blink */
+  animation: petBounce 2.2s ease-in-out infinite;
+  animation-delay: 0.6s;
+
+  transform-origin: bottom center;
+}
+
+/* body */
+
+.tempPetBody {
+  width: 72px;
+  height: 60px;
+  background: radial-gradient(circle at 30% 30%, #ffe27a, #ffb300);
+  border-radius: 50%;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+/* eyes */
+
+.tempPetEye {
+  position: absolute;
+  top: 24px;
+  width: 8px;
+  height: 8px;
+  background: #222;
+  border-radius: 50%;
+
+  /* blink once immediately */
+  animation: petBlink 4s infinite;
+}
+
+.tempPetEye.left {
+  left: 18px;
+}
+
+.tempPetEye.right {
+  right: 18px;
+}
+
+/* beak */
+
+.tempPetBeak {
+  position: absolute;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 8px;
+  background: #ff7b00;
+  border-radius: 2px 2px 6px 6px;
+}
+
+/* ================================
+   BOUNCE ANIMATION
+================================ */
+
+@keyframes petBounce {
+  0% {
+    transform: translateY(0px) scaleY(1);
+  }
+
+  25% {
+    transform: translateY(-6px) scaleY(1.05);
+  }
+
+  50% {
+    transform: translateY(0px) scaleY(0.95);
+  }
+
+  75% {
+    transform: translateY(-3px) scaleY(1.02);
+  }
+
+  100% {
+    transform: translateY(0px) scaleY(1);
+  }
+}
+
+/* ================================
+   BLINK ANIMATION
+================================ */
+
+@keyframes petBlink {
+  0%, 92%, 100% {
+    transform: scaleY(1);
+  }
+
+  95% {
+    transform: scaleY(0.1);
+  }
 }

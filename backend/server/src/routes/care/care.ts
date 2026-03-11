@@ -134,7 +134,7 @@ async function pickFood(userId: string) {
     .eq("user_id", userId)
     .gt("qty", 0)
     .in("item.type", ["care", "battle_food"])
-    //  IMPORTANT: order by column name, and specify the related table
+    // ✅ IMPORTANT: order by column name, and specify the related table
     .order("rarity", { ascending: true, foreignTable: "item_defs" })
     .limit(1);
 

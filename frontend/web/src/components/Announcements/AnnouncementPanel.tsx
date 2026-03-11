@@ -6,6 +6,7 @@ import { DonateButton } from "../Real_Money/DonateButton";
 type AnnouncementsPanelProps = {
   className?: string;
   minHeight?: number | string;
+  pageScope?: string;
 };
 
 type Announcement = {
@@ -38,15 +39,15 @@ function formatDateTime(dateString: string) {
 export function AnnouncementsPanel({
   className = "",
   minHeight = 240,
+  pageScope = "homepage",
 }: AnnouncementsPanelProps) {
-  const { items = [], loading, error } = useAnnouncements(1);
+  const { items = [], loading, error } = useAnnouncements(1, pageScope);
 
   const newest = (items as Announcement[])[0];
 
   const titleDate = newest?.created_at ? formatDateTime(newest.created_at) : "";
   const panelTitle = titleDate ? `🜂 DeltaPets : ${titleDate}` : "🜂 DeltaPets";
 
-  // Only Supabase content goes inside the panel
   const body = newest?.body ?? "";
 
   return (
@@ -65,7 +66,6 @@ export function AnnouncementsPanel({
         <div style={{ opacity: 0.75 }}>No announcements yet.</div>
       ) : (
         <div className="dp-annSingle">
-          {/* Optional: show the Supabase title as a heading. Remove if you don't want it. */}
           {newest.title ? (
             <div className="dp-annHeading">{newest.title}</div>
           ) : null}
