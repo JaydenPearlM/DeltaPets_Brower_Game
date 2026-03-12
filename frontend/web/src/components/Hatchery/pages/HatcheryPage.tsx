@@ -70,12 +70,6 @@ type HatchSlot = {
   egg?: HatchEgg;
 };
 
-type HatchItem = {
-  id: string;
-  name: string;
-  effect: string;
-};
-
 const EMPTY_STATS: PetStatsRow = {
   pet_id: "",
   hp: 0,
@@ -86,6 +80,15 @@ const EMPTY_STATS: PetStatsRow = {
   mana: 0,
   base_total: 0,
 };
+
+const STAT_ROWS = [
+  { key: "hp", label: "HP" },
+  { key: "atk", label: "ATK" },
+  { key: "magi", label: "MAGI" },
+  { key: "def", label: "DEF" },
+  { key: "spd", label: "SPD" },
+  { key: "mana", label: "MANA" },
+] as const;
 
 async function getAccessToken(): Promise<string> {
   const { data, error } = await supabase.auth.getSession();
@@ -135,89 +138,95 @@ function EggSlotButton(props: {
   isSelected: boolean;
   serverNowIso: string;
   onSelect: () => void;
+  onHatch: () => void;
+  isHatching: boolean;
 }) {
-  const { slot, isSelected, serverNowIso, onSelect } = props;
+  const { slot, isSelected, serverNowIso, onSelect, onHatch, isHatching } =
+    props;
 
   const cd = useServerCountdown(
     slot.egg ? { serverNowIso, endsAtIso: slot.egg.hatch_ends_at } : null,
   );
 
-  const label = slot.locked
+  const timerLabel = slot.locked
     ? "LOCKED"
     : slot.egg
       ? cd.done
-        ? "HATCH"
+        ? "READY"
         : formatDuration(cd.remainingMs ?? 0)
       : "EMPTY";
 
+  const canHatch = Boolean(slot.egg && cd.done && !slot.locked && !isHatching);
+
   return (
-    <button
-      type="button"
+    <div
       className={[
-        "eggSlot",
+        "eggSlotCard",
         isSelected ? "selected" : "",
         slot.locked ? "locked" : "",
+        slot.egg ? "hasEgg" : "",
+        slot.egg?.line ? `eggElement-${slot.egg.line}` : "",
       ].join(" ")}
-      onClick={() => {
-        if (!slot.locked) onSelect();
-      }}
-      disabled={slot.locked}
-      title={slot.egg ? slot.egg.name : `Egg ${slot.index}`}
     >
-      <div className="eggSlotLeft">
-        {slot.egg ? (
-          <img
-            className="eggIconImg"
-            src={MYSTERY_EGG.sprite}
-            alt={MYSTERY_EGG.name}
-          />
-        ) : (
-          <div className="eggIcon" />
-        )}
-      </div>
-
-      <div className="eggSlotMain">
-        <div className="eggSlotTop">
-          <div className="eggSlotTitle">Egg {slot.index}</div>
-          <div className="eggSlotTimer">{label}</div>
+      <button
+        type="button"
+        className="eggSlot"
+        onClick={() => {
+          if (!slot.locked) onSelect();
+        }}
+        disabled={slot.locked}
+        title={slot.egg ? slot.egg.name : `Egg ${slot.index}`}
+      >
+        <div className="eggSlotLeft">
+          {slot.egg ? (
+            <img
+              className="eggIconImg"
+              src={MYSTERY_EGG.sprite}
+              alt={MYSTERY_EGG.name}
+            />
+          ) : (
+            <div className="eggIcon" />
+          )}
         </div>
 
-        <div className="eggName">
-          {slot.locked ? "Locked" : slot.egg ? slot.egg.name : "No egg"}
+        <div className="eggSlotMain">
+          <div className="eggSlotTop">
+            <div className="eggSlotTitle">Egg {slot.index}</div>
+            <div className="eggSlotTimer">{timerLabel}</div>
+          </div>
         </div>
+      </button>
 
-        <div className="eggMiniStats muted">
-          {slot.locked ? "—" : slot.egg ? "Click to inspect" : "Empty slot"}
-        </div>
-      </div>
-    </button>
+      <button
+        type="button"
+        className="primaryBtn rackHatchBtn"
+        disabled={!canHatch}
+        onClick={onHatch}
+      >
+        {isHatching && canHatch ? "Hatching..." : "Hatch Egg"}
+      </button>
+    </div>
   );
 }
 
-function ItemSlotButton(props: {
-  index: number;
-  item: HatchItem | null;
-  onClick: () => void;
-}) {
-  const { index, item, onClick } = props;
+function ItemSlotButton(props: { index: number; unlocked: boolean }) {
+  const { index, unlocked } = props;
 
   return (
-    <button type="button" className="itemSlot" onClick={onClick}>
+    <div
+      className={[
+        "itemSlot",
+        "itemSlotStatic",
+        unlocked ? "unlocked" : "locked",
+      ].join(" ")}
+    >
       <div className="itemSlotInner">
         <div className="itemSlotIndex">Shelf {index + 1}</div>
-
-        {item ? (
-          <div className="itemSlotContent">
-            <div className="itemName">{item.name}</div>
-            <div className="itemEffect">{item.effect}</div>
-          </div>
-        ) : (
-          <div className="itemSlotEmpty">
-            {index === 0 ? "Available shelf" : "Locked"}
-          </div>
-        )}
+        <div className="itemSlotEmpty">
+          {unlocked ? "Empty shelf" : "Locked"}
+        </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -225,15 +234,20 @@ function PetStoragePanel() {
   return (
     <aside className="storagePanel">
       <div className="panelHeader">
-        <div className="panelTitle">Pet Storage</div>
+        <div>
+          <div className="panelTitle">Pet Storage</div>
+          <div className="panelSubtext">
+            Stored pets, quick swap tools, and future party management.
+          </div>
+        </div>
       </div>
 
       <div className="panelBody storagePanelBody">
         <div className="storagePlaceholder">
           <div className="storagePlaceholderTitle">Stored Pets Box</div>
           <div className="storagePlaceholderText">
-            This side can hold your stored pets, future party management, or
-            quick pet selection.
+            This side will hold your stored pets, sorting tools, and later
+            bring-out / put-away controls.
           </div>
         </div>
       </div>
@@ -247,6 +261,7 @@ export default function HatcheryPage() {
 
   const [data, setData] = useState<HatcheryResponse | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
+  const [isHatching, setIsHatching] = useState(false);
 
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
@@ -295,7 +310,7 @@ export default function HatcheryPage() {
       }
     }
 
-    load();
+    void load();
     const id = window.setInterval(load, 15_000);
 
     return () => {
@@ -353,36 +368,39 @@ export default function HatcheryPage() {
     return data?.stats ?? EMPTY_STATS;
   }, [selectedEgg, data?.stats]);
 
-  const [itemSlots, setItemSlots] = useState<Array<HatchItem | null>>(() => {
-    const arr = new Array(6).fill(null) as Array<HatchItem | null>;
-    arr[0] = {
-      id: "item_1",
-      name: "Heat Lamp",
-      effect: "+10% hatch speed (later)",
-    };
-    return arr;
-  });
+  async function onHatchSelected() {
+    if (!selectedEgg || isHatching) return;
 
-  function handleClickItemSlot(idx: number) {
-    setItemSlots((prev) => {
-      const next = [...prev];
+    try {
+      setIsHatching(true);
+      await hatchEgg();
 
-      if (idx !== 0 && !next[idx]) return prev;
+      try {
+        const next = await fetchHatchery();
+        setData(next);
+        setSelectedSlot(null);
+      } catch {
+        // no-op
+      }
 
-      next[idx] = next[idx]
-        ? null
-        : {
-            id: `item_demo_${idx}`,
-            name: "Basic Incense",
-            effect: "+3% hatch speed (later)",
-          };
-
-      return next;
-    });
+      navigate("/pet", { replace: true });
+    } catch (e: any) {
+      alert(e?.message ?? String(e));
+    } finally {
+      setIsHatching(false);
+    }
   }
 
-  async function onHatchSelected() {
-    if (!selectedEgg) return;
+  async function onHatchFromSlot(slot: HatchSlot) {
+    if (!slot.egg || slot.locked || isHatching) return;
+
+    const endsAtMs = Date.parse(slot.egg.hatch_ends_at);
+    const nowMs = Date.parse(serverNowIso);
+
+    if (!Number.isFinite(endsAtMs) || nowMs < endsAtMs) return;
+
+    setSelectedSlot(slot.index);
+    setIsHatching(true);
 
     try {
       await hatchEgg();
@@ -398,6 +416,8 @@ export default function HatcheryPage() {
       navigate("/pet", { replace: true });
     } catch (e: any) {
       alert(e?.message ?? String(e));
+    } finally {
+      setIsHatching(false);
     }
   }
 
@@ -405,42 +425,54 @@ export default function HatcheryPage() {
 
   return (
     <div className="hatcheryPage">
-      <div className="hatcheryTwoColumnLayout">
-        <main className="hatcheryMainColumn">
-          <section className="selectedEggPanel">
+      <div className="hatcheryWorkbenchLayout">
+        <div className="hatcheryLeftColumn">
+          <section className="selectedEggPanel selectedEggPanelMain">
             <div className="panelHeader">
-              <div className="panelTitle">Selected Egg</div>
-            </div>
-
-            <div className="selectedEggTopStrip">
-              <div className="selectedEggPreviewArea">
-                {!selectedEgg ? (
-                  <div className="selectedPreviewEmpty">
-                    <div className="selectedPreviewEmptyTitle">
-                      No egg selected.
-                    </div>
-                    <div className="selectedPreviewEmptyText">
-                      Click an egg from the rack below to inspect it and view
-                      its stats.
-                    </div>
-                  </div>
-                ) : (
-                  <div className="selectedPreviewFilled">
-                    <img
-                      className="eggBigImg"
-                      src={MYSTERY_EGG.sprite}
-                      alt={MYSTERY_EGG.name}
-                    />
-
-                    <div className="selectedText">
-                      <div className="selectedName">{selectedEgg.name}</div>
-                      <div className="selectedSub">{countdownText}</div>
-                    </div>
-                  </div>
-                )}
+              <div>
+                <div className="panelTitle">Selected Egg</div>
+                <div className="panelSubtext">
+                  Incubator chamber for the egg currently on your rack.
+                </div>
               </div>
 
-              <section className="selectedEggStatsInset">
+              <button
+                type="button"
+                className="smallBtn"
+                onClick={() => navigate("/pet")}
+              >
+                Back to Pet
+              </button>
+            </div>
+
+            <div className="selectedEggPreviewArea">
+              <div className="incubatorGlass" />
+
+              {!selectedEgg ? (
+                <div className="selectedPreviewEmpty"></div>
+              ) : (
+                <div className="selectedPreviewFilled">
+                  <div className="selectedEggHalo" />
+
+                  <img
+                    className="eggBigImg"
+                    src={MYSTERY_EGG.sprite}
+                    alt={MYSTERY_EGG.name}
+                  />
+
+                  <div className="selectedText">
+                    <div className="selectedPreviewEyebrow">Incubator Live</div>
+                    <div className="selectedName">{selectedEgg.name}</div>
+                    <div className="selectedSub">{countdownText}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <div className="hatcheryBottomRow">
+            <div className="hatcheryBottomRowInner">
+              <section className="selectedEggStatsInset statsPanelBottom">
                 <div className="panelTitle panelTitleSmall">
                   Selected Egg Stats
                 </div>
@@ -451,38 +483,18 @@ export default function HatcheryPage() {
                       Viewing stats for <strong>{selectedEgg.name}</strong>.
                     </span>
                   ) : (
-                    <span className="muted">
-                      Select an egg to see stats. Values stay at 0 until one is
-                      clicked.
-                    </span>
+                    <span className="muted">Select an egg.</span>
                   )}
                 </div>
 
                 <div className="statsGrid compactStatsGrid">
-                  <div className="statRow">
-                    <div className="statLabel">HP</div>
-                    <div className="statValue">{displayedStats.hp}</div>
-                  </div>
-                  <div className="statRow">
-                    <div className="statLabel">ATK</div>
-                    <div className="statValue">{displayedStats.atk}</div>
-                  </div>
-                  <div className="statRow">
-                    <div className="statLabel">MAGI</div>
-                    <div className="statValue">{displayedStats.magi}</div>
-                  </div>
-                  <div className="statRow">
-                    <div className="statLabel">DEF</div>
-                    <div className="statValue">{displayedStats.def}</div>
-                  </div>
-                  <div className="statRow">
-                    <div className="statLabel">SPD</div>
-                    <div className="statValue">{displayedStats.spd}</div>
-                  </div>
-                  <div className="statRow">
-                    <div className="statLabel">MANA</div>
-                    <div className="statValue">{displayedStats.mana}</div>
-                  </div>
+                  {STAT_ROWS.map((row) => (
+                    <div className="statRow" key={row.key}>
+                      <div className="statLabel">{row.label}</div>
+                      <div className="statValue">{displayedStats[row.key]}</div>
+                    </div>
+                  ))}
+
                   <div className="statRow statRowTotal">
                     <div className="statLabel">TOTAL</div>
                     <div className="statValue">{displayedStats.base_total}</div>
@@ -493,72 +505,68 @@ export default function HatcheryPage() {
                   <button
                     type="button"
                     className="primaryBtn hatchActionBtn"
-                    disabled={!selectedCd.done}
+                    disabled={!selectedCd.done || isHatching}
                     onClick={onHatchSelected}
                   >
-                    Hatch
+                    {isHatching ? "Hatching..." : "Hatch Egg"}
                   </button>
                 ) : null}
               </section>
 
-              <aside className="incubationInsetPanel">
+              <aside className="incubationInsetPanel shelfPanelBottom">
                 <div className="incubationInsetHeader">
                   <div className="panelTitle panelTitleSmall">
                     Incubation Shelf
                   </div>
-
-                  <button
-                    type="button"
-                    className="smallBtn"
-                    onClick={() => navigate("/pet")}
-                  >
-                    Back to Pet
-                  </button>
+                  <div className="panelSubtext">
+                    Hatchery items will go here later.
+                  </div>
                 </div>
 
                 <div className="itemsGrid">
-                  {itemSlots.map((item, idx) => (
+                  {Array.from({ length: 10 }, (_, idx) => (
                     <ItemSlotButton
                       key={idx}
                       index={idx}
-                      item={item}
-                      onClick={() => handleClickItemSlot(idx)}
+                      unlocked={idx === 0}
                     />
                   ))}
                 </div>
-
-                <div className="muted itemsHint">
-                  Hatchery items will live here later. Shelf 1 is open first,
-                  and the others unlock over time.
-                </div>
               </aside>
             </div>
-          </section>
+          </div>
+        </div>
 
-          <section className="rackPanel">
-            <div className="panelHeader">
+        <section className="rackPanel rackPanelSide">
+          <div className="panelHeader">
+            <div>
               <div className="panelTitle">Egg Rack</div>
-            </div>
-
-            <div className="panelBody">
-              <div className="eggGrid">
-                {slots.map((slot) => (
-                  <EggSlotButton
-                    key={slot.index}
-                    slot={slot}
-                    isSelected={slot.index === selectedSlot}
-                    serverNowIso={serverNowIso}
-                    onSelect={() => setSelectedSlot(slot.index)}
-                  />
-                ))}
+              <div className="panelSubtext">
+                Compact hatch slots and timers.
               </div>
-
-              {loadErr ? (
-                <div className="muted hatcheryError">Error: {loadErr}</div>
-              ) : null}
             </div>
-          </section>
-        </main>
+          </div>
+
+          <div className="panelBody eggRackBody">
+            <div className="eggGrid eggGridCompact">
+              {slots.map((slot) => (
+                <EggSlotButton
+                  key={slot.index}
+                  slot={slot}
+                  isSelected={slot.index === selectedSlot}
+                  serverNowIso={serverNowIso}
+                  isHatching={isHatching}
+                  onSelect={() => setSelectedSlot(slot.index)}
+                  onHatch={() => void onHatchFromSlot(slot)}
+                />
+              ))}
+            </div>
+
+            {loadErr ? (
+              <div className="muted hatcheryError">Error: {loadErr}</div>
+            ) : null}
+          </div>
+        </section>
 
         <PetStoragePanel />
       </div>
