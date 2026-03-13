@@ -1,4 +1,3 @@
-// LoginMenus.tsx
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { createPortal } from "react-dom";
@@ -9,6 +8,7 @@ import { LoginSubmitButton } from "./LoginSubmitButton";
 import { useLoginSubmit } from "./LoginSubmit";
 
 import { supabase } from "../../lib/supabase/client";
+import { useEnterGame } from "../../app/entry/useEnterGame";
 
 type Mode = "none" | "login";
 
@@ -37,14 +37,12 @@ function PasswordField({
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
-  // When label is empty, we assume the parent already provides dp-field + dp-label
   const hasOwnField = Boolean(label);
 
   const content = (
     <>
       {label ? <div className="dp-label">{label}</div> : null}
 
-      {/* FIX: make the row a positioning context */}
       <div className="dp-inputRow dp-inputRow--withIcon">
         <input
           className="dp-input dp-input--withIcon"
@@ -56,7 +54,6 @@ function PasswordField({
           required
         />
 
-        {/*  FIX: button is absolutely centered */}
         <button
           type="button"
           className="dp-iconBtnEye"
@@ -137,10 +134,9 @@ function LoginPanel({
         <div className="auth-actions">
           <LoginSubmitButton loading={loginLoading} />
 
-          {/*  FIX: this must NOT be submit */}
           <button
             type="button"
-            className="dp-btn dp-btn--blue"
+            className="dp-btn dp-btn--red"
             onClick={closeLogin}
             disabled={loginLoading}
           >
@@ -181,6 +177,8 @@ function SignupPanel({
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { enterGame } = useEnterGame();
+
   const email = useMemo(() => identifier.trim().toLowerCase(), [identifier]);
   const usernameNorm = useMemo(() => normalizeUsername(username), [username]);
 
@@ -188,34 +186,55 @@ function SignupPanel({
     e.preventDefault();
     setMessage(null);
 
-    if (!displayName.trim()) return setMessage("Name is required.");
-    if (!email || !email.includes("@"))
-      return setMessage("Please enter a valid email address.");
-    if (!usernameNorm) return setMessage("Username is required.");
-    if (!isValidUsername(usernameNorm))
-      return setMessage(" 3–20 chars with letters, numbers, underscore.");
-    if (!password || password.length < 8)
-      return setMessage("Password must be at least 8 characters.");
-    if (password !== confirm) return setMessage("Passwords do not match.");
+    if (!displayName.trim()) {
+      setMessage("Name is required.");
+      return;
+    }
+
+    if (!email || !email.includes("@")) {
+      setMessage("Please enter a valid email address.");
+      return;
+    }
+
+    if (!usernameNorm) {
+      setMessage("Username is required.");
+      return;
+    }
+
+    if (!isValidUsername(usernameNorm)) {
+      setMessage("3–20 chars with letters, numbers, underscore.");
+      return;
+    }
+
+    if (!password || password.length < 8) {
+      setMessage("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (password !== confirm) {
+      setMessage("Passwords do not match.");
+      return;
+    }
 
     setLoading(true);
+
     try {
-      const { data, error } = await supabase
+      const { data: existingProfile, error: lookupError } = await supabase
         .from("profiles")
         .select("user_id")
         .eq("username", usernameNorm)
         .maybeSingle();
 
-      if (error) {
+      if (lookupError) {
         console.error("[signup] username availability check failed", {
           username: usernameNorm,
-          error: Error,
+          error: lookupError,
         });
         setMessage("Could not verify username. Please try again.");
         return;
       }
 
-      if (data) {
+      if (existingProfile) {
         setMessage("That username is already taken.");
         return;
       }
@@ -239,37 +258,47 @@ function SignupPanel({
       }
 
       const userId = signUpData.user?.id ?? null;
+      const hasSession = Boolean(signUpData.session);
 
       if (!userId) {
-        // This can happen if email confirmation is required and no user object is returned.
         setMessage(
           "Account created. Please check your email to confirm, then sign in.",
         );
         return;
       }
 
-      const { error: profileErr } = await supabase.from("profiles").insert({
-        user_id: userId,
-        username: usernameNorm,
-        display_name: displayName.trim(),
-        email,
-      });
+      const { error: profileErr } = await supabase.from("profiles").upsert(
+        {
+          user_id: userId,
+          username: usernameNorm,
+          display_name: displayName.trim(),
+          email,
+        },
+        { onConflict: "user_id" },
+      );
 
       if (profileErr) {
-        console.error("[signup] profile creation failed", {
+        console.error("[signup] profile upsert failed", {
           username: usernameNorm,
+          userId,
           error: profileErr,
         });
-
         setMessage(
           "Account created, but profile setup failed. Please contact support.",
         );
         return;
       }
 
-      await supabase.auth.signOut();
-      setMessage("Account created! Now press Sign in.");
+      if (!hasSession) {
+        setMessage(
+          "Account created. Please check your email to confirm, then sign in.",
+        );
+        closeSignup();
+        return;
+      }
+
       closeSignup();
+      await enterGame();
     } catch (err) {
       console.error("[signup] failed:", err);
       setMessage("Signup failed. Please try again.");
@@ -320,7 +349,6 @@ function SignupPanel({
         />
       </div>
 
-      {/*  Password */}
       <div className="dp-field">
         <div className="dp-label">Password</div>
         <PasswordField
@@ -333,7 +361,6 @@ function SignupPanel({
         <div className="auth-hint">8-12+ chars</div>
       </div>
 
-      {/*  Confirm */}
       <div className="dp-field">
         <div className="dp-label">Confirm Password</div>
         <PasswordField
@@ -349,7 +376,7 @@ function SignupPanel({
         <button
           type="submit"
           disabled={loading}
-          className="dp-btn dp-btn--yellow"
+          className="dp-btn dp-btn--blue"
         >
           {loading ? "Creating..." : "Sign up"}
         </button>
@@ -358,7 +385,7 @@ function SignupPanel({
           type="button"
           onClick={closeSignup}
           disabled={loading}
-          className="dp-btn dp-btn--red dp-btn--sm"
+          className="dp-btn dp-btn--red"
         >
           Close
         </button>
@@ -405,6 +432,7 @@ export function LoginMenus() {
 
   function closeSignup() {
     setSignupOpen(false);
+    setMessage(null);
   }
 
   const loginModal =
@@ -419,15 +447,9 @@ export function LoginMenus() {
               className="auth-modal neon-border"
               role="dialog"
               aria-modal="true"
+              aria-label="Sign in"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="auth-modal-header">
-                <h3>Sign in</h3>
-                <button type="button" onClick={closeLogin} aria-label="Close">
-                  X
-                </button>
-              </div>
-
               <LoginPanel
                 identifier={identifier}
                 setIdentifier={setIdentifier}
@@ -447,25 +469,15 @@ export function LoginMenus() {
           <div
             className="auth-modal-backdrop"
             role="presentation"
-            onClick={() => setSignupOpen(false)}
+            onClick={closeSignup}
           >
             <div
-              className="auth-modal signup-neon"
+              className="auth-modal neon-border"
               role="dialog"
               aria-modal="true"
+              aria-label="Sign up"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="auth-modal-header">
-                <h3>Sign up</h3>
-                <button
-                  type="button"
-                  onClick={() => setSignupOpen(false)}
-                  aria-label="Close"
-                >
-                  X
-                </button>
-              </div>
-
               <SignupPanel
                 identifier={identifier}
                 setIdentifier={setIdentifier}
@@ -481,26 +493,13 @@ export function LoginMenus() {
 
   return (
     <>
-      <div className="auth-shell">
-        <div className="auth-shell-top">
-          <button
-            type="button"
-            className="auth-trigger auth-trigger--signin"
-            onClick={openLogin}
-          >
-            Sign in
-          </button>
-
-          <button
-            type="button"
-            className="auth-trigger auth-trigger--signup"
-            onClick={openSignup}
-          >
-            Sign up
-          </button>
-        </div>
-
-        {message ? <p className="auth-message">{message}</p> : null}
+      <div className="auth-launchers" style={{ display: "flex", gap: "12px" }}>
+        <button className="dp-btn dp-btn--yellow" onClick={openLogin}>
+          Sign in
+        </button>
+        <button className="dp-btn dp-btn--blue" onClick={openSignup}>
+          Sign up
+        </button>
       </div>
 
       {loginModal}

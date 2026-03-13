@@ -1,30 +1,13 @@
-// src/Pets_Creation/registry/shadowHatchResolver.ts
+// frontend/web/src/Pets_Creation/registry/shadowHatchResolver.ts
+
+import {
+  STARTER_SPROUTS,
+  getShadowNature,
+  getShadowSpeciesForPersonality,
+} from "@shared/pets/species";
 import type { Starter } from "./creationTypes";
-import { STARTER_SPROUTS } from "./species";
 
-export type ShadowMood = "violet" | "crimson";
-
-const SHADOW_PERSONALITY_MAP: Record<string, ShadowMood> = {
-  loyalist: "violet",
-  radiant: "violet",
-  guardian: "violet",
-  gentle: "violet",
-  royal: "violet",
-  scholar: "violet",
-  dreamer: "violet",
-  stoic: "violet",
-  brightspark: "violet",
-
-  gremlin: "crimson",
-  shadowed: "crimson",
-  feral: "crimson",
-  blazeborn: "crimson",
-  wildheart: "crimson",
-  glutton: "crimson",
-  prankster: "crimson",
-  drifter: "crimson",
-  anxious: "crimson",
-};
+export type ShadowMood = "good" | "bad";
 
 function getStarterByName(name: string): Starter {
   const starter = STARTER_SPROUTS.find((s) => s.name === name);
@@ -33,20 +16,23 @@ function getStarterByName(name: string): Starter {
     throw new Error(`Starter species "${name}" not found.`);
   }
 
-  return starter;
+  return starter as Starter;
 }
 
 export function getShadowMood(personalityKey: string): ShadowMood {
-  return SHADOW_PERSONALITY_MAP[personalityKey] ?? "violet";
+  return getShadowNature(personalityKey);
 }
 
 export function getShadowColor(personalityKey: string): string {
-  return getShadowMood(personalityKey) === "violet" ? "#9b5cff" : "#ff3b3b";
+  return getShadowMood(personalityKey) === "good" ? "#ff7a18" : "#9b5cff";
 }
 
 export function getShadowHatchSpecies(personalityKey: string): Starter {
-  const mood = getShadowMood(personalityKey);
-  return mood === "violet"
-    ? getStarterByName("Noctimp")
-    : getStarterByName("Flareclaw");
+  const starter = getShadowSpeciesForPersonality(personalityKey);
+
+  if (!starter) {
+    throw new Error("Shadow hatch species could not be resolved.");
+  }
+
+  return getStarterByName(starter.name);
 }

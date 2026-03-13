@@ -1,41 +1,65 @@
 // frontend/web/src/Pets_Creation/registry/eggBasedStats.ts
 
+import { findStarterByName } from "./species";
+
 export type EggMainStats = {
   hp: number;
   atk: number;
   def: number;
   spd: number;
   magi: number;
-  mana: number; //  add mana
+  mana: number;
 };
 
-export function calcTotal(s: EggMainStats) {
-  //  include mana in total
-  return s.hp + s.atk + s.def + s.spd + s.magi + s.mana;
+export function calcTotal(stats: EggMainStats) {
+  return stats.hp + stats.atk + stats.def + stats.spd + stats.magi + stats.mana;
 }
 
 /**
- * Key = starter species id (NOT egg container id).
- * Egg base stats must sum to 10.
+ * Resolve egg base stats from the shared starter registry.
+ * Species names must match the starter species name, not the egg container id.
  */
-export const EGG_BASE_STATS: Record<string, EggMainStats> = {
-  //  PROD starter
-  corona: { hp: 2, atk: 0, def: 0, spd: 2, magi: 3, mana: 3 }, // total = 10
+export function getEggBaseStatsOrThrow(speciesName: string): EggMainStats {
+  const starter = findStarterByName(speciesName);
 
-  // Keep mystery_egg OUT of here unless you *want* a "default" egg roll.
-  // mystery_egg: { ... } ❌ don't do this if mystery_egg just chooses a starter
-};
+  if (!starter) {
+    throw new Error(`Missing egg base stats for species: ${speciesName}`);
+  }
 
-export function getEggBaseStatsOrThrow(speciesId: string): EggMainStats {
-  const s = EGG_BASE_STATS[speciesId];
-  if (!s) throw new Error(`Missing egg base stats for species: ${speciesId}`);
+  const stats: EggMainStats = {
+    hp: Number(starter.baseStats.hp ?? 0),
+    atk: Number(starter.baseStats.atk ?? 0),
+    def: Number(starter.baseStats.def ?? 0),
+    spd: Number(starter.baseStats.spd ?? 0),
+    magi: Number(starter.baseStats.magi ?? 0),
+    mana: Number(starter.baseStats.mana ?? 0),
+  };
 
-  const total = calcTotal(s);
+  const total = calcTotal(stats);
   if (total !== 10) {
     throw new Error(
-      `Egg base stats for ${speciesId} must total 10, got ${total}`,
+      `Egg base stats for ${speciesName} must total 10, got ${total}`,
     );
   }
 
-  return s;
+  return stats;
+}
+
+/**
+ * Optional non-throwing version for safer UI usage.
+ */
+export function getEggBaseStats(speciesName: string): EggMainStats | null {
+  const starter = findStarterByName(speciesName);
+  if (!starter) return null;
+
+  const stats: EggMainStats = {
+    hp: Number(starter.baseStats.hp ?? 0),
+    atk: Number(starter.baseStats.atk ?? 0),
+    def: Number(starter.baseStats.def ?? 0),
+    spd: Number(starter.baseStats.spd ?? 0),
+    magi: Number(starter.baseStats.magi ?? 0),
+    mana: Number(starter.baseStats.mana ?? 0),
+  };
+
+  return calcTotal(stats) === 10 ? stats : null;
 }

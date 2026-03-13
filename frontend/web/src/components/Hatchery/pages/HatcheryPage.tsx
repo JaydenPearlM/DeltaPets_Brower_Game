@@ -57,6 +57,27 @@ type HatcheryResponse = {
   elements: PetElementsRow | null;
 };
 
+type HatchActionResponse = {
+  server_now: string;
+  pet: {
+    id: string;
+    name?: string | null;
+    stage?: string | null;
+    line?: string | null;
+    is_active?: boolean | null;
+    location?: string | null;
+  } | null;
+  awarded_points?: number;
+  iv?: unknown;
+  points?: unknown;
+  gender?: string | null;
+  personality_key?: string | null;
+  party_slot_assigned?: number | null;
+  post_hatch_destination?: string | null;
+  storage_result?: "party" | "storage" | null;
+  is_mystery_starter_hatch?: boolean;
+};
+
 type HatchEgg = {
   id: string;
   name: string;
@@ -114,7 +135,9 @@ async function fetchJsonAuthed<T>(
     credentials: "include",
   });
 
-  const data = (await res.json().catch(() => ({}))) as any;
+  const data = (await res.json().catch(() => ({}))) as unknown as {
+    error?: string;
+  };
 
   if (!res.ok) {
     throw new Error(data?.error ?? `Request failed (${res.status})`);
@@ -128,9 +151,11 @@ async function fetchHatchery(): Promise<HatcheryResponse> {
   return fetchJsonAuthed<HatcheryResponse>("/api/pets/hatchery", token);
 }
 
-async function hatchEgg(): Promise<void> {
+async function hatchEgg(): Promise<HatchActionResponse> {
   const token = await getAccessToken();
-  await fetchJsonAuthed("/api/pets/hatch", token, { method: "POST" });
+  return fetchJsonAuthed<HatchActionResponse>("/api/pets/hatch", token, {
+    method: "POST",
+  });
 }
 
 function EggSlotButton(props: {
@@ -276,6 +301,19 @@ export default function HatcheryPage() {
     return new Date(driftedMs).toISOString();
   }, [serverNowBaseMs, fetchedAtLocalMs, localNowMs]);
 
+  function syncServerClock(serverNow: string) {
+    const serverMs = Date.parse(serverNow);
+
+    if (Number.isFinite(serverMs)) {
+      setServerNowBaseMs(serverMs);
+      setFetchedAtLocalMs(Date.now());
+      return;
+    }
+
+    setServerNowBaseMs(Date.now());
+    setFetchedAtLocalMs(Date.now());
+  }
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/", { replace: true });
@@ -295,15 +333,7 @@ export default function HatcheryPage() {
         if (!alive) return;
 
         setData(next);
-
-        const serverMs = Date.parse(next.server_now);
-        if (Number.isFinite(serverMs)) {
-          setServerNowBaseMs(serverMs);
-          setFetchedAtLocalMs(Date.now());
-        } else {
-          setServerNowBaseMs(Date.now());
-          setFetchedAtLocalMs(Date.now());
-        }
+        syncServerClock(next.server_now);
       } catch (e: any) {
         if (!alive) return;
         setLoadErr(e?.message ?? String(e));
@@ -368,22 +398,31 @@ export default function HatcheryPage() {
     return data?.stats ?? EMPTY_STATS;
   }, [selectedEgg, data?.stats]);
 
+  async function refreshAfterHatch() {
+    const next = await fetchHatchery();
+    setData(next);
+    setSelectedSlot(null);
+    syncServerClock(next.server_now);
+  }
+
+  async function completeHatchFlow() {
+    const hatchResult = await hatchEgg();
+    syncServerClock(hatchResult.server_now);
+
+    if (hatchResult.post_hatch_destination) {
+      navigate(hatchResult.post_hatch_destination, { replace: true });
+      return;
+    }
+
+    await refreshAfterHatch();
+  }
+
   async function onHatchSelected() {
     if (!selectedEgg || isHatching) return;
 
     try {
       setIsHatching(true);
-      await hatchEgg();
-
-      try {
-        const next = await fetchHatchery();
-        setData(next);
-        setSelectedSlot(null);
-      } catch {
-        // no-op
-      }
-
-      navigate("/pet", { replace: true });
+      await completeHatchFlow();
     } catch (e: any) {
       alert(e?.message ?? String(e));
     } finally {
@@ -403,17 +442,7 @@ export default function HatcheryPage() {
     setIsHatching(true);
 
     try {
-      await hatchEgg();
-
-      try {
-        const next = await fetchHatchery();
-        setData(next);
-        setSelectedSlot(null);
-      } catch {
-        // no-op
-      }
-
-      navigate("/pet", { replace: true });
+      await completeHatchFlow();
     } catch (e: any) {
       alert(e?.message ?? String(e));
     } finally {
@@ -462,7 +491,6 @@ export default function HatcheryPage() {
 
                   <div className="selectedText">
                     <div className="selectedPreviewEyebrow">Incubator Live</div>
-                    <div className="selectedName">{selectedEgg.name}</div>
                     <div className="selectedSub">{countdownText}</div>
                   </div>
                 </div>

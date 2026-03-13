@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase/client";
+import { useEnterGame } from "../entry/useEnterGame";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const { enterGame } = useEnterGame();
   const [msg, setMsg] = useState("Finishing sign-in…");
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      // Supabase will parse tokens in the URL and set the session
       const { data, error } = await supabase.auth.getSession();
 
       if (cancelled) return;
@@ -23,20 +24,19 @@ export default function AuthCallback() {
       }
 
       if (!data.session) {
-        // Sometimes the callback opens but session isn't set (edge cases)
         setMsg("No session found. Please log in.");
         window.setTimeout(() => navigate("/", { replace: true }), 1200);
         return;
       }
 
-      setMsg("Verified Redirecting…");
-      window.setTimeout(() => navigate("/", { replace: true }), 600);
+      setMsg("Verified. Entering game…");
+      await enterGame();
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [enterGame, navigate]);
 
   return (
     <div style={{ padding: 16 }}>

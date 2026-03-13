@@ -56,8 +56,11 @@ export function NextLogsPanel({ className = "" }: NextLogsPanelProps) {
         .order("display_order", { ascending: true })
         .order("created_at", { ascending: false });
 
-      console.log("[homepage_logs] data:", data);
-      console.log("[homepage_logs] error:", error);
+      if (error) {
+        console.error("[homepage_logs] query failed:", error);
+      } else {
+        console.log("[homepage_logs] query ok:", data);
+      }
 
       if (!alive) return;
 

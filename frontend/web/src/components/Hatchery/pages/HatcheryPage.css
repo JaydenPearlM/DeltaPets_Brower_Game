@@ -2,6 +2,14 @@
   padding: 16px;
 }
 
+.hatcheryTopActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
 .hatcheryWorkbenchLayout {
   display: grid;
   grid-template-columns: 500px minmax(250px, 300px) minmax(320px, 1fr);
@@ -36,6 +44,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .storagePanel {
@@ -440,6 +449,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .eggGrid {
@@ -579,270 +589,803 @@
   margin-top: 10px;
 }
 
+.storageHeader {
+  align-items: flex-start;
+}
+
+.storageHeaderMeta {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+  text-align: right;
+  min-width: 120px;
+}
+
+.storageHeaderMetaTop {
+  font-size: 12px;
+  font-weight: 900;
+  color: #dfe8ff;
+}
+
+.storageHeaderMetaBottom {
+  font-size: 12px;
+  color: rgba(214, 225, 255, 0.82);
+}
+
+.storageHeaderMetaBottom strong {
+  color: #ffd966;
+}
+
 .storagePanelBody {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.storagePlaceholder {
-  height: 100%;
+.storagePanelBodyEnhanced {
+  display: flex;
+  flex-direction: column;
   min-height: 0;
+  gap: 12px;
+}
+
+.partyTeamSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid rgba(126, 150, 255, 0.12);
   border-radius: 14px;
-  border: 1px solid rgba(130, 156, 255, 0.14);
+  padding: 12px;
   background:
     radial-gradient(
-      110% 100% at 20% 10%,
-      rgba(70, 120, 255, 0.12),
+      120% 110% at 16% 12%,
+      rgba(73, 130, 255, 0.08),
+      transparent 36%
+    ),
+    linear-gradient(180deg, rgba(18, 28, 55, 0.42), rgba(8, 17, 39, 0.5));
+  overflow: hidden;
+}
+
+.partyTeamHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.partyTeamGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.partySlotCard {
+  min-width: 0;
+  min-height: 160px;
+  border: 1px solid rgba(128, 152, 255, 0.16);
+  border-radius: 14px;
+  padding: 8px;
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.06),
+      transparent 28%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.partySlotCard.selected {
+  border-color: rgba(255, 204, 102, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(255, 204, 102, 0.12),
+    0 0 14px rgba(255, 178, 66, 0.08);
+}
+
+.partySlotSelectBtn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+}
+
+.partySlotNumber {
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(221, 231, 255, 0.82);
+}
+
+.partySlotPortrait {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  border: 1px solid rgba(132, 157, 255, 0.18);
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.05),
+      transparent 30%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.partySlotPortraitInner {
+  font-size: 28px;
+  font-weight: 900;
+  color: #f8fbff;
+  line-height: 1;
+}
+
+.partySlotName {
+  font-size: 12px;
+  font-weight: 900;
+  color: #f8fbff;
+  line-height: 1.1;
+}
+
+.partySlotSub {
+  font-size: 10px;
+  color: rgba(216, 227, 255, 0.8);
+  line-height: 1.2;
+}
+
+.partySlotActions {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.storageTopSummary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.storageHeroCard {
+  border: 1px solid rgba(130, 156, 255, 0.14);
+  border-radius: 12px;
+  padding: 10px;
+  background:
+    radial-gradient(
+      120% 110% at 20% 10%,
+      rgba(73, 130, 255, 0.11),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(18, 28, 55, 0.94), rgba(8, 17, 39, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.storageHeroLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(209, 221, 255, 0.78);
+}
+
+.storageHeroValue {
+  margin-top: 4px;
+  font-size: 22px;
+  font-weight: 900;
+  color: #f7f9ff;
+  line-height: 1;
+}
+
+.storageSearchWrap {
+  display: flex;
+}
+
+.storageSearchInput {
+  width: 100%;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(129, 154, 255, 0.18);
+  background: linear-gradient(
+    180deg,
+    rgba(11, 20, 44, 0.92),
+    rgba(7, 14, 32, 0.96)
+  );
+  color: #f4f7ff;
+  padding: 0 14px;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.storageSearchInput::placeholder {
+  color: rgba(207, 220, 255, 0.5);
+}
+
+.storageSearchInput:focus {
+  border-color: rgba(255, 205, 124, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(255, 205, 124, 0.16),
+    0 0 16px rgba(84, 127, 245, 0.12);
+}
+
+.storageDivider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(136, 160, 255, 0.3),
+    transparent
+  );
+}
+
+.storageGridScroll {
+  flex: 1;
+  min-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.storageGridScroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.storageGridScroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
+
+.storageGridScroll::-webkit-scrollbar-thumb {
+  background: rgba(131, 154, 255, 0.3);
+  border-radius: 999px;
+}
+
+.storagePetGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.storagePetCard {
+  border: 1px solid rgba(128, 152, 255, 0.14);
+  border-radius: 14px;
+  padding: 12px;
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(70, 122, 255, 0.1),
       transparent 34%
     ),
     radial-gradient(
-      100% 90% at 80% 12%,
-      rgba(155, 89, 255, 0.1),
+      120% 120% at 86% 12%,
+      rgba(156, 92, 255, 0.08),
       transparent 30%
     ),
-    linear-gradient(180deg, rgba(15, 26, 52, 0.84), rgba(7, 15, 34, 0.9));
-  padding: 18px;
-}
-
-.storagePlaceholderTitle {
-  font-size: 16px;
-  font-weight: 900;
-  color: #f5f7ff;
-  margin-bottom: 8px;
-}
-
-.storagePlaceholderText {
-  font-size: 14px;
-  color: rgba(214, 225, 255, 0.82);
-  line-height: 1.5;
-}
-
-.smallBtn,
-.primaryBtn {
-  border-radius: 10px;
-  cursor: pointer;
+    linear-gradient(180deg, rgba(15, 26, 52, 0.9), rgba(7, 15, 34, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.12);
+  display: grid;
+  gap: 12px;
   transition:
     transform 0.16s ease,
     border-color 0.16s ease,
-    box-shadow 0.16s ease,
-    background 0.16s ease;
+    box-shadow 0.16s ease;
 }
 
-.smallBtn {
-  padding: 8px 12px;
-  border: 1px solid rgba(125, 150, 255, 0.22);
-  background: linear-gradient(
-    180deg,
-    rgba(37, 52, 90, 0.9),
-    rgba(18, 28, 56, 0.94)
-  );
-  color: #f2f6ff;
-}
-
-.smallBtn:hover {
+.storagePetCard:hover {
   transform: translateY(-1px);
-  border-color: rgba(167, 188, 255, 0.34);
+  border-color: rgba(170, 188, 255, 0.26);
 }
 
-.primaryBtn {
-  padding: 12px 14px;
-  border: 1px solid rgba(255, 190, 92, 0.32);
+.storagePetCard.isActivePet {
+  border-color: rgba(255, 209, 92, 0.34);
+  box-shadow:
+    0 0 0 1px rgba(255, 209, 92, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 18px rgba(255, 183, 68, 0.08);
+}
+
+.storagePetCard.tone-fire {
   background:
     radial-gradient(
-      120% 140% at 50% 0%,
-      rgba(255, 181, 73, 0.16),
+      130% 120% at 18% 10%,
+      rgba(255, 116, 74, 0.14),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(42, 24, 32, 0.92), rgba(18, 12, 22, 0.96));
+}
+
+.storagePetCard.tone-water {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(79, 165, 255, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(17, 29, 54, 0.92), rgba(8, 15, 33, 0.96));
+}
+
+.storagePetCard.tone-earth {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(126, 196, 95, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(24, 36, 24, 0.92), rgba(12, 21, 14, 0.96));
+}
+
+.storagePetCard.tone-air {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(208, 236, 255, 0.15),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(28, 34, 46, 0.92), rgba(12, 16, 24, 0.96));
+}
+
+.storagePetCard.tone-ice {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(135, 234, 255, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(19, 34, 48, 0.92), rgba(9, 16, 28, 0.96));
+}
+
+.storagePetCard.tone-storm {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(181, 131, 255, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(28, 20, 48, 0.92), rgba(12, 10, 28, 0.96));
+}
+
+.storagePetCard.tone-light {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(255, 224, 120, 0.17),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(46, 38, 22, 0.92), rgba(24, 19, 10, 0.96));
+}
+
+.storagePetCard.tone-shadow {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(206, 118, 255, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(31, 18, 46, 0.92), rgba(12, 8, 23, 0.96));
+}
+
+.storagePetCard.tone-null {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(180, 186, 204, 0.14),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(27, 29, 40, 0.92), rgba(14, 15, 21, 0.96));
+}
+
+.storagePetCard.tone-default {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(70, 122, 255, 0.1),
+      transparent 34%
+    ),
+    radial-gradient(
+      120% 120% at 86% 12%,
+      rgba(156, 92, 255, 0.08),
       transparent 30%
     ),
-    linear-gradient(180deg, rgba(57, 72, 114, 0.94), rgba(30, 40, 73, 0.98));
-  color: #fff5d7;
+    linear-gradient(180deg, rgba(15, 26, 52, 0.9), rgba(7, 15, 34, 0.94));
+}
+
+.storagePetTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.storagePetIdentity {
+  min-width: 0;
+}
+
+.storagePetName {
+  font-size: 15px;
   font-weight: 900;
-  letter-spacing: 0.02em;
-  box-shadow: 0 0 18px rgba(255, 173, 66, 0.08);
+  color: #f6f8ff;
+  line-height: 1.2;
 }
 
-.primaryBtn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: rgba(255, 205, 124, 0.48);
-}
-
-.primaryBtn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-/* ===== Hatch button size overrides ===== */
-
-.primaryBtn.hatchActionBtn {
-  display: block;
-  width: 120px;
-  max-width: 120px;
-  margin: 10px auto 0;
-  padding: 6px 10px;
+.storagePetMeta {
+  margin-top: 4px;
   font-size: 12px;
-  line-height: 1.2;
+  color: rgba(216, 227, 255, 0.78);
 }
 
-.primaryBtn.rackHatchBtn {
-  display: block;
-  width: 100%;
-  max-width: 110px;
-  margin: 8px auto 0;
-  padding: 6px 10px;
+.storageBadgeStack {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.storageStageBadge,
+.storageLocationBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.storageStageBadge {
+  border: 1px solid rgba(255, 212, 94, 0.24);
+  background: rgba(255, 212, 94, 0.08);
+  color: #ffe8a8;
+}
+
+.storageLocationBadge {
+  border: 1px solid rgba(129, 154, 255, 0.18);
+  background: rgba(129, 154, 255, 0.08);
+  color: #dfe8ff;
+}
+
+.storageLocationBadge.stored {
+  border-color: rgba(111, 229, 171, 0.2);
+  background: rgba(111, 229, 171, 0.08);
+  color: #bff6de;
+}
+
+.storagePetBody {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.storagePetOrb {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  border: 1px solid rgba(132, 157, 255, 0.16);
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.06),
+      transparent 28%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.storagePetOrbInner {
+  font-size: 22px;
+  font-weight: 900;
+  color: #f8fbff;
+}
+
+.storagePetLore {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(218, 227, 255, 0.8);
+}
+
+.storageActionRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.storageActionBtn {
+  min-height: 32px;
+  border-radius: 10px;
+  font-weight: 800;
   font-size: 11px;
-  line-height: 1.2;
 }
 
-/* ================================ */
-
-.muted {
-  opacity: 0.78;
+.storageBottomFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 2px;
+  border-top: 1px solid rgba(130, 156, 255, 0.1);
 }
 
-.hatcheryError {
-  padding-top: 10px;
+.storageFilterChip {
+  border: 1px solid rgba(130, 156, 255, 0.16);
+  border-radius: 999px;
+  min-height: 34px;
+  padding: 0 12px;
+  background: linear-gradient(
+    180deg,
+    rgba(26, 39, 72, 0.9),
+    rgba(12, 20, 42, 0.94)
+  );
+  color: #edf2ff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
-.eggElement-fire::before {
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 122, 69, 0.92),
-    0 0 12px rgba(255, 106, 48, 0.5),
-    0 0 22px rgba(255, 80, 40, 0.22);
+.storageFilterChip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(167, 188, 255, 0.28);
 }
 
-.eggElement-water::before {
-  box-shadow:
-    inset 0 0 0 1px rgba(74, 168, 255, 0.92),
-    0 0 12px rgba(74, 168, 255, 0.5),
-    0 0 22px rgba(50, 120, 255, 0.22);
+.storageFilterChip.active {
+  border-color: rgba(255, 204, 102, 0.34);
+  color: #fff1c5;
+  box-shadow: 0 0 0 1px rgba(255, 204, 102, 0.1);
 }
 
-.eggElement-earth::before {
-  box-shadow:
-    inset 0 0 0 1px rgba(134, 211, 95, 0.92),
-    0 0 12px rgba(118, 193, 80, 0.45),
-    0 0 22px rgba(83, 140, 52, 0.22);
+.storageFilterChip strong {
+  color: #ffd966;
+  font-weight: 900;
 }
 
-.eggElement-air::before {
-  box-shadow:
-    inset 0 0 0 1px rgba(202, 238, 255, 0.95),
-    0 0 12px rgba(194, 231, 255, 0.42),
-    0 0 22px rgba(131, 199, 255, 0.18);
+.storageEmptyState {
+  min-height: 260px;
+  border-radius: 14px;
+  border: 1px dashed rgba(130, 156, 255, 0.16);
+  background:
+    radial-gradient(
+      110% 100% at 20% 10%,
+      rgba(70, 120, 255, 0.08),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(15, 26, 52, 0.84), rgba(7, 15, 34, 0.9));
+  padding: 20px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
 }
 
-.eggElement-ice::before {
-  box-shadow:
-    inset 0 0 0 1px rgba(145, 235, 255, 0.95),
-    0 0 12px rgba(112, 224, 255, 0.45),
-    0 0 22px rgba(80, 177, 255, 0.18);
+.storageEmptyTitle {
+  font-size: 16px;
+  font-weight: 900;
+  color: #f6f8ff;
 }
 
-.eggElement-storm::before {
-  box-shadow:
-    inset 0 0 0 1px rgba(180, 132, 255, 0.95),
-    0 0 12px rgba(180, 132, 255, 0.46),
-    0 0 22px rgba(130, 85, 255, 0.22);
+.storageEmptyText {
+  margin-top: 6px;
+  max-width: 360px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(214, 225, 255, 0.8);
 }
 
-.eggElement-light::before {
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 229, 122, 0.95),
-    0 0 12px rgba(255, 225, 112, 0.45),
-    0 0 22px rgba(255, 188, 60, 0.18);
-}
-
-.eggElement-shadow::before {
-  box-shadow:
-    inset 0 0 0 1px rgba(212, 135, 255, 0.95),
-    0 0 12px rgba(186, 99, 255, 0.42),
-    0 0 22px rgba(110, 60, 220, 0.22);
-}
-
-.eggElement-null::before {
-  box-shadow:
-    inset 0 0 0 1px rgba(190, 190, 210, 0.9),
-    0 0 12px rgba(190, 190, 210, 0.34),
-    0 0 22px rgba(120, 120, 145, 0.18);
-}
-
-@keyframes eggBorderPulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 1;
-  }
+.storageErrorText {
+  color: #ffb4b4;
+  font-size: 12px;
 }
 
 @media (max-width: 1320px) {
-  .hatcheryWorkbenchLayout {
-    grid-template-columns: minmax(0, 1fr) 280px;
-    align-items: start;
+  .storageTopSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .storagePanel {
-    grid-column: 1 / -1;
-  }
-
-  .selectedEggPreviewArea {
-    height: 440px;
-    min-height: 440px;
-    max-height: 440px;
-  }
-
-  .storagePanelBody {
-    min-height: 440px;
-  }
-
-  .storagePlaceholder {
-    min-height: 390px;
-    height: auto;
+  .partyTeamGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 980px) {
-  .hatcheryWorkbenchLayout {
-    grid-template-columns: 1fr;
+  .hatcheryTopActions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
-  .selectedEggPreviewArea {
-    height: 360px;
-    min-height: 360px;
-    max-height: 360px;
+  .partyTeamGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .eggGridCompact {
-    grid-template-columns: 1fr;
+  .storageHeader {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .storagePanelBody,
-  .storagePlaceholder,
-  .selectedEggStatsInset,
-  .incubationInsetPanel {
-    min-height: auto;
-    height: auto;
-  }
-
-  .primaryBtn.hatchActionBtn,
-  .primaryBtn.rackHatchBtn {
-    max-width: 120px;
+  .storageHeaderMeta {
+    justify-items: start;
+    text-align: left;
+    min-width: 0;
   }
 }
 
 @media (max-width: 700px) {
-  .compactStatsGrid,
-  .itemsGrid {
+  .partyTeamGrid,
+  .storageTopSummary,
+  .storagePetGrid,
+  .storageActionRow {
     grid-template-columns: 1fr;
   }
 
-  .eggBigImg {
-    width: 120px;
-    height: 120px;
+  .storagePetBody {
+    grid-template-columns: 50px 1fr;
   }
 
-  .selectedPreviewEmptyTitle,
-  .selectedName {
-    font-size: 20px;
+  .storageGridScroll {
+    min-height: 340px;
+  }
+}
+.mainPartyInlineSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.storedPetsInlineSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  flex: 1;
+}
+
+.storedPetsSectionHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.storageSectionDivider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(136, 160, 255, 0.3),
+    transparent
+  );
+}
+
+.partyTeamGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.partySlotCard {
+  min-width: 0;
+  min-height: 160px;
+  border: 1px solid rgba(128, 152, 255, 0.16);
+  border-radius: 14px;
+  padding: 8px;
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.06),
+      transparent 28%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.partySlotCard.selected {
+  border-color: rgba(255, 204, 102, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(255, 204, 102, 0.12),
+    0 0 14px rgba(255, 178, 66, 0.08);
+}
+
+.partySlotSelectBtn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+}
+
+.partySlotNumber {
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(221, 231, 255, 0.82);
+}
+
+.partySlotPortrait {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  border: 1px solid rgba(132, 157, 255, 0.18);
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.05),
+      transparent 30%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.partySlotPortraitInner {
+  font-size: 28px;
+  font-weight: 900;
+  color: #f8fbff;
+  line-height: 1;
+}
+
+.partySlotName {
+  font-size: 12px;
+  font-weight: 900;
+  color: #f8fbff;
+  line-height: 1.1;
+}
+
+.partySlotSub {
+  font-size: 10px;
+  color: rgba(216, 227, 255, 0.8);
+  line-height: 1.2;
+}
+
+.partySlotActions {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+@media (max-width: 1320px) {
+  .partyTeamGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .partyTeamGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .partyTeamGrid {
+    grid-template-columns: 1fr;
   }
 }

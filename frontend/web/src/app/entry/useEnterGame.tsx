@@ -2,6 +2,12 @@ import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase/client";
 
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 /**
  * Centralized entry logic (single source of truth for Alpha):
  *
@@ -21,7 +27,9 @@ export function useEnterGame() {
     if (error) throw error;
 
     const token = data.session?.access_token;
-    if (!token) throw new Error("Missing access token");
+    if (!token) {
+      throw new Error("Missing access token");
+    }
 
     return token;
   }
@@ -30,22 +38,28 @@ export function useEnterGame() {
     setLoading(true);
 
     try {
-      // 1️⃣ Check auth
+      await sleep(150);
+
+      // 1) Check auth
       const { data, error: userErr } = await supabase.auth.getUser();
       if (userErr) throw userErr;
 
       if (!data.user) {
+        console.warn("[enterGame] no authenticated user, routing to /");
         navigate("/", { replace: true });
         return;
       }
 
-      // 2️⃣ Ask backend for authoritative state
+      // 2) Ask backend for authoritative state
       const token = await getAccessToken();
 
       const res = await fetch("/api/me/intro", {
+        method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
+        credentials: "include",
       });
 
       const payload = (await res.json().catch(() => ({}))) as {
@@ -54,27 +68,39 @@ export function useEnterGame() {
         error?: string;
       };
 
+      console.log("[enterGame] /api/me/intro status:", res.status);
+      console.log("[enterGame] /api/me/intro payload:", payload);
+
       if (!res.ok) {
         throw new Error(payload?.error ?? "Intro state check failed");
       }
 
-      const introSeen = !!payload.intro_seen;
-      const hasEgg = !!payload.has_hatchery_egg;
+      const introSeen = Boolean(payload.intro_seen);
+      const hasEgg = Boolean(payload.has_hatchery_egg);
 
-      // 3️⃣ Route
+      console.log("[enterGame] introSeen:", introSeen);
+      console.log("[enterGame] hasEgg:", hasEgg);
+
+      // 3) Route
       if (!introSeen) {
+        console.log("[enterGame] routing -> /create");
         navigate("/create", { replace: true });
         return;
       }
 
       if (hasEgg) {
+        console.log("[enterGame] routing -> /hatchery");
         navigate("/hatchery", { replace: true });
         return;
       }
 
+      console.log("[enterGame] routing -> /pet");
       navigate("/pet", { replace: true });
     } catch (err) {
-      console.error("enterGame failed:", err);
+      console.error("[enterGame] failed:", err);
+
+      // Do not silently dump them home with zero clue.
+      // Still route home, but now you'll know WHY in console.
       navigate("/", { replace: true });
     } finally {
       setLoading(false);

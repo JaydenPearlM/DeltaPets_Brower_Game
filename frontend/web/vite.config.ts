@@ -19,6 +19,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@shared": path.resolve(__dirname, "../../backend/server/src/shared"),
     },
   },
   server: {
@@ -30,6 +31,9 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+    },
+    fs: {
+      allow: [path.resolve(__dirname, "../..")],
     },
   },
 });

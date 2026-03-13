@@ -2,6 +2,12 @@
 
 import { Router } from "express";
 import type { Response } from "express";
+import {
+  rollStarter,
+  findStarterByName,
+  STARTER_SPROUTS,
+  getShadowSpeciesForPersonality,
+} from "./starters";
 
 import { applyHungerDecay } from "../../pets/hunger";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
@@ -10,12 +16,10 @@ import { cooldownsFromPetRow } from "../../pets/cooldowns";
 import { markRunawayIfNeeded } from "../../pets/runaway";
 // import { syncPetDerivedStats } from "../../pets/syncPetDerivedStats"; // <- do NOT use on hatch now
 
-// IV helpers
 import { rollIV, sumStats } from "../../lib/stats/individualValues";
 
 import type { EnsureEggBody, ElementalLine } from "./petsType";
 import { BASIC_EGG_HATCH_MINUTES, HATCH_ALLOCATION_POINTS } from "./petsType";
-import { rollStarter, findStarterByName, STARTER_SPROUTS } from "./starters";
 import {
   elementMapForLine,
   hatchPayload,
@@ -54,9 +58,51 @@ async function rollRandomPersonalityKey(): Promise<string> {
   return (data[idx] as any).key;
 }
 
-// -----------------------------
-// Routes
-// -----------------------------
+/**
+ * Assign a pet to the first open main party slot.
+ * Prefers slot 1 first, then 2, 3, 4, 5.
+ * Returns the assigned slot number, or null if party is full.
+ */
+async function assignPetToMainParty(userId: string, petId: string) {
+  const { data: existingRows, error: slotsError } = await supabaseAdmin
+    .from("party_slots")
+    .select("id, slot_index, pet_id")
+    .eq("user_id", userId)
+    .order("slot_index", { ascending: true });
+
+  if (slotsError) throw slotsError;
+
+  const rows = existingRows ?? [];
+
+  const alreadyAssigned = rows.find((row: any) => row.pet_id === petId);
+  if (alreadyAssigned) {
+    return Number(alreadyAssigned.slot_index);
+  }
+
+  const usedSlots = new Set<number>(
+    rows.map((row: any) => Number(row.slot_index)).filter(Number.isFinite),
+  );
+
+  const targetSlot =
+    [1, 2, 3, 4, 5].find((slot) => !usedSlots.has(slot)) ?? null;
+
+  if (!targetSlot) {
+    return null;
+  }
+
+  const { error: insertError } = await supabaseAdmin
+    .from("party_slots")
+    .insert({
+      user_id: userId,
+      slot_index: targetSlot,
+      pet_id: petId,
+    });
+
+  if (insertError) throw insertError;
+
+  return targetSlot;
+}
+
 petsRouter.get(
   "/active",
   requireUser,
@@ -78,7 +124,6 @@ petsRouter.get(
         });
       }
 
-      // Apply hunger decay first
       const decayedHunger = await applyHungerDecay(pet.id);
       const petWithDecay = { ...(pet as any), hunger: decayedHunger };
 
@@ -186,7 +231,6 @@ petsRouter.post(
       const serverNowMs = Date.now();
       const _body = (req.body ?? {}) as EnsureEggBody;
 
-      // If starter already exists (egg or hatched), return it.
       const existingStarter = await fetchStarterPetAnyStage(userId);
       if (existingStarter) {
         return res.json({
@@ -200,7 +244,6 @@ petsRouter.post(
         });
       }
 
-      // Existing "egg in progress" check
       const { pet: existingEgg } = await fetchHatcheryEgg(userId);
       if (existingEgg) {
         return res.json({
@@ -226,7 +269,6 @@ petsRouter.post(
           unspent_points: 0,
           is_active: false,
           gender: "null_gender",
-          // personality_key intentionally not set until hatch
         } as any)
         .select("*")
         .single();
@@ -256,7 +298,9 @@ petsRouter.post(
       const serverNowMs = Date.now();
 
       const { pet: egg } = await fetchHatcheryEgg(userId);
-      if (!egg) return res.status(404).json({ error: "No hatchery egg found" });
+      if (!egg) {
+        return res.status(404).json({ error: "No hatchery egg found" });
+      }
 
       const remaining = msUntil(egg.hatch_ends_at, serverNowMs);
       if (remaining > 0) {
@@ -266,13 +310,6 @@ petsRouter.post(
           hatch: hatchPayload(egg, serverNowMs),
         });
       }
-
-      // deactivate any active pets
-      await supabaseAdmin
-        .from("pets")
-        .update({ is_active: false } as any)
-        .eq("user_id", userId)
-        .eq("is_active", true);
 
       const baseRowMapped = await fetchBaseStatsMapped(egg.id);
       if (!baseRowMapped) {
@@ -288,12 +325,15 @@ petsRouter.post(
         .eq("pet_id", egg.id)
         .maybeSingle();
 
-      if (baseRawErr)
+      if (baseRawErr) {
         return res.status(500).json({ error: baseRawErr.message });
-      if (!baseRaw)
+      }
+
+      if (!baseRaw) {
         return res
           .status(500)
           .json({ error: "Missing pet_stats row after ensure." });
+      }
 
       const baseSum = sumBase5({
         base_hp: (baseRaw as any).base_hp,
@@ -319,7 +359,9 @@ petsRouter.post(
             } as any)
             .eq("pet_id", egg.id);
 
-          if (fixErr) return res.status(500).json({ error: fixErr.message });
+          if (fixErr) {
+            return res.status(500).json({ error: fixErr.message });
+          }
 
           (baseRaw as any).base_hp = starter.baseStats.hp;
           (baseRaw as any).base_atk = starter.baseStats.atk;
@@ -338,20 +380,11 @@ petsRouter.post(
         }
       }
 
-      // ---------------------------------------------
-      // HATCH BONUS (7 random points):
-      // - Base stats stay in pet_stats (sum=10)
-      // - Hatch bonus is NOT a "level allocation" (DB constraint = 1 per level)
-      // - We apply hatch bonus directly to the pet snapshot stats
-      // ---------------------------------------------
-
       const iv = rollIV(HATCH_ALLOCATION_POINTS);
       if (sumStats(iv) !== HATCH_ALLOCATION_POINTS) {
         throw new Error("IV generation failed integrity check");
       }
 
-      // ✅ Persist hatch IV as the Level 1 allocation so totals = base(10) + iv(7) = 17.
-      // fetchTotalPoints() reads pet_stat_allocations(level >= 1). Without this, UI shows 10 forever.
       const { error: ivUpsertErr } = await supabaseAdmin
         .from("pet_stat_allocations")
         .upsert(
@@ -392,25 +425,98 @@ petsRouter.post(
       const genderToSet = rollGender();
       const personalityKey = await rollRandomPersonalityKey();
 
+      let resolvedName = egg.name;
+
+      if ((egg.line ?? "").toLowerCase() === "shadow") {
+        const resolvedShadowStarter =
+          getShadowSpeciesForPersonality(personalityKey);
+        resolvedName = resolvedShadowStarter.name;
+      }
+
+      const isMysteryStarterHatch = Boolean(findStarterByName(egg.name));
+
+      let assignedPartySlot: number | null = null;
+      let postHatchDestination: string | null = null;
+      let storageResult: "party" | "storage" = "storage";
+
+      if (isMysteryStarterHatch) {
+        const { error: deactivateErr } = await supabaseAdmin
+          .from("pets")
+          .update({ is_active: false } as any)
+          .eq("user_id", userId)
+          .eq("is_active", true);
+
+        if (deactivateErr) {
+          return res.status(500).json({ error: deactivateErr.message });
+        }
+
+        const { data: hatched, error } = await supabaseAdmin
+          .from("pets")
+          .update({
+            name: resolvedName,
+            stage: "baby",
+            hatched_at: nowIso,
+            hatch_ends_at: null,
+            unspent_points: 0,
+            is_active: true,
+            location: "active",
+            gender: genderToSet,
+            personality_key: personalityKey,
+            atk: totalAtk,
+            def: totalDef,
+            spd: totalSpd,
+            magi: totalMagi,
+            mana: totalMana,
+            hp_max: hpMax,
+            hp_cur: hpMax,
+          } as any)
+          .eq("id", egg.id)
+          .eq("user_id", userId)
+          .select("*")
+          .single();
+
+        if (error) {
+          return res.status(500).json({ error: error.message });
+        }
+
+        assignedPartySlot = await assignPetToMainParty(userId, egg.id);
+        postHatchDestination = "/pet";
+        storageResult = "party";
+
+        const points = await fetchTotalPoints(egg.id);
+
+        return res.json({
+          server_now: nowIso,
+          pet: hatched,
+          awarded_points: HATCH_ALLOCATION_POINTS,
+          iv,
+          points,
+          gender: genderToSet,
+          personality_key: personalityKey,
+          party_slot_assigned: assignedPartySlot,
+          post_hatch_destination: postHatchDestination,
+          storage_result: storageResult,
+          is_mystery_starter_hatch: true,
+        });
+      }
+
       const { data: hatched, error } = await supabaseAdmin
         .from("pets")
         .update({
+          name: resolvedName,
           stage: "baby",
           hatched_at: nowIso,
           hatch_ends_at: null,
           unspent_points: 0,
-          is_active: true,
+          is_active: false,
+          location: "storage",
           gender: genderToSet,
           personality_key: personalityKey,
-
-          // snapshot stats (base + hatch bonus)
           atk: totalAtk,
           def: totalDef,
           spd: totalSpd,
           magi: totalMagi,
           mana: totalMana,
-
-          // derived hp
           hp_max: hpMax,
           hp_cur: hpMax,
         } as any)
@@ -419,10 +525,9 @@ petsRouter.post(
         .select("*")
         .single();
 
-      if (error) return res.status(500).json({ error: error.message });
-
-      // DO NOT call syncPetDerivedStats here (it would overwrite snapshot with base+alloc only)
-      // await syncPetDerivedStats(egg.id, { refillHp: true });
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
 
       const points = await fetchTotalPoints(egg.id);
 
@@ -434,6 +539,10 @@ petsRouter.post(
         points,
         gender: genderToSet,
         personality_key: personalityKey,
+        party_slot_assigned: null,
+        post_hatch_destination: null,
+        storage_result: "storage",
+        is_mystery_starter_hatch: false,
       });
     } catch (e: any) {
       return res.status(500).json({ error: e?.message ?? "Server error" });

@@ -12,7 +12,12 @@ export const meRouter = Router();
  */
 meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      console.error("[GET /api/me] missing req.user");
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     const [{ data: profile, error: pErr }, { data: pet, error: petErr }] =
       await Promise.all([
@@ -65,11 +70,15 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
           .maybeSingle(),
       ]);
 
-    // If your profiles table doesn't have intro_seen yet, don't blow up /me.
     if (pErr && !String(pErr.message).includes("intro_seen")) {
+      console.error("[GET /api/me] profile error:", pErr);
       return res.status(500).json({ error: pErr.message });
     }
-    if (petErr) return res.status(500).json({ error: petErr.message });
+
+    if (petErr) {
+      console.error("[GET /api/me] pet error:", petErr);
+      return res.status(500).json({ error: petErr.message });
+    }
 
     return res.json({
       user: req.user,
@@ -77,7 +86,11 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
       pet: pet ?? null,
     });
   } catch (e: any) {
-    return res.status(500).json({ error: e?.message ?? "Server error" });
+    console.error("[GET /api/me] crash:", e);
+    return res.status(500).json({
+      error: e?.message ?? "Server error",
+      details: String(e),
+    });
   }
 });
 
@@ -91,7 +104,12 @@ meRouter.get(
   requireUser,
   async (req: AuthedRequest, res: Response) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        console.error("[GET /api/me/intro] missing req.user");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
 
       const [{ data: profile, error: pErr }, { data: eggs, error: eErr }] =
         await Promise.all([
@@ -101,7 +119,6 @@ meRouter.get(
             .eq("user_id", userId)
             .maybeSingle(),
 
-          // "hatchery egg" = any pet row with stage = "egg"
           supabaseAdmin
             .from("pets")
             .select("id")
@@ -110,18 +127,36 @@ meRouter.get(
             .limit(1),
         ]);
 
-      // If the column doesn't exist yet, treat as false (until migration is applied).
-      const intro_seen = (profile as any)?.intro_seen ?? false;
-      const has_hatchery_egg = Array.isArray(eggs) && eggs.length > 0;
+      console.log("[GET /api/me/intro] userId:", userId);
+      console.log("[GET /api/me/intro] profile:", profile);
+      console.log("[GET /api/me/intro] profile error:", pErr);
+      console.log("[GET /api/me/intro] eggs:", eggs);
+      console.log("[GET /api/me/intro] egg error:", eErr);
 
       if (pErr && !String(pErr.message).includes("intro_seen")) {
+        console.error("[GET /api/me/intro] profile query failed:", pErr);
         return res.status(500).json({ error: pErr.message });
       }
-      if (eErr) return res.status(500).json({ error: eErr.message });
 
-      return res.json({ intro_seen, has_hatchery_egg });
+      if (eErr) {
+        console.error("[GET /api/me/intro] egg query failed:", eErr);
+        return res.status(500).json({ error: eErr.message });
+      }
+
+      const intro_seen =
+        (profile as { intro_seen?: boolean } | null)?.intro_seen ?? false;
+      const has_hatchery_egg = Array.isArray(eggs) && eggs.length > 0;
+
+      return res.json({
+        intro_seen,
+        has_hatchery_egg,
+      });
     } catch (e: any) {
-      return res.status(500).json({ error: e?.message ?? "Server error" });
+      console.error("[GET /api/me/intro] crash:", e);
+      return res.status(500).json({
+        error: e?.message ?? "Server error",
+        details: String(e),
+      });
     }
   },
 );
@@ -135,9 +170,13 @@ meRouter.post(
   requireUser,
   async (req: AuthedRequest, res: Response) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.user?.id;
 
-      // Upsert so brand new accounts (no profile row yet) still work.
+      if (!userId) {
+        console.error("[POST /api/me/intro/seen] missing req.user");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
       const { data, error } = await supabaseAdmin
         .from("profiles")
         .upsert(
@@ -147,19 +186,29 @@ meRouter.post(
         .select("intro_seen")
         .maybeSingle();
 
-      // If the column doesn't exist yet, just return ok so the frontend can proceed.
       if (error && String(error.message).includes("intro_seen")) {
+        console.warn("[POST /api/me/intro/seen] intro_seen column missing");
         return res.json({
           intro_seen: true,
           note: "intro_seen column missing",
         });
       }
 
-      if (error) return res.status(500).json({ error: error.message });
+      if (error) {
+        console.error("[POST /api/me/intro/seen] upsert failed:", error);
+        return res.status(500).json({ error: error.message });
+      }
 
-      return res.json({ intro_seen: (data as any)?.intro_seen ?? true });
+      return res.json({
+        intro_seen:
+          (data as { intro_seen?: boolean } | null)?.intro_seen ?? true,
+      });
     } catch (e: any) {
-      return res.status(500).json({ error: e?.message ?? "Server error" });
+      console.error("[POST /api/me/intro/seen] crash:", e);
+      return res.status(500).json({
+        error: e?.message ?? "Server error",
+        details: String(e),
+      });
     }
   },
 );
