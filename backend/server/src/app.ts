@@ -1,10 +1,10 @@
 import express from "express";
-import { apiRouter } from "./routes/api";
+import apiRouter from "./routes";
 import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
-import { careRouter } from "./routes/care/care";
 
 export function createApp() {
   const app = express();
+
   app.disable("x-powered-by");
 
   // Important for correct req.ip behind proxies (Render/Cloudflare/etc)
@@ -13,14 +13,12 @@ export function createApp() {
   // Basic request shaping (avoid huge payload spam)
   app.use(express.json({ limit: "100kb" }));
 
-  app.use("/api/care", careRouter);
-
   app.get("/", (_req, res) => {
-    res.type("text").send("DeltaPets Backend \nTry GET /api/health");
+    res.type("text").send("DeltaPets Backend\nTry GET /api/health");
   });
 
-  // Rate limiting + request shaping applied to ALL /api routes
-  // NOTE: apiRouter is the *single* place that mounts sub-routers (pets, dailies, etc).
+  // Single API mount point.
+  // apiRouter should be the only place that mounts sub-routers.
   app.use("/api", apiLimiter, apiSpeedLimiter, apiRouter);
 
   app.use((req, res) => {

@@ -1,5 +1,5 @@
 // frontend/web/src/app/App.tsx
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { UIProvider } from "./providers/UIProvider";
 import { useAuth } from "./providers/useAuth";
 import { InventoryOverlay } from "../components/inventory/inventoryOverlay";
@@ -13,20 +13,38 @@ export default function App() {
   const auth = useAuth();
   const isLoggedIn = Boolean(auth.user);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isHatcheryRoute =
+    location.pathname === "/hatchery" ||
+    location.pathname.startsWith("/hatchery/");
+
+  const showBackToPets = isLoggedIn && isHatcheryRoute;
+
   return (
     <UIProvider>
       <div className="dp-viewport">
         <div className="dp-stage">
           <header className="dp-stageHeader dp-stageHeader--appFix">
             {/* LEFT */}
-            <div className="dp-headerLeft">
+            <div className="dp-headerLeft dp-headerLeft--withTitle">
               <div className="dp-alphaBadge" title={__APP_VERSION__}>
                 <span className="dp-alphaBadgeLabel">ALPHA</span>
                 <span className="dp-alphaBadgeVer">v{__APP_VERSION__}</span>
               </div>
+
+              {isHatcheryRoute ? (
+                <div
+                  className="dp-sectionTitle"
+                  aria-label="Current section: Hatchery"
+                >
+                  Hatchery
+                </div>
+              ) : null}
             </div>
 
-            {/* CENTER (force true center via App.css) */}
+            {/* CENTER */}
             <div
               className="dp-headerCenterTagline dp-headerCenterTagline--appFix"
               aria-hidden
@@ -39,7 +57,23 @@ export default function App() {
 
             {/* RIGHT */}
             <div className="dp-headerRight dp-headerRight--auth">
-              {isLoggedIn ? <LogoutButton /> : <LoginMenus />}
+              {isLoggedIn ? (
+                <>
+                  {showBackToPets ? (
+                    <button
+                      type="button"
+                      className="btn btn-yellow"
+                      onClick={() => navigate("/pet")}
+                    >
+                      Back to Pets
+                    </button>
+                  ) : null}
+
+                  <LogoutButton />
+                </>
+              ) : (
+                <LoginMenus />
+              )}
             </div>
           </header>
 

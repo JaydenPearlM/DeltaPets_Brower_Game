@@ -15,7 +15,7 @@ export type EnsureEggBody = {
   line?: string; // ignored for now, kept for compatibility
 };
 
-export const BASIC_EGG_HATCH_MINUTES = 5;
+export const BASIC_EGG_HATCH_MINUTES = 2;
 export const HATCH_ALLOCATION_POINTS = 7;
 
 export type BaseStatsTemplate = {

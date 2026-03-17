@@ -22,35 +22,46 @@ export function useEnterGame() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  async function getAccessToken() {
+  const getAccessToken = useCallback(async () => {
     const { data, error } = await supabase.auth.getSession();
-    if (error) throw error;
+
+    if (error) {
+      throw new Error(error.message || "Failed to get session");
+    }
 
     const token = data.session?.access_token;
+
     if (!token) {
-      throw new Error("Missing access token");
+      throw new Error("Missing bearer token");
     }
 
     return token;
-  }
+  }, []);
 
   const enterGame = useCallback(async () => {
     setLoading(true);
 
     try {
+      // Small delay helps right after login/signup while session finishes hydrating.
       await sleep(150);
 
       // 1) Check auth
-      const { data, error: userErr } = await supabase.auth.getUser();
-      if (userErr) throw userErr;
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      if (!data.user) {
+      if (userError) {
+        throw new Error(userError.message || "Failed to load user");
+      }
+
+      if (!user) {
         console.warn("[enterGame] no authenticated user, routing to /");
         navigate("/", { replace: true });
         return;
       }
 
-      // 2) Ask backend for authoritative state
+      // 2) Ask backend for authoritative routing state
       const token = await getAccessToken();
 
       const res = await fetch("/api/me/intro", {
@@ -59,13 +70,13 @@ export function useEnterGame() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        credentials: "include",
       });
 
       const payload = (await res.json().catch(() => ({}))) as {
         intro_seen?: boolean;
         has_hatchery_egg?: boolean;
         error?: string;
+        details?: string;
       };
 
       console.log("[enterGame] /api/me/intro status:", res.status);
@@ -98,14 +109,12 @@ export function useEnterGame() {
       navigate("/pet", { replace: true });
     } catch (err) {
       console.error("[enterGame] failed:", err);
-
-      // Do not silently dump them home with zero clue.
-      // Still route home, but now you'll know WHY in console.
       navigate("/", { replace: true });
+      throw err;
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, [getAccessToken, navigate]);
 
   return { loading, enterGame };
 }

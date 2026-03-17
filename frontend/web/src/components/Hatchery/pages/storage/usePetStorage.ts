@@ -21,6 +21,15 @@ export type StoragePet = {
   is_active: boolean | null;
   created_at: string | null;
   hatched_at: string | null;
+  hatch_ends_at?: string | null;
+
+  hp?: number | null;
+  atk?: number | null;
+  magi?: number | null;
+  def?: number | null;
+  spd?: number | null;
+  mana?: number | null;
+  base_total?: number | null;
 };
 
 type PartySlotRow = {
@@ -41,6 +50,11 @@ type UsePetStorageOptions = {
   userId?: string;
 };
 
+export const PARTY_SLOT_COUNT = 5;
+const STORAGE_TOTAL_CAP = 50;
+const STORAGE_EGG_CAP = 20;
+const STORAGE_PET_CAP = 30;
+
 function normalizeStageInternal(stage?: string | null): StorageStageFilter {
   const raw = String(stage ?? "")
     .trim()
@@ -48,7 +62,7 @@ function normalizeStageInternal(stage?: string | null): StorageStageFilter {
 
   if (raw === "egg") return "egg";
   if (raw === "baby") return "baby";
-  if (raw === "toddler" || raw === "child") return "child";
+  if (raw === "child") return "child";
   if (raw === "teen" || raw === "adult") return "adult";
   if (raw === "legion") return "legion";
   if (
@@ -135,7 +149,28 @@ export function usePetStorage(options: UsePetStorageOptions) {
       supabase
         .from("pets")
         .select(
-          "id,user_id,name,stage,line,level,location,is_active,created_at,hatched_at",
+          `
+            id,
+            user_id,
+            name,
+            stage,
+            line,
+            level,
+            location,
+            is_active,
+            created_at,
+            hatched_at,
+            hatch_ends_at,
+            pet_stats (
+              base_hp,
+              base_atk,
+              base_magi,
+              base_def,
+              base_spd,
+              base_mana,
+              base_total
+            )
+          `,
         )
         .eq("user_id", userId)
         .order("created_at", { ascending: true }),
@@ -159,7 +194,36 @@ export function usePetStorage(options: UsePetStorageOptions) {
       return;
     }
 
-    setPets((petsResult.data ?? []) as StoragePet[]);
+    const normalizedPets: StoragePet[] = ((petsResult.data ?? []) as any[]).map(
+      (pet) => {
+        const stats = Array.isArray(pet.pet_stats)
+          ? (pet.pet_stats[0] ?? null)
+          : (pet.pet_stats ?? null);
+
+        return {
+          id: pet.id,
+          user_id: pet.user_id,
+          name: pet.name,
+          stage: pet.stage,
+          line: pet.line,
+          level: pet.level,
+          location: pet.location,
+          is_active: pet.is_active,
+          created_at: pet.created_at,
+          hatched_at: pet.hatched_at,
+          hatch_ends_at: pet.hatch_ends_at,
+          hp: stats?.base_hp ?? null,
+          atk: stats?.base_atk ?? null,
+          magi: stats?.base_magi ?? null,
+          def: stats?.base_def ?? null,
+          spd: stats?.base_spd ?? null,
+          mana: stats?.base_mana ?? null,
+          base_total: stats?.base_total ?? null,
+        };
+      },
+    );
+
+    setPets(normalizedPets);
     setPartyRows((partyResult.data ?? []) as PartySlotRow[]);
     setLoading(false);
   }, [userId]);
@@ -170,7 +234,9 @@ export function usePetStorage(options: UsePetStorageOptions) {
 
   const petsById = useMemo(() => {
     const map = new Map<string, StoragePet>();
-    for (const pet of pets) map.set(pet.id, pet);
+    for (const pet of pets) {
+      map.set(pet.id, pet);
+    }
     return map;
   }, [pets]);
 
@@ -180,9 +246,12 @@ export function usePetStorage(options: UsePetStorageOptions) {
 
   const partySlots = useMemo<PartySlotView[]>(() => {
     const rowsByIndex = new Map<number, PartySlotRow>();
-    for (const row of partyRows) rowsByIndex.set(row.slot_index, row);
 
-    return Array.from({ length: 5 }, (_, idx) => {
+    for (const row of partyRows) {
+      rowsByIndex.set(row.slot_index, row);
+    }
+
+    return Array.from({ length: PARTY_SLOT_COUNT }, (_, idx) => {
       const slotIndex = idx + 1;
       const row = rowsByIndex.get(slotIndex) ?? null;
       const pet = row ? (petsById.get(row.pet_id) ?? null) : null;
@@ -201,12 +270,33 @@ export function usePetStorage(options: UsePetStorageOptions) {
     return empty?.slotIndex ?? null;
   }, [partySlots]);
 
-  const boxPets = useMemo(() => {
+  const storedPets = useMemo(() => {
     return pets
-      .filter((pet) => pet.location === "storage" || pet.location === "active")
-      .filter((pet) => !partyPetIds.has(pet.id))
+      .filter((pet) => {
+        if (pet.location === "storage") return true;
+        if (pet.location === "active" && !partyPetIds.has(pet.id)) return true;
+        return false;
+      })
       .sort(sortPetsNewestFirst);
   }, [pets, partyPetIds]);
+
+  const incubatingEggs = useMemo(() => {
+    return pets
+      .filter((pet) => pet.location === "hatchery")
+      .filter((pet) => isEggStage(pet.stage))
+      .sort(sortPetsNewestFirst);
+  }, [pets]);
+
+  const storageCounts = useMemo(() => {
+    const eggs = storedPets.filter((pet) => isEggStage(pet.stage)).length;
+    const nonEggs = storedPets.filter((pet) => !isEggStage(pet.stage)).length;
+
+    return {
+      total: storedPets.length,
+      eggs,
+      pets: nonEggs,
+    };
+  }, [storedPets]);
 
   const counts = useMemo(() => {
     const base = {
@@ -219,14 +309,38 @@ export function usePetStorage(options: UsePetStorageOptions) {
       mythical: 0,
     } satisfies Record<StorageStageFilter, number>;
 
-    for (const pet of boxPets) {
+    for (const pet of storedPets) {
       base.all += 1;
       const bucket = normalizeStageInternal(pet.stage);
       base[bucket] += 1;
     }
 
     return base;
-  }, [boxPets]);
+  }, [storedPets]);
+
+  function assertCanStorePet(pet: StoragePet) {
+    const nextTotal = storageCounts.total + 1;
+    const nextEggs = storageCounts.eggs + (isEggStage(pet.stage) ? 1 : 0);
+    const nextPets = storageCounts.pets + (isEggStage(pet.stage) ? 0 : 1);
+
+    if (nextTotal > STORAGE_TOTAL_CAP) {
+      throw new Error(
+        `Storage is full. Max ${STORAGE_TOTAL_CAP} stored creatures.`,
+      );
+    }
+
+    if (isEggStage(pet.stage) && nextEggs > STORAGE_EGG_CAP) {
+      throw new Error(
+        `Egg storage is full. Max ${STORAGE_EGG_CAP} stored eggs.`,
+      );
+    }
+
+    if (!isEggStage(pet.stage) && nextPets > STORAGE_PET_CAP) {
+      throw new Error(
+        `Pet storage is full. Max ${STORAGE_PET_CAP} stored pets.`,
+      );
+    }
+  }
 
   async function setOnlyActivePet(nextPetId: string | null) {
     if (!userId) throw new Error("Missing user.");
@@ -279,26 +393,14 @@ export function usePetStorage(options: UsePetStorageOptions) {
       if (isUsableActivePet(pet)) return row.pet_id;
     }
 
-    const outPets = pets
+    const storedUsablePets = pets
       .filter((pet) => !excludePetIds.has(pet.id))
-      .filter((pet) => !effectivePartyRows.some((row) => row.pet_id === pet.id))
-      .filter((pet) => pet.location === "active")
-      .filter(isUsableActivePet)
-      .sort(sortPetsNewestFirst);
-
-    if (outPets.length > 0) {
-      return outPets[0].id;
-    }
-
-    const storedPets = pets
-      .filter((pet) => !excludePetIds.has(pet.id))
-      .filter((pet) => !effectivePartyRows.some((row) => row.pet_id === pet.id))
       .filter((pet) => pet.location === "storage")
       .filter(isUsableActivePet)
       .sort(sortPetsNewestFirst);
 
-    if (storedPets.length > 0) {
-      return storedPets[0].id;
+    if (storedUsablePets.length > 0) {
+      return storedUsablePets[0].id;
     }
 
     return null;
@@ -330,50 +432,143 @@ export function usePetStorage(options: UsePetStorageOptions) {
     async (petId: string, slotIndex: number) => {
       await runMutation({ petId, slotIndex }, async () => {
         if (!userId) throw new Error("Missing user.");
-        if (slotIndex < 1 || slotIndex > 5) {
-          throw new Error("Party slot must be between 1 and 5.");
+        if (slotIndex < 1 || slotIndex > PARTY_SLOT_COUNT) {
+          throw new Error(
+            `Party slot must be between 1 and ${PARTY_SLOT_COUNT}.`,
+          );
         }
 
-        const pet = pets.find((entry) => entry.id === petId);
+        const pet = pets.find((entry) => entry.id === petId) ?? null;
         if (!pet) throw new Error("Pet not found.");
         if (isEggStage(pet.stage)) {
-          throw new Error("Eggs cannot join the party team.");
+          throw new Error("Eggs cannot join the Main Team.");
         }
 
-        const currentActivePet = pets.find((entry) => entry.is_active) ?? null;
-        const currentSlotForPet = partyRows.find((row) => row.pet_id === petId);
+        const currentSlotForPet =
+          partyRows.find((row) => row.pet_id === petId) ?? null;
         const currentOccupant =
           partyRows.find((row) => row.slot_index === slotIndex) ?? null;
+        const currentActivePet = pets.find((entry) => entry.is_active) ?? null;
 
-        if (currentSlotForPet) {
-          const { error } = await supabase
-            .from("party_slots")
-            .delete()
+        if (currentSlotForPet?.slot_index === slotIndex) {
+          const { error: updatePetError } = await supabase
+            .from("pets")
+            .update({ location: "active" })
             .eq("user_id", userId)
-            .eq("pet_id", petId);
+            .eq("id", petId);
 
-          if (error) throw error;
+          if (updatePetError) throw updatePetError;
+          return;
         }
 
-        if (currentOccupant && currentOccupant.pet_id !== petId) {
-          const { error: removeSlotError } = await supabase
+        if (currentSlotForPet && currentOccupant) {
+          const { error: deleteRowsError } = await supabase
             .from("party_slots")
             .delete()
             .eq("user_id", userId)
-            .eq("slot_index", slotIndex);
+            .in("id", [currentSlotForPet.id, currentOccupant.id]);
 
-          if (removeSlotError) throw removeSlotError;
+          if (deleteRowsError) throw deleteRowsError;
 
-          const { error: returnOldPetError } = await supabase
+          const { error: insertSwapError } = await supabase
+            .from("party_slots")
+            .insert([
+              {
+                user_id: userId,
+                slot_index: slotIndex,
+                pet_id: petId,
+              },
+              {
+                user_id: userId,
+                slot_index: currentSlotForPet.slot_index,
+                pet_id: currentOccupant.pet_id,
+              },
+            ]);
+
+          if (insertSwapError) throw insertSwapError;
+
+          const { error: updatePetError } = await supabase
+            .from("pets")
+            .update({ location: "active" })
+            .eq("user_id", userId)
+            .in("id", [petId, currentOccupant.pet_id]);
+
+          if (updatePetError) throw updatePetError;
+
+          return;
+        }
+
+        if (currentSlotForPet && !currentOccupant) {
+          const { error: moveError } = await supabase
+            .from("party_slots")
+            .update({ slot_index: slotIndex })
+            .eq("user_id", userId)
+            .eq("id", currentSlotForPet.id);
+
+          if (moveError) throw moveError;
+
+          const { error: updatePetError } = await supabase
+            .from("pets")
+            .update({ location: "active" })
+            .eq("user_id", userId)
+            .eq("id", petId);
+
+          if (updatePetError) throw updatePetError;
+
+          return;
+        }
+
+        if (!currentSlotForPet && currentOccupant) {
+          const displacedPet = petsById.get(currentOccupant.pet_id) ?? null;
+          if (!displacedPet) throw new Error("Target slot pet not found.");
+
+          assertCanStorePet(displacedPet);
+
+          const { error: deleteTargetError } = await supabase
+            .from("party_slots")
+            .delete()
+            .eq("user_id", userId)
+            .eq("id", currentOccupant.id);
+
+          if (deleteTargetError) throw deleteTargetError;
+
+          const { error: insertNewError } = await supabase
+            .from("party_slots")
+            .insert({
+              user_id: userId,
+              slot_index: slotIndex,
+              pet_id: petId,
+            });
+
+          if (insertNewError) throw insertNewError;
+
+          const { error: petLocationError } = await supabase
+            .from("pets")
+            .update({ location: "active" })
+            .eq("user_id", userId)
+            .eq("id", petId);
+
+          if (petLocationError) throw petLocationError;
+
+          const { error: displacedStoreError } = await supabase
             .from("pets")
             .update({
               location: "storage",
               is_active: false,
             })
             .eq("user_id", userId)
-            .eq("id", currentOccupant.pet_id);
+            .eq("id", displacedPet.id);
 
-          if (returnOldPetError) throw returnOldPetError;
+          if (displacedStoreError) throw displacedStoreError;
+
+          const shouldPromoteNewPet =
+            !currentActivePet || currentActivePet.id === displacedPet.id;
+
+          if (shouldPromoteNewPet) {
+            await setOnlyActivePet(petId);
+          }
+
+          return;
         }
 
         const { error: insertError } = await supabase
@@ -396,17 +591,12 @@ export function usePetStorage(options: UsePetStorageOptions) {
 
         if (activateLocationError) throw activateLocationError;
 
-        const shouldBecomeActive =
-          !currentActivePet ||
-          currentActivePet.id === petId ||
-          currentOccupant?.pet_id === currentActivePet.id;
-
-        if (shouldBecomeActive) {
+        if (!currentActivePet) {
           await setOnlyActivePet(petId);
         }
       });
     },
-    [partyRows, pets, userId],
+    [partyRows, pets, petsById, storageCounts, userId],
   );
 
   const returnPartyPetToStorage = useCallback(
@@ -415,11 +605,18 @@ export function usePetStorage(options: UsePetStorageOptions) {
         if (!userId) throw new Error("Missing user.");
 
         const slot = partySlots.find((entry) => entry.slotIndex === slotIndex);
-        if (!slot?.petId) return;
+        if (!slot?.petId || !slot.pet) return;
 
-        const pet = petsById.get(slot.petId) ?? null;
-        const wasActive = Boolean(pet?.is_active);
+        const filledPartyCount = partySlots.filter(
+          (entry) => entry.petId,
+        ).length;
+        if (filledPartyCount <= 1) {
+          throw new Error("Your Main Team must always keep at least 1 Delta.");
+        }
 
+        assertCanStorePet(slot.pet);
+
+        const wasActive = Boolean(slot.pet.is_active);
         const nextPartyRows = partyRows.filter(
           (row) => row.slot_index !== slotIndex,
         );
@@ -452,7 +649,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
         }
       });
     },
-    [partyRows, partySlots, petsById, userId],
+    [partyRows, partySlots, userId],
   );
 
   const setActivePet = useCallback(
@@ -460,10 +657,10 @@ export function usePetStorage(options: UsePetStorageOptions) {
       await runMutation({ petId }, async () => {
         if (!userId) throw new Error("Missing user.");
 
-        const pet = pets.find((entry) => entry.id === petId);
+        const pet = pets.find((entry) => entry.id === petId) ?? null;
         if (!pet) throw new Error("Pet not found.");
         if (isEggStage(pet.stage)) {
-          throw new Error("Eggs cannot become the active pet.");
+          throw new Error("Eggs cannot become the active Delta.");
         }
 
         await setOnlyActivePet(petId);
@@ -472,24 +669,73 @@ export function usePetStorage(options: UsePetStorageOptions) {
     [pets, userId],
   );
 
-  const bringOutPet = useCallback(
+  const moveEggToIncubator = useCallback(
     async (petId: string) => {
       await runMutation({ petId }, async () => {
         if (!userId) throw new Error("Missing user.");
 
+        const pet = pets.find((entry) => entry.id === petId) ?? null;
+        if (!pet) throw new Error("Pet not found.");
+        if (!isEggStage(pet.stage)) {
+          throw new Error("Only eggs can go into the incubator.");
+        }
+
+        const existingIncubatingEgg = pets.find(
+          (entry) =>
+            entry.location === "hatchery" &&
+            isEggStage(entry.stage) &&
+            entry.id !== petId,
+        );
+
+        if (existingIncubatingEgg) {
+          throw new Error(
+            "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
+          );
+        }
+
         const { error } = await supabase
           .from("pets")
           .update({
-            location: "active",
+            location: "hatchery",
             is_active: false,
           })
-          .eq("id", petId)
-          .eq("user_id", userId);
+          .eq("user_id", userId)
+          .eq("id", petId);
 
         if (error) throw error;
       });
     },
-    [userId],
+    [pets, userId],
+  );
+
+  const moveEggToStorage = useCallback(
+    async (petId: string) => {
+      await runMutation({ petId }, async () => {
+        if (!userId) throw new Error("Missing user.");
+
+        const pet = pets.find((entry) => entry.id === petId) ?? null;
+        if (!pet) throw new Error("Pet not found.");
+        if (!isEggStage(pet.stage)) {
+          throw new Error(
+            "Only eggs can be sent from the incubator back to storage.",
+          );
+        }
+
+        assertCanStorePet(pet);
+
+        const { error } = await supabase
+          .from("pets")
+          .update({
+            location: "storage",
+            is_active: false,
+          })
+          .eq("user_id", userId)
+          .eq("id", petId);
+
+        if (error) throw error;
+      });
+    },
+    [pets, storageCounts, userId],
   );
 
   const storePet = useCallback(
@@ -498,9 +744,23 @@ export function usePetStorage(options: UsePetStorageOptions) {
         if (!userId) throw new Error("Missing user.");
 
         const pet = pets.find((entry) => entry.id === petId) ?? null;
-        const wasActive = Boolean(pet?.is_active);
+        if (!pet) throw new Error("Pet not found.");
 
         const existingPartyRow = partyRows.find((row) => row.pet_id === petId);
+        if (existingPartyRow) {
+          const filledPartyCount = partySlots.filter(
+            (entry) => entry.petId,
+          ).length;
+          if (filledPartyCount <= 1) {
+            throw new Error(
+              "Your Main Team must always keep at least 1 Delta.",
+            );
+          }
+        }
+
+        assertCanStorePet(pet);
+
+        const wasActive = Boolean(pet.is_active);
         const nextPartyRows = partyRows.filter((row) => row.pet_id !== petId);
 
         if (existingPartyRow) {
@@ -533,11 +793,12 @@ export function usePetStorage(options: UsePetStorageOptions) {
         }
       });
     },
-    [partyRows, pets, userId],
+    [partyRows, partySlots, pets, userId],
   );
 
   return {
-    pets: boxPets,
+    pets: storedPets,
+    allPets: pets,
     partySlots,
     firstEmptyPartySlot,
     counts,
@@ -545,12 +806,21 @@ export function usePetStorage(options: UsePetStorageOptions) {
     error,
     workingPetId,
     workingSlotIndex,
+    storageCounts,
+    incubatingEggs,
     reload: loadAll,
     assignPetToParty,
     returnPartyPetToStorage,
     storePet,
-    bringOutPet,
     setActivePet,
+    moveEggToIncubator,
+    moveEggToStorage,
     normalizeStage: normalizeStageInternal,
+    caps: {
+      total: STORAGE_TOTAL_CAP,
+      eggs: STORAGE_EGG_CAP,
+      pets: STORAGE_PET_CAP,
+      party: PARTY_SLOT_COUNT,
+    },
   };
 }

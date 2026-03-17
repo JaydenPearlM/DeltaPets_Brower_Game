@@ -1,4 +1,5 @@
 // backend/src/routes/me.ts
+
 import { Router } from "express";
 import type { Response } from "express";
 import { requireUser, type AuthedRequest } from "../middleware/auth";
@@ -70,7 +71,8 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
           .maybeSingle(),
       ]);
 
-    if (pErr && !String(pErr.message).includes("intro_seen")) {
+    // Allow missing intro_seen column without crashing the route.
+    if (pErr && !String(pErr.message ?? "").includes("intro_seen")) {
       console.error("[GET /api/me] profile error:", pErr);
       return res.status(500).json({ error: pErr.message });
     }
@@ -127,13 +129,7 @@ meRouter.get(
             .limit(1),
         ]);
 
-      console.log("[GET /api/me/intro] userId:", userId);
-      console.log("[GET /api/me/intro] profile:", profile);
-      console.log("[GET /api/me/intro] profile error:", pErr);
-      console.log("[GET /api/me/intro] eggs:", eggs);
-      console.log("[GET /api/me/intro] egg error:", eErr);
-
-      if (pErr && !String(pErr.message).includes("intro_seen")) {
+      if (pErr && !String(pErr.message ?? "").includes("intro_seen")) {
         console.error("[GET /api/me/intro] profile query failed:", pErr);
         return res.status(500).json({ error: pErr.message });
       }
@@ -186,7 +182,7 @@ meRouter.post(
         .select("intro_seen")
         .maybeSingle();
 
-      if (error && String(error.message).includes("intro_seen")) {
+      if (error && String(error.message ?? "").includes("intro_seen")) {
         console.warn("[POST /api/me/intro/seen] intro_seen column missing");
         return res.json({
           intro_seen: true,
@@ -212,3 +208,5 @@ meRouter.post(
     }
   },
 );
+
+export default meRouter;

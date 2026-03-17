@@ -8,6 +8,7 @@ import { useNow } from "../../../lib/timers/useNow";
 import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 
 import goldEggPng from "../../../Pets_Creation/assets/eggs/goldEgg.png";
+import { PetStoragePanel } from "./storage/PetStoragePanel";
 import "./HatcheryPage.css";
 
 const MYSTERY_EGG = {
@@ -40,8 +41,34 @@ type PetElementsRow = {
   shadow: number;
 };
 
+type HatcherySlotResponse = {
+  id: string;
+  slot_index: number;
+  unlocked: boolean;
+  pet: {
+    id: string;
+    name?: string | null;
+    stage?: string | null;
+    line?: string | null;
+  } | null;
+  hatch: {
+    ready: boolean;
+    hatch_ends_at: string | null;
+    hatch_remaining_ms: number;
+  } | null;
+};
+
+type HatcheryShelfSlotResponse = {
+  id: string;
+  slot_index: number;
+  unlocked: boolean;
+  item_key: string | null;
+};
+
 type HatcheryResponse = {
   server_now: string;
+  slots?: HatcherySlotResponse[];
+  shelf_slots?: HatcheryShelfSlotResponse[];
   pet: {
     id: string;
     name?: string | null;
@@ -91,6 +118,13 @@ type HatchSlot = {
   egg?: HatchEgg;
 };
 
+type ShelfSlot = {
+  id: string;
+  index: number;
+  locked: boolean;
+  itemKey: string | null;
+};
+
 const EMPTY_STATS: PetStatsRow = {
   pet_id: "",
   hp: 0,
@@ -110,6 +144,154 @@ const STAT_ROWS = [
   { key: "spd", label: "SPD" },
   { key: "mana", label: "MANA" },
 ] as const;
+
+type EggStatKey = (typeof STAT_ROWS)[number]["key"];
+
+type EggGrowthTraits = {
+  strongStats: EggStatKey[];
+  weakStat: EggStatKey | null;
+  flavorText: string;
+};
+
+const STAT_KEYS: EggStatKey[] = STAT_ROWS.map((row) => row.key);
+
+const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
+  hp: "vitality",
+  atk: "ferocity",
+  magi: "mystic power",
+  def: "resilience",
+  spd: "speed",
+  mana: "arcane flow",
+};
+
+function hashString(input: string): number {
+  let hash = 2166136261;
+
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return hash >>> 0;
+}
+
+function mulberry32(seed: number) {
+  let t = seed >>> 0;
+
+  return function next() {
+    t += 0x6d2b79f5;
+    let n = Math.imul(t ^ (t >>> 15), t | 1);
+    n ^= n + Math.imul(n ^ (n >>> 7), n | 61);
+    return ((n ^ (n >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleWithRng<T>(items: T[], rng: () => number): T[] {
+  const copy = [...items];
+
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rng() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+
+  return copy;
+}
+
+function pickOneWithRng<T>(items: T[], rng: () => number): T | null {
+  if (items.length === 0) return null;
+  return items[Math.floor(rng() * items.length)] ?? null;
+}
+
+function formatTraitList(words: string[]) {
+  if (words.length === 0) return "";
+  if (words.length === 1) return words[0];
+  if (words.length === 2) return `${words[0]} and ${words[1]}`;
+  return `${words.slice(0, -1).join(", ")}, and ${words[words.length - 1]}`;
+}
+
+function buildEggFlavorText(
+  strongStats: EggStatKey[],
+  weakStat: EggStatKey | null,
+): string {
+  const strongWords = strongStats.map((stat) => STAT_STYLE_WORDS[stat]);
+  const strongText = formatTraitList(strongWords);
+  const weakWord = weakStat ? STAT_STYLE_WORDS[weakStat] : null;
+
+  if (strongStats.length === 2 && weakWord) {
+    return `This egg carries strong signs of ${strongText}, but something in its shell feels slightly fragile. Its inner aura is bright, though its ${weakWord} may take longer to fully awaken.`;
+  }
+
+  if (strongStats.length === 2) {
+    return `This egg gives off a powerful aura. Its shell hums with ${strongText}, and the life inside feels unusually promising for future growth.`;
+  }
+
+  if (strongStats.length === 1 && weakWord) {
+    return `This egg shows a natural gift for ${strongText}, though its energy is not perfectly balanced. Beneath the shell, its ${weakWord} feels quieter and less developed than the rest.`;
+  }
+
+  if (strongStats.length === 1) {
+    return `This egg has a steady and focused aura. The life within seems especially attuned to ${strongText}, giving it a clear natural strength even before hatch.`;
+  }
+
+  if (weakWord) {
+    return `This egg feels a little unstable. Nothing about it seems especially empowered yet, and its ${weakWord} appears softer and less certain than the rest of its growing aura.`;
+  }
+
+  return `This egg feels calm and ordinary. Its aura is balanced, with no especially strong or weak pull showing through the shell just yet.`;
+}
+
+function getEggGrowthTraits(egg: HatchEgg | null): EggGrowthTraits {
+  if (!egg) {
+    return {
+      strongStats: [],
+      weakStat: null,
+      flavorText: "Select an egg to inspect its aura.",
+    };
+  }
+
+  const seed = hashString(`${egg.id}:${egg.name}:${egg.hatch_ends_at}`);
+  const rng = mulberry32(seed);
+  const patternRoll = rng();
+
+  let strongCount = 0;
+  let hasWeak = false;
+
+  if (patternRoll < 0.2) {
+    strongCount = 2;
+    hasWeak = true;
+  } else if (patternRoll < 0.45) {
+    strongCount = 2;
+    hasWeak = false;
+  } else if (patternRoll < 0.7) {
+    strongCount = 1;
+    hasWeak = true;
+  } else if (patternRoll < 0.88) {
+    strongCount = 1;
+    hasWeak = false;
+  } else if (patternRoll < 0.96) {
+    strongCount = 0;
+    hasWeak = true;
+  } else {
+    strongCount = 0;
+    hasWeak = false;
+  }
+
+  const shuffledStats = shuffleWithRng(STAT_KEYS, rng);
+  const strongStats = shuffledStats.slice(0, strongCount);
+
+  let weakStat: EggStatKey | null = null;
+
+  if (hasWeak) {
+    const weakPool = STAT_KEYS.filter((stat) => !strongStats.includes(stat));
+    weakStat = pickOneWithRng(weakPool, rng);
+  }
+
+  return {
+    strongStats,
+    weakStat,
+    flavorText: buildEggFlavorText(strongStats, weakStat),
+  };
+}
 
 async function getAccessToken(): Promise<string> {
   const { data, error } = await supabase.auth.getSession();
@@ -135,9 +317,7 @@ async function fetchJsonAuthed<T>(
     credentials: "include",
   });
 
-  const data = (await res.json().catch(() => ({}))) as unknown as {
-    error?: string;
-  };
+  const data = (await res.json().catch(() => ({}))) as { error?: string };
 
   if (!res.ok) {
     throw new Error(data?.error ?? `Request failed (${res.status})`);
@@ -234,49 +414,24 @@ function EggSlotButton(props: {
   );
 }
 
-function ItemSlotButton(props: { index: number; unlocked: boolean }) {
-  const { index, unlocked } = props;
+function ItemSlotButton(props: { slot: ShelfSlot }) {
+  const { slot } = props;
 
   return (
     <div
       className={[
         "itemSlot",
         "itemSlotStatic",
-        unlocked ? "unlocked" : "locked",
+        slot.locked ? "locked" : "unlocked",
       ].join(" ")}
     >
       <div className="itemSlotInner">
-        <div className="itemSlotIndex">Shelf {index + 1}</div>
+        <div className="itemSlotIndex">Shelf {slot.index}</div>
         <div className="itemSlotEmpty">
-          {unlocked ? "Empty shelf" : "Locked"}
+          {slot.locked ? "Locked" : slot.itemKey ? slot.itemKey : "Empty shelf"}
         </div>
       </div>
     </div>
-  );
-}
-
-function PetStoragePanel() {
-  return (
-    <aside className="storagePanel">
-      <div className="panelHeader">
-        <div>
-          <div className="panelTitle">Pet Storage</div>
-          <div className="panelSubtext">
-            Stored pets, quick swap tools, and future party management.
-          </div>
-        </div>
-      </div>
-
-      <div className="panelBody storagePanelBody">
-        <div className="storagePlaceholder">
-          <div className="storagePlaceholderTitle">Stored Pets Box</div>
-          <div className="storagePlaceholderText">
-            This side will hold your stored pets, sorting tools, and later
-            bring-out / put-away controls.
-          </div>
-        </div>
-      </div>
-    </aside>
   );
 }
 
@@ -326,6 +481,8 @@ export default function HatcheryPage() {
     let alive = true;
 
     async function load() {
+      if (document.visibilityState !== "visible") return;
+
       setLoadErr(null);
 
       try {
@@ -341,7 +498,7 @@ export default function HatcheryPage() {
     }
 
     void load();
-    const id = window.setInterval(load, 15_000);
+    const id = window.setInterval(load, 30_000);
 
     return () => {
       alive = false;
@@ -350,31 +507,76 @@ export default function HatcheryPage() {
   }, [authLoading, user]);
 
   const slots: HatchSlot[] = useMemo(() => {
+    if (data?.slots && data.slots.length > 0) {
+      return data.slots.map((slot) => ({
+        index: slot.slot_index,
+        locked: !slot.unlocked,
+        egg:
+          slot.pet && slot.pet.stage === "egg" && slot.hatch?.hatch_ends_at
+            ? {
+                id: slot.pet.id,
+                name: slot.pet.name?.trim() || "Mystery Egg",
+                hatch_ends_at: slot.hatch.hatch_ends_at,
+                line: slot.pet.line ?? undefined,
+              }
+            : undefined,
+      }));
+    }
+
     const pet = data?.pet;
     const hatchEndsAt = data?.hatch?.hatch_ends_at ?? null;
 
     const slot1Egg =
       pet && pet.stage === "egg" && hatchEndsAt
-        ? ({
+        ? {
             id: pet.id,
             name: pet.name?.trim() || "Mystery Egg",
             hatch_ends_at: hatchEndsAt,
             line: pet.line ?? undefined,
-          } satisfies HatchEgg)
+          }
         : undefined;
 
-    const arr: HatchSlot[] = [];
-    arr.push({ index: 1, locked: false, egg: slot1Egg });
-    arr.push({ index: 2, locked: false });
-
-    for (let i = 3; i <= 10; i += 1) {
-      arr.push({ index: i, locked: true });
-    }
-
-    return arr;
+    return Array.from({ length: 10 }, (_, idx) => ({
+      index: idx + 1,
+      locked: idx !== 0,
+      egg: idx === 0 ? slot1Egg : undefined,
+    }));
   }, [data]);
 
-  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+  const shelfSlots: ShelfSlot[] = useMemo(() => {
+    if (data?.shelf_slots && data.shelf_slots.length > 0) {
+      return data.shelf_slots.map((slot) => ({
+        id: slot.id,
+        index: slot.slot_index,
+        locked: !slot.unlocked,
+        itemKey: slot.item_key,
+      }));
+    }
+
+    return Array.from({ length: 10 }, (_, idx) => ({
+      id: `fallback-shelf-${idx + 1}`,
+      index: idx + 1,
+      locked: idx !== 0,
+      itemKey: null,
+    }));
+  }, [data]);
+
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(1);
+
+  useEffect(() => {
+    if (slots.length === 0) {
+      setSelectedSlot(1);
+      return;
+    }
+
+    const currentStillExists = slots.some(
+      (slot) => slot.index === selectedSlot,
+    );
+
+    if (!currentStillExists) {
+      setSelectedSlot(1);
+    }
+  }, [slots, selectedSlot]);
 
   const selected =
     selectedSlot == null
@@ -398,10 +600,14 @@ export default function HatcheryPage() {
     return data?.stats ?? EMPTY_STATS;
   }, [selectedEgg, data?.stats]);
 
+  const selectedEggTraits = useMemo(() => {
+    return getEggGrowthTraits(selectedEgg);
+  }, [selectedEgg]);
+
   async function refreshAfterHatch() {
     const next = await fetchHatchery();
     setData(next);
-    setSelectedSlot(null);
+    setSelectedSlot(1);
     syncServerClock(next.server_now);
   }
 
@@ -415,19 +621,6 @@ export default function HatcheryPage() {
     }
 
     await refreshAfterHatch();
-  }
-
-  async function onHatchSelected() {
-    if (!selectedEgg || isHatching) return;
-
-    try {
-      setIsHatching(true);
-      await completeHatchFlow();
-    } catch (e: any) {
-      alert(e?.message ?? String(e));
-    } finally {
-      setIsHatching(false);
-    }
   }
 
   async function onHatchFromSlot(slot: HatchSlot) {
@@ -464,21 +657,13 @@ export default function HatcheryPage() {
                   Incubator chamber for the egg currently on your rack.
                 </div>
               </div>
-
-              <button
-                type="button"
-                className="smallBtn"
-                onClick={() => navigate("/pet")}
-              >
-                Back to Pet
-              </button>
             </div>
 
             <div className="selectedEggPreviewArea">
               <div className="incubatorGlass" />
 
               {!selectedEgg ? (
-                <div className="selectedPreviewEmpty"></div>
+                <div className="selectedPreviewEmpty" />
               ) : (
                 <div className="selectedPreviewFilled">
                   <div className="selectedEggHalo" />
@@ -507,21 +692,35 @@ export default function HatcheryPage() {
 
                 <div className="statsIntro">
                   {selectedEgg ? (
-                    <span className="muted">
-                      Viewing stats for <strong>{selectedEgg.name}</strong>.
-                    </span>
+                    <span className="muted">Base Stats as an Egg</span>
                   ) : (
                     <span className="muted">Select an egg.</span>
                   )}
                 </div>
 
                 <div className="statsGrid compactStatsGrid">
-                  {STAT_ROWS.map((row) => (
-                    <div className="statRow" key={row.key}>
-                      <div className="statLabel">{row.label}</div>
-                      <div className="statValue">{displayedStats[row.key]}</div>
-                    </div>
-                  ))}
+                  {STAT_ROWS.map((row) => {
+                    const isStrong = selectedEggTraits.strongStats.includes(
+                      row.key,
+                    );
+                    const isWeak = selectedEggTraits.weakStat === row.key;
+
+                    return (
+                      <div
+                        className={[
+                          "statRow",
+                          isStrong ? "statRowStrong" : "",
+                          isWeak ? "statRowWeak" : "",
+                        ].join(" ")}
+                        key={row.key}
+                      >
+                        <div className="statLabel">{row.label}</div>
+                        <div className="statValue">
+                          {displayedStats[row.key]}
+                        </div>
+                      </div>
+                    );
+                  })}
 
                   <div className="statRow statRowTotal">
                     <div className="statLabel">TOTAL</div>
@@ -529,16 +728,9 @@ export default function HatcheryPage() {
                   </div>
                 </div>
 
-                {selectedEgg ? (
-                  <button
-                    type="button"
-                    className="primaryBtn hatchActionBtn"
-                    disabled={!selectedCd.done || isHatching}
-                    onClick={onHatchSelected}
-                  >
-                    {isHatching ? "Hatching..." : "Hatch Egg"}
-                  </button>
-                ) : null}
+                <div className="eggTraitFlavorText">
+                  {selectedEggTraits.flavorText}
+                </div>
               </section>
 
               <aside className="incubationInsetPanel shelfPanelBottom">
@@ -546,18 +738,12 @@ export default function HatcheryPage() {
                   <div className="panelTitle panelTitleSmall">
                     Incubation Shelf
                   </div>
-                  <div className="panelSubtext">
-                    Hatchery items will go here later.
-                  </div>
+                  <div className="panelSubtext">Hatch Items!</div>
                 </div>
 
                 <div className="itemsGrid">
-                  {Array.from({ length: 10 }, (_, idx) => (
-                    <ItemSlotButton
-                      key={idx}
-                      index={idx}
-                      unlocked={idx === 0}
-                    />
+                  {shelfSlots.map((slot) => (
+                    <ItemSlotButton key={slot.id} slot={slot} />
                   ))}
                 </div>
               </aside>
@@ -570,7 +756,7 @@ export default function HatcheryPage() {
             <div>
               <div className="panelTitle">Egg Rack</div>
               <div className="panelSubtext">
-                Compact hatch slots and timers.
+                Put your egg on the rack and see what happens!
               </div>
             </div>
           </div>
@@ -596,7 +782,7 @@ export default function HatcheryPage() {
           </div>
         </section>
 
-        <PetStoragePanel />
+        <PetStoragePanel userId={user?.id} />
       </div>
     </div>
   );

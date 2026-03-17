@@ -12,6 +12,31 @@
   position: relative;
 }
 
+/* LEFT AREA */
+.dp-headerLeft--withTitle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Hatchery title on the global banner */
+.dp-sectionTitle {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 60px;
+  letter-spacing: 0.4px;
+  line-height: 1;
+  color: var(--dp-yellow, #ffd54a);
+  -webkit-text-stroke: 1px var(--dp-red, #9e1b1b);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+  user-select: none;
+  white-space: nowrap;
+  position: absolute;
+  left: 18.5%;
+  right: %50;
+}
+
 /* True center the Bond block */
 .dp-headerCenterTagline--appFix {
   position: absolute;
@@ -32,22 +57,20 @@
 /* MAIN LINE */
 .dp-headerTaglineTitle {
   font-family: var(--font-heading);
-  font-size: var(--text-lg); /* uses global scale */
+  font-size: var(--text-lg);
   font-weight: 900;
   letter-spacing: 0.2px;
   color: var(--text);
-
-  margin-bottom: 4px; /* exactly 4px spacing */
+  margin-bottom: 4px;
   line-height: 1.1;
 }
 
 /* SUB LINE */
 .dp-headerTaglineSub {
   font-family: var(--font-body);
-  font-size: var(--text-sm); /* smaller, global scale */
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--muted);
-
   line-height: 1.2;
 }
 
@@ -67,4 +90,23 @@
   padding: 8px 12px;
   border-radius: 10px;
   font-size: 13px;
+}
+
+/* Responsive polish */
+@media (max-width: 980px) {
+  .dp-sectionTitle {
+    font-size: 24px;
+    -webkit-text-stroke: 1.25px var(--dp-red, #9e1b1b);
+  }
+
+  .dp-headerLeft--withTitle {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .dp-sectionTitle {
+    font-size: 20px;
+    -webkit-text-stroke: 1px var(--dp-red, #9e1b1b);
+  }
 }

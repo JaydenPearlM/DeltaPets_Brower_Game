@@ -10,6 +10,7 @@ export function LogoutButton() {
   return (
     <button
       type="button"
+      className="btn btn-red"
       disabled={busy}
       onClick={async () => {
         setBusy(true);
@@ -17,7 +18,7 @@ export function LogoutButton() {
         setBusy(false);
 
         if (!error) {
-          navigate("/"); //  bounce back to homepage
+          navigate("/", { replace: true });
         } else {
           console.error("Logout failed:", error);
         }

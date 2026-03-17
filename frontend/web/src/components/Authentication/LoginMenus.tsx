@@ -8,7 +8,6 @@ import { LoginSubmitButton } from "./LoginSubmitButton";
 import { useLoginSubmit } from "./LoginSubmit";
 
 import { supabase } from "../../lib/supabase/client";
-import { useEnterGame } from "../../app/entry/useEnterGame";
 
 type Mode = "none" | "login";
 
@@ -177,8 +176,6 @@ function SignupPanel({
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { enterGame } = useEnterGame();
-
   const email = useMemo(() => identifier.trim().toLowerCase(), [identifier]);
   const usernameNorm = useMemo(() => normalizeUsername(username), [username]);
 
@@ -289,16 +286,16 @@ function SignupPanel({
         return;
       }
 
-      if (!hasSession) {
-        setMessage(
-          "Account created. Please check your email to confirm, then sign in.",
-        );
-        closeSignup();
-        return;
+      // IMPORTANT:
+      // Do NOT send brand-new users into /create after signup.
+      // Make them manually sign in first.
+      if (hasSession) {
+        await supabase.auth.signOut();
       }
 
+      setIdentifier(email);
       closeSignup();
-      await enterGame();
+      setMessage("Account created successfully. Please sign in.");
     } catch (err) {
       console.error("[signup] failed:", err);
       setMessage("Signup failed. Please try again.");

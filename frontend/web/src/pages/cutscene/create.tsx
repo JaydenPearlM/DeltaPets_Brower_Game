@@ -73,8 +73,9 @@ function getPlayerName(user: any) {
   if (typeof fromMeta === "string" && fromMeta.trim()) return fromMeta.trim();
 
   const email = user?.email;
-  if (typeof email === "string" && email.includes("@"))
+  if (typeof email === "string" && email.includes("@")) {
     return email.split("@")[0];
+  }
 
   return "Traveler";
 }
@@ -219,7 +220,6 @@ export default function CreatePage() {
         await typeText(LINE_2, setLine2, TIMING.type2MsPerChar, alive);
         if (!alive()) return;
 
-        // Dev-only cutscene diagnostics (keeps your terminal useful, not noisy)
         dlog("[create] CUTSCENE MYSTERY_EGG:", MYSTERY_EGG);
         dlog("[create] CUTSCENE sprite value:", MYSTERY_EGG?.sprite);
 
@@ -227,50 +227,11 @@ export default function CreatePage() {
         setPhase("eggFadeIn");
         setEggVisible(true);
 
-        // Safe access (won't crash even if sprite is missing)
         dlog("[create] CUTSCENE sprite:", MYSTERY_EGG?.sprite);
 
-        // Backend actions (only when not replaying)
-        if (!replay) {
-          setBusy(true);
-          try {
-            const token = await getAccessTokenOrThrow();
-
-            // Ensure egg gets created/assigned in hatchery slot
-            const ensure = await postJson("/api/pets/ensure-egg", token, {
-              line: starterLine,
-            });
-
-            if (!ensure.ok) {
-              throw new Error(
-                ensure.data?.error ?? `ensure-egg HTTP ${ensure.status}`,
-              );
-            }
-
-            // Mark intro as seen (ONLY ONCE)
-            const seen = await postJson("/api/me/intro/seen", token);
-            if (!seen.ok) {
-              console.warn("[create] intro/seen failed", {
-                status: seen.status,
-                data: seen.data,
-              });
-            }
-          } catch (err) {
-            console.warn(
-              "[create] ensure-egg / intro-seen failed (continuing cutscene)",
-              err,
-            );
-
-            // "dev" status in dev, more neutral in prod
-            setStatus(
-              DEV
-                ? "Backend offline — continuing (dev)"
-                : "Backend unavailable — continuing",
-            );
-          } finally {
-            if (alive()) setBusy(false);
-          }
-        }
+        // Do NOT create the egg yet.
+        // Wait until the cutscene is basically finished so the hatch timer
+        // starts right before the player enters /hatchery.
 
         await sleep(TIMING.pauseAfterLine2TypedMs);
         if (!alive()) return;
@@ -307,6 +268,47 @@ export default function CreatePage() {
         setStatus("Entering game…");
         setPhase("fadeOut");
         await sleep(TIMING.fadeOutMs);
+        if (!alive()) return;
+
+        // Backend actions happen LAST so the timer starts right before /hatchery.
+        if (!replay) {
+          setBusy(true);
+          try {
+            const token = await getAccessTokenOrThrow();
+
+            const ensure = await postJson("/api/pets/ensure-egg", token, {
+              line: starterLine,
+            });
+
+            if (!ensure.ok) {
+              throw new Error(
+                ensure.data?.error ?? `ensure-egg HTTP ${ensure.status}`,
+              );
+            }
+
+            const seen = await postJson("/api/me/intro/seen", token);
+            if (!seen.ok) {
+              console.warn("[create] intro/seen failed", {
+                status: seen.status,
+                data: seen.data,
+              });
+            }
+          } catch (err) {
+            console.warn(
+              "[create] ensure-egg / intro-seen failed (continuing cutscene)",
+              err,
+            );
+
+            setStatus(
+              DEV
+                ? "Backend offline — continuing (dev)"
+                : "Backend unavailable — continuing",
+            );
+          } finally {
+            if (alive()) setBusy(false);
+          }
+        }
+
         if (!alive()) return;
 
         setPhase("done");

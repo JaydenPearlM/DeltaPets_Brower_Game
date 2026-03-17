@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import { requireUser, AuthedRequest } from "../middleware/requireUser";
+import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 import {
   CooldownKey,
@@ -118,3 +118,4 @@ petActionsRouter.post(
     });
   },
 );
+export default petActionsRouter;

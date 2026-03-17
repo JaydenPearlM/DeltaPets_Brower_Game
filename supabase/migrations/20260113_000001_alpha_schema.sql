@@ -30,7 +30,7 @@ exception when duplicate_object then null;
 end $$;
 
 do $$ begin
-  create type public.pet_stage as enum ('egg','baby', 'toddler', 'child', 'teen', 'adult', 'Legion', 'mythic_legendary');
+  create type public.pet_stage as enum ('egg','baby', '""', 'child', 'teen', 'adult', 'Legion', 'mythic_legendary');
 exception when duplicate_object then null;
 end $$;
 

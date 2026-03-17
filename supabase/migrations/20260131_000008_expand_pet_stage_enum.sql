@@ -24,7 +24,7 @@ begin
       create type public.pet_stage_v2 as enum (
         'egg',
         'baby',
-        'toddler',
+        '""',
         'teen',
         'adult',
         'mythic_legendary'
