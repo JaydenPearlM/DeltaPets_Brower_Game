@@ -50,7 +50,7 @@ type UsePetStorageOptions = {
   userId?: string;
 };
 
-export const PARTY_SLOT_COUNT = 5;
+export const PARTY_SLOT_COUNT = 4;
 const STORAGE_TOTAL_CAP = 50;
 const STORAGE_EGG_CAP = 20;
 const STORAGE_PET_CAP = 30;

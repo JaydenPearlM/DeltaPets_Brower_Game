@@ -3,11 +3,11 @@ import {
   formatLineLabel,
   formatStageLabel,
   PARTY_SLOT_COUNT,
-  type PartySlotView,
   type StoragePet,
   type StorageStageFilter,
   usePetStorage,
 } from "./usePetStorage";
+import MainTeam from "../../../Main_Team/mainTeam";
 import "./PetStoragePanel.css";
 
 type PetStoragePanelProps = {
@@ -89,11 +89,11 @@ function normalizeDragPayload(raw: string): DragPayload | null {
 }
 
 function writeDragPayload(
-  event: React.DragEvent<HTMLElement>,
+  event: React.DragEvent<HTMLElement | HTMLDivElement>,
   payload: DragPayload,
 ) {
-  event.dataTransfer.setData("application/json", JSON.stringify(payload));
   event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("application/json", JSON.stringify(payload));
 }
 
 function StoragePetStatsTooltip(props: { pet: StoragePet }) {
@@ -123,108 +123,6 @@ function StoragePetStatsTooltip(props: { pet: StoragePet }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function PartySlotCard(props: {
-  slot: PartySlotView;
-  isSelected: boolean;
-  isWorking: boolean;
-  isDragOver: boolean;
-  onSelect: () => void;
-  onDragStartPet: (
-    event: React.DragEvent<HTMLDivElement>,
-    pet: StoragePet,
-    slotIndex: number,
-  ) => void;
-  onDragEndPet: () => void;
-  onDragOverSlot: (event: React.DragEvent<HTMLElement>) => void;
-  onDragEnterSlot: () => void;
-  onDragLeaveSlot: () => void;
-  onDropOnSlot: (
-    event: React.DragEvent<HTMLElement>,
-    slotIndex: number,
-  ) => void;
-}) {
-  const {
-    slot,
-    isSelected,
-    isWorking,
-    isDragOver,
-    onSelect,
-    onDragStartPet,
-    onDragEndPet,
-    onDragOverSlot,
-    onDragEnterSlot,
-    onDragLeaveSlot,
-    onDropOnSlot,
-  } = props;
-
-  const pet = slot.pet;
-
-  return (
-    <article
-      className={[
-        "partySlotCard",
-        pet ? getToneClass(pet.line) : "tone-default",
-        isSelected ? "selected" : "",
-        isDragOver ? "dragOver" : "",
-        !pet ? "partySlotCardEmpty" : "",
-      ].join(" ")}
-      onDragOver={onDragOverSlot}
-      onDragEnter={onDragEnterSlot}
-      onDragLeave={onDragLeaveSlot}
-      onDrop={(event) => onDropOnSlot(event, slot.slotIndex)}
-    >
-      <button
-        type="button"
-        className="partySlotSelectBtn"
-        onClick={onSelect}
-        title={`Party Slot ${slot.slotIndex}`}
-      >
-        <div className="partySlotNumber">{slot.slotIndex}</div>
-
-        <div
-          className={[
-            "partySlotPortrait",
-            pet ? "isFilled" : "isEmpty",
-            isWorking ? "isWorking" : "",
-          ].join(" ")}
-        >
-          <div className="partySlotPortraitInner">
-            {pet ? pet.name?.trim()?.charAt(0).toUpperCase() || "D" : "+"}
-          </div>
-        </div>
-
-        <div className="partySlotName">
-          {pet ? pet.name?.trim() || "Unnamed Delta" : "Empty Slot"}
-        </div>
-
-        <div className="partySlotSub">
-          {pet
-            ? `${formatStageLabel(pet.stage)} • ${formatLineLabel(pet.line)}`
-            : " "}
-        </div>
-
-        {pet?.is_active ? <div className="partySlotBadge">Active</div> : null}
-      </button>
-
-      {pet ? (
-        <div
-          className="dragHandleHint"
-          draggable={!isWorking}
-          onDragStart={(event) => onDragStartPet(event, pet, slot.slotIndex)}
-          onDragEnd={onDragEndPet}
-          title="Drag pet"
-        >
-          Drag
-        </div>
-      ) : (
-        <div className="dragHandleHint emptyHint" aria-hidden="true">
-          &nbsp;
-        </div>
-      )}
-    </article>
   );
 }
 
@@ -442,8 +340,12 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
     try {
       await assignPetToParty(payload.petId, slotIndex);
       setSelectedPartySlot(slotIndex);
-    } catch {
-      // hook owns error state
+    } catch (dropError) {
+      window.alert(
+        dropError instanceof Error
+          ? dropError.message
+          : "Failed to move pet to Main Team.",
+      );
     }
   }
 
@@ -461,8 +363,12 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
 
     try {
       await storePet(payload.petId);
-    } catch {
-      // hook owns error state
+    } catch (dropError) {
+      window.alert(
+        dropError instanceof Error
+          ? dropError.message
+          : "Failed to move pet to storage.",
+      );
     }
   }
 
@@ -492,175 +398,156 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
         </div>
       </div>
 
-      <div className="panelBody storagePanelBody storagePanelBodyEnhanced">
-        <section className="mainPartyInlineSection">
-          <div className="storedPetsSectionHeader">
-            <div className="panelTitle panelTitleSmall">Main Team</div>
-            <div className="panelSubtext">
-              Drag stored pets into any slot. Drag team pets back into storage
-              to return them.
+      <section className="mainPartyInlineSection">
+        <MainTeam
+          partySlots={partySlots}
+          selectedPartySlot={selectedPartySlot}
+          workingPetId={workingPetId}
+          workingSlotIndex={workingSlotIndex}
+          dragOverSlotIndex={dragOverSlotIndex}
+          onSelectSlot={setSelectedPartySlot}
+          onDragStartPet={handleTeamDragStart}
+          onDragEndPet={clearDragState}
+          onDragOverSlot={allowDrop}
+          onDragEnterSlot={(slotIndex) => setDragOverSlotIndex(slotIndex)}
+          onDragLeaveSlot={(slotIndex) => {
+            if (dragOverSlotIndex === slotIndex) {
+              setDragOverSlotIndex(null);
+            }
+          }}
+          onDropOnSlot={handleDropToTeam}
+        />
+      </section>
+
+      <div className="storageSectionDivider" />
+
+      <section
+        className={[
+          "storedPetsInlineSection",
+          isStorageDragOver ? "dragOverStorage" : "",
+        ].join(" ")}
+        onDragOver={allowDrop}
+        onDragEnter={() => setIsStorageDragOver(true)}
+        onDragLeave={() => setIsStorageDragOver(false)}
+        onDrop={handleDropToStorage}
+      >
+        <div className="storedPetsSectionHeader">
+          <div className="panelTitle panelTitleSmall">Storage</div>
+          <div className="panelSubtext">
+            {storageCounts.total}/{caps.total} total stored.{" "}
+            {storageCounts.eggs}/{caps.eggs} egg spaces. {storageCounts.pets}/
+            {caps.pets} pet spaces.
+          </div>
+        </div>
+
+        <div className="storageTopSummary">
+          <div className="storageHeroCard">
+            <div className="storageHeroLabel">Stored Total</div>
+            <div className="storageHeroValue">
+              {storageCounts.total}/{caps.total}
             </div>
           </div>
 
-          <div className="partyTeamGrid">
-            {partySlots.map((slot) => (
-              <PartySlotCard
-                key={slot.slotIndex}
-                slot={slot}
-                isSelected={selectedPartySlot === slot.slotIndex}
-                isWorking={
-                  workingSlotIndex === slot.slotIndex ||
-                  (slot.petId != null && workingPetId === slot.petId)
-                }
-                isDragOver={dragOverSlotIndex === slot.slotIndex}
-                onSelect={() => setSelectedPartySlot(slot.slotIndex)}
-                onDragStartPet={handleTeamDragStart}
-                onDragEndPet={clearDragState}
-                onDragOverSlot={allowDrop}
-                onDragEnterSlot={() => setDragOverSlotIndex(slot.slotIndex)}
-                onDragLeaveSlot={() => {
-                  if (dragOverSlotIndex === slot.slotIndex) {
-                    setDragOverSlotIndex(null);
-                  }
-                }}
-                onDropOnSlot={handleDropToTeam}
-              />
-            ))}
-          </div>
-        </section>
-
-        <div className="storageSectionDivider" />
-
-        <section
-          className={[
-            "storedPetsInlineSection",
-            isStorageDragOver ? "dragOverStorage" : "",
-          ].join(" ")}
-          onDragOver={allowDrop}
-          onDragEnter={() => setIsStorageDragOver(true)}
-          onDragLeave={() => setIsStorageDragOver(false)}
-          onDrop={handleDropToStorage}
-        >
-          <div className="storedPetsSectionHeader">
-            <div className="panelTitle panelTitleSmall">Storage</div>
-            <div className="panelSubtext">
-              {storageCounts.total}/{caps.total} total stored.{" "}
-              {storageCounts.eggs}/{caps.eggs} egg spaces. {storageCounts.pets}/
-              {caps.pets} pet spaces.
+          <div className="storageHeroCard">
+            <div className="storageHeroLabel">Stored Eggs</div>
+            <div className="storageHeroValue">
+              {storageCounts.eggs}/{caps.eggs}
             </div>
           </div>
 
-          <div className="storageTopSummary">
-            <div className="storageHeroCard">
-              <div className="storageHeroLabel">Stored Total</div>
-              <div className="storageHeroValue">
-                {storageCounts.total}/{caps.total}
+          <div className="storageHeroCard">
+            <div className="storageHeroLabel">Stored Pets</div>
+            <div className="storageHeroValue">
+              {storageCounts.pets}/{caps.pets}
+            </div>
+          </div>
+
+          <div className="storageHeroCard">
+            <div className="storageHeroLabel">Incubator</div>
+            <div className="storageHeroValue">
+              {incubatingEgg ? "1/1" : "0/1"}
+            </div>
+          </div>
+        </div>
+
+        <div className="storageSearchWrap">
+          <input
+            type="text"
+            className="storageSearchInput"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search stored pets, eggs, stages, or elements..."
+          />
+        </div>
+
+        {incubatingEgg ? (
+          <div className="storageIncubatorNotice">
+            Incubating now:{" "}
+            <strong>{incubatingEgg.name?.trim() || "Mystery Egg"}</strong>
+            {" • "}
+            {formatStageLabel(incubatingEgg.stage)}
+          </div>
+        ) : (
+          <div className="storageIncubatorNotice">
+            No egg is in the incubator right now.
+          </div>
+        )}
+
+        <div className="storageGridScroll">
+          {loading ? (
+            <div className="storageEmptyState">
+              <div className="storageEmptyTitle">Loading storage...</div>
+              <div className="storageEmptyText">
+                Pulling your Deltas out of the database cave.
               </div>
             </div>
-
-            <div className="storageHeroCard">
-              <div className="storageHeroLabel">Stored Eggs</div>
-              <div className="storageHeroValue">
-                {storageCounts.eggs}/{caps.eggs}
+          ) : filteredPets.length === 0 ? (
+            <div className="storageEmptyState">
+              <div className="storageEmptyTitle">
+                Nothing matches that filter.
               </div>
-            </div>
-
-            <div className="storageHeroCard">
-              <div className="storageHeroLabel">Stored Pets</div>
-              <div className="storageHeroValue">
-                {storageCounts.pets}/{caps.pets}
+              <div className="storageEmptyText">
+                Try a different search or stage filter.
               </div>
-            </div>
-
-            <div className="storageHeroCard">
-              <div className="storageHeroLabel">Incubator</div>
-              <div className="storageHeroValue">
-                {incubatingEgg ? "1/1" : "0/1"}
-              </div>
-            </div>
-          </div>
-
-          <div className="storageSearchWrap">
-            <input
-              type="text"
-              className="storageSearchInput"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search stored pets, eggs, stages, or elements..."
-            />
-          </div>
-
-          {incubatingEgg ? (
-            <div className="storageIncubatorNotice">
-              Incubating now:{" "}
-              <strong>{incubatingEgg.name?.trim() || "Mystery Egg"}</strong>
-              {" • "}
-              {formatStageLabel(incubatingEgg.stage)}
             </div>
           ) : (
-            <div className="storageIncubatorNotice">
-              No egg is in the incubator right now.
+            <div className="storagePetGrid">
+              {filteredPets.map((pet) => (
+                <StoragePetCard
+                  key={pet.id}
+                  pet={pet}
+                  isDragging={draggingPetId === pet.id}
+                  onDragStart={handleStorageDragStart}
+                  onDragEnd={clearDragState}
+                  onMoveEggToIncubator={(petId) =>
+                    void moveEggToIncubator(petId)
+                  }
+                  incubatorBusy={Boolean(incubatingEgg)}
+                />
+              ))}
             </div>
           )}
+        </div>
 
-          <div className="storageGridScroll">
-            {loading ? (
-              <div className="storageEmptyState">
-                <div className="storageEmptyTitle">Loading storage...</div>
-                <div className="storageEmptyText">
-                  Pulling your Deltas out of the database cave.
-                </div>
-              </div>
-            ) : filteredPets.length === 0 ? (
-              <div className="storageEmptyState">
-                <div className="storageEmptyTitle">
-                  Nothing matches that filter.
-                </div>
-                <div className="storageEmptyText">
-                  Try a different search or stage filter.
-                </div>
-              </div>
-            ) : (
-              <div className="storagePetGrid">
-                {filteredPets.map((pet) => (
-                  <StoragePetCard
-                    key={pet.id}
-                    pet={pet}
-                    isDragging={draggingPetId === pet.id}
-                    onDragStart={handleStorageDragStart}
-                    onDragEnd={clearDragState}
-                    onMoveEggToIncubator={(petId) =>
-                      void moveEggToIncubator(petId)
-                    }
-                    incubatorBusy={Boolean(incubatingEgg)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="storageBottomFilters">
+          {FILTERS.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={[
+                "storageFilterChip",
+                filter === item.key ? "active" : "",
+              ].join(" ")}
+              onClick={() => setFilter(item.key)}
+            >
+              <span>{item.label}</span>
+              <strong>{counts[item.key]}</strong>
+            </button>
+          ))}
+        </div>
 
-          <div className="storageBottomFilters">
-            {FILTERS.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                className={[
-                  "storageFilterChip",
-                  filter === item.key ? "active" : "",
-                ].join(" ")}
-                onClick={() => setFilter(item.key)}
-              >
-                <span>{item.label}</span>
-                <strong>{counts[item.key]}</strong>
-              </button>
-            ))}
-          </div>
-
-          {error ? (
-            <div className="storageErrorText">Error: {error}</div>
-          ) : null}
-        </section>
-      </div>
+        {error ? <div className="storageErrorText">Error: {error}</div> : null}
+      </section>
     </aside>
   );
 }
