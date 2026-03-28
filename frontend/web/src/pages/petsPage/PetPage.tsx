@@ -1,536 +1,675 @@
-// frontend/web/src/pages/petsPage/PetPage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { LogoutButton } from "../../components/Authentication/LogoutButton";
 import { useAuth } from "../../app/providers/useAuth";
-import { useGame } from "../../app/providers/GameProvider";
 import { supabase } from "../../lib/supabase/client";
-import { DailyCareCard } from "../../dailyQuest/components/DailyCareCard/DailyCareCard";
-import { useUI } from "../../app/providers/UIProvider";
-import { CareRoom } from "./components/petHomeComponents/careRoom";
+import "./PetPage.css";
 
-import PetMainStats from "../../Pets_Creation/registry/Stats/mainStats/petMainstats";
-import { WeeklyRewardsBar } from "../../components/rewards/weeklyRewardsBar";
-import { StatsModal } from "../../Pets_Creation/registry/Stats/mainStats/StatsModal";
+type CareAction = "feed" | "clean" | "play" | "pet";
 
-import { useServerCountdown } from "../../lib/timers/useServerCountdown";
-import { formatDuration } from "../../lib/timers/time";
-import { AwardsModal } from "../../components/awardModels/awardsModel";
-import { PetPageHeader } from "./components/petPageHeader";
-import { PetTempNavButtons } from "./components/petTempNavButtons";
-import { EggSection } from "./components/eggsStats/eggSection";
+type PetRecord = {
+  id?: string;
+  user_id?: string;
+  name?: string | null;
+  nickname?: string | null;
+  level?: number | null;
+  gender?: string | null;
+  element?: string | null;
+  line?: string | null;
+  stage?: string | null;
 
-/** -----------------------------
- * Types
- * ------------------------------ */
+  personality?: string | null;
+  personality_name?: string | null;
+  personality_key?: string | null;
+  personality_id?: string | null;
+
+  hunger?: number | null;
+  cleanliness?: number | null;
+  happiness?: number | null;
+  bond?: number | null;
+
+  description?: string | null;
+};
 
 type PetStatsRow = {
-  pet_id: string;
-  hp: number;
-  atk: number;
-  magi: number;
-  def: number;
-  spd: number;
-  mana: number;
-  base_total: number;
+  pet_id?: string;
+  hp?: number | null;
+  atk?: number | null;
+  def?: number | null;
+  spd?: number | null;
+  magi?: number | null;
+  mana?: number | null;
+  base_total?: number | null;
 };
 
 type PetElementsRow = {
-  pet_id: string;
-  null_element: number;
-  water: number;
-  fire: number;
-  earth: number;
-  air: number;
-  ice: number;
-  storm: number;
-  light: number;
-  shadow: number;
+  pet_id?: string;
+  null?: number | null;
+  water?: number | null;
+  fire?: number | null;
+  earth?: number | null;
+  air?: number | null;
+  ice?: number | null;
+  storm?: number | null;
+  light?: number | null;
+  shadow?: number | null;
 };
 
-type PetPointsBundle = {
-  base: PetStatsRow;
-  alloc: { hp: number; atk: number; magi: number; def: number; spd: number };
-  total: {
-    hp: number;
-    atk: number;
-    magi: number;
-    def: number;
-    spd: number;
-    mana: number;
-  };
-  total_points: number;
-} | null;
-
-type ActivePetResponse = {
-  server_now: string;
-  pet: any | null;
-
-  hatch?: {
-    ready: boolean;
-    hatch_ends_at: string | null;
-    hatch_remaining_ms: number;
-  } | null;
-
+type CareCurrentResponse = {
+  pet: PetRecord | null;
   stats: PetStatsRow | null;
-  points?: PetPointsBundle;
-
+  total_points?: number | null;
+  hp_display?: number | null;
   elements: PetElementsRow | null;
-  cooldowns?: any | null;
 };
 
-/** -----------------------------
- * Helpers
- * ------------------------------ */
+const ELEMENT_ORDER: Array<keyof Omit<PetElementsRow, "pet_id">> = [
+  "null",
+  "water",
+  "fire",
+  "earth",
+  "air",
+  "ice",
+  "storm",
+  "light",
+  "shadow",
+];
 
-async function getAccessToken(): Promise<string> {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throw new Error(error.message);
-
-  const token = data.session?.access_token;
-  if (!token) throw new Error("Missing access token. Are you logged in?");
-  return token;
+function clampPercent(value: unknown) {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, n));
 }
 
-async function fetchActive(): Promise<ActivePetResponse> {
-  const token = await getAccessToken();
+function safeNum(value: unknown, fallback = 0) {
+  const n = Number(value ?? fallback);
+  return Number.isFinite(n) ? n : fallback;
+}
 
-  const res = await fetch("/api/pets/active", {
-    headers: { Authorization: `Bearer ${token}` },
-    credentials: "include",
-  });
+function titleCase(value: string | null | undefined) {
+  if (!value) return "—";
 
-  const data = (await res.json().catch(() => ({}))) as any;
-  if (!res.ok) {
-    throw new Error(data?.error ?? `Active pet failed (${res.status})`);
+  return String(value)
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function normalizeElement(value: string | null | undefined) {
+  if (!value) return "null";
+
+  const v = String(value).trim().toLowerCase().replace(/\s+/g, "_");
+
+  if (v === "null_element") return "null";
+  if (ELEMENT_ORDER.includes(v as keyof Omit<PetElementsRow, "pet_id">)) {
+    return v;
   }
 
-  return data as ActivePetResponse;
+  return "null";
 }
 
-function mergePetModel(resp: ActivePetResponse | null) {
-  if (!resp?.pet) return null;
+async function getAccessTokenSafe() {
+  const { data, error } = await supabase.auth.getSession();
 
-  return {
-    ...resp.pet,
-    stats: resp.stats ?? null,
-    points: resp.points ?? null,
-    elements: resp.elements ?? null,
-    server_now: resp.server_now,
-    hatch: resp.hatch ?? null,
-  };
+  if (error) {
+    throw new Error(error.message || "Failed to read auth session.");
+  }
+
+  return data.session?.access_token ?? null;
 }
 
-/** -----------------------------
- * Component
- * ------------------------------ */
+function getPetLabel(pet: PetRecord | null) {
+  return pet?.nickname?.trim() || pet?.name?.trim() || "Your Delta";
+}
+
+function getPersonalityTone(personalityName: string | null) {
+  const p = String(personalityName ?? "").toLowerCase();
+
+  if (!p) {
+    return "This Delta is still figuring itself out, but it already feels attached to you.";
+  }
+
+  if (p.includes("brave") || p.includes("bold") || p.includes("heroic")) {
+    return "It carries itself with bright confidence and likes to face the world head-on.";
+  }
+
+  if (p.includes("calm") || p.includes("gentle") || p.includes("kind")) {
+    return "It has a calm aura and tends to make every moment feel softer and steadier.";
+  }
+
+  if (p.includes("shy") || p.includes("timid")) {
+    return "It can be a little cautious at first, but it clearly trusts you more every day.";
+  }
+
+  if (p.includes("playful") || p.includes("silly") || p.includes("cheerful")) {
+    return "It loves attention, movement, and the kind of fun that turns into instant bonding.";
+  }
+
+  if (p.includes("curious") || p.includes("clever") || p.includes("smart")) {
+    return "It constantly observes movement, sound, and energy patterns around it. It always seems one step away from discovering something new.";
+  }
+
+  if (p.includes("loyal") || p.includes("devoted")) {
+    return "It bonds deeply and gives off the feeling that once it chooses you, it means it.";
+  }
+
+  if (p.includes("fiery") || p.includes("fierce") || p.includes("wild")) {
+    return "It has a strong spark to it and reacts with a lot of emotion, energy, and presence.";
+  }
+
+  if (p.includes("lazy") || p.includes("sleepy")) {
+    return "It prefers comfort, naps, and taking life at its own weird little pace.";
+  }
+
+  return "Its personality is starting to show more clearly, and the bond between you two is shaping who it becomes.";
+}
+
+function buildPetDescription(
+  pet: PetRecord | null,
+  personalityName: string | null,
+) {
+  if (!pet) {
+    return "No active Delta is currently placed. Once you set a pet as active, its details will show here.";
+  }
+
+  const label = getPetLabel(pet);
+  const stage = titleCase(pet.stage);
+  const element = titleCase(pet.element || pet.line || "Null");
+  const personality =
+    personalityName && personalityName !== "—" ? personalityName : "Mysterious";
+  const tone = getPersonalityTone(personalityName);
+
+  return `${label} is a ${stage} ${element} Delta with a ${personality.toLowerCase()} personality. ${tone}`;
+}
 
 export default function PetPage() {
-  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const game = useGame();
-  const { openInventory } = useUI();
+  const { user, loading: authLoading } = useAuth();
+
+  const [pet, setPet] = useState<PetRecord | null>(null);
+  const [stats, setStats] = useState<PetStatsRow | null>(null);
+  const [elements, setElements] = useState<PetElementsRow | null>(null);
 
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  const [activeResp, setActiveResp] = useState<ActivePetResponse | null>(null);
-  const [petModel, setPetModel] = useState<any | null>(null);
-
-  const [statsOpen, setStatsOpen] = useState(false);
-  const [rewardsOpen, setRewardsOpen] = useState(false);
-  const [awardsOpen, setAwardsOpen] = useState(false);
-
+  const [loadingPage, setLoadingPage] = useState(true);
   const [loadErr, setLoadErr] = useState<string | null>(null);
-
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
   const [personalityName, setPersonalityName] = useState<string | null>(null);
 
-  /** Redirect if not logged in */
+  const hasLoadedOnceRef = useRef(false);
+
   useEffect(() => {
-    if (!authLoading && !user) navigate("/", { replace: true });
+    if (!authLoading && !user) {
+      navigate("/", { replace: true });
+    }
   }, [authLoading, user, navigate]);
 
-  /** Nudge game refresh key when auth becomes ready */
-  useEffect(() => {
-    if (authLoading || !user) return;
-    game.bumpRefreshKey();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
-
-  /** Load active pet + poll */
-  useEffect(() => {
-    if (authLoading || !user) return;
-
-    let alive = true;
-
-    async function load() {
-      setLoadErr(null);
-      try {
-        const resp = await fetchActive();
-        if (!alive) return;
-
-        setActiveResp(resp);
-        setPetModel(mergePetModel(resp));
-
-        game.bumpRefreshKey();
-      } catch (e: any) {
-        if (!alive) return;
-        setLoadErr(e?.message ?? String(e));
-      }
-    }
-
-    load();
-    const id = window.setInterval(load, 30_000);
-
-    return () => {
-      alive = false;
-      window.clearInterval(id);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
-
-  const pet = (petModel ?? (game as any)?.pet ?? null) as any | null;
-
-  /** Resolve personality name (frontend-only) */
-  useEffect(() => {
-    let alive = true;
-
-    async function loadPersonality() {
-      setPersonalityName(null);
-      if (!pet) return;
-
-      const direct =
-        pet?.personality_name ??
-        pet?.personalityName ??
-        pet?.personality?.name ??
-        pet?.personality?.key ??
-        (typeof pet?.personality === "string" ? pet.personality : null) ??
-        null;
-
-      if (typeof direct === "string" && direct.trim()) {
-        setPersonalityName(direct);
+  const resolvePersonalityName = useCallback(
+    async (nextPet: PetRecord | null) => {
+      if (!nextPet) {
+        setPersonalityName(null);
         return;
       }
 
-      const pid = pet?.personality_id ?? pet?.personalityId ?? null;
-      const pkey = pet?.personality_key ?? pet?.personalityKey ?? null;
+      const direct =
+        nextPet.personality_name ||
+        nextPet.personality ||
+        nextPet.personality_key ||
+        null;
+
+      if (direct && String(direct).trim()) {
+        setPersonalityName(titleCase(direct));
+        return;
+      }
 
       try {
-        if (pid) {
-          const { data, error } = await supabase
+        if (nextPet.personality_id) {
+          const { data } = await supabase
             .from("personalities")
             .select("name,key")
-            .eq("id", pid)
+            .eq("id", nextPet.personality_id)
             .maybeSingle();
 
-          if (!alive) return;
-          if (!error && data) setPersonalityName(data.name ?? data.key ?? null);
-          return;
+          if (data?.name || data?.key) {
+            setPersonalityName(titleCase(data.name || data.key));
+            return;
+          }
         }
 
-        if (pkey) {
-          const { data, error } = await supabase
+        if (nextPet.personality_key) {
+          const { data } = await supabase
             .from("personalities")
             .select("name,key")
-            .eq("key", pkey)
+            .eq("key", nextPet.personality_key)
             .maybeSingle();
 
-          if (!alive) return;
-          if (!error && data) setPersonalityName(data.name ?? data.key ?? null);
-          return;
+          if (data?.name || data?.key) {
+            setPersonalityName(titleCase(data.name || data.key));
+            return;
+          }
         }
       } catch {
-        // ignore
+        // ignore personality lookup errors
       }
-    }
 
-    loadPersonality();
-    return () => {
-      alive = false;
-    };
-  }, [pet]);
-
-  const activePetId = useMemo(() => {
-    const p = petModel ?? (game as any)?.pet ?? null;
-    return (
-      p?.id ??
-      p?.pet_id ??
-      p?.petId ??
-      p?.petID ??
-      activeResp?.pet?.id ??
-      activeResp?.pet?.pet_id ??
-      null
-    );
-  }, [petModel, game, activeResp]);
-
-  const hatchEndsAt =
-    activeResp?.hatch?.hatch_ends_at ?? pet?.hatch_ends_at ?? null;
-  const serverNowIso = activeResp?.server_now ?? pet?.server_now ?? null;
-
-  const countdown = useServerCountdown(
-    hatchEndsAt && serverNowIso
-      ? { serverNowIso, endsAtIso: hatchEndsAt }
-      : null,
+      setPersonalityName("—");
+    },
+    [],
   );
 
-  const msLeft = countdown.remainingMs ?? 0;
-  const isReady = countdown.done;
-  const prettyLeft = useMemo(() => formatDuration(msLeft), [msLeft]);
+  const loadPetPage = useCallback(
+    async (showSpinner: boolean) => {
+      if (!user) return;
 
-  /** Build the exact model PetMainStats expects */
-  const petMainStatsModel = useMemo(() => {
-    if (!pet) return null;
+      if (showSpinner) {
+        setLoadingPage(true);
+      }
 
-    const pts = pet?.points?.total ?? null;
-    const base = pet?.stats ?? null;
-    const src = pts ?? base ?? pet;
+      setLoadErr(null);
+
+      try {
+        const token = await getAccessTokenSafe();
+
+        if (!token) {
+          throw new Error("You are not authenticated.");
+        }
+
+        const res = await fetch("/api/care/current", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const json = (await res.json().catch(() => null)) as
+          | CareCurrentResponse
+          | { error?: string }
+          | null;
+
+        if (!res.ok) {
+          throw new Error(json?.error || "Failed to load pet page.");
+        }
+
+        const nextPet = json?.pet ?? null;
+        const nextStats = json?.stats ?? null;
+        const nextElements = json?.elements ?? null;
+
+        setPet(nextPet);
+        setStats(nextStats);
+        setElements(nextElements);
+        await resolvePersonalityName(nextPet);
+
+        hasLoadedOnceRef.current = true;
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to load pet page.";
+
+        setLoadErr(message);
+        setPet(null);
+        setStats(null);
+        setElements(null);
+        setPersonalityName(null);
+      } finally {
+        setLoadingPage(false);
+      }
+    },
+    [resolvePersonalityName, user],
+  );
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+
+    void loadPetPage(true);
+
+    const refreshTimer = window.setInterval(() => {
+      void loadPetPage(false);
+    }, 60_000);
+
+    return () => {
+      window.clearInterval(refreshTimer);
+    };
+  }, [authLoading, user, loadPetPage]);
+
+  const runCareAction = useCallback(
+    async (action: CareAction) => {
+      if (busy) return;
+
+      setBusy(true);
+      setActionMsg(null);
+
+      try {
+        const token = await getAccessTokenSafe();
+
+        if (!token) {
+          throw new Error("You are not authenticated.");
+        }
+
+        const res = await fetch(`/api/care/${action}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const json = (await res.json().catch(() => null)) as {
+          message?: string;
+          error?: string;
+        } | null;
+
+        if (!res.ok) {
+          throw new Error(json?.error || `Failed to ${action} your pet.`);
+        }
+
+        const defaultMessageMap: Record<CareAction, string> = {
+          feed: "Your Delta has been fed.",
+          clean: "Your Delta is all cleaned up.",
+          play: "Your Delta had a fun play session.",
+          pet: "Your Delta looks happier after the extra affection.",
+        };
+
+        setActionMsg(json?.message || defaultMessageMap[action]);
+        await loadPetPage(false);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : `Failed to ${action} your pet.`;
+        setActionMsg(message);
+      } finally {
+        setBusy(false);
+      }
+    },
+    [busy, loadPetPage],
+  );
+
+  const hunger = clampPercent(pet?.hunger);
+  const clean = clampPercent(pet?.cleanliness);
+  const happy = clampPercent(pet?.happiness);
+  const bond = clampPercent(pet?.bond);
+
+  const totalStats = useMemo(() => {
+    const hp = safeNum(stats?.hp);
+    const atk = safeNum(stats?.atk);
+    const def = safeNum(stats?.def);
+    const spd = safeNum(stats?.spd);
+    const magi = safeNum(stats?.magi);
+    const mana = safeNum(stats?.mana);
 
     return {
-      name: pet?.name ?? null,
-
-      line: String(pet?.line ?? "null_element"),
-      stage: String(pet?.stage ?? "baby"),
-      level: Number(pet?.level ?? 1),
-
-      hp_max: Number(pet?.hp_max ?? 0),
-      hp_cur: Number(pet?.hp_cur ?? 0),
-
-      hp_stat: Number(src?.hp ?? 0),
-
-      atk: Number(src?.atk ?? 0),
-      def: Number(src?.def ?? 0),
-      spd: Number(src?.spd ?? 0),
-      magi: Number(src?.magi ?? 0),
-
-      mana: Number(src?.mana ?? pet?.mana ?? 0),
-      personality:
-        (typeof personalityName === "string" ? personalityName : null) ??
-        pet?.personality_name ??
-        pet?.personalityName ??
-        pet?.personality?.name ??
-        pet?.personality_key ??
-        pet?.personalityKey ??
-        (typeof pet?.personality === "string" ? pet.personality : null) ??
-        null,
-
-      gender: pet?.gender ?? "null_gender",
-
-      training:
-        pet?.elements ??
-        pet?.training ??
-        pet?.training_elements ??
-        pet?.trainingElements ??
-        undefined,
+      hp,
+      atk,
+      def,
+      spd,
+      magi,
+      mana,
+      total: hp + atk + def + spd + magi + mana,
     };
+  }, [stats]);
+
+  const activeElementKey = normalizeElement(pet?.element || pet?.line);
+
+  const elementRows = useMemo(() => {
+    const valueMap = ELEMENT_ORDER.map((key) => ({
+      key,
+      value: safeNum(elements?.[key]),
+    }));
+
+    const values = valueMap.map((row) => row.value);
+    const maxValue = values.length ? Math.max(...values) : 0;
+    const minValue = values.length ? Math.min(...values) : 0;
+    const hasRange = maxValue !== minValue;
+
+    return valueMap.map((row) => ({
+      key: row.key,
+      label: row.key === "null" ? "Null" : titleCase(row.key),
+      value: row.value,
+      active: row.key === activeElementKey,
+      strong: hasRange && row.value === maxValue,
+      weak: hasRange && row.value === minValue,
+    }));
+  }, [elements, activeElementKey]);
+
+  const petDescription = useMemo(() => {
+    return buildPetDescription(pet, personalityName);
   }, [pet, personalityName]);
 
-  async function hatchNow() {
-    if (!pet) return;
+  const userName =
+    user?.user_metadata?.username ||
+    user?.user_metadata?.full_name ||
+    user?.email ||
+    "Player";
 
-    // ✅ Manual hatch only — EggSection controls whether button is enabled.
-    setMsg(null);
-    setBusy(true);
-
-    try {
-      const token = await getAccessToken();
-
-      const res = await fetch("/api/pets/hatch", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      });
-
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((body as any)?.error ?? "Hatch failed");
-
-      await game.bumpRefreshKey();
-
-      const resp = await fetchActive();
-      setActiveResp(resp);
-      setPetModel(mergePetModel(resp));
-
-      setMsg("Hatched");
-    } catch (e: any) {
-      setMsg(`Hatch failed: ${e?.message ?? String(e)}`);
-    } finally {
-      setBusy(false);
-    }
+  if (authLoading || (!hasLoadedOnceRef.current && loadingPage)) {
+    return (
+      <div className="petRepoPage">
+        <div className="petRepoStateCard">Loading Delta Repository…</div>
+      </div>
+    );
   }
 
-  if (authLoading || (game as any)?.loading) return null;
-
-  const statsForModal = (pet?.points?.total ?? pet?.stats ?? null) as
-    | any
-    | null;
-  const elementsForModal = (pet?.elements ?? null) as any | null;
-
   return (
-    <div style={{ padding: 16 }}>
-      <PetPageHeader
-        activePetId={activePetId ? String(activePetId) : null}
-        onOpenRewards={() => setRewardsOpen(true)}
-        onOpenAwards={() => setAwardsOpen(true)}
-      />
-
+    <div className="petRepoPage">
       {loadErr ? (
-        <p style={{ color: "crimson", marginTop: 10 }}>Load error: {loadErr}</p>
+        <div className="petRepoStateCard petRepoStateCardError">
+          <h2>Pet page load error</h2>
+          <p>{loadErr}</p>
+        </div>
       ) : null}
 
-      <div style={{ marginTop: 12, maxWidth: 820 }}>
-        <DailyCareCard />
-
-        <div style={{ marginTop: 12 }}>
-          {/* ✅ Explicitly real care room */}
-          <CareRoom mode="auth" />
+      {!loadErr && !loadingPage && !pet ? (
+        <div className="petRepoStateCard">
+          <h2>No active pet found</h2>
+          <p>Set one active, then come back to the repository.</p>
         </div>
-      </div>
+      ) : null}
 
-      <div
-        style={{
-          marginTop: 12,
-          marginLeft: -200,
-          marginRight: -16,
-          width: "calc(100vw)",
-        }}
-      >
-        <PetMainStats pet={petMainStatsModel} />
-      </div>
-
-      {!pet ? (
-        <div>
-          <p>No pet found for this account.</p>
-        </div>
-      ) : (
-        <div style={{ marginTop: 12, maxWidth: 820 }}>
-          <EggSection
-            pet={pet}
-            isReady={isReady}
-            prettyLeft={prettyLeft}
-            busy={busy}
-            onHatch={hatchNow}
-          />
-          {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={openInventory}
-        style={{
-          padding: "10px 14px",
-          borderRadius: 12,
-          border: "1px solid rgba(255,255,255,0.18)",
-          background: "rgba(255,255,255,0.06)",
-          color: "rgba(255,255,255,0.92)",
-          cursor: "pointer",
-          fontWeight: 800,
-          marginTop: 16,
-        }}
-      >
-        Inventory (temp)
-      </button>
-
-      <button
-        onClick={() => navigate("/inventory")}
-        style={{
-          marginTop: 12,
-          padding: "10px 14px",
-          borderRadius: 12,
-          fontWeight: 700,
-          border: "1px solid rgba(255,255,255,0.2)",
-          background: "rgba(255,255,255,0.08)",
-          color: "#fff",
-          cursor: "pointer",
-        }}
-      >
-        🧳 Inventory (TEST)
-      </button>
-
-      <PetTempNavButtons
-        onOpenStats={() => setStatsOpen(true)}
-        onOpenAwards={() => setAwardsOpen(true)}
-      />
-
-      {rewardsOpen && (
-        <div
-          onClick={() => setRewardsOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.65)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 10000,
-            padding: 16,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "min(1150px, 100%)",
-              borderRadius: 16,
-              padding: 14,
-              background: "rgba(10, 16, 28, 0.95)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-                marginBottom: 10,
-              }}
-            >
-              <div style={{ fontWeight: 900, letterSpacing: 0.2 }}>
-                Daily Rewards
+      {!loadErr && pet ? (
+        <section className="petRepoGrid petRepoGrid--threeCol">
+          <div className="petRepoLeft">
+            <div className="petRepoCreatureCard">
+              <div className="petRepoElementBadge">
+                {titleCase(pet.element || pet.line || "Null")}
               </div>
+
+              <div className="petRepoPortraitWrap">
+                <div className="petRepoPortrait">
+                  <div className="petRepoOrb">
+                    <span className="petRepoOrbEye petRepoOrbEyeLeft" />
+                    <span className="petRepoOrbEye petRepoOrbEyeRight" />
+                    <span className="petRepoOrbBeak" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="petRepoBars">
+                <MeterRow label="Hunger" value={hunger} tone="blue" />
+                <MeterRow label="Clean" value={clean} tone="purple" />
+                <MeterRow label="Happy" value={happy} tone="red" />
+                <MeterRow label="Bond" value={bond} tone="gold" />
+              </div>
+            </div>
+
+            <div className="petRepoActionGrid">
+              <button
+                type="button"
+                className="petRepoAction petRepoActionRed"
+                onClick={() => void runCareAction("feed")}
+                disabled={busy}
+              >
+                Feed
+              </button>
 
               <button
                 type="button"
-                onClick={() => setRewardsOpen(false)}
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: 12,
-                  border: "1px solid rgba(255,255,255,0.18)",
-                  background: "rgba(255,255,255,0.06)",
-                  color: "rgba(255,255,255,0.92)",
-                  cursor: "pointer",
-                  fontWeight: 800,
-                }}
+                className="petRepoAction petRepoActionBlue"
+                onClick={() => void runCareAction("clean")}
+                disabled={busy}
               >
-                Close
+                Clean
+              </button>
+
+              <button
+                type="button"
+                className="petRepoAction petRepoActionPurple"
+                onClick={() => void runCareAction("play")}
+                disabled={busy}
+              >
+                Play
+              </button>
+
+              <button
+                type="button"
+                className="petRepoAction petRepoActionYellow"
+                onClick={() => void runCareAction("pet")}
+                disabled={busy}
+              >
+                Pet
               </button>
             </div>
 
-            <WeeklyRewardsBar />
+            {actionMsg ? (
+              <div className="petRepoInlineMessage">{actionMsg}</div>
+            ) : null}
+
+            <div className="petRepoPanel">
+              <SectionPill title="Pet Details" />
+
+              <div className="petRepoStatList">
+                <InfoRow label="Pet Name" value={pet.name || "—"} />
+                <InfoRow label="Nickname" value={pet.nickname || "—"} />
+                <InfoRow label="Level" value={String(safeNum(pet.level, 1))} />
+                <InfoRow label="Gender" value={titleCase(pet.gender)} />
+                <InfoRow
+                  label="Element"
+                  value={titleCase(pet.element || pet.line || "Null")}
+                />
+                <InfoRow label="Stage" value={titleCase(pet.stage)} />
+                <InfoRow label="Personality" value={personalityName || "—"} />
+              </div>
+            </div>
           </div>
-        </div>
-      )}
 
-      {awardsOpen && activePetId ? (
-        <AwardsModal
-          petId={String(activePetId)}
-          onClose={() => setAwardsOpen(false)}
-        />
+          <div className="petRepoMiddle">
+            <div className="petRepoTitleCard">
+              <h1 className="petRepoTitle">Delta Repository</h1>
+            </div>
+
+            <div className="petRepoPanel petRepoPanel--tightTop">
+              <SectionPill title="Pet Description" />
+              <p className="petRepoDescription">
+                {pet.description?.trim() || petDescription}
+              </p>
+            </div>
+
+            <div className="petRepoPanel">
+              <SectionPill title="Stats" />
+
+              <div className="petRepoStatList">
+                <InfoRow label="HP" value={String(totalStats.hp)} />
+                <InfoRow label="ATK" value={String(totalStats.atk)} />
+                <InfoRow label="DEF" value={String(totalStats.def)} />
+                <InfoRow label="SPD" value={String(totalStats.spd)} />
+                <InfoRow label="MAGI" value={String(totalStats.magi)} />
+                <InfoRow label="MANA" value={String(totalStats.mana)} />
+                <InfoRow
+                  label="Total"
+                  value={String(totalStats.total)}
+                  strong
+                />
+              </div>
+            </div>
+
+            <div className="petRepoPanel">
+              <SectionPill title="Element Stats" />
+
+              <div className="petRepoStatList">
+                {elementRows.map((row) => {
+                  const rowClassNames = ["petRepoInfoRow"];
+
+                  if (row.strong) rowClassNames.push("is-strong-element");
+                  if (row.weak) rowClassNames.push("is-weak-element");
+                  if (row.active) rowClassNames.push("is-active-element");
+
+                  return (
+                    <div key={row.key} className={rowClassNames.join(" ")}>
+                      <span>{row.label}</span>
+                      <span>{row.value}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="petRepoRight">
+            <div className="petRepoPanel">
+              <SectionPill title="User" />
+
+              <div className="petRepoUserHero">
+                <div className="petRepoUserName">{userName}</div>
+                <div className="petRepoUserMeta">
+                  Active caretaker of this Delta
+                </div>
+              </div>
+
+              <div className="petRepoStatList">
+                <InfoRow label="Email" value={user?.email || "—"} />
+              </div>
+            </div>
+          </div>
+        </section>
       ) : null}
+    </div>
+  );
+}
 
-      <StatsModal
-        open={statsOpen}
-        onClose={() => setStatsOpen(false)}
-        petName={pet?.name ?? null}
-        level={Number(pet?.level ?? 1)}
-        stats={statsForModal ?? undefined}
-        elements={elementsForModal ?? undefined}
-      />
+function SectionPill({ title }: { title: string }) {
+  return (
+    <div className="petRepoSectionHeader">
+      <span className="petRepoSectionLine" />
+      <div className="petRepoSectionPill">{title}</div>
+      <span className="petRepoSectionLine" />
+    </div>
+  );
+}
 
-      <div style={{ marginTop: 16 }}>
-        <LogoutButton />
+function MeterRow({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "blue" | "purple" | "red" | "gold";
+}) {
+  return (
+    <div className="petRepoMeterRow">
+      <div className="petRepoMeterLabel">{label}</div>
+      <div className="petRepoMeterTrack" aria-hidden="true">
+        <div
+          className={`petRepoMeterFill petRepoMeterFill-${tone}`}
+          style={{ width: `${value}%` }}
+        />
       </div>
+    </div>
+  );
+}
+
+function InfoRow({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className={`petRepoInfoRow ${strong ? "is-strong" : ""}`}>
+      <span>{label}</span>
+      <span>{value}</span>
     </div>
   );
 }

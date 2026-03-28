@@ -10,8 +10,9 @@ import { useLoginSubmit } from "./LoginSubmit";
 import { supabase } from "../../lib/supabase/client";
 
 type Mode = "none" | "login";
+type ForcedView = "none" | "login" | "signup";
 
-const AUTO_CLOSE_MS = 2 * 60 * 1000; // 2 minutes
+const AUTO_CLOSE_MS = 2 * 60 * 1000;
 
 type LoginPanelProps = {
   identifier: string;
@@ -286,9 +287,6 @@ function SignupPanel({
         return;
       }
 
-      // IMPORTANT:
-      // Do NOT send brand-new users into /create after signup.
-      // Make them manually sign in first.
       if (hasSession) {
         await supabase.auth.signOut();
       }
@@ -393,7 +391,11 @@ function SignupPanel({
   );
 }
 
-export function LoginMenus() {
+export function LoginMenus({
+  forcedView = "none",
+}: {
+  forcedView?: ForcedView;
+}) {
   const [mode, setMode] = useState<Mode>("none");
   const [signupOpen, setSignupOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -408,10 +410,34 @@ export function LoginMenus() {
 
   const portalTarget = typeof document !== "undefined" ? document.body : null;
 
+  useEffect(() => {
+    if (forcedView === "signup") {
+      setMode("none");
+      setSignupOpen(true);
+      return;
+    }
+
+    if (forcedView === "login") {
+      setSignupOpen(false);
+      setMode("login");
+      return;
+    }
+
+    setSignupOpen(false);
+    setMode("none");
+  }, [forcedView]);
+
   function openLogin() {
     setMessage(null);
     setMode("login");
     setSignupOpen(false);
+
+    if (
+      typeof window !== "undefined" &&
+      window.location.pathname !== "/signin"
+    ) {
+      window.history.replaceState(null, "", "/signin");
+    }
   }
 
   function openSignup() {
@@ -420,16 +446,37 @@ export function LoginMenus() {
     localStorage.removeItem("dp_login_identifier");
     setSignupOpen(true);
     setMode("none");
+
+    if (
+      typeof window !== "undefined" &&
+      window.location.pathname !== "/signup"
+    ) {
+      window.history.replaceState(null, "", "/signup");
+    }
   }
 
   function closeLogin() {
     setMode("none");
     setMessage(null);
+
+    if (
+      typeof window !== "undefined" &&
+      ["/signin", "/signup"].includes(window.location.pathname)
+    ) {
+      window.history.replaceState(null, "", "/");
+    }
   }
 
   function closeSignup() {
     setSignupOpen(false);
     setMessage(null);
+
+    if (
+      typeof window !== "undefined" &&
+      ["/signin", "/signup"].includes(window.location.pathname)
+    ) {
+      window.history.replaceState(null, "", "/");
+    }
   }
 
   const loginModal =
@@ -469,7 +516,7 @@ export function LoginMenus() {
             onClick={closeSignup}
           >
             <div
-              className="auth-modal neon-border"
+              className="auth-modal signup-neon"
               role="dialog"
               aria-modal="true"
               aria-label="Sign up"

@@ -24,6 +24,9 @@ export const router = createBrowserRouter([
       { index: true, element: <Homepage /> },
       { path: "home", element: <Homepage /> },
 
+      { path: "signup", element: <Homepage /> },
+      { path: "signin", element: <Homepage /> },
+
       // Auth callbacks
       { path: "authcallback", element: <AuthCallback /> },
 

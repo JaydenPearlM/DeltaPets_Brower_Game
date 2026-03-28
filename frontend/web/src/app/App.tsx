@@ -1,4 +1,3 @@
-// frontend/web/src/app/App.tsx
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { UIProvider } from "./providers/UIProvider";
 import { useAuth } from "./providers/useAuth";
@@ -20,31 +19,56 @@ export default function App() {
     location.pathname === "/hatchery" ||
     location.pathname.startsWith("/hatchery/");
 
-  const showBackToPets = isLoggedIn && isHatcheryRoute;
+  const isPetRoute =
+    location.pathname === "/pet" || location.pathname.startsWith("/pet/");
+
+  const isGymRoute =
+    location.pathname === "/gym" || location.pathname.startsWith("/gym/");
+
+  const isAuthShellRoute =
+    location.pathname === "/" ||
+    location.pathname === "/home" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/signin";
+
+  const forcedAuthView =
+    location.pathname === "/signup"
+      ? "signup"
+      : location.pathname === "/signin"
+        ? "login"
+        : "none";
+
+  const sectionTitle = isHatcheryRoute
+    ? "Hatchery"
+    : isPetRoute
+      ? "Pets"
+      : isGymRoute
+        ? "Gym"
+        : null;
+
+  const petButtonLabel = isHatcheryRoute ? "Back to Pets" : "Pets";
 
   return (
     <UIProvider>
       <div className="dp-viewport">
         <div className="dp-stage">
           <header className="dp-stageHeader dp-stageHeader--appFix">
-            {/* LEFT */}
             <div className="dp-headerLeft dp-headerLeft--withTitle">
               <div className="dp-alphaBadge" title={__APP_VERSION__}>
                 <span className="dp-alphaBadgeLabel">ALPHA</span>
                 <span className="dp-alphaBadgeVer">v{__APP_VERSION__}</span>
               </div>
 
-              {isHatcheryRoute ? (
+              {sectionTitle ? (
                 <div
                   className="dp-sectionTitle"
-                  aria-label="Current section: Hatchery"
+                  aria-label={`Current section: ${sectionTitle}`}
                 >
-                  Hatchery
+                  {sectionTitle}
                 </div>
               ) : null}
             </div>
 
-            {/* CENTER */}
             <div
               className="dp-headerCenterTagline dp-headerCenterTagline--appFix"
               aria-hidden
@@ -55,24 +79,37 @@ export default function App() {
               </div>
             </div>
 
-            {/* RIGHT */}
             <div className="dp-headerRight dp-headerRight--auth">
               {isLoggedIn ? (
                 <>
-                  {showBackToPets ? (
-                    <button
-                      type="button"
-                      className="btn btn-yellow"
-                      onClick={() => navigate("/pet")}
-                    >
-                      Back to Pets
-                    </button>
-                  ) : null}
+                  <button
+                    type="button"
+                    className="btn btn-gold"
+                    onClick={() => navigate("/pet")}
+                  >
+                    {petButtonLabel}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-cool"
+                    onClick={() => navigate("/hatchery")}
+                  >
+                    Hatchery
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-cool"
+                    onClick={() => navigate("/gym")}
+                  >
+                    Gym
+                  </button>
 
                   <LogoutButton />
                 </>
               ) : (
-                <LoginMenus />
+                <LoginMenus forcedView={forcedAuthView} />
               )}
             </div>
           </header>
@@ -80,6 +117,62 @@ export default function App() {
           <main className="dp-stageScroll">
             <Outlet />
           </main>
+
+          <footer className="dp-stageFooter">
+            <div className="dp-stageFooterInner">
+              <div className="dp-footerBrand">
+                <span className="dp-footerBrandTitle">DeltaPets</span>
+                <span className="dp-footerBrandText">
+                  Raise. Train. Evolve. Bond.
+                </span>
+              </div>
+
+              <div className="dp-footerStatus">
+                <span className="dp-footerDot" aria-hidden />
+                <span className="dp-footerStatusText">
+                  {isAuthShellRoute
+                    ? "Pre-login preview active"
+                    : "Alpha systems active"}
+                </span>
+              </div>
+
+              <div className="dp-footerLinks">
+                <button
+                  type="button"
+                  className="dp-footerLink"
+                  onClick={() => navigate("/")}
+                >
+                  Home
+                </button>
+
+                {isLoggedIn ? (
+                  <>
+                    <button
+                      type="button"
+                      className="dp-footerLink"
+                      onClick={() => navigate("/pet")}
+                    >
+                      Pets
+                    </button>
+                    <button
+                      type="button"
+                      className="dp-footerLink"
+                      onClick={() => navigate("/hatchery")}
+                    >
+                      Hatchery
+                    </button>
+                    <button
+                      type="button"
+                      className="dp-footerLink"
+                      onClick={() => navigate("/gym")}
+                    >
+                      Gym
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          </footer>
         </div>
       </div>
 
