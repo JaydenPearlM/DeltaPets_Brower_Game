@@ -57,12 +57,14 @@ export function sumBase5(b: {
   base_def?: number | null;
   base_spd?: number | null;
   base_magi?: number | null;
+  base_mana?: number | null;
 }) {
   return (
     (b.base_hp ?? 0) +
     (b.base_atk ?? 0) +
     (b.base_def ?? 0) +
     (b.base_spd ?? 0) +
-    (b.base_magi ?? 0)
+    (b.base_magi ?? 0) +
+    (b.base_mana ?? 0)
   );
 }

@@ -1,6 +1,3 @@
-import clsx from "clsx";
-import { getEggGrowthFlavorText } from "./eggGrowthFlavorText";
-import type { EggGrowthTraits, EggStatKey } from "./eggGrowthTraits";
 import "./eggGrowthTraits.css";
 
 export type EggStatKey = "hp" | "atk" | "magi" | "def" | "spd" | "mana";
@@ -18,10 +15,12 @@ function pickRandom<T>(items: T[]): T {
 
 function shuffle<T>(items: T[]): T[] {
   const copy = [...items];
+
   for (let i = copy.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
+
   return copy;
 }
 
@@ -86,7 +85,7 @@ const STAT_LABELS: Record<EggStatKey, string> = {
 };
 
 function joinTraitWords(stats: EggStatKey[]) {
-  return stats.map((s) => STAT_LABELS[s]);
+  return stats.map((stat) => STAT_LABELS[stat]);
 }
 
 export function getEggGrowthFlavorText(traits: EggGrowthTraits): string {
@@ -94,17 +93,21 @@ export function getEggGrowthFlavorText(traits: EggGrowthTraits): string {
 
   if (strongStats.length === 2) {
     const [a, b] = joinTraitWords(strongStats);
+
     if (weakStat) {
       return `This egg carries a ${a} and ${b} aura, but one flaw lingers within.`;
     }
+
     return `This egg carries a ${a} and ${b} aura.`;
   }
 
   if (strongStats.length === 1) {
     const [a] = joinTraitWords(strongStats);
+
     if (weakStat) {
       return `This egg feels ${a}, though a weakness hides beneath the shell.`;
     }
+
     return `This egg gives off a ${a} aura.`;
   }
 
@@ -141,6 +144,20 @@ const STAT_ROWS: Array<{ key: EggStatKey; label: string }> = [
   { key: "mana", label: "MANA" },
 ];
 
+function getStatCardClassName(isStrong: boolean, isWeak: boolean) {
+  const classNames = ["selectedEggStatCard"];
+
+  if (isStrong) {
+    classNames.push("selectedEggStatCardStrong");
+  }
+
+  if (isWeak) {
+    classNames.push("selectedEggStatCardWeak");
+  }
+
+  return classNames.join(" ");
+}
+
 export function SelectedEggStats({ selectedEgg }: SelectedEggStatsProps) {
   if (!selectedEgg) {
     return (
@@ -164,14 +181,7 @@ export function SelectedEggStats({ selectedEgg }: SelectedEggStatsProps) {
           const isWeak = growthTraits.weakStat === key;
 
           return (
-            <div
-              key={key}
-              className={clsx(
-                "selectedEggStatCard",
-                isStrong && "selectedEggStatCardStrong",
-                isWeak && "selectedEggStatCardWeak",
-              )}
-            >
+            <div key={key} className={getStatCardClassName(isStrong, isWeak)}>
               <span className="selectedEggStatLabel">{label}</span>
               <span className="selectedEggStatValue">{stats[key]}</span>
             </div>

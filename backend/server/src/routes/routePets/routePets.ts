@@ -75,7 +75,7 @@ async function assignPetToMainParty(userId: string, petId: string) {
   );
 
   const targetSlot =
-    Array.from({ length: 5 }, (_, idx) => idx + 1).find(
+    Array.from({ length: 4 }, (_, idx) => idx + 1).find(
       (slot) => !usedSlots.has(slot),
     ) ?? null;
 
@@ -374,6 +374,7 @@ petsRouter.post(
         base_def: (baseRaw as any).base_def,
         base_spd: (baseRaw as any).base_spd,
         base_magi: (baseRaw as any).base_magi,
+        base_mana: (baseRaw as any).base_mana,
       });
 
       if (baseSum !== 10) {

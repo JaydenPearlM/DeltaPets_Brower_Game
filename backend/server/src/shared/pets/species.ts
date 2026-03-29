@@ -59,11 +59,11 @@ export const STARTER_SPROUTS: SharedStarter[] = [
     line: "water",
     baseStats: {
       hp: 1,
-      atk: 0,
+      atk: 1,
       magi: 3,
       def: 2,
       spd: 2,
-      mana: 0,
+      mana: 1,
       base_total: 10,
     },
   },

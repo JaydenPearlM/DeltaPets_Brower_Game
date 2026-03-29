@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase/client";
+import {
+  DEMO_PET,
+  FALLBACK_ANNOUNCEMENTS,
+  FALLBACK_BANNER,
+  FALLBACK_CREATED,
+  FALLBACK_PATCHES,
+} from "./Fallback";
 import "./homepage.css";
 
 export type ElementalLine =
@@ -205,15 +212,15 @@ const ELEMENT_META: Record<string, ElementMeta> = {
 const HERO_FEATURES = [
   {
     title: "Eggs",
-    text: "Eggs hold the earliest form of life in Aliune. Each one develops differently, and what hatches can shape how a bond begins..",
+    text: "Just another egg game… or is it? Every egg holds the start of something bigger. Hatch, raise, and discover a companion that can grow far beyond first impressions.",
   },
   {
     title: "Raise Through Care",
-    text: "Growth is built through care. Feeding, cleaning, and time spent together help your companion grow stronger and deepen its bond with you.  Bonds are very important in this world.",
+    text: "Bond is everything. Feeding, cleaning, and spending time together does more than keep your Delta happy. Bond is the heart of growth, and the key to evolution.",
   },
   {
     title: "Element Training",
-    text: "Elements shape how companions grow, train, and fight. Some abilities can only be learned by mastering the right element..",
+    text: "Train your element. Shape your skills.Elemental training helps your Delta learn different abilities, strengthen its role, and open up new ways to fight and grow.",
   },
 ];
 
@@ -238,143 +245,13 @@ const WORLD_SIGNAL = {
   condition: "Unstable",
   region: "Northern Haven",
   corruption: "Low, rising",
-  latestReport: "An unusual hatch signature has been detected.",
-};
-
-const NARRATIVE_SIGNAL = {
-  title: "Narrative Signal",
-  text: "A corrupted Solite has already hatched. Once bonded to a human, now abandoned, it trains alone—believing it no longer needs a human bond to rise. As two factions move closer to conflict, Aliune begins to shift.",
+  latestReport: "Multiple eggs are showing abnormal hatch signatures.",
 };
 
 const EVENT_TEASER = {
   title: "Current Event Watch",
   body: "Corruption Watch is active in the north. Rumors suggest unstable egg readings may appear before the next major system update.",
   tag: "Alpha Event",
-};
-
-const FALLBACK_ANNOUNCEMENTS: AnnouncementItem[] = [
-  {
-    id: "a1",
-    title: "Homepage glow-up is underway",
-    body: "The DeltaPets homepage is being reshaped to feel more like a living browser game world, with stronger visual hierarchy, lore panels, and clearer alpha systems.",
-    createdAt: "2026-03-27T12:00:00.000Z",
-  },
-  {
-    id: "a2",
-    title: "Secret Haven preview is live",
-    body: "The Secret Haven is part of the early direction for Delta bonding and room-based growth, and it will continue expanding after the homepage pass.",
-    createdAt: "2026-03-26T12:00:00.000Z",
-  },
-  {
-    id: "a3",
-    title: "Corruption readings increased in the north",
-    body: "Aliune is not stable. Strange hatch behavior and darker elemental interference are beginning to show up across early narrative hooks.",
-    createdAt: "2026-03-25T12:00:00.000Z",
-  },
-];
-
-const FALLBACK_CREATED: CreatedItem[] = [
-  {
-    id: "c1",
-    icon: "🥚",
-    name: "Hatchery + Starter Eggs",
-    badge: "live",
-    category: "complete",
-    sortOrder: 1,
-  },
-  {
-    id: "c2",
-    icon: "📊",
-    name: "Base Stat Framework",
-    badge: "live",
-    category: "complete",
-    sortOrder: 2,
-  },
-  {
-    id: "c3",
-    icon: "💛",
-    name: "Delta Hearth Preview",
-    badge: "live",
-    category: "complete",
-    sortOrder: 3,
-  },
-  {
-    id: "c4",
-    icon: "🏠",
-    name: "Secret Haven Preview",
-    badge: "building",
-    category: "coming_next",
-    sortOrder: 4,
-  },
-  {
-    id: "c5",
-    icon: "🌿",
-    name: "Daily Care System",
-    badge: "building",
-    category: "coming_next",
-    sortOrder: 5,
-  },
-  {
-    id: "c6",
-    icon: "⚔️",
-    name: "Battle Arena",
-    badge: "soon",
-    category: "coming_next",
-    sortOrder: 6,
-  },
-];
-
-const FALLBACK_PATCHES: PatchBlock[] = [
-  {
-    id: "p1",
-    version: "v0.0.1-alpha.1",
-    date: "March 27, 2026",
-    description:
-      "Homepage systems are being reorganized to support a stronger world-facing alpha presentation.",
-    entries: [
-      { type: "added", text: "Hero section rewrite" },
-      { type: "added", text: "World Signal and Narrative Signal panels" },
-      {
-        type: "changed",
-        text: "Homepage layout now mirrors browser-game style structure",
-      },
-    ],
-  },
-];
-
-const FALLBACK_BANNER: BannerContent = {
-  enabled: false,
-  messages: [],
-  alertColor: "green",
-  alertType: "news",
-  ctaLabel: null,
-  ctaHref: null,
-};
-
-const DEMO_PET: ActivePetModel = {
-  id: "demo",
-  name: "Solite",
-  nickname: null,
-  line: "light",
-  stage: "baby",
-  level: 1,
-  xp: 0,
-  hunger: 72,
-  cleanliness: 88,
-  happiness: 90,
-  energy: 95,
-  bond: 14,
-  atk: 3,
-  def: 2,
-  spd: 2,
-  magi: 2,
-  mana: 0,
-  hp_max: 4,
-  hp_cur: 4,
-  personality_key: "gentle",
-  personality_name: "Gentle",
-  personality_definition: "Soft-hearted and protective.",
-  gender: "Genderless",
 };
 
 const CREATED_PANEL_PAGES = [
@@ -906,6 +783,52 @@ export default function Homepage() {
 
       <section className="hp-heroCard" aria-labelledby="hero-heading">
         <div className="hp-heroInner">
+          <section
+            className="hp-heroWorldSignalTop hp-panel hp-panel--blue"
+            aria-labelledby="hero-world-signal-heading"
+          >
+            <div className="hp-heroWorldSignalTopInner">
+              <h2
+                className="hp-heroWorldSignalTopTitle"
+                id="hero-world-signal-heading"
+              >
+                World Signal
+              </h2>
+
+              <div className="hp-heroWorldSignalTopStats">
+                <div className="hp-heroWorldSignalTopItem">
+                  <span className="hp-heroWorldSignalTopKey">Condition</span>
+                  <span className="hp-heroWorldSignalTopVal hp-heroWorldSignalTopVal--warn">
+                    {WORLD_SIGNAL.condition}
+                  </span>
+                </div>
+
+                <div className="hp-heroWorldSignalTopItem">
+                  <span className="hp-heroWorldSignalTopKey">Region</span>
+                  <span className="hp-heroWorldSignalTopVal">
+                    {WORLD_SIGNAL.region}
+                  </span>
+                </div>
+
+                <div className="hp-heroWorldSignalTopItem">
+                  <span className="hp-heroWorldSignalTopKey">Corruption</span>
+                  <span className="hp-heroWorldSignalTopVal">
+                    {WORLD_SIGNAL.corruption}
+                  </span>
+                </div>
+
+                <div className="hp-heroWorldSignalTopItem hp-heroWorldSignalTopItem--report">
+                  <span className="hp-heroWorldSignalTopKey">
+                    Latest Report
+                  </span>
+                  <span className="hp-heroWorldSignalTopVal">
+                    {WORLD_SIGNAL.latestReport}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <div className="hp-heroBrandRow">
             <div className="hp-heroTitleWrap">
               <h1 className="hp-heroTitle hp-heroTitle--logo" id="hero-heading">
@@ -945,6 +868,7 @@ export default function Homepage() {
                   {feature.icon}
                 </span>
                 <div className="hp-heroFeatureCopy">
+                  <span className="hp-heroFeatureLabel">Features</span>
                   <p className="hp-heroFeatureTitle">{feature.title}</p>
                   <p className="hp-heroFeatureText">{feature.text}</p>
                 </div>
@@ -957,79 +881,35 @@ export default function Homepage() {
       <div className="hp-layout">
         <aside className="hp-sidebar" aria-label="World information">
           <section
-            className="hp-panel hp-panel--blue"
+            className="hp-panel hp-panel--blue hp-worldPanel"
             aria-labelledby="world-heading"
           >
-            <div className="hp-panelHeader">
-              <h2 className="hp-panelTitle" id="world-heading">
-                About the World
-              </h2>
-            </div>
-
-            <div className="hp-panelBody">
-              <p className="hp-worldText">
-                DeltaPets is a{" "}
-                <strong>creature-raising fantasy browser game</strong> set in{" "}
-                <strong>Aliune</strong>, a world shaped by elemental bonds,
-                mysterious eggs, and growing instability.
-              </p>
-              <p className="hp-worldText">
-                Raise your first Delta, learn how care shapes the bond, and
-                uncover what is beginning to shift across the land.
-              </p>
-            </div>
-          </section>
-
-          <section
-            className="hp-panel hp-panel--blue"
-            aria-labelledby="signal-heading"
-          >
-            <div className="hp-panelHeader">
-              <h2 className="hp-panelTitle" id="signal-heading">
-                World Signal
-              </h2>
-            </div>
-
-            <div className="hp-panelBody">
-              <div className="hp-signalGrid">
-                <div className="hp-signalRow">
-                  <span className="hp-signalKey">Condition</span>
-                  <span className="hp-signalVal hp-signalVal--warn">
-                    {WORLD_SIGNAL.condition}
-                  </span>
-                </div>
-                <div className="hp-signalRow">
-                  <span className="hp-signalKey">Region Activity</span>
-                  <span className="hp-signalVal">{WORLD_SIGNAL.region}</span>
-                </div>
-                <div className="hp-signalRow">
-                  <span className="hp-signalKey">Corruption Level</span>
-                  <span className="hp-signalVal">
-                    {WORLD_SIGNAL.corruption}
-                  </span>
-                </div>
-                <div className="hp-signalRow">
-                  <span className="hp-signalKey">Latest Report</span>
-                  <span className="hp-signalVal">
-                    {WORLD_SIGNAL.latestReport}
-                  </span>
-                </div>
+            <div className="hp-panelHeader hp-worldPanelHeader">
+              <div>
+                <h2
+                  className="hp-panelTitle hp-worldHeadingGlow"
+                  id="world-heading"
+                >
+                  About Aliune
+                </h2>
               </div>
             </div>
-          </section>
 
-          <section
-            className="hp-panel hp-panel--blue"
-            aria-labelledby="narrative-heading"
-          >
-            <div className="hp-panelHeader">
-              <h2 className="hp-panelTitle" id="narrative-heading">
-                {NARRATIVE_SIGNAL.title}
-              </h2>
-            </div>
+            <div className="hp-panelBody hp-worldPanelBody">
+              <p className="hp-worldText hp-worldText--impact">
+                Aliune is a world built on hatching, raising, and bonding with
+                elemental Kith.
+              </p>
 
-            <div className="hp-panelBody">
-              <p className="hp-worldText">{NARRATIVE_SIGNAL.text}</p>
+              <p className="hp-worldText hp-worldText--impact">
+                Most beginnings are gentle. An egg. A bond. A small life taking
+                shape beside yours.
+              </p>
+
+              <p className="hp-worldText hp-worldText--impact">
+                But now some eggs are changing before they ever hatch, and
+                something in Aliune is beginning to answer back.
+              </p>
             </div>
           </section>
         </aside>

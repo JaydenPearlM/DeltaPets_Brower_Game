@@ -2,7 +2,7 @@
 -- Adds:
 -- - pet_location enum + pets.location
 -- - pets.unspent_points (used by hatch reward)
--- - party_slots table (3 battle pets)
+-- - party_slots table (4 battle pets)
 -- - RLS for party_slots
 
 begin;
@@ -34,7 +34,7 @@ where location is null;
 create table if not exists public.party_slots (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  slot_index int not null check (slot_index between 1 and 3),
+  slot_index int not null check (slot_index between 1 and 4),
   pet_id uuid not null references public.pets(id) on delete cascade,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

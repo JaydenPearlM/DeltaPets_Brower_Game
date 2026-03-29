@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { createPortal } from "react-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./LoginMenus.css";
 
 import { LoginForm } from "./LoginForm";
 import { LoginSubmitButton } from "./LoginSubmitButton";
 import { useLoginSubmit } from "./LoginSubmit";
-
 import { supabase } from "../../lib/supabase/client";
 
 type Mode = "none" | "login";
@@ -396,6 +396,9 @@ export function LoginMenus({
 }: {
   forcedView?: ForcedView;
 }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [mode, setMode] = useState<Mode>("none");
   const [signupOpen, setSignupOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -411,13 +414,15 @@ export function LoginMenus({
   const portalTarget = typeof document !== "undefined" ? document.body : null;
 
   useEffect(() => {
-    if (forcedView === "signup") {
+    const pathname = location.pathname;
+
+    if (forcedView === "signup" || pathname === "/signup") {
       setMode("none");
       setSignupOpen(true);
       return;
     }
 
-    if (forcedView === "login") {
+    if (forcedView === "login" || pathname === "/signin") {
       setSignupOpen(false);
       setMode("login");
       return;
@@ -425,19 +430,13 @@ export function LoginMenus({
 
     setSignupOpen(false);
     setMode("none");
-  }, [forcedView]);
+  }, [forcedView, location.pathname, location.search]);
 
   function openLogin() {
     setMessage(null);
     setMode("login");
     setSignupOpen(false);
-
-    if (
-      typeof window !== "undefined" &&
-      window.location.pathname !== "/signin"
-    ) {
-      window.history.replaceState(null, "", "/signin");
-    }
+    navigate(`/signin?open=${Date.now()}`);
   }
 
   function openSignup() {
@@ -446,24 +445,15 @@ export function LoginMenus({
     localStorage.removeItem("dp_login_identifier");
     setSignupOpen(true);
     setMode("none");
-
-    if (
-      typeof window !== "undefined" &&
-      window.location.pathname !== "/signup"
-    ) {
-      window.history.replaceState(null, "", "/signup");
-    }
+    navigate(`/signup?open=${Date.now()}`);
   }
 
   function closeLogin() {
     setMode("none");
     setMessage(null);
 
-    if (
-      typeof window !== "undefined" &&
-      ["/signin", "/signup"].includes(window.location.pathname)
-    ) {
-      window.history.replaceState(null, "", "/");
+    if (location.pathname === "/signin" || location.pathname === "/signup") {
+      navigate("/", { replace: true });
     }
   }
 
@@ -471,11 +461,8 @@ export function LoginMenus({
     setSignupOpen(false);
     setMessage(null);
 
-    if (
-      typeof window !== "undefined" &&
-      ["/signin", "/signup"].includes(window.location.pathname)
-    ) {
-      window.history.replaceState(null, "", "/");
+    if (location.pathname === "/signin" || location.pathname === "/signup") {
+      navigate("/", { replace: true });
     }
   }
 

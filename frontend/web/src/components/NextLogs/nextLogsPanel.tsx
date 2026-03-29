@@ -49,9 +49,7 @@ export function NextLogsPanel({ className = "" }: NextLogsPanelProps) {
 
       const { data, error } = await supabase
         .from("homepage_logs")
-        .select(
-          "id, category, title, description, patch_html, display_order, is_active, created_at",
-        )
+        .select("category, title, description")
         .eq("is_active", true)
         .order("display_order", { ascending: true })
         .order("created_at", { ascending: false });
