@@ -1,7 +1,7 @@
-import type { PropsWithChildren, ReactNode } from "react";
+import type { PropsWithchildren, ReactNode } from "react";
 import "./NotebookPaper.css";
 
-type NotebookPaperProps = PropsWithChildren<{
+type NotebookPaperProps = PropsWithchildren<{
   title?: string;
   className?: string;
   minHeight?: number | string;

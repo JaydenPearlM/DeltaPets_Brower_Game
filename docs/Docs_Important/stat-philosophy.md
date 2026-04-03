@@ -76,7 +76,7 @@ These are computed from raw values + rules. The frontend should NEVER invent bas
 
 ## 3) What is immutable after hatch?
 
-Once the egg hatches into a baby, these cannot change (Alpha rule):
+Once the egg hatches into a hatchling, these cannot change (Alpha rule):
 
 - base stat roll (the “genetics” numbers)
 - personality trait
@@ -85,7 +85,7 @@ Once the egg hatches into a baby, these cannot change (Alpha rule):
 
 Optional immutable:
 
-- “true element” seed (if you use “null baby becomes ice later” logic)
+- “true element” seed (if you use “null hatchling becomes ice later” logic)
 
 ---
 
@@ -129,7 +129,7 @@ Level up does NOT:
 ### Base stat roll at hatch
 
 - Total base points at hatch: **\_\_\_\_**
-- Max per stat at hatch: **\_\_\_\_** (you mentioned “baby can only have 10 per stat”)
+- Max per stat at hatch: **\_\_\_\_** (you mentioned “hatchling can only have 10 per stat”)
 
 ### Level-up allocation
 

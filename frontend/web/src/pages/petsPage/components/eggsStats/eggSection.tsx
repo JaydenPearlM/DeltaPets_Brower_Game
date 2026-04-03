@@ -18,7 +18,7 @@ export function EggSection({
   if (!pet) return null;
 
   if (pet.stage !== "egg") {
-    return <p style={{ marginTop: 14, opacity: 0.85 }}>Baby is alive.</p>;
+    return <p style={{ marginTop: 14, opacity: 0.85 }}>hatchling is alive.</p>;
   }
 
   const stats = (pet?.stats ?? null) as PetStatsRow | null;

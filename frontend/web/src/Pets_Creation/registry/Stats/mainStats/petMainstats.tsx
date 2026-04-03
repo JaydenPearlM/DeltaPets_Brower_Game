@@ -69,7 +69,7 @@ function prettyElement(line?: string) {
 }
 
 function prettyStage(stage?: string) {
-  if (!stage) return "Baby";
+  if (!stage) return "Hatchling";
   return stage.charAt(0).toUpperCase() + stage.slice(1);
 }
 
@@ -122,7 +122,7 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
     return hp + atk + def + spd + magi + mana;
   }, [pet]);
 
-  const babyHp = useMemo(() => {
+  const hatchlingHp = useMemo(() => {
     if (!pet) return 0;
     return Number(pet.hp_stat ?? 0) * 2;
   }, [pet]);
@@ -148,7 +148,7 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
                 <span className="pet-mainstats__dot">•</span>
                 <span>Stage: {prettyStage(pet.stage)}</span>
                 <span className="pet-mainstats__dot">•</span>
-                <span>Baby HP: {babyHp}</span>
+                <span>hatchling HP: {hatchlingHp}</span>
                 <span className="pet-mainstats__dot">•</span>
                 <span>Personality: {prettyPersonality(pet.personality)}</span>
 

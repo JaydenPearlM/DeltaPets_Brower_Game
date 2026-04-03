@@ -449,7 +449,7 @@ petsRouter.post(
       const { data: hatched, error: hatchUpdateError } = await supabaseAdmin
         .from("pets")
         .update({
-          stage: "baby",
+          stage: "hatchling",
           hatched_at: nowIso,
           hatch_ends_at: null,
           unspent_points: 0,

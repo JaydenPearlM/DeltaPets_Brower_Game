@@ -66,7 +66,13 @@ export type FallbackActivePetModel = {
     | "storm"
     | "light"
     | "shadow";
-  stage: "egg" | "baby" | "child" | "adult" | "legion" | "mythical";
+  stage:
+    | "egg"
+    | "hatchling"
+    | "Lowform"
+    | "Highform"
+    | "legion"
+    | "mythic_legendary";
   level: number;
   xp: number;
   hunger: number;
@@ -191,7 +197,7 @@ export const DEMO_PET: FallbackActivePetModel = {
   name: "Solite",
   nickname: null,
   line: "light",
-  stage: "baby",
+  stage: "hatchling",
   level: 1,
   xp: 0,
   hunger: 72,

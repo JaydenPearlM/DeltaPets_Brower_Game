@@ -1,6 +1,6 @@
 -- supabase/migrations/20260131_000006_expand_pet_stage_enum.sql
 -- Expands pet_stage enum to real lifecycle stages.
--- Converts existing "baby" stage rows to "baby".
+-- Converts existing "hatchling" stage rows to "hatchling".
 
 do $$
 begin
@@ -23,22 +23,26 @@ begin
     ) then
       create type public.pet_stage_v2 as enum (
         'egg',
-        'baby',
-        '""',
-        'teen',
-        'adult',
+        'hatchling',        
+        'lowform',
+        'highform',
+        'legion',
         'mythic_legendary'
       );
     end if;
 
-    -- Alter pets.stage to new enum; convert "sprout" -> "baby"
+    -- Alter pets.stage to new enum; convert "sprout" -> "hatchling"
     alter table public.pets
       alter column stage
       type public.pet_stage_v2
       using (
         case
-          when stage::text = 'egg' then 'baby'
-          else stage::text
+          when stage::text = 'baby' then 'hatchling'
+when stage::text = 'child' then 'lowform'
+when stage::text = 'adult' then 'highform'
+when stage::text = 'teen'  then 'Legion'
+when stage::text = 'mythical' then 'mythic_legendary'
+else stage::text          
         end
       )::public.pet_stage_v2;
 

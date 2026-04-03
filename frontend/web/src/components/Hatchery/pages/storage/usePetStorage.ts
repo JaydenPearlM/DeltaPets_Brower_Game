@@ -4,11 +4,11 @@ import { supabase } from "../../../../lib/supabase/client";
 export type StorageStageFilter =
   | "all"
   | "egg"
-  | "baby"
-  | "child"
-  | "adult"
+  | "hatchling"
+  | "lowform"
+  | "highform"
   | "legion"
-  | "mythical";
+  | "mythic_legendary";
 
 export type StoragePet = {
   id: string;
@@ -61,20 +61,21 @@ function normalizeStageInternal(stage?: string | null): StorageStageFilter {
     .toLowerCase();
 
   if (raw === "egg") return "egg";
-  if (raw === "baby") return "baby";
-  if (raw === "child") return "child";
-  if (raw === "teen" || raw === "adult") return "adult";
+  if (raw === "hatchling") return "hatchling";
+  if (raw === "lowform") return "lowform";
+  if (raw === "adult" || raw === "highform") return "highform";
   if (raw === "legion") return "legion";
-  if (
-    raw === "mythical" ||
-    raw === "mythic_legendary" ||
-    raw === "mythic" ||
-    raw === "legendary"
-  ) {
-    return "mythical";
-  }
+  if (raw === "Mythic_Legendary")
+    if (
+      raw === "mythic_legendary" ||
+      raw === "mythic_legendary" ||
+      raw === "mythic" ||
+      raw === "legendary"
+    ) {
+      return "mythic_legendary";
+    }
 
-  return "adult";
+  return "highform";
 }
 
 function isEggStage(stage?: string | null) {
@@ -103,16 +104,16 @@ export function formatStageLabel(stage?: string | null) {
   switch (bucket) {
     case "egg":
       return "Egg";
-    case "baby":
-      return "Baby";
-    case "child":
-      return "Child";
-    case "adult":
-      return "Adult";
+    case "hatchling":
+      return "Hatchling";
+    case "lowform":
+      return "Lowform";
+    case "highform":
+      return "Highform";
     case "legion":
       return "Legion";
-    case "mythical":
-      return "Mythical";
+    case "mythic_legendary":
+      return "mythic_legendary";
     default:
       return "Unknown";
   }
@@ -302,11 +303,11 @@ export function usePetStorage(options: UsePetStorageOptions) {
     const base = {
       all: 0,
       egg: 0,
-      baby: 0,
-      child: 0,
-      adult: 0,
+      hatchling: 0,
+      lowform: 0,
+      highform: 0,
       legion: 0,
-      mythical: 0,
+      mythic_legendary: 0,
     } satisfies Record<StorageStageFilter, number>;
 
     for (const pet of storedPets) {

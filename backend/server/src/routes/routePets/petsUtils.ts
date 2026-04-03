@@ -9,10 +9,11 @@ import type { ElementalLine, PetGender } from "./petsType";
  * null_gender 10%
  */
 export function rollGender(): PetGender {
-  const r = cryptoRandomInt(100); // 0..99
-  if (r < 40) return "male";
-  if (r < 90) return "female";
-  return "null_gender";
+  const r = cryptoRandomInt(200000); // 0..199999
+
+  if (r < 99900) return "male"; // 49.95%
+  if (r < 199800) return "female"; // 49.95%
+  return "null_gender"; // 0.05%
 }
 
 export function msUntil(iso: string | null | undefined, nowMs: number) {

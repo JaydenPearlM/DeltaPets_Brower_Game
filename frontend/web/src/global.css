@@ -576,28 +576,35 @@ a {
   transition: width 0.6s ease;
 }
 
-/* global warning banner */
+/* =========================================================
+   GLOBAL TOP BANNER / ALIUNE SIGNAL
+   only this section was updated
+========================================================= */
+
 .dp-warningBanner,
 .hp-banner {
   width: min(100%, calc(var(--content-max) + 32px));
   margin: 0 auto 16px;
-  padding: 10px 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-radius: 0 0 14px 14px;
+  border-radius: 0 0 16px 16px;
   border: 1px solid transparent;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 8px 18px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+}
+
+.hp-banner {
+  padding: 0;
 }
 
 .hp-bannerContent {
-  flex: 1;
-  display: flex;
+  width: 100%;
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
+  padding: 10px 18px;
 }
 
 .hp-bannerText {
@@ -650,17 +657,115 @@ a {
   border-color: rgba(54, 139, 44, 0.4);
 }
 
+/* Aliune Signal inside the global banner */
+.hp-bannerSignalBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.hp-bannerSignalDot {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  background: var(--accent-green-2);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.38),
+    0 0 14px rgba(86, 214, 79, 0.3);
+}
+
+.hp-banner--yellow .hp-bannerSignalDot {
+  background: #d99a16;
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.34),
+    0 0 14px rgba(217, 154, 22, 0.28);
+}
+
+.hp-banner--red .hp-bannerSignalDot {
+  background: #cf4439;
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.34),
+    0 0 14px rgba(207, 68, 57, 0.28);
+}
+
+.hp-bannerSignalTitle {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #111111;
+  white-space: nowrap;
+}
+
+.hp-bannerSignalStats {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hp-bannerSignalChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #111111;
+  white-space: nowrap;
+}
+
+.hp-bannerSignalLabel {
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.74;
+}
+
+.hp-bannerSignalValue {
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.hp-bannerSignalReport {
+  min-width: 0;
+  text-align: right;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #111111;
+}
+
+.hp-bannerSignalReport strong {
+  font-weight: 900;
+}
+
+/* global top banner + footer overrides for App.css */
 /* global top banner + footer overrides for App.css */
 .dp-stageHeader--appFix {
   position: sticky;
   top: 0;
   z-index: 30;
-  min-height: 86px !important;
-  padding: 10px 18px !important;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 16px;
+  min-height: 96px !important;
+  padding-block: 10px !important;
+  padding-inline: max(
+    18px,
+    calc((100vw - var(--content-max)) / 2 + 18px)
+  ) !important;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 760px) auto !important;
+  grid-template-areas: "meta signal auth" !important;
+  align-items: end !important;
+  column-gap: 16px !important;
+  row-gap: 0 !important;
+  overflow: visible !important;
   border-bottom: 2px solid rgba(83, 118, 170, 0.28) !important;
   background: linear-gradient(
     180deg,
@@ -687,14 +792,108 @@ a {
 }
 
 .dp-headerLeft--withTitle,
-.dp-headerRight--auth,
-.dp-headerCenterTagline--appFix {
+.dp-headerCenterTagline--appFix,
+.dp-headerRight--auth {
   position: relative;
   z-index: 2;
 }
 
-.dp-headerTaglineTitle,
+/* move the entire header content upward onto the blue banner */
+.dp-headerLeft--withTitle,
+.dp-headerCenterTagline--appFix,
+.dp-headerRight--auth {
+  top: -1px !important;
+}
+
+.dp-headerLeft--withTitle {
+  grid-area: meta !important;
+  width: auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: flex-start !important;
+  align-self: end !important;
+}
+
+.dp-headerCenterTagline--appFix {
+  grid-area: signal !important;
+  width: 100% !important;
+  max-width: 760px !important;
+  justify-self: start !important;
+  align-self: end !important;
+  text-align: left !important;
+  pointer-events: auto !important;
+  margin-left: -100px !important;
+}
+
+.dp-headerCenterTagline--appFix .hp-signalBanner {
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 760px !important;
+}
+
+.dp-headerCenterTagline--appFix .hp-signalBannerInner {
+  width: 100% !important;
+}
+
+.dp-headerRight--auth {
+  grid-area: auth !important;
+  width: auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  align-self: end !important;
+}
+
+.dp-headerRightStack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.dp-alphaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.dp-headerAuthRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.dp-headerRight--auth .btn,
+.dp-headerRight--auth button,
+.dp-headerRight--auth a {
+  margin: 0 !important;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
 .dp-sectionTitle {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: #eff6ff !important;
+  text-transform: uppercase;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.28),
+    0 0 14px rgba(223, 240, 255, 0.1);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.dp-headerTaglineTitle {
   color: #eff6ff !important;
 }
 
@@ -704,17 +903,17 @@ a {
 
 .dp-stageFooter {
   position: relative;
-  margin-top: 20px;
-  border-top: 2px solid rgba(83, 118, 170, 0.28) !important;
+  margin-top: 18px;
+  border-top: 1px solid rgba(204, 230, 128, 0.16);
   background: linear-gradient(
     180deg,
-    #4d73a5 0%,
-    #436998 52%,
-    #3b5f8a 100%
-  ) !important;
+    rgba(86, 97, 42, 0.96) 0%,
+    rgba(70, 80, 34, 0.97) 54%,
+    rgba(56, 65, 27, 0.98) 100%
+  );
   box-shadow:
-    inset 0 1px 0 rgba(230, 241, 255, 0.22),
-    0 -10px 24px rgba(52, 88, 133, 0.15) !important;
+    inset 0 1px 0 rgba(213, 231, 145, 0.12),
+    0 -10px 24px rgba(22, 32, 12, 0.18);
 }
 
 .dp-stageFooter::before {
@@ -724,9 +923,9 @@ a {
   pointer-events: none;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(205, 227, 255, 0.12) 50%,
-    rgba(255, 255, 255, 0.05) 100%
+    rgba(217, 236, 135, 0.04) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(217, 236, 135, 0.04) 100%
   );
 }
 
@@ -737,6 +936,154 @@ a {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 16px;
+}
+
+.dp-footerBrand {
+  display: grid;
+  gap: 2px;
+}
+
+.dp-footerBrandTitle {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #f4f7df;
+}
+
+.dp-footerBrandText {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: rgba(233, 240, 209, 0.88);
+}
+
+.dp-footerStatus {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dp-footerDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #9ff58b;
+  box-shadow:
+    0 0 10px rgba(111, 255, 135, 0.66),
+    0 0 20px rgba(111, 255, 135, 0.3);
+  animation: dpFooterPulse 2.4s ease-in-out infinite;
+}
+
+.dp-footerStatusText {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #edf4d3;
+}
+
+.dp-footerLinks {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.dp-footerLink {
+  appearance: none;
+  border: 1px solid rgba(223, 238, 165, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f0f5db;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.dp-footerLink:hover {
+  transform: translateY(-1px);
+  border-color: rgba(179, 236, 149, 0.34);
+  background: rgba(175, 233, 130, 0.08);
+  box-shadow: 0 0 14px rgba(117, 255, 138, 0.12);
+}
+
+@keyframes dpFooterPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.82;
+    transform: scale(1.08);
+  }
+}
+
+@media (max-width: 1180px) {
+  .dp-headerCenterTagline--appFix,
+  .dp-headerCenterTagline--appFix .hp-signalBanner {
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .dp-stageHeader--appFix {
+    min-height: unset !important;
+    padding: 12px !important;
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "meta"
+      "signal"
+      "auth" !important;
+    justify-items: stretch !important;
+    row-gap: 10px !important;
+  }
+
+  .dp-headerLeft--withTitle,
+  .dp-headerCenterTagline--appFix,
+  .dp-headerRight--auth {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    top: 0 !important;
+  }
+
+  .dp-headerRight--auth {
+    justify-content: flex-start !important;
+  }
+
+  .dp-headerRightStack {
+    align-items: flex-start;
+  }
+
+  .dp-headerAuthRow {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  .dp-stageFooterInner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .dp-footerLinks {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .dp-stageFooterInner {
+    padding: 14px 12px;
+  }
 }
 
 .dp-footerBrandTitle,
@@ -854,6 +1201,15 @@ a {
     justify-content: center;
     flex-wrap: wrap;
   }
+
+  .hp-bannerContent {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .hp-bannerSignalReport {
+    text-align: left;
+  }
 }
 
 @media (max-width: 900px) {
@@ -911,13 +1267,22 @@ a {
   }
 
   .hp-banner {
-    padding: 10px 12px;
-    align-items: flex-start;
+    margin-bottom: 12px;
   }
 
   .hp-bannerContent {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 10px 12px;
+  }
+
+  .hp-bannerSignalStats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .hp-bannerSignalChip {
+    min-width: 0;
+    justify-content: space-between;
   }
 
   .dp-pageShell::after {

@@ -51,7 +51,7 @@ export async function fetchHatcheryEgg(userId: string) {
 
 /**
  * Starter/Mystery Egg is one-per-user.
- * Finds it at ANY stage (egg/baby/etc.) so ensure-egg becomes idempotent.
+ * Finds it at ANY stage (egg/hatchling/etc.) so ensure-egg becomes idempotent.
  */
 export async function fetchStarterPetAnyStage(userId: string) {
   const starterNames = STARTER_SPROUTS.map((s) => s.name);

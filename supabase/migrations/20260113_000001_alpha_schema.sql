@@ -30,7 +30,7 @@ exception when duplicate_object then null;
 end $$;
 
 do $$ begin
-  create type public.pet_stage as enum ('egg','baby', '""', 'child', 'teen', 'adult', 'Legion', 'mythic_legendary');
+  create type public.pet_stage as enum ('egg','hatchling', 'lowform', 'highform', 'Legion', 'mythic_legendary');
 exception when duplicate_object then null;
 end $$;
 
@@ -129,7 +129,7 @@ create table if not exists public.pets (
   hp_cur int not null default 30,
 
   -- added later (kept here to avoid split migrations)
-  age public.age_stage not null default 'baby',
+  age public.age_stage not null default 'hatchling',
   personality public.personality_trait not null default 'friendly',
 
   created_at timestamptz not null default now(),
@@ -794,7 +794,7 @@ group by
 --   )
 -- );
 
--- -- 9) PET-CHILD TABLES (owned via pet_id -> pets.user_id)
+-- -- 9) PET-lowform TABLES (owned via pet_id -> pets.user_id)
 
 -- -- pet_stats (pk pet_id)
 -- create policy "pet_stats_select_own"

@@ -2,34 +2,19 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { UIProvider } from "./providers/UIProvider";
 import { useAuth } from "./providers/useAuth";
 import { InventoryOverlay } from "../components/inventory/inventoryOverlay";
-
 import { LoginMenus } from "../components/Authentication/LoginMenus";
 import { LogoutButton } from "../components/Authentication/LogoutButton";
+import { useAliuneSignal } from "../pages/Homepage/useAliuneSignal";
 
 import "./App.css";
 
 export default function App() {
   const auth = useAuth();
   const isLoggedIn = Boolean(auth.user);
+  const { signal } = useAliuneSignal();
 
   const location = useLocation();
   const navigate = useNavigate();
-
-  const isHatcheryRoute =
-    location.pathname === "/hatchery" ||
-    location.pathname.startsWith("/hatchery/");
-
-  const isPetRoute =
-    location.pathname === "/pet" || location.pathname.startsWith("/pet/");
-
-  const isGymRoute =
-    location.pathname === "/gym" || location.pathname.startsWith("/gym/");
-
-  const isAuthShellRoute =
-    location.pathname === "/" ||
-    location.pathname === "/home" ||
-    location.pathname === "/signup" ||
-    location.pathname === "/signin";
 
   const forcedAuthView =
     location.pathname === "/signup"
@@ -38,79 +23,95 @@ export default function App() {
         ? "login"
         : "none";
 
-  const sectionTitle = isHatcheryRoute
-    ? "Hatchery"
-    : isPetRoute
-      ? "Pets"
-      : isGymRoute
-        ? "Gym"
-        : null;
-
-  const petButtonLabel = isHatcheryRoute ? "Back to Pets" : "Pets";
+  const sectionTitle = null;
 
   return (
     <UIProvider>
       <div className="dp-viewport">
         <div className="dp-stage">
           <header className="dp-stageHeader dp-stageHeader--appFix">
+            {/* LEFT */}
             <div className="dp-headerLeft dp-headerLeft--withTitle">
-              <div className="dp-alphaBadge" title={__APP_VERSION__}>
-                <span className="dp-alphaBadgeLabel">ALPHA</span>
-                <span className="dp-alphaBadgeVer">v{__APP_VERSION__}</span>
-              </div>
-
               {sectionTitle ? (
-                <div
-                  className="dp-sectionTitle"
-                  aria-label={`Current section: ${sectionTitle}`}
-                >
-                  {sectionTitle}
-                </div>
+                <div className="dp-sectionTitle">{sectionTitle}</div>
               ) : null}
             </div>
 
-            <div
-              className="dp-headerCenterTagline dp-headerCenterTagline--appFix"
-              aria-hidden
-            >
-              <div className="dp-headerTaglineTitle">Bond begins here.</div>
-              <div className="dp-headerTaglineSub">
-                Hatch eggs. Raise Deltas. Build Haven. Fight against evil.
-              </div>
+            {/* CENTER (ALIUNE SIGNAL) */}
+            <div className="dp-headerCenterTagline dp-headerCenterTagline--appFix">
+              <section className="hp-signalBanner">
+                <div className="hp-signalBannerInner">
+                  <div className="hp-signalBannerHead">
+                    <span className="hp-signalBannerKicker">Aliune Signal</span>
+                  </div>
+
+                  <div className="hp-signalBannerStats">
+                    <div className="hp-signalBannerStat">
+                      <span>Condition</span>
+                      <strong>{signal.conditionLabel}</strong>
+                    </div>
+
+                    <div className="hp-signalBannerStat">
+                      <span>Region</span>
+                      <strong>{signal.regionLabel}</strong>
+                    </div>
+
+                    <div className="hp-signalBannerStat">
+                      <span>Corruption</span>
+                      <strong>{signal.corruptionLabel}</strong>
+                    </div>
+
+                    <div className="hp-signalBannerStat">
+                      <span>Report Age</span>
+                      <strong>
+                        {signal.showReportAge ? signal.reportAgeLabel : "—"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <p className="hp-signalBannerReport">{signal.reportText}</p>
+                </div>
+              </section>
             </div>
 
+            {/* RIGHT */}
             <div className="dp-headerRight dp-headerRight--auth">
-              {isLoggedIn ? (
-                <>
-                  <button
-                    type="button"
-                    className="btn btn-gold"
-                    onClick={() => navigate("/pet")}
-                  >
-                    {petButtonLabel}
-                  </button>
+              <div className="dp-headerRightStack">
+                {/* ✅ ALPHA MOVED HERE */}
+                <div className="dp-alphaBadge">ALPHA v{__APP_VERSION__}</div>
 
-                  <button
-                    type="button"
-                    className="btn btn-cool"
-                    onClick={() => navigate("/hatchery")}
-                  >
-                    Hatchery
-                  </button>
+                {/* BUTTONS */}
+                <div className="dp-headerAuthRow">
+                  {isLoggedIn ? (
+                    <>
+                      <button
+                        className="btn btn-gold"
+                        onClick={() => navigate("/pet")}
+                      >
+                        Pets
+                      </button>
 
-                  <button
-                    type="button"
-                    className="btn btn-cool"
-                    onClick={() => navigate("/gym")}
-                  >
-                    Gym
-                  </button>
+                      <button
+                        className="btn btn-cool"
+                        onClick={() => navigate("/hatchery")}
+                      >
+                        Hatchery
+                      </button>
 
-                  <LogoutButton />
-                </>
-              ) : (
-                <LoginMenus forcedView={forcedAuthView} />
-              )}
+                      <button
+                        className="btn btn-cool"
+                        onClick={() => navigate("/gym")}
+                      >
+                        Gym
+                      </button>
+
+                      <LogoutButton />
+                    </>
+                  ) : (
+                    <LoginMenus forcedView={forcedAuthView} />
+                  )}
+                </div>
+              </div>
             </div>
           </header>
 
@@ -125,51 +126,6 @@ export default function App() {
                 <span className="dp-footerBrandText">
                   Raise. Train. Evolve. Bond.
                 </span>
-              </div>
-
-              <div className="dp-footerStatus">
-                <span className="dp-footerDot" aria-hidden />
-                <span className="dp-footerStatusText">
-                  {isAuthShellRoute
-                    ? "Pre-login preview active"
-                    : "Alpha systems active"}
-                </span>
-              </div>
-
-              <div className="dp-footerLinks">
-                <button
-                  type="button"
-                  className="dp-footerLink"
-                  onClick={() => navigate("/")}
-                >
-                  Home
-                </button>
-
-                {isLoggedIn ? (
-                  <>
-                    <button
-                      type="button"
-                      className="dp-footerLink"
-                      onClick={() => navigate("/pet")}
-                    >
-                      Pets
-                    </button>
-                    <button
-                      type="button"
-                      className="dp-footerLink"
-                      onClick={() => navigate("/hatchery")}
-                    >
-                      Hatchery
-                    </button>
-                    <button
-                      type="button"
-                      className="dp-footerLink"
-                      onClick={() => navigate("/gym")}
-                    >
-                      Gym
-                    </button>
-                  </>
-                ) : null}
               </div>
             </div>
           </footer>

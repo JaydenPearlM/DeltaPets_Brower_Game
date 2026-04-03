@@ -75,7 +75,7 @@ function prettyEnum(s: unknown) {
 function displayStage(stageRaw: unknown) {
   const s = String(stageRaw ?? "").toLowerCase();
   if (!s) return "—";
-  if (s.includes("baby")) return "Baby";
+  if (s.includes("hatchling")) return "hatchling";
   return prettyEnum(s);
 }
 
@@ -111,7 +111,7 @@ function personalityLore(
 
   const stageWord = stage.includes("egg")
     ? "egg"
-    : stage.includes("baby")
+    : stage.includes("hatchling")
       ? "hatchling"
       : "delta";
 
@@ -319,7 +319,7 @@ function makeRandomPreview(): CareCurrentResponse {
   const hpMax = 10 + (stats.hp ?? 0) * 2;
   const hpCur = randInt(Math.max(1, Math.floor(hpMax * 0.55)), hpMax);
 
-  const stage = Math.random() < 0.22 ? "egg" : "baby";
+  const stage = Math.random() < 0.22 ? "egg" : "hatchling";
 
   return {
     pet: {

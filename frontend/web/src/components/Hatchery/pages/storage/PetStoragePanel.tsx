@@ -24,11 +24,11 @@ type DragPayload = {
 const FILTERS: Array<{ key: StorageStageFilter; label: string }> = [
   { key: "all", label: "All" },
   { key: "egg", label: "Egg" },
-  { key: "baby", label: "Baby" },
-  { key: "child", label: "Child" },
-  { key: "adult", label: "Adult" },
+  { key: "hatchling", label: "Hatchling" },
+  { key: "lowform", label: "Lowform" },
+  { key: "highForm", label: "Highform" },
   { key: "legion", label: "Legion" },
-  { key: "mythical", label: "Mythical" },
+  { key: "mythic_legendary", label: "mythic_legendary" },
 ];
 
 const STAT_ROWS = [
