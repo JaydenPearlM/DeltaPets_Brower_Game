@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useAnnouncements } from "./useAnnouncements";
+import { useState } from "react";
+import { useAnnouncements, type AnnouncementItem } from "./useAnnouncements";
 import "./AnnouncementPanel.css";
 
 type AnnouncementsPanelProps = {
@@ -7,13 +7,6 @@ type AnnouncementsPanelProps = {
   pageScope?: string;
   title?: string;
   subtitle?: string;
-};
-
-type Announcement = {
-  id: string;
-  title: string;
-  body?: string | null;
-  created_at?: string | null;
 };
 
 function formatDate(dateString?: string | null) {
@@ -33,23 +26,31 @@ function formatDate(dateString?: string | null) {
 export function AnnouncementPanel({
   className = "",
   pageScope = "homepage",
-  title = "Aliune News",
-  subtitle = "Latest transmissions from the world",
+  title = "Aliune News Δ",
+  subtitle = "Click Below to read the Newest Transmission",
 }: AnnouncementsPanelProps) {
-  const { items = [], loading, error } = useAnnouncements(6, pageScope);
-  const [selected, setSelected] = useState<Announcement | null>(null);
+  const { items, loading, error, usingFallback } = useAnnouncements(
+    6,
+    pageScope,
+  );
+  const [selected, setSelected] = useState<AnnouncementItem | null>(null);
 
-  const normalized = useMemo<Announcement[]>(() => {
-    return (items as Announcement[]).map((item) => ({
-      id: item.id,
-      title: item.title ?? "Untitled update",
-      body: item.body ?? "",
-      created_at: item.created_at ?? null,
-    }));
-  }, [items]);
+  const newest = items[0] ?? null;
+  const archive = items.slice(1, 6);
 
-  const newest = normalized[0] ?? null;
-  const archive = normalized.slice(1, 6);
+  function openAnnouncement(item: AnnouncementItem) {
+    setSelected(item);
+  }
+
+  function handleFeaturedKeyDown(
+    event: React.KeyboardEvent<HTMLElement>,
+    item: AnnouncementItem,
+  ) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openAnnouncement(item);
+    }
+  }
 
   return (
     <>
@@ -63,21 +64,31 @@ export function AnnouncementPanel({
         </div>
 
         <div className="anp-body">
-          {loading && normalized.length === 0 ? (
+          {loading && items.length === 0 ? (
             <p className="anp-status">Loading announcements…</p>
           ) : null}
 
-          {!loading && error && normalized.length === 0 ? (
+          {!loading && error && items.length === 0 ? (
             <p className="anp-status">Could not load announcements.</p>
           ) : null}
 
-          {!loading && !error && !newest ? (
+          {!loading && !newest ? (
             <p className="anp-status">No announcements yet.</p>
           ) : null}
 
+          {usingFallback ? (
+            <p className="anp-status">Showing fallback news feed.</p>
+          ) : null}
+
           {newest ? (
-            <article className="anp-featured" aria-label={newest.title}>
-              <span className="anp-featuredEyebrow">Newest Transmission</span>
+            <article
+              className="anp-featured"
+              aria-label={newest.title}
+              role="button"
+              tabIndex={0}
+              onClick={() => openAnnouncement(newest)}
+              onKeyDown={(event) => handleFeaturedKeyDown(event, newest)}
+            >
               <h3 className="anp-featuredTitle">{newest.title}</h3>
               <p className="anp-featuredDate">
                 {formatDate(newest.created_at)}
@@ -135,10 +146,14 @@ export function AnnouncementPanel({
               ×
             </button>
 
-            <p className="anp-modalEyebrow">Aliune Archive</p>
             <h3 id="aliune-news-modal-title" className="anp-modalTitle">
-              {selected.title}
+              News and Events
             </h3>
+            <hr className="anp-modalRule" />
+
+            <h4 className="anp-modalTitle anp-modalEntryTitle">
+              {selected.title}
+            </h4>
             <p className="anp-modalDate">{formatDate(selected.created_at)}</p>
             <p className="anp-modalBody">{selected.body || "No message."}</p>
           </div>

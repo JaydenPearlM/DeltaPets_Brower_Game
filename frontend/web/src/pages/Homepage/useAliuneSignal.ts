@@ -11,7 +11,6 @@ type SignalRow = {
   region?: string | null;
   corruption?: SignalCorruption | string | null;
   report_text?: string | null;
-  report_age_days?: number | null;
   start_time?: string | null;
   end_time?: string | null;
 };
@@ -22,8 +21,6 @@ type SignalView = {
   corruptionLabel: string;
   reportText: string;
   isAlert: boolean;
-  showReportAge: boolean;
-  reportAgeLabel: string;
 };
 
 const DEFAULT_STABLE_VIEW: SignalView = {
@@ -33,9 +30,10 @@ const DEFAULT_STABLE_VIEW: SignalView = {
   reportText:
     "Aliune remains calm. No active portal disturbances are being reported at this time.",
   isAlert: false,
-  showReportAge: true,
-  reportAgeLabel: "0",
 };
+
+const FALLBACK_REFRESH_MS = 60 * 60 * 1000;
+const BOUNDARY_BUFFER_MS = 1500;
 
 function formatCondition(value?: string | null): string {
   if (!value) return "Stable";
@@ -56,14 +54,6 @@ function formatCorruption(value?: string | null): string {
   if (normalized === "none") return "None";
 
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
-}
-
-function formatRelativeAge(reportAgeDays?: number | null): string {
-  if (typeof reportAgeDays === "number" && Number.isFinite(reportAgeDays)) {
-    return String(reportAgeDays);
-  }
-
-  return "0";
 }
 
 function parseTimeToMinutes(value?: string | null): number | null {
@@ -97,7 +87,7 @@ function isActiveForDailyWindow(
 
   if (start === null && end === null) return true;
   if (start !== null && end === null) return currentMinutes >= start;
-  if (start === null && end !== null) return currentMinutes <= end;
+  if (start === null && end !== null) return currentMinutes < end;
   if (start === end) return true;
 
   if (start !== null && end !== null && start < end) {
@@ -111,11 +101,60 @@ function isActiveForDailyWindow(
   return false;
 }
 
-function pickRandomRow(rows: SignalRow[]): SignalRow | null {
+function getStartMinutes(row: SignalRow): number {
+  return parseTimeToMinutes(row.start_time) ?? -1;
+}
+
+function pickActiveRow(
+  rows: SignalRow[],
+  currentMinutes: number,
+): SignalRow | null {
   if (!Array.isArray(rows) || rows.length === 0) return null;
 
-  const index = Math.floor(Math.random() * rows.length);
-  return rows[index] ?? null;
+  const activeRows = rows.filter((item) =>
+    isActiveForDailyWindow(currentMinutes, item.start_time, item.end_time),
+  );
+
+  if (activeRows.length === 0) return null;
+
+  activeRows.sort((a, b) => getStartMinutes(a) - getStartMinutes(b));
+
+  return activeRows[activeRows.length - 1] ?? null;
+}
+
+function getBoundaryMinutes(rows: SignalRow[]): number[] {
+  const values = new Set<number>();
+
+  for (const row of rows) {
+    const start = parseTimeToMinutes(row.start_time);
+    const end = parseTimeToMinutes(row.end_time);
+
+    if (start !== null) values.add(start);
+    if (end !== null) values.add(end);
+  }
+
+  return Array.from(values).sort((a, b) => a - b);
+}
+
+function getDelayUntilNextBoundaryMs(rows: SignalRow[]): number {
+  const currentMinutes = getCurrentLocalMinutes();
+  const boundaries = getBoundaryMinutes(rows);
+
+  if (boundaries.length === 0) {
+    return FALLBACK_REFRESH_MS;
+  }
+
+  for (const boundary of boundaries) {
+    if (boundary > currentMinutes) {
+      const diffMinutes = boundary - currentMinutes;
+      return diffMinutes * 60 * 1000 + BOUNDARY_BUFFER_MS;
+    }
+  }
+
+  const firstBoundaryTomorrow = boundaries[0];
+  const diffMinutes = 24 * 60 - currentMinutes + firstBoundaryTomorrow;
+
+  return diffMinutes * 60 * 1000 + BOUNDARY_BUFFER_MS;
 }
 
 export function useAliuneSignal() {
@@ -123,12 +162,13 @@ export function useAliuneSignal() {
 
   useEffect(() => {
     let alive = true;
+    let timeoutId: number | null = null;
 
-    async function loadSignal() {
+    async function loadSignalAndScheduleNextRefresh() {
       const { data, error } = await supabase
         .from("aliune_signal_reports")
         .select(
-          "id, enabled, condition, region, corruption, report_text, report_age_days, start_time, end_time",
+          "id, enabled, condition, region, corruption, report_text, start_time, end_time",
         )
         .eq("enabled", true)
         .order("start_time", { ascending: true });
@@ -138,34 +178,49 @@ export function useAliuneSignal() {
       if (error) {
         console.error("[aliune-signal] fetch failed", error);
         setRow(null);
+
+        timeoutId = window.setTimeout(() => {
+          void loadSignalAndScheduleNextRefresh();
+        }, FALLBACK_REFRESH_MS);
+
         return;
       }
 
       const rows: SignalRow[] = Array.isArray(data) ? data : [];
       const currentMinutes = getCurrentLocalMinutes();
+      const activeRow = pickActiveRow(rows, currentMinutes);
 
-      const activeRows = rows.filter((item) =>
-        isActiveForDailyWindow(currentMinutes, item.start_time, item.end_time),
-      );
+      setRow(activeRow);
 
-      const nextRow = pickRandomRow(activeRows);
+      const nextDelayMs = getDelayUntilNextBoundaryMs(rows);
 
-      console.log("[aliune-signal] current local minutes", currentMinutes);
-      console.log("[aliune-signal] active rows", activeRows);
-      console.log("[aliune-signal] chosen row", nextRow);
-
-      setRow(nextRow);
+      timeoutId = window.setTimeout(() => {
+        void loadSignalAndScheduleNextRefresh();
+      }, nextDelayMs);
     }
 
-    void loadSignal();
+    function handleVisibilityChange() {
+      if (!document.hidden) {
+        if (timeoutId !== null) {
+          window.clearTimeout(timeoutId);
+          timeoutId = null;
+        }
 
-    const intervalId = window.setInterval(() => {
-      void loadSignal();
-    }, 15_000);
+        void loadSignalAndScheduleNextRefresh();
+      }
+    }
+
+    void loadSignalAndScheduleNextRefresh();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       alive = false;
-      window.clearInterval(intervalId);
+
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
@@ -188,16 +243,12 @@ export function useAliuneSignal() {
         ? row.report_text
         : DEFAULT_STABLE_VIEW.reportText;
 
-    const reportAgeLabel = formatRelativeAge(row.report_age_days);
-
     return {
       conditionLabel,
       regionLabel,
       corruptionLabel,
       reportText,
       isAlert: conditionLabel === "Unstable",
-      showReportAge: true,
-      reportAgeLabel,
     };
   }, [row]);
 

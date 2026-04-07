@@ -1,53 +1,94 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { FALLBACK_ANNOUNCEMENTS } from "@/pages/Homepage/FallBack";
 
-export type Announcement = {
+export type AnnouncementItem = {
   id: string;
   title: string;
   body?: string | null;
   created_at?: string | null;
-  is_published?: boolean | null;
-  page_scope?: string | null;
 };
 
-export function useAnnouncements(limit = 1, pageScope = "homepage") {
-  const [items, setItems] = useState<Announcement[]>([]);
+type UseAnnouncementsResult = {
+  items: AnnouncementItem[];
+  loading: boolean;
+  error: string;
+  usingFallback: boolean;
+};
+
+function getFallbackAnnouncements(limit: number): AnnouncementItem[] {
+  return FALLBACK_ANNOUNCEMENTS.slice(0, limit).map((item) => ({
+    id: item.id,
+    title: item.title,
+    body: item.body,
+    created_at: item.createdAt,
+  }));
+}
+
+export function useAnnouncements(
+  limit = 6,
+  pageScope = "homepage",
+): UseAnnouncementsResult {
+  const [items, setItems] = useState<AnnouncementItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
+  const [usingFallback, setUsingFallback] = useState(false);
 
   useEffect(() => {
-    let alive = true;
+    let active = true;
 
     async function loadAnnouncements() {
       setLoading(true);
       setError("");
+      setUsingFallback(false);
 
       const { data, error } = await supabase
         .from("announcements")
-        .select("id, title, body, created_at, is_published, page_scope")
+        .select("id, title, body, created_at")
         .eq("is_published", true)
         .eq("page_scope", pageScope)
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      if (!alive) return;
+      if (!active) return;
 
       if (error) {
+        console.error("[announcements] fetch failed", error);
+        setItems(getFallbackAnnouncements(limit));
         setError(error.message || "Failed to load announcements.");
-        setItems([]);
+        setUsingFallback(true);
+        setLoading(false);
+        return;
+      }
+
+      const normalized: AnnouncementItem[] = Array.isArray(data)
+        ? data.map((item) => ({
+            id: String(item.id),
+            title:
+              typeof item.title === "string" && item.title.trim().length > 0
+                ? item.title
+                : "Untitled update",
+            body: typeof item.body === "string" ? item.body : "",
+            created_at: item.created_at ?? null,
+          }))
+        : [];
+
+      if (normalized.length === 0) {
+        setItems(getFallbackAnnouncements(limit));
+        setUsingFallback(true);
       } else {
-        setItems(data ?? []);
+        setItems(normalized);
       }
 
       setLoading(false);
     }
 
-    loadAnnouncements();
+    void loadAnnouncements();
 
     return () => {
-      alive = false;
+      active = false;
     };
   }, [limit, pageScope]);
 
-  return { items, loading, error };
+  return { items, loading, error, usingFallback };
 }

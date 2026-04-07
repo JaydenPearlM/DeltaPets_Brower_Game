@@ -1,26 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { createPortal } from "react-dom";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./LoginMenus.css";
-
-import { LoginForm } from "./LoginForm";
-import { LoginSubmitButton } from "./LoginSubmitButton";
-import { useLoginSubmit } from "./LoginSubmit";
 import { supabase } from "../../lib/supabase/client";
 
-type Mode = "none" | "login";
-type ForcedView = "none" | "login" | "signup";
+type AuthView = "login" | "signup";
+type ForcedAuthView = AuthView | "none";
 
-const AUTO_CLOSE_MS = 2 * 60 * 1000;
-
-type LoginPanelProps = {
-  identifier: string;
-  setIdentifier: (v: string) => void;
-  message: string | null;
-  setMessage: (v: string | null) => void;
-  closeLogin: () => void;
+type LoginMenusProps = {
+  forcedView?: ForcedAuthView;
 };
+
+type AuthMessage = {
+  type: "error" | "success";
+  text: string;
+} | null;
 
 function PasswordField({
   label,
@@ -31,24 +26,22 @@ function PasswordField({
 }: {
   label: string;
   value: string;
-  onChange: (v: string) => void;
+  onChange: (value: string) => void;
   autoComplete: string;
   placeholder?: string;
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
-  const hasOwnField = Boolean(label);
-
-  const content = (
-    <>
-      {label ? <div className="dp-label">{label}</div> : null}
+  return (
+    <div className="dp-field">
+      <label className="dp-label">{label}</label>
 
       <div className="dp-inputRow dp-inputRow--withIcon">
         <input
           className="dp-input dp-input--withIcon"
           type={showPassword ? "text" : "password"}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(event) => onChange(event.target.value)}
           autoComplete={autoComplete}
           placeholder={placeholder}
           required
@@ -57,7 +50,7 @@ function PasswordField({
         <button
           type="button"
           className="dp-iconBtnEye"
-          onClick={() => setShowPassword((v) => !v)}
+          onClick={() => setShowPassword((current) => !current)}
           aria-label={showPassword ? "Hide password" : "Show password"}
           title={showPassword ? "Hide password" : "Show password"}
         >
@@ -79,138 +72,256 @@ function PasswordField({
           </svg>
         </button>
       </div>
-    </>
-  );
-
-  return hasOwnField ? <div className="dp-field">{content}</div> : content;
-}
-
-function LoginPanel({
-  identifier,
-  setIdentifier,
-  message,
-  setMessage,
-  closeLogin,
-}: LoginPanelProps) {
-  const [password, setPassword] = useState("");
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-
-  const { loading: loginLoading, handleSubmit: handleLoginSubmit } =
-    useLoginSubmit({
-      identifier,
-      password,
-      captchaToken,
-      onMessage: setMessage,
-      onAfterAttempt: () => setCaptchaToken(null),
-    });
-
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      setMessage(null);
-      setPassword("");
-      setCaptchaToken(null);
-      closeLogin();
-    }, AUTO_CLOSE_MS);
-
-    return () => window.clearTimeout(t);
-  }, [closeLogin, setMessage]);
-
-  useEffect(() => {
-    setMessage(null);
-    setPassword("");
-    setCaptchaToken(null);
-  }, [setMessage]);
-
-  return (
-    <div className="auth-shell-panel">
-      <form onSubmit={handleLoginSubmit}>
-        <LoginForm
-          identifier={identifier}
-          password={password}
-          setIdentifier={setIdentifier}
-          setPassword={setPassword}
-        />
-
-        <div className="auth-actions">
-          <LoginSubmitButton loading={loginLoading} />
-
-          <button
-            type="button"
-            className="dp-btn dp-btn--red"
-            onClick={closeLogin}
-            disabled={loginLoading}
-          >
-            Close
-          </button>
-        </div>
-      </form>
-
-      {message ? <p className="auth-message">{message}</p> : null}
     </div>
   );
 }
 
-function normalizeUsername(raw: string) {
+function normalizeNickname(raw: string) {
   return raw.trim().toLowerCase();
 }
 
-function isValidUsername(u: string) {
-  return /^[a-z0-9_]{3,20}$/.test(u);
+function isValidNickname(value: string) {
+  return /^[a-z0-9_]{3,20}$/.test(value);
 }
 
-function SignupPanel({
-  identifier,
-  setIdentifier,
-  message,
-  setMessage,
-  closeSignup,
-}: {
-  identifier: string;
-  setIdentifier: (v: string) => void;
-  message: string | null;
-  setMessage: (v: string | null) => void;
-  closeSignup: () => void;
-}) {
-  const [displayName, setDisplayName] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
+  const navigate = useNavigate();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState<AuthView>("login");
+  const [message, setMessage] = useState<AuthMessage>(null);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const email = useMemo(() => identifier.trim().toLowerCase(), [identifier]);
-  const usernameNorm = useMemo(() => normalizeUsername(username), [username]);
+  const [email, setEmail] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("dp_login_identifier") ?? "";
+  });
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
+  const [loginPassword, setLoginPassword] = useState("");
+
+  const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("dp_login_identifier", email);
+  }, [email]);
+
+  useEffect(() => {
+    const openLogin = () => {
+      setMessage(null);
+      setView("login");
+      setIsOpen(true);
+    };
+
+    const openSignup = () => {
+      setMessage(null);
+      setView("signup");
+      setIsOpen(true);
+    };
+
+    window.addEventListener("deltapets:open-login", openLogin);
+    window.addEventListener("deltapets:open-signup", openSignup);
+
+    return () => {
+      window.removeEventListener("deltapets:open-login", openLogin);
+      window.removeEventListener("deltapets:open-signup", openSignup);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (forcedView === "none") return;
+
+    setMessage(null);
+    setView(forcedView);
+    setIsOpen(true);
+  }, [forcedView]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen]);
+
+  function openLogin() {
+    setMessage(null);
+    setView("login");
+    setIsOpen(true);
+  }
+
+  function openSignup() {
+    setMessage(null);
+    setView("signup");
+    setIsOpen(true);
+  }
+
+  function resetSignupFields() {
+    setName("");
+    setNickname("");
+    setSignupPassword("");
+    setConfirmPassword("");
+  }
+
+  function closeModal() {
+    setIsOpen(false);
+    setMessage(null);
+    setLoading(false);
+    setLoginPassword("");
+  }
+
+  async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setMessage(null);
 
-    if (!displayName.trim()) {
-      setMessage("Name is required.");
+    const trimmedEmail = email.trim().toLowerCase();
+
+    if (!trimmedEmail || !loginPassword.trim()) {
+      setMessage({
+        type: "error",
+        text: "Email and password are required.",
+      });
       return;
     }
 
-    if (!email || !email.includes("@")) {
-      setMessage("Please enter a valid email address.");
+    setLoading(true);
+
+    try {
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password: loginPassword,
+      });
+
+      if (error) {
+        setMessage({
+          type: "error",
+          text: error.message ?? "Sign in failed.",
+        });
+        return;
+      }
+
+      const userId = authData.user?.id;
+
+      if (!userId) {
+        setMessage({
+          type: "error",
+          text: "Sign in succeeded, but no user was returned.",
+        });
+        return;
+      }
+
+      const { data: existingPet, error: petLookupError } = await supabase
+        .from("pets")
+        .select("id")
+        .eq("user_id", userId)
+        .limit(1)
+        .maybeSingle();
+
+      if (petLookupError) {
+        console.error("[login] pet lookup failed:", petLookupError);
+        closeModal();
+        navigate("/pet");
+        return;
+      }
+
+      closeModal();
+
+      if (existingPet) {
+        navigate("/pet");
+      } else {
+        navigate("/create");
+      }
+    } catch (error) {
+      console.error("[login] failed:", error);
+      setMessage({
+        type: "error",
+        text: "Sign in failed. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSignupSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    const normalizedNickname = normalizeNickname(nickname);
+
+    if (!trimmedName) {
+      setMessage({
+        type: "error",
+        text: "Name is required.",
+      });
       return;
     }
 
-    if (!usernameNorm) {
-      setMessage("Username is required.");
+    if (trimmedName.length < 2) {
+      setMessage({
+        type: "error",
+        text: "Name must be at least 2 characters.",
+      });
       return;
     }
 
-    if (!isValidUsername(usernameNorm)) {
-      setMessage("3–20 chars with letters, numbers, underscore.");
+    if (!normalizedNickname) {
+      setMessage({
+        type: "error",
+        text: "Nickname is required.",
+      });
       return;
     }
 
-    if (!password || password.length < 8) {
-      setMessage("Password must be at least 8 characters.");
+    if (!isValidNickname(normalizedNickname)) {
+      setMessage({
+        type: "error",
+        text: "Nickname must be 3–20 characters using letters, numbers, or underscore.",
+      });
       return;
     }
 
-    if (password !== confirm) {
-      setMessage("Passwords do not match.");
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
+      setMessage({
+        type: "error",
+        text: "Please enter a valid email address.",
+      });
+      return;
+    }
+
+    if (!signupPassword || signupPassword.length < 8) {
+      setMessage({
+        type: "error",
+        text: "Password must be at least 8 characters.",
+      });
+      return;
+    }
+
+    if (signupPassword !== confirmPassword) {
+      setMessage({
+        type: "error",
+        text: "Passwords do not match.",
+      });
       return;
     }
 
@@ -220,321 +331,306 @@ function SignupPanel({
       const { data: existingProfile, error: lookupError } = await supabase
         .from("profiles")
         .select("user_id")
-        .eq("username", usernameNorm)
+        .eq("username", normalizedNickname)
         .maybeSingle();
 
       if (lookupError) {
-        console.error("[signup] username availability check failed", {
-          username: usernameNorm,
+        console.error("[signup] nickname availability check failed", {
+          nickname: normalizedNickname,
           error: lookupError,
         });
-        setMessage("Could not verify username. Please try again.");
+
+        setMessage({
+          type: "error",
+          text: "Could not verify nickname. Please try again.",
+        });
         return;
       }
 
       if (existingProfile) {
-        setMessage("That username is already taken.");
+        setMessage({
+          type: "error",
+          text: "That nickname is already taken.",
+        });
         return;
       }
 
-      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp(
-        {
-          email,
-          password,
+      const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({
+          email: trimmedEmail,
+          password: signupPassword,
           options: {
             data: {
-              username: usernameNorm,
-              display_name: displayName.trim(),
+              full_name: trimmedName,
+              username: normalizedNickname,
+              nickname: normalizedNickname,
+              display_name: normalizedNickname,
             },
           },
-        },
-      );
+        });
 
-      if (signUpErr) {
-        setMessage(signUpErr.message ?? "Signup failed.");
+      if (signUpError) {
+        setMessage({
+          type: "error",
+          text: signUpError.message ?? "Signup failed.",
+        });
         return;
       }
 
       const userId = signUpData.user?.id ?? null;
       const hasSession = Boolean(signUpData.session);
 
-      if (!userId) {
-        setMessage(
-          "Account created. Please check your email to confirm, then sign in.",
+      if (userId) {
+        const { error: profileError } = await supabase.from("profiles").upsert(
+          {
+            user_id: userId,
+            username: normalizedNickname,
+            display_name: normalizedNickname,
+            email: trimmedEmail,
+          },
+          { onConflict: "user_id" },
         );
-        return;
-      }
 
-      const { error: profileErr } = await supabase.from("profiles").upsert(
-        {
-          user_id: userId,
-          username: usernameNorm,
-          display_name: displayName.trim(),
-          email,
-        },
-        { onConflict: "user_id" },
-      );
+        if (profileError) {
+          console.error("[signup] profile upsert failed", {
+            nickname: normalizedNickname,
+            userId,
+            error: profileError,
+          });
 
-      if (profileErr) {
-        console.error("[signup] profile upsert failed", {
-          username: usernameNorm,
-          userId,
-          error: profileErr,
-        });
-        setMessage(
-          "Account created, but profile setup failed. Please contact support.",
-        );
-        return;
+          setMessage({
+            type: "error",
+            text: "Account created, but profile setup failed. Please contact support.",
+          });
+          return;
+        }
       }
 
       if (hasSession) {
         await supabase.auth.signOut();
       }
 
-      setIdentifier(email);
-      closeSignup();
-      setMessage("Account created successfully. Please sign in.");
-    } catch (err) {
-      console.error("[signup] failed:", err);
-      setMessage("Signup failed. Please try again.");
+      resetSignupFields();
+      setLoginPassword("");
+      closeModal();
+      navigate("/");
+    } catch (error) {
+      console.error("[signup] failed:", error);
+      setMessage({
+        type: "error",
+        text: "Signup failed. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
   }
 
-  return (
-    <form onSubmit={onSubmit} className="dp-form">
-      <div className="dp-field">
-        <div className="dp-label">Name</div>
-        <input
-          className="dp-input"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          autoComplete="name"
-          placeholder="Your display name"
-          required
-        />
-      </div>
-
-      <div className="dp-field">
-        <div className="dp-label">Username</div>
-        <input
-          className="dp-input"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          autoComplete="username"
-          placeholder="3–20 chars"
-          required
-        />
-        <div className="auth-hint">
-          3–20 chars with letters, numbers, and underscore.
-        </div>
-      </div>
-
-      <div className="dp-field">
-        <div className="dp-label">Email</div>
-        <input
-          className="dp-input"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
-          autoComplete="email"
-          inputMode="email"
-          placeholder=""
-          required
-        />
-      </div>
-
-      <div className="dp-field">
-        <div className="dp-label">Password</div>
-        <PasswordField
-          label=""
-          value={password}
-          onChange={setPassword}
-          autoComplete="new-password"
-          placeholder="At least 8 characters"
-        />
-        <div className="auth-hint">8-12+ chars</div>
-      </div>
-
-      <div className="dp-field">
-        <div className="dp-label">Confirm Password</div>
-        <PasswordField
-          label=""
-          value={confirm}
-          onChange={setConfirm}
-          autoComplete="new-password"
-          placeholder="Repeat password"
-        />
-      </div>
-
-      <div className="auth-actions auth-actions--tight">
-        <button
-          type="submit"
-          disabled={loading}
-          className="dp-btn dp-btn--blue"
-        >
-          {loading ? "Creating..." : "Sign up"}
-        </button>
-
-        <button
-          type="button"
-          onClick={closeSignup}
-          disabled={loading}
-          className="dp-btn dp-btn--red"
-        >
-          Close
-        </button>
-      </div>
-
-      {message ? <p className="auth-message">{message}</p> : null}
-    </form>
-  );
-}
-
-export function LoginMenus({
-  forcedView = "none",
-}: {
-  forcedView?: ForcedView;
-}) {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const [mode, setMode] = useState<Mode>("none");
-  const [signupOpen, setSignupOpen] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-
-  const [identifier, setIdentifier] = useState(() => {
-    return localStorage.getItem("dp_login_identifier") ?? "";
-  });
-
-  useEffect(() => {
-    localStorage.setItem("dp_login_identifier", identifier);
-  }, [identifier]);
-
-  const portalTarget = typeof document !== "undefined" ? document.body : null;
-
-  useEffect(() => {
-    const pathname = location.pathname;
-
-    if (forcedView === "signup" || pathname === "/signup") {
-      setMode("none");
-      setSignupOpen(true);
-      return;
-    }
-
-    if (forcedView === "login" || pathname === "/signin") {
-      setSignupOpen(false);
-      setMode("login");
-      return;
-    }
-
-    setSignupOpen(false);
-    setMode("none");
-  }, [forcedView, location.pathname, location.search]);
-
-  function openLogin() {
-    setMessage(null);
-    setMode("login");
-    setSignupOpen(false);
-    navigate(`/signin?open=${Date.now()}`);
-  }
-
-  function openSignup() {
-    setMessage(null);
-    setIdentifier("");
-    localStorage.removeItem("dp_login_identifier");
-    setSignupOpen(true);
-    setMode("none");
-    navigate(`/signup?open=${Date.now()}`);
-  }
-
-  function closeLogin() {
-    setMode("none");
-    setMessage(null);
-
-    if (location.pathname === "/signin" || location.pathname === "/signup") {
-      navigate("/", { replace: true });
-    }
-  }
-
-  function closeSignup() {
-    setSignupOpen(false);
-    setMessage(null);
-
-    if (location.pathname === "/signin" || location.pathname === "/signup") {
-      navigate("/", { replace: true });
-    }
-  }
-
-  const loginModal =
-    mode === "login" && portalTarget
+  const modalMarkup =
+    mounted && isOpen
       ? createPortal(
           <div
             className="auth-modal-backdrop"
             role="presentation"
-            onClick={closeLogin}
+            onClick={closeModal}
           >
             <div
-              className="auth-modal neon-border"
+              className={`auth-modal ${
+                view === "signup"
+                  ? "signup-neon auth-modal--signup"
+                  : "neon-border auth-modal--login"
+              }`}
               role="dialog"
               aria-modal="true"
-              aria-label="Sign in"
-              onClick={(e) => e.stopPropagation()}
+              aria-labelledby="auth-modal-title"
+              onClick={(event) => event.stopPropagation()}
             >
-              <LoginPanel
-                identifier={identifier}
-                setIdentifier={setIdentifier}
-                message={message}
-                setMessage={setMessage}
-                closeLogin={closeLogin}
-              />
-            </div>
-          </div>,
-          portalTarget,
-        )
-      : null;
+              {view === "login" ? (
+                <>
+                  <div className="auth-modal-header auth-modal-header--login">
+                    <div className="auth-modal-headerText auth-modal-headerText--loginBrand">
+                      <h3
+                        id="auth-modal-title"
+                        className="auth-loginBrandTitle"
+                      >
+                        Welcome to{" "}
+                        <span className="auth-brandDeltaPets">DeltaPets</span>.
+                      </h3>
+                    </div>
+                  </div>
 
-  const signupModal =
-    signupOpen && portalTarget
-      ? createPortal(
-          <div
-            className="auth-modal-backdrop"
-            role="presentation"
-            onClick={closeSignup}
-          >
-            <div
-              className="auth-modal signup-neon"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Sign up"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <SignupPanel
-                identifier={identifier}
-                setIdentifier={setIdentifier}
-                message={message}
-                setMessage={setMessage}
-                closeSignup={closeSignup}
-              />
+                  <form onSubmit={handleLoginSubmit} className="dp-form">
+                    <div className="dp-field">
+                      <label className="dp-label">Email</label>
+                      <input
+                        className="dp-input"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        autoComplete="email"
+                        inputMode="email"
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
+
+                    <PasswordField
+                      label="Password"
+                      value={loginPassword}
+                      onChange={setLoginPassword}
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                    />
+
+                    <div className="auth-actions auth-actions--bottomLeft">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="dp-btn dp-btn--blue auth-submitButton"
+                      >
+                        {loading ? "Signing in..." : "Sign in"}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="auth-inlineClose"
+                        onClick={closeModal}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <div className="auth-signupBrandBlock">
+                    <p className="auth-signupIntro">
+                      Start your Journey into{" "}
+                      <span className="auth-brandAliune">Aliune</span>!
+                    </p>
+
+                    <h3 id="auth-modal-title" className="auth-signupTitle">
+                      Create your{" "}
+                      <span className="auth-brandDeltaPets">DeltaPets</span>{" "}
+                      Account.
+                    </h3>
+                  </div>
+
+                  <form
+                    onSubmit={handleSignupSubmit}
+                    className="dp-form dp-form--signupCompact"
+                  >
+                    <div className="dp-field">
+                      <label className="dp-label">Name</label>
+                      <input
+                        className="dp-input"
+                        value={name}
+                        onChange={(event) => setName(event.target.value)}
+                        autoComplete="name"
+                        placeholder="First and Last Legal"
+                        required
+                      />
+                    </div>
+
+                    <div className="dp-field">
+                      <label className="dp-label">Nickname</label>
+                      <input
+                        className="dp-input"
+                        value={nickname}
+                        onChange={(event) => setNickname(event.target.value)}
+                        autoComplete="nickname"
+                        placeholder="Pick a unique Nickname"
+                        required
+                      />
+                      <div className="auth-hint"></div>
+                    </div>
+
+                    <div className="dp-field">
+                      <label className="dp-label">Email</label>
+                      <input
+                        className="dp-input"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        autoComplete="email"
+                        inputMode="email"
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
+
+                    <PasswordField
+                      label="Password"
+                      value={signupPassword}
+                      onChange={setSignupPassword}
+                      autoComplete="new-password"
+                      placeholder="At least 8 characters"
+                    />
+
+                    <PasswordField
+                      label="Confirm Password"
+                      value={confirmPassword}
+                      onChange={setConfirmPassword}
+                      autoComplete="new-password"
+                      placeholder="Repeat password"
+                    />
+
+                    <div className="auth-actions auth-actions--bottomLeft auth-actions--signup">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="dp-btn dp-btn--blue auth-submitButton"
+                      >
+                        {loading ? "Signing up..." : "Sign Up"}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="auth-inlineClose"
+                        onClick={closeModal}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
+
+              {message ? (
+                <p
+                  className={`auth-message ${
+                    message.type === "error"
+                      ? "auth-message--error"
+                      : "auth-message--success"
+                  }`}
+                >
+                  {message.text}
+                </p>
+              ) : null}
             </div>
           </div>,
-          portalTarget,
+          document.body,
         )
       : null;
 
   return (
     <>
-      <div className="auth-launchers" style={{ display: "flex", gap: "12px" }}>
-        <button className="dp-btn dp-btn--yellow" onClick={openLogin}>
+      <div className="auth-launchers">
+        <button
+          type="button"
+          className="dp-btn dp-btn--blue"
+          onClick={openLogin}
+        >
           Sign in
         </button>
-        <button className="dp-btn dp-btn--blue" onClick={openSignup}>
+
+        <button
+          type="button"
+          className="dp-btn dp-btn--blue"
+          onClick={openSignup}
+        >
           Sign up
         </button>
       </div>
 
-      {loginModal}
-      {signupModal}
+      {modalMarkup}
     </>
   );
 }
