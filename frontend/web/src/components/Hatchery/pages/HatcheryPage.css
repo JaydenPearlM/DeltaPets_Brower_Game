@@ -1,0 +1,1431 @@
+.hatcheryPage {
+  padding: 16px;
+}
+
+.hatcheryTopActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.hatcheryWorkbenchLayout {
+  display: grid;
+  grid-template-columns: 500px minmax(250px, 300px) minmax(320px, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.hatcheryLeftColumn {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 14px;
+  min-width: 0;
+}
+
+.hatcheryBottomRow {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.hatcheryBottomRowInner {
+  width: 100%;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.rackPanelSide {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.storagePanel {
+  min-width: 0;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.panelTitle {
+  font-weight: 900;
+  font-size: 18px;
+  color: #ffd966;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.45),
+    0 0 14px rgba(255, 100, 100, 0.12);
+}
+
+.panelTitleSmall {
+  font-size: 16px;
+}
+
+.panelSubtext {
+  font-size: 12px;
+  color: rgba(210, 222, 255, 0.78);
+  margin-top: 3px;
+}
+
+.panelBody {
+  border: 1px solid rgba(124, 156, 255, 0.16);
+  border-radius: 14px;
+  padding: 12px;
+  background:
+    radial-gradient(
+      140% 120% at 12% 8%,
+      rgba(73, 130, 255, 0.14),
+      transparent 38%
+    ),
+    radial-gradient(
+      140% 140% at 88% 12%,
+      rgba(165, 92, 255, 0.14),
+      transparent 36%
+    ),
+    radial-gradient(
+      120% 120% at 50% 100%,
+      rgba(255, 84, 112, 0.12),
+      transparent 42%
+    ),
+    linear-gradient(180deg, rgba(15, 25, 52, 0.88), rgba(8, 16, 38, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 24px rgba(39, 78, 178, 0.16);
+}
+
+.selectedEggPanel,
+.rackPanel,
+.storagePanel,
+.selectedEggStatsInset,
+.incubationInsetPanel {
+  border: 1px solid rgba(116, 145, 255, 0.18);
+  border-radius: 16px;
+  padding: 12px;
+  background:
+    radial-gradient(
+      120% 120% at 6% 0%,
+      rgba(70, 124, 255, 0.18),
+      transparent 34%
+    ),
+    radial-gradient(
+      120% 120% at 100% 0%,
+      rgba(154, 84, 255, 0.14),
+      transparent 34%
+    ),
+    radial-gradient(
+      130% 120% at 50% 100%,
+      rgba(255, 78, 116, 0.11),
+      transparent 38%
+    ),
+    linear-gradient(180deg, rgba(18, 28, 56, 0.95), rgba(6, 16, 39, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 40px rgba(0, 0, 0, 0.22);
+  position: relative;
+  overflow: hidden;
+}
+
+.selectedEggPanel::before,
+.rackPanel::before,
+.storagePanel::before,
+.selectedEggStatsInset::before,
+.incubationInsetPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03),
+    transparent 18%,
+    transparent 72%,
+    rgba(255, 255, 255, 0.015)
+  );
+}
+
+.selectedEggPreviewArea {
+  width: 100%;
+  height: 500px;
+  min-height: 500px;
+  max-height: 500px;
+  border-radius: 14px;
+  border: 1px solid rgba(130, 156, 255, 0.14);
+  background:
+    radial-gradient(
+      90% 100% at 20% 20%,
+      rgba(70, 120, 255, 0.12),
+      transparent 32%
+    ),
+    radial-gradient(
+      90% 100% at 80% 18%,
+      rgba(155, 89, 255, 0.1),
+      transparent 28%
+    ),
+    linear-gradient(180deg, rgba(15, 26, 52, 0.84), rgba(7, 15, 34, 0.9));
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+    inset 0 -20px 40px rgba(0, 0, 0, 0.18),
+    0 0 20px rgba(70, 120, 255, 0.08);
+}
+
+.selectedEggPreviewArea::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.035),
+    transparent 24%,
+    transparent 70%,
+    rgba(255, 255, 255, 0.015)
+  );
+}
+
+.selectedEggPreviewArea::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.035);
+  pointer-events: none;
+}
+
+.incubatorGlass {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 65% at 50% 48%,
+    rgba(110, 155, 255, 0.08),
+    transparent 60%
+  );
+}
+
+.selectedPreviewEmpty,
+.selectedPreviewFilled {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+}
+
+.selectedPreviewEmpty {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.selectedPreviewEyebrow {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 156, 255, 0.16);
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(233, 239, 255, 0.88);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.selectedPreviewEmptyTitle {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  color: #f5f7ff;
+}
+
+.selectedPreviewEmptyText {
+  font-size: 14px;
+  color: rgba(214, 225, 255, 0.82);
+  max-width: 360px;
+}
+
+.selectedPreviewFilled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.selectedEggHalo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: radial-gradient(
+    closest-side,
+    rgba(86, 142, 255, 0.2),
+    rgba(151, 85, 255, 0.1) 55%,
+    transparent 74%
+  );
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.eggBigImg {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 0 24px rgba(97, 138, 255, 0.22))
+    drop-shadow(0 0 34px rgba(166, 89, 255, 0.14));
+}
+
+.selectedText {
+  min-width: 0;
+}
+
+.selectedName {
+  font-weight: 900;
+  font-size: 24px;
+  color: #f8fbff;
+}
+
+.selectedSub {
+  opacity: 0.88;
+  font-size: 14px;
+  margin-top: 4px;
+  color: rgba(205, 220, 255, 0.9);
+}
+
+.selectedEggStatsInset,
+.incubationInsetPanel {
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.statsIntro {
+  font-size: 12px;
+  color: rgba(214, 225, 255, 0.86);
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.statsGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.compactStatsGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(130, 156, 255, 0.1);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.025),
+    rgba(255, 255, 255, 0.015)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.statRowStrong {
+  border-color: var(--dp-green, rgba(87, 227, 137, 0.92));
+  box-shadow:
+    0 0 0 1px rgba(87, 227, 137, 0.16),
+    0 0 16px rgba(87, 227, 137, 0.18),
+    inset 0 0 14px rgba(87, 227, 137, 0.08);
+}
+
+.statRowWeak {
+  border-color: var(--dp-red, rgba(255, 96, 96, 0.92));
+  box-shadow:
+    0 0 0 1px rgba(255, 96, 96, 0.16),
+    0 0 16px rgba(255, 96, 96, 0.16),
+    inset 0 0 14px rgba(255, 96, 96, 0.08);
+}
+
+.statRowTotal {
+  border-color: rgba(255, 204, 102, 0.18);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 220, 120, 0.055),
+    rgba(255, 220, 120, 0.03)
+  );
+}
+
+.statLabel {
+  opacity: 0.84;
+  font-size: 12px;
+}
+
+.statValue {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: #f8fbff;
+  font-size: 12px;
+}
+
+.eggTraitFlavorText {
+  margin-top: 12px;
+  min-height: 40px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(224, 233, 255, 0.9);
+}
+
+.hatchActionBtn {
+  margin-top: 10px;
+}
+
+.incubationInsetHeader {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.itemsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.itemSlot {
+  border: 1px solid rgba(124, 149, 255, 0.14);
+  border-radius: 12px;
+  background:
+    radial-gradient(
+      100% 90% at 16% 10%,
+      rgba(81, 130, 255, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(18, 28, 55, 0.94), rgba(8, 17, 39, 0.96));
+  padding: 10px;
+  text-align: left;
+  min-height: 62px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition:
+    opacity 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.itemSlotStatic {
+  cursor: default;
+}
+
+.itemSlot.unlocked {
+  opacity: 1;
+}
+
+.itemSlot.locked {
+  opacity: 0.56;
+}
+
+.itemSlotInner {
+  display: grid;
+  gap: 4px;
+}
+
+.itemSlotIndex {
+  font-size: 11px;
+  opacity: 0.78;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.itemSlotEmpty {
+  opacity: 0.66;
+  font-size: 11px;
+}
+
+.itemsHint {
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  opacity: 0.78;
+}
+
+.eggRackBody {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.eggGrid {
+  display: grid;
+  gap: 10px;
+  height: 100%;
+  align-content: start;
+}
+
+.eggGridCompact {
+  grid-template-columns: 1fr;
+}
+
+.eggSlotCard {
+  position: relative;
+  border: 1px solid rgba(125, 151, 255, 0.16);
+  background:
+    radial-gradient(
+      110% 90% at 20% 12%,
+      rgba(75, 128, 255, 0.12),
+      transparent 34%
+    ),
+    radial-gradient(
+      90% 90% at 84% 16%,
+      rgba(157, 86, 255, 0.1),
+      transparent 28%
+    ),
+    linear-gradient(180deg, rgba(18, 29, 59, 0.92), rgba(8, 16, 37, 0.94));
+  border-radius: 12px;
+  padding: 10px;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.12);
+}
+
+.eggSlotCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.eggSlotCard.hasEgg::before {
+  opacity: 1;
+  animation: eggBorderPulse 1.8s ease-in-out infinite;
+}
+
+.eggSlotCard.selected {
+  border-color: rgba(255, 195, 87, 0.6);
+  box-shadow:
+    0 0 0 1px rgba(255, 195, 87, 0.26),
+    0 0 18px rgba(83, 123, 245, 0.14);
+}
+
+.eggSlotCard.locked {
+  opacity: 0.56;
+}
+
+.eggSlot {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 8px;
+  padding: 0;
+}
+
+.eggSlot:disabled {
+  cursor: not-allowed;
+}
+
+.eggSlotLeft {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.eggIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    180deg,
+    rgba(36, 51, 92, 0.8),
+    rgba(14, 23, 49, 0.85)
+  );
+}
+
+.eggIconImg {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+}
+
+.eggSlotMain {
+  min-width: 0;
+}
+
+.eggSlotTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.eggSlotTitle {
+  font-weight: 800;
+  font-size: 12px;
+  opacity: 0.96;
+}
+
+.eggSlotTimer {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.86;
+}
+
+.eggMiniStats {
+  margin-top: 4px;
+  font-size: 10px;
+  opacity: 0.78;
+}
+
+.rackHatchBtn {
+  margin-top: 10px;
+}
+
+.storageHeader {
+  align-items: flex-start;
+}
+
+.storageHeaderMeta {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+  text-align: right;
+  min-width: 120px;
+}
+
+.storageHeaderMetaTop {
+  font-size: 12px;
+  font-weight: 900;
+  color: #dfe8ff;
+}
+
+.storageHeaderMetaBottom {
+  font-size: 12px;
+  color: rgba(214, 225, 255, 0.82);
+}
+
+.storageHeaderMetaBottom strong {
+  color: #ffd966;
+}
+
+.storagePanelBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.storagePanelBodyEnhanced {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 12px;
+}
+
+.partyTeamSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid rgba(126, 150, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px;
+  background:
+    radial-gradient(
+      120% 110% at 16% 12%,
+      rgba(73, 130, 255, 0.08),
+      transparent 36%
+    ),
+    linear-gradient(180deg, rgba(18, 28, 55, 0.42), rgba(8, 17, 39, 0.5));
+  overflow: hidden;
+}
+
+.partyTeamHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.partyTeamGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.partySlotCard {
+  min-width: 0;
+  min-height: 160px;
+  border: 1px solid rgba(128, 152, 255, 0.16);
+  border-radius: 14px;
+  padding: 8px;
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.06),
+      transparent 28%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.partySlotCard.selected {
+  border-color: rgba(255, 204, 102, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(255, 204, 102, 0.12),
+    0 0 14px rgba(255, 178, 66, 0.08);
+}
+
+.partySlotSelectBtn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+}
+
+.partySlotNumber {
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(221, 231, 255, 0.82);
+}
+
+.partySlotPortrait {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  border: 1px solid rgba(132, 157, 255, 0.18);
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.05),
+      transparent 30%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.partySlotPortraitInner {
+  font-size: 28px;
+  font-weight: 900;
+  color: #f8fbff;
+  line-height: 1;
+}
+
+.partySlotName {
+  font-size: 12px;
+  font-weight: 900;
+  color: #f8fbff;
+  line-height: 1.1;
+}
+
+.partySlotSub {
+  font-size: 10px;
+  color: rgba(216, 227, 255, 0.8);
+  line-height: 1.2;
+}
+
+.partySlotActions {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.storageTopSummary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.storageHeroCard {
+  border: 1px solid rgba(130, 156, 255, 0.14);
+  border-radius: 12px;
+  padding: 10px;
+  background:
+    radial-gradient(
+      120% 110% at 20% 10%,
+      rgba(73, 130, 255, 0.11),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(18, 28, 55, 0.94), rgba(8, 17, 39, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.storageHeroLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(209, 221, 255, 0.78);
+}
+
+.storageHeroValue {
+  margin-top: 4px;
+  font-size: 22px;
+  font-weight: 900;
+  color: #f7f9ff;
+  line-height: 1;
+}
+
+.storageSearchWrap {
+  display: flex;
+}
+
+.storageSearchInput {
+  width: 100%;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(129, 154, 255, 0.18);
+  background: linear-gradient(
+    180deg,
+    rgba(11, 20, 44, 0.92),
+    rgba(7, 14, 32, 0.96)
+  );
+  color: #f4f7ff;
+  padding: 0 14px;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.storageSearchInput::placeholder {
+  color: rgba(207, 220, 255, 0.5);
+}
+
+.storageSearchInput:focus {
+  border-color: rgba(255, 205, 124, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(255, 205, 124, 0.16),
+    0 0 16px rgba(84, 127, 245, 0.12);
+}
+
+.storageDivider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(136, 160, 255, 0.3),
+    transparent
+  );
+}
+
+.storageGridScroll {
+  flex: 1;
+  min-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.storageGridScroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.storageGridScroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
+
+.storageGridScroll::-webkit-scrollbar-thumb {
+  background: rgba(131, 154, 255, 0.3);
+  border-radius: 999px;
+}
+
+.storagePetGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.storagePetCard {
+  border: 1px solid rgba(128, 152, 255, 0.14);
+  border-radius: 14px;
+  padding: 12px;
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(70, 122, 255, 0.1),
+      transparent 34%
+    ),
+    radial-gradient(
+      120% 120% at 86% 12%,
+      rgba(156, 92, 255, 0.08),
+      transparent 30%
+    ),
+    linear-gradient(180deg, rgba(15, 26, 52, 0.9), rgba(7, 15, 34, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.12);
+  display: grid;
+  gap: 12px;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.storagePetCard:hover {
+  transform: translateY(-1px);
+  border-color: rgba(170, 188, 255, 0.26);
+}
+
+.storagePetCard.isActivePet {
+  border-color: rgba(255, 209, 92, 0.34);
+  box-shadow:
+    0 0 0 1px rgba(255, 209, 92, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 18px rgba(255, 183, 68, 0.08);
+}
+
+.storagePetCard.tone-fire {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(255, 116, 74, 0.14),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(42, 24, 32, 0.92), rgba(18, 12, 22, 0.96));
+}
+
+.storagePetCard.tone-water {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(79, 165, 255, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(17, 29, 54, 0.92), rgba(8, 15, 33, 0.96));
+}
+
+.storagePetCard.tone-earth {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(126, 196, 95, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(24, 36, 24, 0.92), rgba(12, 21, 14, 0.96));
+}
+
+.storagePetCard.tone-air {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(208, 236, 255, 0.15),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(28, 34, 46, 0.92), rgba(12, 16, 24, 0.96));
+}
+
+.storagePetCard.tone-ice {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(135, 234, 255, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(19, 34, 48, 0.92), rgba(9, 16, 28, 0.96));
+}
+
+.storagePetCard.tone-storm {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(181, 131, 255, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(28, 20, 48, 0.92), rgba(12, 10, 28, 0.96));
+}
+
+.storagePetCard.tone-light {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(255, 224, 120, 0.17),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(46, 38, 22, 0.92), rgba(24, 19, 10, 0.96));
+}
+
+.storagePetCard.tone-shadow {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(206, 118, 255, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(31, 18, 46, 0.92), rgba(12, 8, 23, 0.96));
+}
+
+.storagePetCard.tone-null {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(180, 186, 204, 0.14),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(27, 29, 40, 0.92), rgba(14, 15, 21, 0.96));
+}
+
+.storagePetCard.tone-default {
+  background:
+    radial-gradient(
+      130% 120% at 18% 10%,
+      rgba(70, 122, 255, 0.1),
+      transparent 34%
+    ),
+    radial-gradient(
+      120% 120% at 86% 12%,
+      rgba(156, 92, 255, 0.08),
+      transparent 30%
+    ),
+    linear-gradient(180deg, rgba(15, 26, 52, 0.9), rgba(7, 15, 34, 0.94));
+}
+
+.storagePetTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.storagePetIdentity {
+  min-width: 0;
+}
+
+.storagePetName {
+  font-size: 15px;
+  font-weight: 900;
+  color: #f6f8ff;
+  line-height: 1.2;
+}
+
+.storagePetMeta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(216, 227, 255, 0.78);
+}
+
+.storageBadgeStack {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.storageStageBadge,
+.storageLocationBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.storageStageBadge {
+  border: 1px solid rgba(255, 212, 94, 0.24);
+  background: rgba(255, 212, 94, 0.08);
+  color: #ffe8a8;
+}
+
+.storageLocationBadge {
+  border: 1px solid rgba(129, 154, 255, 0.18);
+  background: rgba(129, 154, 255, 0.08);
+  color: #dfe8ff;
+}
+
+.storageLocationBadge.stored {
+  border-color: rgba(111, 229, 171, 0.2);
+  background: rgba(111, 229, 171, 0.08);
+  color: #bff6de;
+}
+
+.storagePetBody {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.storagePetOrb {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  border: 1px solid rgba(132, 157, 255, 0.16);
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.06),
+      transparent 28%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.storagePetOrbInner {
+  font-size: 22px;
+  font-weight: 900;
+  color: #f8fbff;
+}
+
+.storagePetLore {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(218, 227, 255, 0.8);
+}
+
+.storageActionRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.storageActionBtn {
+  min-height: 32px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 11px;
+}
+
+.storageBottomFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 2px;
+  border-top: 1px solid rgba(130, 156, 255, 0.1);
+}
+
+.storageFilterChip {
+  border: 1px solid rgba(130, 156, 255, 0.16);
+  border-radius: 999px;
+  min-height: 34px;
+  padding: 0 12px;
+  background: linear-gradient(
+    180deg,
+    rgba(26, 39, 72, 0.9),
+    rgba(12, 20, 42, 0.94)
+  );
+  color: #edf2ff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.storageFilterChip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(167, 188, 255, 0.28);
+}
+
+.storageFilterChip.active {
+  border-color: rgba(255, 204, 102, 0.34);
+  color: #fff1c5;
+  box-shadow: 0 0 0 1px rgba(255, 204, 102, 0.1);
+}
+
+.storageFilterChip strong {
+  color: #ffd966;
+  font-weight: 900;
+}
+
+.storageEmptyState {
+  min-height: 260px;
+  border-radius: 14px;
+  border: 1px dashed rgba(130, 156, 255, 0.16);
+  background:
+    radial-gradient(
+      110% 100% at 20% 10%,
+      rgba(70, 120, 255, 0.08),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(15, 26, 52, 0.84), rgba(7, 15, 34, 0.9));
+  padding: 20px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.storageEmptyTitle {
+  font-size: 16px;
+  font-weight: 900;
+  color: #f6f8ff;
+}
+
+.storageEmptyText {
+  margin-top: 6px;
+  max-width: 360px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(214, 225, 255, 0.8);
+}
+
+.storageErrorText {
+  color: #ffb4b4;
+  font-size: 12px;
+}
+
+@media (max-width: 1320px) {
+  .storageTopSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .partyTeamGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .hatcheryTopActions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .partyTeamGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .storageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .storageHeaderMeta {
+    justify-items: start;
+    text-align: left;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .partyTeamGrid,
+  .storageTopSummary,
+  .storagePetGrid,
+  .storageActionRow {
+    grid-template-columns: 1fr;
+  }
+
+  .storagePetBody {
+    grid-template-columns: 50px 1fr;
+  }
+
+  .storageGridScroll {
+    min-height: 340px;
+  }
+}
+
+.mainPartyInlineSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.storedPetsInlineSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  flex: 1;
+}
+
+.storedPetsSectionHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.storageSectionDivider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(136, 160, 255, 0.3),
+    transparent
+  );
+}
+
+.partyTeamGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.partySlotCard {
+  min-width: 0;
+  min-height: 160px;
+  border: 1px solid rgba(128, 152, 255, 0.16);
+  border-radius: 14px;
+  padding: 8px;
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.06),
+      transparent 28%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.partySlotCard.selected {
+  border-color: rgba(255, 204, 102, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(255, 204, 102, 0.12),
+    0 0 14px rgba(255, 178, 66, 0.08);
+}
+
+.partySlotSelectBtn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+}
+
+.partySlotNumber {
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(221, 231, 255, 0.82);
+}
+
+.partySlotPortrait {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  border: 1px solid rgba(132, 157, 255, 0.18);
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgba(255, 255, 255, 0.05),
+      transparent 30%
+    ),
+    linear-gradient(180deg, rgba(31, 43, 79, 0.9), rgba(14, 22, 43, 0.96));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.partySlotPortraitInner {
+  font-size: 28px;
+  font-weight: 900;
+  color: #f8fbff;
+  line-height: 1;
+}
+
+.partySlotName {
+  font-size: 12px;
+  font-weight: 900;
+  color: #f8fbff;
+  line-height: 1.1;
+}
+
+.partySlotSub {
+  font-size: 10px;
+  color: rgba(216, 227, 255, 0.8);
+  line-height: 1.2;
+}
+
+.partySlotActions {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+@media (max-width: 1320px) {
+  .partyTeamGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .partyTeamGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .partyTeamGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.partySlotCardEmpty .partySlotSub {
+  min-height: 18px;
+  opacity: 0;
+}
+
+.partySlotCardEmpty .dragHandleHint.emptyHint {
+  min-height: 18px;
+  opacity: 0;
+  pointer-events: none;
+}

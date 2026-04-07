@@ -1,0 +1,78 @@
+/* ============================================================
+   Donate + Delta Spin Combined Styles
+   ============================================================ */
+
+/* Donate wrapper */
+.dp-donateWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Donate link */
+.dp-donateBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Blue link portion */
+.dp-donateClick {
+  color: var(--color-accent-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 700;
+}
+
+.dp-donateBtn:hover .dp-donateClick {
+  color: var(--color-accent-blue-hi);
+}
+
+/* ============================================================
+   Spinning Delta
+   ============================================================ */
+
+.dp-deltaSpinWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 800px;
+  margin: 0 auto;
+}
+
+.dp-deltaSpin {
+  animation: dpDeltaSpinY 7s linear infinite;
+  transform-style: preserve-3d;
+}
+
+@keyframes dpDeltaSpinY {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+/* Speed up on hover */
+.dp-donateWrap:hover .dp-deltaSpin {
+  animation-duration: 5s;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .dp-deltaSpin {
+    animation: none;
+  }
+}

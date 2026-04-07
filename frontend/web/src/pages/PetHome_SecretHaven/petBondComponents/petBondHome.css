@@ -1,0 +1,93 @@
+.bondPage {
+  padding: 24px;
+}
+
+.bondTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.bondTitle {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.bondSub {
+  color: var(--color-text-muted);
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.bondNav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bondBtn {
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--color-text-primary);
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  transition:
+    transform 0.12s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.bondBtn:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-elev-2);
+  transform: translateY(-1px);
+}
+
+.bondCard {
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 255, 255, 0.05),
+      transparent 60%
+    ),
+    linear-gradient(180deg, rgba(27, 36, 51, 0.72), rgba(17, 24, 39, 0.72));
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.bondCardTitle {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.bondCardBody {
+  color: rgba(249, 250, 251, 0.88);
+  line-height: 1.4;
+}
+
+.bondNote {
+  margin-top: 12px;
+  color: var(--color-text-muted);
+  opacity: 0.95;
+  font-size: 12px;
+}
+
+.bondNote code {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}

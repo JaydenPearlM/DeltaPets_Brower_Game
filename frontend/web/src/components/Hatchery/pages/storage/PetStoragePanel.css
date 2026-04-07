@@ -1,0 +1,86 @@
+.storagePetCardWithTooltip {
+  position: relative;
+  overflow: visible;
+}
+
+.storagePetTooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 14px);
+  transform: translateX(-50%) translateY(8px);
+  width: 220px;
+  padding: 12px 12px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(
+    180deg,
+    rgba(24, 28, 38, 0.98),
+    rgba(14, 17, 24, 0.98)
+  );
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(255, 214, 102, 0.12);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 40;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.storagePetTooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border-width: 8px 8px 0 8px;
+  border-style: solid;
+  border-color: rgba(18, 22, 30, 0.98) transparent transparent transparent;
+}
+
+.storagePetCardWithTooltip:hover .storagePetTooltip,
+.storagePetCardWithTooltip:focus-within .storagePetTooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.storagePetTooltipTitle {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.storagePetTooltipMeta {
+  font-size: 11px;
+  opacity: 0.78;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.storagePetTooltipGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.storagePetTooltipRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.storagePetTooltipRow strong {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.storagePetTooltipRow.total {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}

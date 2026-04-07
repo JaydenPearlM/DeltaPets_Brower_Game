@@ -1,0 +1,82 @@
+/* =========================
+   Markdown Base Styling
+   Used by <MarkdownBody />
+========================= */
+
+.dp-markdown {
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+/* Paragraph spacing */
+.dp-markdown p {
+  margin: 6px 0;
+}
+
+/* Headings */
+.dp-markdown h1 {
+  margin: 10px 0 5px;
+  line-height: 2;
+  font-weight: 800;
+  font-size: 100px;
+}
+
+.dp-markdown h2,
+.dp-markdown h3 {
+  margin: 12px 0 6px;
+  line-height: 1.5;
+  font-weight: 800;
+}
+
+/* Lists */
+.dp-markdown ul,
+.dp-markdown ol {
+  margin: 6px 0 6px 18px;
+  padding: 0;
+}
+
+.dp-markdown li {
+  margin: 2px 0;
+}
+
+/* Links */
+.dp-markdown a {
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+/* Blockquotes */
+.dp-markdown blockquote {
+  margin: 8px 0;
+  padding-left: 10px;
+  border-left: 3px solid rgba(0, 0, 0, 0.18);
+  opacity: 0.95;
+}
+
+/* =========================
+   Newspaper Variant
+   Use with className="dp-markdown dp-newspaper"
+========================= */
+
+.dp-newspaper {
+  column-count: 2;
+  column-gap: 22px;
+  column-rule: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Prevent awkward column splitting */
+.dp-newspaper h1,
+.dp-newspaper h2,
+.dp-newspaper h3,
+.dp-newspaper p,
+.dp-newspaper li,
+.dp-newspaper blockquote {
+  break-inside: avoid;
+}
+
+/* Mobile: back to 1 column */
+@media (max-width: 720px) {
+  .dp-newspaper {
+    column-count: 1;
+  }
+}

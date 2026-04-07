@@ -1,0 +1,84 @@
+/* src/features/achievements/achievement.css */
+
+.achievement-button {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #1f2933;
+  color: #facc15;
+  border: 1px solid #374151;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.achievement-button:hover {
+  background: #111827;
+}
+
+.achievement-panel {
+  position: fixed;
+  top: 80px;
+  right: 40px;
+  width: 320px;
+  background: #0b0f14;
+  border: 1px solid #2a2f3a;
+  border-radius: 14px;
+  padding: 12px;
+  z-index: 50;
+}
+
+.achievement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.achievement-header h2 {
+  font-size: 16px;
+  color: #facc15;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.achievement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.achievement-card {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #1f2933;
+  background: #111827;
+}
+
+.achievement-card.locked {
+  opacity: 0.45;
+}
+
+.achievement-card.unlocked {
+  border-color: #facc15;
+}
+
+.achievement-title {
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.achievement-desc {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.achievement-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49; /* panel is 50, so backdrop sits behind it */
+}

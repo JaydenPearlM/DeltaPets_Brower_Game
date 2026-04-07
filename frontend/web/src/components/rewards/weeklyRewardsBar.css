@@ -1,0 +1,122 @@
+.wr-wrap {
+  width: 100%;
+  max-width: 1100px;
+  margin: 12px auto;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(10, 16, 28, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.wr-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.wr-title {
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.wr-meta {
+  display: flex;
+  gap: 14px;
+  opacity: 0.9;
+}
+
+.wr-bar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wr-slot {
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(0, 0, 0, 0.25);
+  min-height: 74px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.wr-day {
+  font-weight: 800;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.wr-reward {
+  font-size: 12px;
+  opacity: 0.95;
+  line-height: 1.1;
+}
+
+.wr-state {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.wr-slot.is-claimed {
+  background: rgba(40, 120, 60, 0.22);
+  border-color: rgba(90, 240, 130, 0.28);
+}
+
+.wr-slot.is-next {
+  outline: 2px solid rgba(255, 255, 255, 0.14);
+}
+
+.wr-slot.is-claimable {
+  background: rgba(80, 140, 255, 0.18);
+  border-color: rgba(80, 140, 255, 0.35);
+}
+
+.wr-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.wr-claimBtn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.wr-claimBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wr-preview {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.wr-randomTag {
+  opacity: 0.7;
+}
+
+.wr-toast {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.95;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wr-loading {
+  padding: 12px;
+  opacity: 0.8;
+}

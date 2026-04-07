@@ -1,0 +1,150 @@
+.pet-mainstats-shell {
+  width: 100%;
+}
+
+/* main container */
+.pet-mainstats {
+  width: 100%;
+  max-width: 760px;
+  margin: 8px auto 0;
+  padding: 10px 10px 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 18, 26, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.pet-mainstats--compact {
+  max-width: 720px;
+}
+
+/* header */
+.pet-mainstats__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.pet-mainstats__title {
+  margin: 0;
+  font-size: 16px;
+}
+
+.pet-mainstats__name {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.1;
+  letter-spacing: 0.2px;
+}
+
+.pet-mainstats__sub {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pet-mainstats__miniBtn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.pet-mainstats__miniBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* grid */
+.pet-mainstats__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.pet-mainstats__grid--tight {
+  grid-template-columns: 1fr; /*  single column = shorter + stops overlap issues */
+}
+
+/* cards */
+.pet-mainstats__card {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.22);
+  padding: 10px;
+}
+
+.pet-mainstats__cardTitle {
+  margin: 0 0 8px;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  opacity: 0.9;
+}
+
+.pet-mainstats__rows {
+  display: grid;
+  gap: 8px;
+}
+
+.pet-mainstats__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* elements (only when expanded) */
+.pet-mainstats__elements {
+  display: grid;
+  gap: 6px;
+}
+
+.pet-mainstats__elementRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.pet-mainstats__elementName {
+  opacity: 0.9;
+}
+
+.pet-mainstats__elementVal {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.95;
+}
+
+.pet-mainstats__hint {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.pet-mainstats__empty {
+  opacity: 0.8;
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 860px) {
+  .pet-mainstats {
+    margin: 10px auto 0;
+  }
+}
