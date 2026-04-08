@@ -562,7 +562,6 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
 
   const personalityShown = prettyEnum(pet?.personality ?? pet?.personality_key);
 
-  const sprite = pet ? "🐣" : "—";
   const disableCare = isPreview || !pet || actionBusy || nickBusy;
 
   const existingNick = String(pet?.nickname ?? "").trim();

@@ -9,7 +9,7 @@
   --bg-page: #efe1b8;
   --bg-page-2: #ead79e;
   --bg-page-3: #e4c97f;
-  --bg-speck: rgba(180, 136, 52, 0.08);
+  --bg-speck: rgba(180, 136, 52, 0.18);
 
   /* added sand system */
   --dp-bg-sand-0: #f8edd1;
@@ -22,6 +22,12 @@
   --dp-bg-vignette: rgba(73, 56, 18, 0.08);
   --dp-bg-line: rgba(160, 127, 52, 0.08);
   --dp-bg-dot: rgba(104, 139, 191, 0.06);
+
+  /* stronger sandy texture vars */
+  --dp-bg-weave-light: rgba(255, 248, 222, 0.24);
+  --dp-bg-weave-dark: rgba(140, 102, 28, 0.18);
+  --dp-bg-fiber: rgba(255, 255, 255, 0.13);
+  --dp-bg-cross: rgba(120, 88, 24, 0.12);
 
   /* cool foreground */
   --ui-blue-900: #244f8f;
@@ -150,20 +156,29 @@ body {
       var(--dp-bg-blue-glow) 0%,
       rgba(116, 165, 232, 0) 22%
     ),
-    radial-gradient(
-      circle at 14% 12%,
-      rgba(255, 239, 196, 0.7) 0%,
-      transparent 22%
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 8px,
+      var(--dp-bg-weave-light) 8px 10px,
+      transparent 10px 18px
     ),
-    radial-gradient(
-      circle at 86% 10%,
-      rgba(255, 219, 109, 0.24) 0%,
-      transparent 24%
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 8px,
+      var(--dp-bg-weave-dark) 8px 10px,
+      transparent 10px 18px
     ),
-    radial-gradient(
-      circle at 50% 80%,
-      rgba(139, 178, 228, 0.12) 0%,
-      transparent 30%
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 16px,
+      var(--dp-bg-fiber) 16px 17px,
+      transparent 17px 32px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 20px,
+      var(--dp-bg-cross) 20px 21px,
+      transparent 21px 40px
     ),
     linear-gradient(
       180deg,
@@ -181,14 +196,32 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.55;
+  opacity: 0.9;
   background-image:
-    radial-gradient(var(--bg-speck) 0.9px, transparent 0.9px),
-    radial-gradient(rgba(255, 255, 255, 0.14) 0.7px, transparent 0.7px);
+    radial-gradient(var(--bg-speck) 1.2px, transparent 1.2px),
+    radial-gradient(rgba(255, 255, 255, 0.22) 1px, transparent 1px),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 3px,
+      rgba(120, 88, 24, 0.06) 3px 4px,
+      transparent 4px 8px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 3px,
+      rgba(255, 255, 255, 0.06) 3px 4px,
+      transparent 4px 8px
+    );
   background-position:
     0 0,
-    14px 14px;
-  background-size: 28px 28px;
+    11px 11px,
+    0 0,
+    0 0;
+  background-size:
+    22px 22px,
+    22px 22px,
+    10px 10px,
+    10px 10px;
 }
 
 #root {
@@ -265,7 +298,7 @@ a {
   inset: 0;
   pointer-events: none;
   z-index: -1;
-  opacity: 0.7;
+  opacity: 100%;
   background:
     radial-gradient(circle, var(--dp-bg-dot) 1px, transparent 1.5px),
     repeating-radial-gradient(
@@ -276,12 +309,19 @@ a {
     ),
     repeating-linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.018) 0 2px,
-      rgba(0, 0, 0, 0.012) 2px 4px,
+      rgba(255, 255, 255, 0.015) 0 2px,
+      rgba(0, 0, 0, 0.01) 2px 4px,
       transparent 4px 11px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 50px,
+      rgba(255, 250, 232, 0.03) 18px 19px,
+      transparent 19px 38px
     );
   background-size:
     34px 34px,
+    100% 100%,
     100% 100%,
     100% 100%;
   mix-blend-mode: normal;
@@ -1252,6 +1292,24 @@ a {
         rgba(116, 165, 232, 0.08) 0%,
         rgba(116, 165, 232, 0) 18%
       ),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 8px,
+        rgba(255, 248, 222, 0.18) 8px 10px,
+        transparent 10px 18px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 8px,
+        rgba(140, 102, 28, 0.14) 8px 10px,
+        transparent 10px 18px
+      ),
+      repeating-linear-gradient(
+        45deg,
+        transparent 0 16px,
+        rgba(255, 255, 255, 0.1) 16px 17px,
+        transparent 17px 32px
+      ),
       linear-gradient(
         180deg,
         var(--dp-bg-sand-0) 0%,
@@ -1305,9 +1363,11 @@ a {
     background-size:
       26px 26px,
       100% 100%,
+      100% 100%,
       100% 100%;
   }
 }
+
 .dp-pageWidth {
   width: min(calc(100% - 32px), var(--dp-page-max));
   margin: 0 auto;

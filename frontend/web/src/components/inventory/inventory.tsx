@@ -257,7 +257,7 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
     if (!pick) return;
 
     // Example behavior: go back and pass selection in router state
-    nav(-1, { state: { pickedItemId: it.id, pickedKind: it.kind } });
+    nav(-1);
   }
 
   // Header capacity display per category
@@ -302,7 +302,9 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
           </button>
           <button
             className="invBtn"
-            onClick={() => debugAddItem("battle_potion")}
+            onClick={() => {
+              nav(-1);
+            }}
           >
             + Battle
           </button>

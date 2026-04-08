@@ -1,15 +1,11 @@
-import type { PropsWithchildren, ReactNode } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 import "./NotebookPaper.css";
 
-type NotebookPaperProps = PropsWithchildren<{
+type NotebookPaperProps = PropsWithChildren<{
   title?: string;
   className?: string;
   minHeight?: number | string;
-
-  /** Optional footer content (links, donate button, hints, etc.) */
   footer?: ReactNode;
-
-  /** Optional: label for the footer region (a11y) */
   footerAriaLabel?: string;
 }>;
 
@@ -37,17 +33,20 @@ export function NotebookPaper({
       style={style}
       aria-label={title ? `Notebook: ${title}` : "Notebook"}
     >
-      {/* paper-only scratches overlay */}
-      <div className="dp-paperScratchMount" aria-hidden="true" />
+      <div className="dp-paperScratches" aria-hidden="true" />
 
-      {title ? <div className="dp-paperTitle">{title}</div> : null}
+      {title ? (
+        <header className="dp-paperHeader">
+          <h3 className="dp-paperTitle">{title}</h3>
+        </header>
+      ) : null}
 
       <div className="dp-paperBody">{children}</div>
 
       {hasFooter ? (
-        <div className="dp-paperFooter" aria-label={footerAriaLabel}>
+        <footer className="dp-paperFooter" aria-label={footerAriaLabel}>
           {footer}
-        </div>
+        </footer>
       ) : null}
     </section>
   );

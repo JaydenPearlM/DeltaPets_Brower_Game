@@ -1,0 +1,211 @@
+Information about shared Species
+
+Elements:
+
+export type SharedElementLine =
+  | "null_element"
+  | "water"
+  | "fire"
+  | "earth"
+  | "air"
+  | "ice"
+  | "storm"
+  | "light"
+  | "shadow";
+
+Eggs get their Baseline Stats at Egg Stage, that are a total of 10 ==> Not random
+Eggs Stage also decides between two Stats that are a strength and level Faster and one weak Stat.
+
+A strong Stat, a second strong Stat, and a weak stat
+
+A strong stat, a weak stat
+
+A weak stat
+
+A strong stat
+
+No strong or weak Stats.
+
+At level one the Delta pets are hatchlings, upon hatch, the get 7 stats randomly placed around the Base Stats
+
+At level 2+ The Deltas get 5 points and the User picks the stat they want.
+
+
+Training Elements have not been fleshed out yet.
+
+Start Eggs:
+
+Hatchling: Mizu
+Lowform: Mizule
+Highform: Zulelon
+Legion: Lonzu
+Mythical legendary:  (Not yet Fleshed out)
+
+base stats:
+
+line: "water",    
+      hp: 1,
+      atk: 1,
+      magi: 3,
+      def: 2,
+      spd: 2,
+      mana: 1,
+      base_total: 10,
+
+------------------------------
+
+Hatchling: Kindle
+Lowform: Moltikyn
+Highform:  Magnakyn
+Legion: Lavacone
+Mythical Legendary:  (Not yet Fleshed out)
+
+base Stats:
+
+line: "fire",    
+      hp: 2,
+      atk: 3,
+      magi: 1,
+      def: 1,
+      spd: 3,
+      mana: 0,
+      base_total: 10,
+
+-----------------------------
+
+Hatchling: Twiglet
+Lowform: Rootle
+Highform: Radaroot
+Legion: Roovine
+Mythical Legendary: (Not yet Fleshed out)
+
+base stats:
+
+ line: "earth",
+      hp: 2,
+      atk: 1,
+      magi: 2,
+      def: 2,
+      spd: 1,
+      mana: 2,
+      base_total: 10,
+
+------------------------------
+
+Hatchling: Wistpip
+Lowform: Zephyx
+High Form: Phyxlion
+Legion: Xion
+Mythical Legendary: (Not yet fleshed out)
+
+base Stats:
+
+line: "air"
+      hp: 1,
+      atk: 2,
+      magi: 2,
+      def: 1,
+      spd: 4,
+      mana: 0,
+      base_total: 10,
+
+--------------------------------
+
+Hatchling: Cribi
+Lowform: Cribit
+High Form: Crabbit
+Legion: Cribnode
+Mythical Legendary: (Not yet Fleshed out)
+
+base stats:
+
+  line: "ice",    
+      hp: 2,
+      atk: 0,
+      magi: 2,
+      def: 1,
+      spd: 2,
+      mana: 3,
+      base_total: 10,
+
+---------------------------------
+
+Hatchling: Volb
+Lowform: Votlet
+Highform: Tovote
+Legion: Sparkflyer
+Mythical Legendary: (Not fleshed out yet)
+
+base stats:
+
+line: "storm",    
+      hp: 1,
+      atk: 5,
+      magi: 0,
+      def: 0,
+      spd: 4,
+      mana: 0,
+      base_total: 10,
+    
+---------------------------------
+
+Hatchling: Solen
+Lowform:Solkit
+Highform: Solange
+Legion: Angelyx
+Mythical Legendary: (Not fleshed out yet)
+
+base Stats:
+
+ line: "light",    
+      hp: 2,
+      atk: 2,
+      magi: 2,
+      def: 2,
+      spd: 2,
+      mana: 0,
+      base_total: 10,
+
+------------------------------------
+
+Hatchling: Esperon
+LowForm: Bad personality: Noctimp
+HighForm: Nightmareimp
+Legion: Espereonite
+Mythical legendary: (Not Fleshed out yet)
+
+base Stats:
+
+line: "shadow",    
+      hp: 1,
+      atk: 0,
+      magi: 4,
+      def: 1,
+      spd: 1,
+      mana: 3,
+      base_total: 10,
+
+-------------------------------------
+
+Hatchling: Esperon
+Lowform: Good personality: Flareclaw
+High Form: Shadeclaw
+Legion: Nightshadeclaw
+Mythical Legendary: (Not yet fleshed out)
+
+base stats:
+
+line: "shadow",    
+      hp: 1,
+      atk: 4,
+      magi: 1,
+      def: 1,
+      spd: 3,
+      mana: 0,
+      base_total: 10,
+
+
+
+
+
+

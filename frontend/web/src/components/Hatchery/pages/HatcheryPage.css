@@ -1,5 +1,8 @@
 .hatcheryPage {
-  padding: 16px;
+  width: min(1440px, calc(100vw - 48px));
+  min-height: 1000px;
+  margin: auto;
+  box-sizing: border-box;
 }
 
 .hatcheryTopActions {
@@ -22,6 +25,7 @@
   grid-template-rows: auto 1fr;
   gap: 14px;
   min-width: 0;
+  margin-left: 149px;
 }
 
 .hatcheryBottomRow {
@@ -1428,4 +1432,237 @@
   min-height: 18px;
   opacity: 0;
   pointer-events: none;
+}
+
+/* =========================================================
+   Homepage color harmony pass — UI only
+   Keeps Hatchery layout/logic intact, only updates visuals
+   ========================================================= */
+
+.hatcheryPage {
+  --hatch-shell-top: #7a97c7;
+  --hatch-shell-mid: #5d7fb4;
+  --hatch-shell-bottom: #466894;
+  --hatch-shell-border: rgba(88, 112, 150, 0.84);
+  --hatch-shell-inner: rgba(234, 241, 250, 0.72);
+  --hatch-line-soft: rgba(255, 255, 255, 0.16);
+  --hatch-cream: #ece3ca;
+  --hatch-cream-2: #e2d8bd;
+  --hatch-cream-line: rgba(173, 150, 97, 0.3);
+  --hatch-text: #32537f;
+  --hatch-soft: #5b7599;
+  --hatch-gold: #f3d63f;
+  --hatch-gold-dark: #b23a24;
+  --hatch-green: #8ef39c;
+  padding: 18px 0 30px;
+}
+
+.selectedEggPanel,
+.rackPanel,
+.storagePanel,
+.selectedEggStatsInset,
+.incubationInsetPanel,
+.panelBody {
+  border: 2px solid var(--hatch-shell-border);
+  background: linear-gradient(
+    180deg,
+    rgba(122, 151, 199, 0.98) 0%,
+    rgba(92, 125, 180, 0.98) 30%,
+    rgba(71, 104, 150, 0.98) 100%
+  );
+  box-shadow:
+    14px 16px 28px rgba(18, 28, 49, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -12px 18px rgba(17, 31, 58, 0.12);
+}
+
+.selectedEggPanel::after,
+.rackPanel::after,
+.storagePanel::after,
+.selectedEggStatsInset::after,
+.incubationInsetPanel::after,
+.panelBody::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+.panelTitle,
+.selectedName,
+.selectedPreviewEmptyTitle,
+.storageHeaderMetaTop,
+.incubationInsetHeader strong,
+.statsSectionTitle,
+.rackSectionTitle {
+  color: var(--hatch-gold);
+  text-shadow:
+    0 1px 0 rgba(255, 250, 217, 0.95),
+    0 2px 0 var(--hatch-gold-dark),
+    0 3px 0 rgba(141, 43, 29, 0.95),
+    0 8px 14px rgba(44, 25, 10, 0.16);
+}
+
+.panelSubtext,
+.statsIntro,
+.eggTraitFlavorText,
+.itemsHint,
+.itemSlotIndex,
+.itemSlotEmpty,
+.selectedPreviewEmptyText,
+.selectedSub,
+.storageHeaderMetaBottom,
+.eggMiniStats,
+.eggSlotTimer {
+  color: rgba(246, 248, 255, 0.9);
+}
+
+.selectedEggPreviewArea {
+  border: 1px solid rgba(194, 211, 236, 0.8);
+  background: linear-gradient(
+    180deg,
+    rgba(242, 236, 214, 0.95),
+    rgba(224, 232, 244, 0.94)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    inset 0 -16px 28px rgba(108, 133, 172, 0.1),
+    10px 12px 20px rgba(40, 60, 97, 0.12);
+}
+
+.selectedEggPreviewArea::after {
+  border: 1px solid rgba(160, 179, 210, 0.6);
+}
+
+.selectedPreviewEyebrow,
+.itemSlot,
+.eggSlotCard,
+.statRow,
+.eggIcon,
+.storageCountBadge,
+.hatchStatusPill,
+.previewTag {
+  border: 1px solid rgba(194, 211, 236, 0.72);
+  background: linear-gradient(
+    180deg,
+    rgba(235, 241, 250, 0.98) 0%,
+    rgba(219, 229, 243, 0.96) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    8px 10px 16px rgba(40, 60, 97, 0.1);
+  color: var(--hatch-text);
+}
+
+.eggSlotCard.selected,
+.itemSlot:hover,
+.eggSlotCard:hover {
+  border-color: rgba(245, 214, 89, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 0 0 1px rgba(245, 214, 89, 0.2),
+    10px 12px 20px rgba(40, 60, 97, 0.12);
+}
+
+.eggSlotTitle,
+.statValue,
+.itemSlotKey,
+.itemSlotName,
+.storageCountValue {
+  color: #335381;
+}
+
+.statLabel,
+.eggMiniStats,
+.itemSlotIndex,
+.itemSlotEmpty,
+.eggSlotTimer,
+.eggSlotMeta,
+.storageMeta,
+.storageHeaderMetaBottom {
+  color: #5b7599;
+}
+
+.statRowStrong {
+  border-color: rgba(92, 206, 110, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(92, 206, 110, 0.16),
+    0 0 14px rgba(92, 206, 110, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.statRowWeak {
+  border-color: rgba(220, 90, 90, 0.82);
+  box-shadow:
+    0 0 0 1px rgba(220, 90, 90, 0.14),
+    0 0 14px rgba(220, 90, 90, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.statRowTotal {
+  border-color: rgba(245, 214, 89, 0.52);
+  background: linear-gradient(
+    180deg,
+    rgba(250, 243, 212, 0.98) 0%,
+    rgba(229, 236, 246, 0.96) 100%
+  );
+}
+
+.eggSlotCard.hasEgg::before {
+  background: linear-gradient(
+    135deg,
+    rgba(243, 214, 63, 0.14),
+    transparent 24%,
+    transparent 72%,
+    rgba(111, 217, 255, 0.12)
+  );
+}
+
+.selectedEggHalo {
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 223, 114, 0.28),
+    rgba(111, 217, 255, 0.14) 56%,
+    transparent 76%
+  );
+}
+
+.eggBigImg {
+  filter: drop-shadow(0 0 22px rgba(255, 214, 89, 0.22))
+    drop-shadow(0 0 30px rgba(111, 217, 255, 0.16));
+}
+
+.hatchActionBtn,
+.rackHatchBtn,
+.panelHeader button,
+.hatcheryTopActions button,
+.storageActionBtn,
+.primaryHatchButton,
+.secondaryHatchButton {
+  border: 1px solid rgba(224, 186, 67, 0.72);
+  background: linear-gradient(180deg, #f4d76a 0%, #e2b93a 100%);
+  color: #2f1907;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 245, 200, 0.42),
+    0 6px 14px rgba(90, 64, 15, 0.14);
+}
+
+.hatchActionBtn:hover,
+.rackHatchBtn:hover,
+.panelHeader button:hover,
+.hatcheryTopActions button:hover,
+.storageActionBtn:hover,
+.primaryHatchButton:hover,
+.secondaryHatchButton:hover {
+  filter: brightness(1.03);
+}
+
+input,
+select,
+textarea {
+  border-color: rgba(132, 161, 205, 0.65);
+  background: rgba(255, 251, 241, 0.94);
+  color: #32537f;
 }

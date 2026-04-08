@@ -1,4 +1,7 @@
-// frontend/web/src/Pets_Creation/registry/rollStarter.ts
+// ========================================
+// Pets_Creation/registry/rollStarter.ts
+// Frontend random starter helper
+// ========================================
 
 import { STARTER_SPROUTS } from "./species";
 import type { Starter } from "./creationTypes";

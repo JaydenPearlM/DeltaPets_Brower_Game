@@ -1,4 +1,3 @@
-import React from "react";
 import { EggBaseStatsCard } from "./eggBaseStatsCard";
 import type { PetStatsRow } from "../../petTypes";
 

@@ -1,3 +1,8 @@
+// ========================================
+// routePets/petsType.ts
+// Core route-level pet types
+// ========================================
+
 export type ElementalLine =
   | "null_element"
   | "water"
@@ -11,8 +16,12 @@ export type ElementalLine =
 
 export type PetGender = "male" | "female" | "null_gender";
 
+export type WorldTimeState = "day" | "night";
+
 export type EnsureEggBody = {
-  line?: string; // ignored for now, kept for compatibility
+  line?: string;
+  worldTime?: WorldTimeState | null;
+  personalityKey?: string | null;
 };
 
 export const BASIC_EGG_HATCH_MINUTES = 2;
@@ -21,7 +30,7 @@ export const HATCH_ALLOCATION_POINTS = 7;
 export type BaseStatsTemplate = {
   hp: number;
   atk: number;
-  magi: number; // maps to DB column base_magi
+  magi: number;
   def: number;
   spd: number;
   mana: number;
@@ -29,7 +38,11 @@ export type BaseStatsTemplate = {
 };
 
 export type Starter = {
-  name: string;
+  speciesId: string;
+  eggName: string;
+  hatchlingName: string;
   line: ElementalLine;
   baseStats: BaseStatsTemplate;
+  variant?: "good" | "bad" | null;
+  preferredTime?: WorldTimeState | null;
 };

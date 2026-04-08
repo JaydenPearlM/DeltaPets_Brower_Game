@@ -1,3 +1,10 @@
+// ========================================
+// pets/syncPetDerivedStats.ts
+// Rebuilds a pet's derived snapshot stats from:
+// 1) fixed base egg/template stats
+// 2) stat allocation rows (IVs, level-up points, etc.)
+// ========================================
+
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 
 type Points = {
@@ -20,16 +27,22 @@ function addPoints(a: Points, b: Points): Points {
   };
 }
 
-function deriveFromPoints(p: Points) {
-  const hp_max = p.hp * 2;
+function clampNonNegative(value: unknown): number {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, n);
+}
+
+function deriveFromPoints(points: Points) {
+  const hpMax = Math.max(1, points.hp * 2);
 
   return {
-    hp_max,
-    atk: p.atk,
-    magi: p.magi,
-    def: p.def,
-    spd: p.spd,
-    mana: p.mana,
+    hp_max: hpMax,
+    atk: points.atk,
+    magi: points.magi,
+    def: points.def,
+    spd: points.spd,
+    mana: points.mana,
   };
 }
 
@@ -37,7 +50,11 @@ export async function syncPetDerivedStats(
   petId: string,
   opts?: { refillHp?: boolean },
 ) {
-  // 1) base points (egg/template stats) — DO NOT randomize these
+  // ========================================
+  // 1) Base template stats
+  // These are the fixed egg/template stats.
+  // DO NOT randomize these here.
+  // ========================================
   const baseRes = await supabaseAdmin
     .from("pet_stats")
     .select("base_hp, base_atk, base_magi, base_def, base_spd, base_mana")
@@ -47,15 +64,18 @@ export async function syncPetDerivedStats(
   if (baseRes.error) throw baseRes.error;
 
   const base: Points = {
-    hp: baseRes.data.base_hp ?? 0,
-    atk: baseRes.data.base_atk ?? 0,
-    magi: baseRes.data.base_magi ?? 0,
-    def: baseRes.data.base_def ?? 0,
-    spd: baseRes.data.base_spd ?? 0,
-    mana: baseRes.data.base_mana ?? 0,
+    hp: clampNonNegative(baseRes.data.base_hp),
+    atk: clampNonNegative(baseRes.data.base_atk),
+    magi: clampNonNegative(baseRes.data.base_magi),
+    def: clampNonNegative(baseRes.data.base_def),
+    spd: clampNonNegative(baseRes.data.base_spd),
+    mana: clampNonNegative(baseRes.data.base_mana),
   };
 
-  // 2) allocation points (IVs, level-ups, etc.)
+  // ========================================
+  // 2) Allocation rows
+  // Includes IVs at hatch, level-up allocations, etc.
+  // ========================================
   const allocRes = await supabaseAdmin
     .from("pet_stat_allocations")
     .select("hp, atk, magi, def, spd, mana")
@@ -63,23 +83,29 @@ export async function syncPetDerivedStats(
 
   if (allocRes.error) throw allocRes.error;
 
-  const allocTotal: Points = (allocRes.data ?? []).reduce(
+  const allocTotal: Points = (allocRes.data ?? []).reduce<Points>(
     (acc, row) =>
       addPoints(acc, {
-        hp: row.hp ?? 0,
-        atk: row.atk ?? 0,
-        magi: row.magi ?? 0,
-        def: row.def ?? 0,
-        spd: row.spd ?? 0,
-        mana: (row as any).mana ?? 0,
+        hp: clampNonNegative(row.hp),
+        atk: clampNonNegative(row.atk),
+        magi: clampNonNegative(row.magi),
+        def: clampNonNegative(row.def),
+        spd: clampNonNegative(row.spd),
+        mana: clampNonNegative((row as any).mana),
       }),
     { hp: 0, atk: 0, magi: 0, def: 0, spd: 0, mana: 0 },
   );
 
+  // ========================================
+  // 3) Total points and derived combat snapshot
+  // ========================================
   const total = addPoints(base, allocTotal);
   const derived = deriveFromPoints(total);
 
-  // 3) sync pets snapshot (hp_cur + derived snapshot stats)
+  // ========================================
+  // 4) Sync onto pets snapshot
+  // Keep current HP capped unless refillHp is requested.
+  // ========================================
   const petRes = await supabaseAdmin
     .from("pets")
     .select("hp_cur")
@@ -88,7 +114,7 @@ export async function syncPetDerivedStats(
 
   if (petRes.error) throw petRes.error;
 
-  const currentHp = petRes.data.hp_cur ?? derived.hp_max;
+  const currentHp = clampNonNegative(petRes.data.hp_cur ?? derived.hp_max);
   const newHpCur = opts?.refillHp
     ? derived.hp_max
     : Math.min(currentHp, derived.hp_max);
@@ -108,5 +134,10 @@ export async function syncPetDerivedStats(
 
   if (upd.error) throw upd.error;
 
-  return { base, allocTotal, total, derived };
+  return {
+    base,
+    allocTotal,
+    total,
+    derived,
+  };
 }

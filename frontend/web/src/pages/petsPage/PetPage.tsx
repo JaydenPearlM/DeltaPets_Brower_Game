@@ -61,11 +61,13 @@ type PetElementsRow = {
 };
 
 type CareCurrentResponse = {
-  pet: PetRecord | null;
-  stats: PetStatsRow | null;
+  pet?: PetRecord | null;
+  stats?: PetStatsRow | null;
   total_points?: number | null;
   hp_display?: number | null;
-  elements: PetElementsRow | null;
+  elements?: PetElementsRow | null;
+  team?: TeamCardPet[];
+  error?: string;
 };
 
 type PartySlotRow = {
@@ -306,135 +308,6 @@ export default function PetPage() {
     }
   }, [authLoading, user, navigate]);
 
-  const resolvePersonalityName = useCallback(
-    async (nextPet: PetRecord | null) => {
-      if (!nextPet) {
-        setPersonalityName(null);
-        return;
-      }
-
-      const direct =
-        nextPet.personality_name ||
-        nextPet.personality ||
-        nextPet.personality_key ||
-        null;
-
-      if (direct && String(direct).trim()) {
-        setPersonalityName(titleCase(direct));
-        return;
-      }
-
-      try {
-        if (nextPet.personality_id) {
-          const { data } = await supabase
-            .from("personalities")
-            .select("name,key")
-            .eq("id", nextPet.personality_id)
-            .maybeSingle();
-
-          if (data?.name || data?.key) {
-            setPersonalityName(titleCase(data.name || data.key));
-            return;
-          }
-        }
-
-        if (nextPet.personality_key) {
-          const { data } = await supabase
-            .from("personalities")
-            .select("name,key")
-            .eq("key", nextPet.personality_key)
-            .maybeSingle();
-
-          if (data?.name || data?.key) {
-            setPersonalityName(titleCase(data.name || data.key));
-            return;
-          }
-        }
-      } catch {
-        // ignore lookup errors
-      }
-
-      setPersonalityName("—");
-    },
-    [],
-  );
-
-  const loadPartyTeam = useCallback(async () => {
-    if (!user?.id) return;
-
-    try {
-      const { data: slotRows, error: slotError } = await supabase
-        .from("party_slots")
-        .select("pet_id,slot_index")
-        .eq("user_id", user.id)
-        .order("slot_index", { ascending: true });
-
-      if (slotError) {
-        throw new Error(slotError.message);
-      }
-
-      const normalizedSlots = ((slotRows ?? []) as PartySlotRow[])
-        .filter((row) => row.pet_id && safeNum(row.slot_index) >= 1)
-        .sort((a, b) => safeNum(a.slot_index) - safeNum(b.slot_index))
-        .slice(0, 4);
-
-      const petIds = normalizedSlots
-        .map((row) => row.pet_id)
-        .filter((value): value is string => Boolean(value));
-
-      if (!petIds.length) {
-        setTeam([]);
-        return;
-      }
-
-      const { data: petRows, error: petsError } = await supabase
-        .from("pets")
-        .select(
-          "id,name,nickname,stage,element,line,level,hunger,cleanliness,happiness,bond,is_active,image_url,sprite_url,portrait_url",
-        )
-        .in("id", petIds);
-
-      if (petsError) {
-        throw new Error(petsError.message);
-      }
-
-      const petMap = new Map<string, PetRecord>(
-        ((petRows ?? []) as PetRecord[]).map((row) => [String(row.id), row]),
-      );
-
-      const nextTeam: TeamCardPet[] = normalizedSlots
-        .map((slot) => {
-          const source = petMap.get(String(slot.pet_id));
-
-          if (!source?.id) return null;
-
-          return {
-            id: String(source.id),
-            slotIndex: safeNum(slot.slot_index),
-            species: source.name?.trim() || "Unknown Delta",
-            nickname:
-              source.nickname?.trim() || source.name?.trim() || "Unnamed Delta",
-            stage: titleCase(source.stage),
-            stageKey: normalizeStage(source.stage),
-            element: titleCase(source.element || source.line || "Null"),
-            elementKey: normalizeElement(source.element || source.line),
-            level: safeNum(source.level, 1),
-            hunger: clampPercent(source.hunger),
-            cleanliness: clampPercent(source.cleanliness),
-            happiness: clampPercent(source.happiness),
-            bond: clampPercent(source.bond),
-            isActive: Boolean(source.is_active),
-            previewUrl: getPreviewUrl(source),
-          };
-        })
-        .filter((row): row is TeamCardPet => Boolean(row));
-
-      setTeam(nextTeam);
-    } catch {
-      setTeam([]);
-    }
-  }, [user?.id]);
-
   const loadPetPage = useCallback(
     async (showSpinner: boolean) => {
       if (!user) return;
@@ -458,25 +331,34 @@ export default function PetPage() {
           },
         });
 
-        const json = (await res.json().catch(() => null)) as
-          | CareCurrentResponse
-          | { error?: string }
-          | null;
+        const json = (await res
+          .json()
+          .catch(() => ({}))) as CareCurrentResponse;
 
         if (!res.ok) {
-          throw new Error(json?.error || "Failed to load pet page.");
+          throw new Error(json.error || "Failed to load pet page.");
         }
 
-        const nextPet = json?.pet ?? null;
-        const nextStats = json?.stats ?? null;
-        const nextElements = json?.elements ?? null;
+        const nextPet = json.pet ?? null;
+        const nextStats = json.stats ?? null;
+        const nextElements = json.elements ?? null;
+        const nextTeam = json.team ?? [];
 
         setPet(nextPet);
         setStats(nextStats);
         setElements(nextElements);
+        setTeam(nextTeam);
         setNicknameDraft(nextPet?.nickname?.trim() || "");
-        await resolvePersonalityName(nextPet);
-        await loadPartyTeam();
+
+        const directPersonality =
+          nextPet?.personality_name ??
+          nextPet?.personality ??
+          nextPet?.personality_key ??
+          null;
+
+        setPersonalityName(
+          directPersonality ? titleCase(directPersonality) : null,
+        );
 
         hasLoadedOnceRef.current = true;
       } catch (error) {
@@ -487,12 +369,13 @@ export default function PetPage() {
         setPet(null);
         setStats(null);
         setElements(null);
+        setTeam([]);
         setPersonalityName(null);
       } finally {
         setLoadingPage(false);
       }
     },
-    [loadPartyTeam, resolvePersonalityName, user],
+    [user],
   );
 
   useEffect(() => {
@@ -500,12 +383,22 @@ export default function PetPage() {
 
     void loadPetPage(true);
 
-    const refreshTimer = window.setInterval(() => {
+    const handleWindowFocus = () => {
       void loadPetPage(false);
-    }, 60_000);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void loadPetPage(false);
+      }
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.clearInterval(refreshTimer);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [authLoading, user, loadPetPage]);
 
@@ -823,8 +716,8 @@ export default function PetPage() {
                     <div className="petRepoCreatureBackGlow" />
                     <div className="petRepoCreatureFrame">
                       <div className="petRepoCreatureCore">
-                        <span className="petRepoCreatureEye petRepoCreatureEyeLeft" />
-                        <span className="petRepoCreatureEye petRepoCreatureEyeRight" />
+                        <span className="petRepoCreatureEye petRepoTeamCreatureEyeLeft" />
+                        <span className="petRepoCreatureEye petRepoTeamCreatureEyeRight" />
                         <span className="petRepoCreatureBeak" />
                       </div>
                     </div>

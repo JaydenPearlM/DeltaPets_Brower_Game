@@ -1,25 +1,33 @@
-// backend/server/src/routes/routePets/pets.utils.ts
+// ========================================
+// routePets/petsUtils.ts
+// Shared route helpers for hatch timing, gender rolls, and stat checks
+// ========================================
 
 import { randomInt as cryptoRandomInt } from "crypto";
 import type { ElementalLine, PetGender } from "./petsType";
 
 /**
- * male 40%
- * female 50%
- * null_gender 10%
+ * Gender roll:
+ * - male: 48.5%
+ * - female: 48.5%
+ * - null_gender: 3%
+ *
+ * cryptoRandomInt(100_000) => 0..99,999
  */
 export function rollGender(): PetGender {
-  const r = cryptoRandomInt(200000); // 0..199999
+  const r = cryptoRandomInt(100_000);
 
-  if (r < 99900) return "male"; // 49.95%
-  if (r < 199800) return "female"; // 49.95%
-  return "null_gender"; // 0.05%
+  if (r < 48_500) return "male";
+  if (r < 97_000) return "female";
+  return "null_gender";
 }
 
 export function msUntil(iso: string | null | undefined, nowMs: number) {
   if (!iso) return 0;
+
   const end = Date.parse(iso);
   if (!Number.isFinite(end)) return 0;
+
   return Math.max(0, end - nowMs);
 }
 
@@ -36,7 +44,7 @@ export function hatchPayload(pet: any, serverNowMs: number) {
 }
 
 export function elementMapForLine(_line: ElementalLine) {
-  // keeping your current behavior exactly (all zeros)
+  // keeping current behavior for now
   const base: Record<ElementalLine, number> = {
     null_element: 0,
     water: 0,
@@ -48,10 +56,13 @@ export function elementMapForLine(_line: ElementalLine) {
     light: 0,
     shadow: 0,
   };
+
   return base;
 }
 
-// verify base stats sum to 10 before hatch applies IV
+/**
+ * Verify base egg/template stats sum to 10 before hatch IVs are applied.
+ */
 export function sumBase5(b: {
   base_hp?: number | null;
   base_atk?: number | null;
@@ -61,11 +72,11 @@ export function sumBase5(b: {
   base_mana?: number | null;
 }) {
   return (
-    (b.base_hp ?? 0) +
-    (b.base_atk ?? 0) +
-    (b.base_def ?? 0) +
-    (b.base_spd ?? 0) +
-    (b.base_magi ?? 0) +
-    (b.base_mana ?? 0)
+    Number(b.base_hp ?? 0) +
+    Number(b.base_atk ?? 0) +
+    Number(b.base_def ?? 0) +
+    Number(b.base_spd ?? 0) +
+    Number(b.base_magi ?? 0) +
+    Number(b.base_mana ?? 0)
   );
 }

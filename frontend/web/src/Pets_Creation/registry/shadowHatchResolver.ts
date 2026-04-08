@@ -1,10 +1,6 @@
-// frontend/web/src/Pets_Creation/registry/shadowHatchResolver.ts
+import { getShadowNature, resolveShadowSpecies } from "@shared/pets/species";
 
-import {
-  STARTER_SPROUTS,
-  getShadowNature,
-  getShadowSpeciesForPersonality,
-} from "@shared/pets/species";
+import { STARTER_SPROUTS } from "./species";
 import type { Starter } from "./creationTypes";
 
 export type ShadowMood = "good" | "bad";
@@ -16,7 +12,7 @@ function getStarterByName(name: string): Starter {
     throw new Error(`Starter species "${name}" not found.`);
   }
 
-  return starter as Starter;
+  return starter;
 }
 
 export function getShadowMood(personalityKey: string): ShadowMood {
@@ -28,11 +24,11 @@ export function getShadowColor(personalityKey: string): string {
 }
 
 export function getShadowHatchSpecies(personalityKey: string): Starter {
-  const starter = getShadowSpeciesForPersonality(personalityKey);
+  const species = resolveShadowSpecies(personalityKey);
 
-  if (!starter) {
+  if (!species) {
     throw new Error("Shadow hatch species could not be resolved.");
   }
 
-  return getStarterByName(starter.name);
+  return getStarterByName(species.evolution.hatchling);
 }

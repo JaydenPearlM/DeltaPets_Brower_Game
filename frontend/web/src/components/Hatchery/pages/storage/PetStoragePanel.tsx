@@ -26,9 +26,9 @@ const FILTERS: Array<{ key: StorageStageFilter; label: string }> = [
   { key: "egg", label: "Egg" },
   { key: "hatchling", label: "Hatchling" },
   { key: "lowform", label: "Lowform" },
-  { key: "highForm", label: "Highform" },
+  { key: "highform", label: "Highform" },
   { key: "legion", label: "Legion" },
-  { key: "mythic_legendary", label: "mythic_legendary" },
+  { key: "mythical_legendary", label: "Mythical Legendary" },
 ];
 
 const STAT_ROWS = [

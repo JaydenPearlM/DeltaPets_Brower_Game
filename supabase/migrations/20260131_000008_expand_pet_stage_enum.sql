@@ -27,7 +27,7 @@ begin
         'lowform',
         'highform',
         'legion',
-        'mythic_legendary'
+        'mythical_legendary'
       );
     end if;
 
@@ -41,7 +41,7 @@ begin
 when stage::text = 'child' then 'lowform'
 when stage::text = 'adult' then 'highform'
 when stage::text = 'teen'  then 'Legion'
-when stage::text = 'mythical' then 'mythic_legendary'
+when stage::text = 'mythical' then 'mythical_legendary'
 else stage::text          
         end
       )::public.pet_stage_v2;

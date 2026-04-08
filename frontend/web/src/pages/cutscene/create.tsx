@@ -1,4 +1,7 @@
-// frontend/web/src/pages/create.tsx
+// ========================================
+// pages/create.tsx
+// Intro cutscene -> starter egg creation
+// ========================================
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -21,22 +24,30 @@ type Phase =
   | "fadeOut"
   | "done";
 
+type StarterLine =
+  | "water"
+  | "fire"
+  | "earth"
+  | "air"
+  | "ice"
+  | "storm"
+  | "light"
+  | "shadow";
+
+type WorldTimeState = "day" | "night";
+
 const TIMING = {
   fadeInMs: 900,
-
   type1MsPerChar: 85,
   delete1MsPerChar: 60,
   pauseAfterLine1Ms: 2550,
-
   pauseBeforeLine2Ms: 900,
   type2MsPerChar: 65,
   pauseAfterLine2TypedMs: 650,
   delete2MsPerChar: 45,
-
   bubblePopDelayMs: 120,
   typeGoodluckMsPerChar: 55,
   holdMs: 2500,
-
   fadeOutMs: 1600,
 };
 
@@ -44,15 +55,14 @@ const LINE_1 = `"Every bond begins with a chance..."`;
 const LINE_2 = `"You look around and something catches your eye."`;
 const BUBBLE_TEXT = `"Oh you found an egg, how peculiar!"`;
 
-// Vite dev flag (frontend only)
 const DEV = import.meta.env.DEV;
-// Dev-only logger (keeps terminal useful without polluting prod)
+
 const dlog = (...args: unknown[]) => {
   if (DEV) console.log(...args);
 };
 
-function pickRandomStarterLine() {
-  const lines = [
+function pickRandomStarterLine(): StarterLine {
+  const lines: StarterLine[] = [
     "water",
     "fire",
     "earth",
@@ -61,8 +71,14 @@ function pickRandomStarterLine() {
     "storm",
     "light",
     "shadow",
-  ] as const;
+  ];
+
   return lines[Math.floor(Math.random() * lines.length)];
+}
+
+function getWorldTimeState(date = new Date()): WorldTimeState {
+  const hour = date.getHours();
+  return hour >= 6 && hour < 18 ? "day" : "night";
 }
 
 function getPlayerName(user: any) {
@@ -145,17 +161,15 @@ export default function CreatePage() {
   const navigate = useNavigate();
 
   const starterLine = useMemo(() => pickRandomStarterLine(), []);
+  const worldTime = useMemo(() => getWorldTimeState(), []);
   const playerName = useMemo(() => getPlayerName(user), [user]);
 
   const [phase, setPhase] = useState<Phase>("fadeInBlack");
-
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
   const [goodluck, setGoodluck] = useState("");
-
   const [eggVisible, setEggVisible] = useState(false);
   const [bubbleVisible, setBubbleVisible] = useState(false);
-
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Initializing…");
   const [fatalError, setFatalError] = useState<string | null>(null);
@@ -165,7 +179,6 @@ export default function CreatePage() {
   useEffect(() => {
     const myRunId = ++runIdRef.current;
     const alive = () => runIdRef.current === myRunId;
-
     const replay =
       new URLSearchParams(window.location.search).get("replay") === "1";
 
@@ -184,7 +197,6 @@ export default function CreatePage() {
 
       const GOODLUCK = `"Goodluck, ${playerName}"`;
 
-      // reset UI state
       setLine1("");
       setLine2("");
       setGoodluck("");
@@ -220,18 +232,13 @@ export default function CreatePage() {
         await typeText(LINE_2, setLine2, TIMING.type2MsPerChar, alive);
         if (!alive()) return;
 
-        dlog("[create] CUTSCENE MYSTERY_EGG:", MYSTERY_EGG);
-        dlog("[create] CUTSCENE sprite value:", MYSTERY_EGG?.sprite);
+        dlog("[create] starter line:", starterLine);
+        dlog("[create] world time:", worldTime);
+        dlog("[create] mystery egg:", MYSTERY_EGG);
 
         setStatus("Cutscene: egg fade in…");
         setPhase("eggFadeIn");
         setEggVisible(true);
-
-        dlog("[create] CUTSCENE sprite:", MYSTERY_EGG?.sprite);
-
-        // Do NOT create the egg yet.
-        // Wait until the cutscene is basically finished so the hatch timer
-        // starts right before the player enters /hatchery.
 
         await sleep(TIMING.pauseAfterLine2TypedMs);
         if (!alive()) return;
@@ -270,15 +277,19 @@ export default function CreatePage() {
         await sleep(TIMING.fadeOutMs);
         if (!alive()) return;
 
-        // Backend actions happen LAST so the timer starts right before /hatchery.
         if (!replay) {
           setBusy(true);
+
           try {
             const token = await getAccessTokenOrThrow();
 
             const ensure = await postJson("/api/pets/ensure-egg", token, {
               line: starterLine,
+              worldTime,
+              personalityKey: null,
             });
+
+            dlog("[create] ensure-egg response:", ensure);
 
             if (!ensure.ok) {
               throw new Error(
@@ -324,7 +335,7 @@ export default function CreatePage() {
     return () => {
       if (runIdRef.current === myRunId) runIdRef.current++;
     };
-  }, [authLoading, user, navigate, playerName, starterLine]);
+  }, [authLoading, user, navigate, playerName, starterLine, worldTime]);
 
   const showCursorLine1 = phase === "typeLine1" || phase === "deleteLine1";
   const showCursorLine2 =

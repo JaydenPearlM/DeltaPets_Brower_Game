@@ -8,7 +8,7 @@ export type StorageStageFilter =
   | "lowform"
   | "highform"
   | "legion"
-  | "mythic_legendary";
+  | "mythical_legendary";
 
 export type StoragePet = {
   id: string;
@@ -65,15 +65,15 @@ function normalizeStageInternal(stage?: string | null): StorageStageFilter {
   if (raw === "lowform") return "lowform";
   if (raw === "adult" || raw === "highform") return "highform";
   if (raw === "legion") return "legion";
-  if (raw === "Mythic_Legendary")
-    if (
-      raw === "mythic_legendary" ||
-      raw === "mythic_legendary" ||
-      raw === "mythic" ||
-      raw === "legendary"
-    ) {
-      return "mythic_legendary";
-    }
+
+  if (
+    raw === "mythical_legendary" ||
+    raw === "mythical_legendary" ||
+    raw === "mythic" ||
+    raw === "legendary"
+  ) {
+    return "mythical_legendary";
+  }
 
   return "highform";
 }
@@ -112,8 +112,8 @@ export function formatStageLabel(stage?: string | null) {
       return "Highform";
     case "legion":
       return "Legion";
-    case "mythic_legendary":
-      return "mythic_legendary";
+    case "mythical_legendary":
+      return "Mythical Legendary";
     default:
       return "Unknown";
   }
@@ -307,7 +307,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
       lowform: 0,
       highform: 0,
       legion: 0,
-      mythic_legendary: 0,
+      mythical_legendary: 0,
     } satisfies Record<StorageStageFilter, number>;
 
     for (const pet of storedPets) {

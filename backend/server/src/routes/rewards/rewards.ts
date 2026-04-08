@@ -320,7 +320,7 @@ rewardsRouter.get(
   "/status",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
-    const user_id = req.user.id;
+    const user_id = req.user!.id;
     const now = new Date();
 
     const { data: row, error } = await supabaseAdmin
@@ -368,7 +368,7 @@ rewardsRouter.post(
   "/claim",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
-    const user_id = req.user.id;
+    const user_id = req.user!.id;
     const now = new Date();
 
     const { data: row, error } = await supabaseAdmin

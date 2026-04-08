@@ -1,7 +1,7 @@
 // backend/server/src/routes/routePets/petsRepo.ts
 
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
-import { STARTER_SPROUTS } from "./starters";
+import { STARTER_ANY_STAGE_NAMES } from "./starters";
 
 export async function fetchActivePet(userId: string) {
   {
@@ -46,45 +46,28 @@ export async function fetchHatcheryEgg(userId: string) {
     .maybeSingle();
 
   if (error) throw error;
+
   return { pet: data ?? null, used: "hatch_ends_at" as const };
 }
 
 /**
  * Starter/Mystery Egg is one-per-user.
- * Finds it at ANY stage (egg/hatchling/etc.) so ensure-egg becomes idempotent.
+ * Finds it at ANY stage so ensure-egg stays idempotent.
  */
 export async function fetchStarterPetAnyStage(userId: string) {
-  const starterNames = STARTER_SPROUTS.map((s) => s.name);
-
   const { data, error } = await supabaseAdmin
     .from("pets")
     .select("*")
     .eq("user_id", userId)
-    .in("name", starterNames)
+    .in("name", STARTER_ANY_STAGE_NAMES)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
 
   if (error) throw error;
+
   return data ?? null;
 }
-
-export type HatcherySlotWithPet = {
-  id: string;
-  user_id: string;
-  slot_index: number;
-  unlocked: boolean;
-  pet_id: string | null;
-  pet: any | null;
-};
-
-export type HatcheryShelfSlot = {
-  id: string;
-  user_id: string;
-  slot_index: number;
-  unlocked: boolean;
-  item_key: string | null;
-};
 
 export async function ensureHatcherySlots(userId: string) {
   const { data: existingRows, error: existingError } = await supabaseAdmin
@@ -96,8 +79,10 @@ export async function ensureHatcherySlots(userId: string) {
   if (existingError) throw existingError;
 
   const existing = existingRows ?? [];
-  const existingIndexes = new Set(
-    existing.map((row: any) => Number(row.slot_index)).filter(Number.isFinite),
+  const existingIndexes = new Set<number>(
+    existing
+      .map((row: any) => Number(row.slot_index))
+      .filter((value) => Number.isFinite(value)),
   );
 
   const missingRows = Array.from({ length: 10 }, (_, idx) => idx + 1)
@@ -137,9 +122,7 @@ export async function ensureHatcherySlots(userId: string) {
   }
 }
 
-export async function fetchHatcherySlots(
-  userId: string,
-): Promise<{ slots: HatcherySlotWithPet[] }> {
+export async function fetchHatcherySlots(userId: string) {
   await ensureHatcherySlots(userId);
 
   const { data: slotRows, error: slotError } = await supabaseAdmin
@@ -150,17 +133,10 @@ export async function fetchHatcherySlots(
 
   if (slotError) throw slotError;
 
-  const slots = (slotRows ?? []) as Array<{
-    id: string;
-    user_id: string;
-    slot_index: number;
-    unlocked: boolean;
-    pet_id: string | null;
-  }>;
-
+  const slots = slotRows ?? [];
   const petIds = slots
-    .map((slot) => slot.pet_id)
-    .filter((value): value is string => Boolean(value));
+    .map((slot: any) => slot.pet_id)
+    .filter((value: any) => Boolean(value));
 
   const petsById = new Map<string, any>();
 
@@ -173,12 +149,12 @@ export async function fetchHatcherySlots(
     if (petError) throw petError;
 
     for (const pet of petRows ?? []) {
-      petsById.set((pet as any).id, pet);
+      petsById.set(pet.id, pet);
     }
   }
 
   return {
-    slots: slots.map((slot) => ({
+    slots: slots.map((slot: any) => ({
       ...slot,
       pet: slot.pet_id ? (petsById.get(slot.pet_id) ?? null) : null,
     })),
@@ -195,8 +171,10 @@ export async function ensureHatcheryShelfSlots(userId: string) {
   if (existingError) throw existingError;
 
   const existing = existingRows ?? [];
-  const existingIndexes = new Set(
-    existing.map((row: any) => Number(row.slot_index)).filter(Number.isFinite),
+  const existingIndexes = new Set<number>(
+    existing
+      .map((row: any) => Number(row.slot_index))
+      .filter((value) => Number.isFinite(value)),
   );
 
   const missingRows = Array.from({ length: 10 }, (_, idx) => idx + 1)
@@ -217,9 +195,7 @@ export async function ensureHatcheryShelfSlots(userId: string) {
   }
 }
 
-export async function fetchHatcheryShelfSlots(
-  userId: string,
-): Promise<{ shelfSlots: HatcheryShelfSlot[] }> {
+export async function fetchHatcheryShelfSlots(userId: string) {
   await ensureHatcheryShelfSlots(userId);
 
   const { data, error } = await supabaseAdmin
@@ -231,6 +207,6 @@ export async function fetchHatcheryShelfSlots(
   if (error) throw error;
 
   return {
-    shelfSlots: (data ?? []) as HatcheryShelfSlot[],
+    shelfSlots: data ?? [],
   };
 }

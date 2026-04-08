@@ -1,5 +1,6 @@
 // frontend/web/src/Pets_Creation/registry/Stats/mainStats/petMainstats.tsx
-import React, { useMemo, useState } from "react";
+import { getShadowHatchSpecies } from "../../shadowHatchResolver";
+import type { Starter } from "../../creationTypes";
 import "./petMainstats.css";
 
 type TrainingElements = {
@@ -150,8 +151,10 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
                 <span className="pet-mainstats__dot">•</span>
                 <span>hatchling HP: {hatchlingHp}</span>
                 <span className="pet-mainstats__dot">•</span>
-                <span>Personality: {prettyPersonality(pet.personality)}</span>
-
+                <span>{personality ?? "Unknown"}</span>
+                const personality = (pet as any)?.personality_key ?? (pet as
+                any)?.personalityKey ?? (pet as any)?.personality_type ?? (pet
+                as any)?.personalityType ?? null;
                 <button
                   type="button"
                   className="pet-mainstats__miniBtn"

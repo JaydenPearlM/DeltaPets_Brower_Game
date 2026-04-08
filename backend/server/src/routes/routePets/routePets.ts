@@ -1,3 +1,8 @@
+// ========================================
+// routePets/routePets.ts
+// Main pet creation / hatchery / active pet routes
+// ========================================
+
 import { Router, Response } from "express";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
@@ -18,40 +23,31 @@ import {
   insertBaseStats,
 } from "./petsStats";
 
-import { STARTER_SPROUTS, findStarterByName, rollStarter } from "./starters";
+import { findStarterByName, getStarterForSelection } from "./starters";
 
 import {
   BASIC_EGG_HATCH_MINUTES,
   HATCH_ALLOCATION_POINTS,
   type ElementalLine,
+  type EnsureEggBody,
 } from "./petsType";
 
 import {
   elementMapForLine,
   hatchPayload,
   msUntil,
+  rollGender,
   sumBase5,
 } from "./petsUtils";
 
 export const petsRouter = Router();
 
-type EnsureEggBody = {
-  line?: string;
-};
-
-function pickStarterForLine(line?: string | null) {
-  const normalized = String(line ?? "")
-    .trim()
-    .toLowerCase();
-
-  if (!normalized) {
-    return rollStarter();
-  }
-
-  const byLine =
-    STARTER_SPROUTS.find((starter) => starter.line === normalized) ?? null;
-
-  return byLine ?? rollStarter();
+function pickStarterForRequest(body?: EnsureEggBody | null) {
+  return getStarterForSelection({
+    line: body?.line ?? null,
+    worldTime: body?.worldTime ?? null,
+    personalityKey: body?.personalityKey ?? null,
+  });
 }
 
 async function assignPetToMainParty(userId: string, petId: string) {
@@ -96,10 +92,6 @@ async function assignPetToMainParty(userId: string, petId: string) {
   return targetSlot;
 }
 
-/**
- * GET /api/pets/active
- * Used by PetPage to render the current active pet.
- */
 petsRouter.get(
   "/active",
   requireUser,
@@ -149,10 +141,6 @@ petsRouter.get(
   },
 );
 
-/**
- * POST /api/pets/ensure-egg
- * Creates the starter egg once, or returns the existing starter pet at any stage.
- */
 petsRouter.post(
   "/ensure-egg",
   requireUser,
@@ -170,7 +158,7 @@ petsRouter.post(
         });
       }
 
-      const starter = pickStarterForLine(body.line);
+      const starter = pickStarterForRequest(body);
       const nowMs = Date.now();
       const hatchEndsAt = new Date(
         nowMs + BASIC_EGG_HATCH_MINUTES * 60 * 1000,
@@ -180,9 +168,10 @@ petsRouter.post(
         .from("pets")
         .insert({
           user_id: userId,
-          name: starter.name,
+          name: starter.eggName,
           stage: "egg",
           line: starter.line,
+          gender: rollGender(),
           location: "hatchery",
           is_active: false,
           hatch_ends_at: hatchEndsAt,
@@ -201,6 +190,7 @@ petsRouter.post(
         ok: true,
         created: true,
         pet: insertedPet,
+        starter_species_id: starter.speciesId,
       });
     } catch (e: any) {
       return res.status(500).json({ error: e?.message ?? "Server error" });
@@ -208,10 +198,6 @@ petsRouter.post(
   },
 );
 
-/**
- * GET /api/pets/hatchery
- * Used by HatcheryPage.
- */
 petsRouter.get(
   "/hatchery",
   requireUser,
@@ -317,10 +303,6 @@ petsRouter.get(
   },
 );
 
-/**
- * POST /api/pets/hatch
- * Hatches the current egg. If a party slot is open, place the pet there.
- */
 petsRouter.post(
   "/hatch",
   requireUser,
@@ -343,7 +325,12 @@ petsRouter.post(
         });
       }
 
-      const starter = findStarterByName(egg.name) ?? STARTER_SPROUTS[0];
+      const starter = findStarterByName(egg.name);
+      if (!starter) {
+        return res.status(500).json({
+          error: `Could not resolve starter data for egg name: ${egg.name ?? "unknown"}`,
+        });
+      }
 
       const baseRowMapped = await fetchBaseStatsMapped(egg.id);
       if (!baseRowMapped) {
@@ -449,6 +436,7 @@ petsRouter.post(
       const { data: hatched, error: hatchUpdateError } = await supabaseAdmin
         .from("pets")
         .update({
+          name: starter.hatchlingName,
           stage: "hatchling",
           hatched_at: nowIso,
           hatch_ends_at: null,
@@ -523,6 +511,7 @@ petsRouter.post(
         server_now: nowIso,
         pet: {
           ...hatched,
+          name: starter.hatchlingName,
           location: finalLocation,
           is_active: finalIsActive,
         },
@@ -532,7 +521,8 @@ petsRouter.post(
         party_slot_assigned: assignedPartySlot,
         post_hatch_destination: postHatchDestination,
         storage_result: storageResult,
-        is_mystery_starter_hatch: Boolean(findStarterByName(egg.name)),
+        is_mystery_starter_hatch: Boolean(starter),
+        starter_species_id: starter.speciesId,
       });
     } catch (e: any) {
       return res.status(500).json({ error: e?.message ?? "Server error" });

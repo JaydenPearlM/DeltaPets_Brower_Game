@@ -72,7 +72,7 @@ export type FallbackActivePetModel = {
     | "Lowform"
     | "Highform"
     | "legion"
-    | "mythic_legendary";
+    | "mythical_legendary";
   level: number;
   xp: number;
   hunger: number;
