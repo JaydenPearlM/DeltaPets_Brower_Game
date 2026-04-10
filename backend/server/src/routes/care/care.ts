@@ -7,6 +7,17 @@ import { fetchTotalPoints } from "../routePets/petsStats";
 
 export const careRouter = Router();
 
+function titleCaseValue(value: unknown, fallback = "Mysterious") {
+  const raw = String(value ?? "").trim();
+  if (!raw) return fallback;
+
+  return raw
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 careRouter.get("/current", requireAuth, async (req: AuthedRequest, res) => {
   const userId = req.user!.id;
 
@@ -61,8 +72,52 @@ careRouter.get("/current", requireAuth, async (req: AuthedRequest, res) => {
         return res.status(500).json({ error: teamError.message });
       }
 
+      const personalityIds = Array.from(
+        new Set(
+          (teamPets ?? [])
+            .map((row: any) => row?.personality_id)
+            .filter(
+              (value: unknown): value is string =>
+                typeof value === "string" && value.trim().length > 0,
+            ),
+        ),
+      );
+
+      let personalityMap = new Map<string, string>();
+
+      if (personalityIds.length) {
+        const { data: personalityRows, error: personalityError } =
+          await supabaseAdmin
+            .from("personalities")
+            .select("id,name,key")
+            .in("id", personalityIds);
+
+        if (personalityError) {
+          return res.status(500).json({ error: personalityError.message });
+        }
+
+        personalityMap = new Map(
+          (personalityRows ?? []).map((row: any) => [
+            String(row.id),
+            String(row.name ?? row.key ?? "").trim(),
+          ]),
+        );
+      }
+
       const petMap = new Map<string, any>(
-        (teamPets ?? []).map((row: any) => [String(row.id), row]),
+        (teamPets ?? []).map((row: any) => {
+          const derivedPersonality =
+            row?.personality_name ??
+            row?.personality ??
+            row?.personality_key ??
+            personalityMap.get(String(row?.personality_id ?? "")) ??
+            null;
+
+          return [
+            String(row.id),
+            { ...row, personality_name: derivedPersonality },
+          ];
+        }),
       );
 
       team = normalizedSlots
@@ -85,25 +140,20 @@ careRouter.get("/current", requireAuth, async (req: AuthedRequest, res) => {
             species: source.name?.trim() || "Unknown Delta",
             nickname:
               source.nickname?.trim() || source.name?.trim() || "Unnamed Delta",
-            stage: String(source.stage ?? "Unknown")
-              .replace(/_/g, " ")
-              .replace(/\b\w/g, (char) => char.toUpperCase()),
+            stage: titleCaseValue(source.stage, "Unknown"),
             stageKey: rawStage,
-            element: String(source.element ?? source.line ?? "Null")
-              .replace(/_/g, " ")
-              .replace(/\b\w/g, (char) => char.toUpperCase()),
+            personality: titleCaseValue(
+              source.personality_name ??
+                source.personality ??
+                source.personality_key,
+              "Mysterious",
+            ),
+            element: titleCaseValue(
+              source.element ?? source.line ?? "Null",
+              "Null",
+            ),
             elementKey: rawElement === "null_element" ? "null" : rawElement,
             level: Number(source.level ?? 1),
-            hunger: Math.max(0, Math.min(100, Number(source.hunger ?? 0))),
-            cleanliness: Math.max(
-              0,
-              Math.min(100, Number(source.cleanliness ?? 0)),
-            ),
-            happiness: Math.max(
-              0,
-              Math.min(100, Number(source.happiness ?? 0)),
-            ),
-            bond: Math.max(0, Math.min(100, Number(source.bond ?? 0))),
             isActive: Boolean(source.is_active),
             previewUrl:
               source.portrait_url ||
@@ -115,7 +165,29 @@ careRouter.get("/current", requireAuth, async (req: AuthedRequest, res) => {
         .filter(Boolean);
     }
 
-    if (!activePet) {
+    let activePetResolved: any = activePet;
+
+    if (
+      activePetResolved?.personality_id &&
+      !activePetResolved?.personality_name &&
+      !activePetResolved?.personality &&
+      !activePetResolved?.personality_key
+    ) {
+      const { data: personalityRow } = await supabaseAdmin
+        .from("personalities")
+        .select("name,key")
+        .eq("id", activePetResolved.personality_id)
+        .maybeSingle();
+
+      if (personalityRow) {
+        activePetResolved = {
+          ...activePetResolved,
+          personality_name: personalityRow.name ?? personalityRow.key ?? null,
+        };
+      }
+    }
+
+    if (!activePetResolved) {
       return res.json({
         pet: null,
         stats: null,
@@ -131,11 +203,11 @@ careRouter.get("/current", requireAuth, async (req: AuthedRequest, res) => {
     let hp_display: number | null = null;
 
     const [pointsResult, elementsResult] = await Promise.all([
-      fetchTotalPoints((activePet as any).id).catch(() => null),
+      fetchTotalPoints(activePetResolved.id).catch(() => null),
       supabaseAdmin
         .from("pet_elements")
         .select("*")
-        .eq("pet_id", (activePet as any).id)
+        .eq("pet_id", activePetResolved.id)
         .maybeSingle(),
     ]);
 
@@ -148,11 +220,11 @@ careRouter.get("/current", requireAuth, async (req: AuthedRequest, res) => {
     if (elementsResult.error) {
       return res.json({
         pet: {
-          ...activePet,
+          ...activePetResolved,
           personality_name:
-            (activePet as any).personality_name ??
-            (activePet as any).personality ??
-            (activePet as any).personality_key ??
+            activePetResolved.personality_name ??
+            activePetResolved.personality ??
+            activePetResolved.personality_key ??
             null,
         },
         stats,
@@ -185,11 +257,11 @@ careRouter.get("/current", requireAuth, async (req: AuthedRequest, res) => {
 
     return res.json({
       pet: {
-        ...activePet,
+        ...activePetResolved,
         personality_name:
-          (activePet as any).personality_name ??
-          (activePet as any).personality ??
-          (activePet as any).personality_key ??
+          activePetResolved.personality_name ??
+          activePetResolved.personality ??
+          activePetResolved.personality_key ??
           null,
       },
       stats,

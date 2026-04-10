@@ -510,17 +510,17 @@ a {
 .btn-red,
 .btn-logout {
   color: var(--text-invert);
-  background: linear-gradient(180deg, #dd9e53 0%, #cf7d28 48%, #bb6415 100%);
-  border: 1px solid rgba(150, 79, 21, 0.46);
+  background: linear-gradient(180deg, #ff786f 0%, #e04242 48%, #b31924 100%);
+  border: 1px solid rgba(126, 19, 31, 0.52);
   box-shadow:
-    inset 0 1px 0 rgba(255, 234, 206, 0.35),
-    0 8px 16px rgba(168, 100, 30, 0.2);
+    inset 0 1px 0 rgba(255, 217, 217, 0.32),
+    0 8px 16px rgba(140, 26, 39, 0.24);
 }
 
 .btn-danger:hover,
 .btn-red:hover,
 .btn-logout:hover {
-  background: linear-gradient(180deg, #e4ab63 0%, #d68834 48%, #c36e1b 100%);
+  background: linear-gradient(180deg, #ff8a81 0%, #ea4e4e 48%, #c71f2d 100%);
 }
 
 /* Hatch button */
@@ -1383,4 +1383,50 @@ a {
   .dp-pageWidth--narrow {
     width: min(calc(100% - 16px), 100%);
   }
+}
+
+.dp-headerNavButton {
+  color: #5f3908 !important;
+  background: linear-gradient(
+    180deg,
+    #fff880 0%,
+    #ffd84c 48%,
+    #efb218 100%
+  ) !important;
+  border: 1px solid rgba(174, 128, 15, 0.52) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 8px 16px rgba(203, 141, 18, 0.25) !important;
+}
+
+.dp-headerNavButton:hover {
+  background: linear-gradient(
+    180deg,
+    #fff990 0%,
+    #ffdf5b 48%,
+    #f3ba22 100%
+  ) !important;
+}
+
+.dp-headerLogoutButton {
+  color: var(--text-invert) !important;
+  background: linear-gradient(
+    180deg,
+    #ff786f 0%,
+    #e04242 48%,
+    #b31924 100%
+  ) !important;
+  border: 1px solid rgba(126, 19, 31, 0.52) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 217, 217, 0.32),
+    0 8px 16px rgba(140, 26, 39, 0.24) !important;
+}
+
+.dp-headerLogoutButton:hover {
+  background: linear-gradient(
+    180deg,
+    #ff8a81 0%,
+    #ea4e4e 48%,
+    #c71f2d 100%
+  ) !important;
 }

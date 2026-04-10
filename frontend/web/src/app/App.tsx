@@ -170,21 +170,21 @@ export default function App() {
                   {isLoggedIn ? (
                     <>
                       <button
-                        className="btn btn-gold"
+                        className="btn btn-gold dp-headerNavButton"
                         onClick={() => navigate("/pet")}
                       >
                         Pets
                       </button>
 
                       <button
-                        className="btn btn-cool"
+                        className="btn btn-gold dp-headerNavButton"
                         onClick={() => navigate("/hatchery")}
                       >
                         Hatchery
                       </button>
 
                       <button
-                        className="btn btn-cool"
+                        className="btn btn-gold dp-headerNavButton"
                         onClick={() => navigate("/gym")}
                       >
                         Gym

@@ -70,13 +70,6 @@ type CareCurrentResponse = {
   error?: string;
 };
 
-type PartySlotRow = {
-  id?: string;
-  user_id?: string;
-  pet_id?: string | null;
-  slot_index?: number | null;
-};
-
 type TeamCardPet = {
   id: string;
   slotIndex: number;
@@ -86,11 +79,8 @@ type TeamCardPet = {
   stageKey: string;
   element: string;
   elementKey: string;
+  personality: string;
   level: number;
-  hunger: number;
-  cleanliness: number;
-  happiness: number;
-  bond: number;
   isActive: boolean;
   previewUrl: string | null;
 };
@@ -142,11 +132,6 @@ function normalizeElement(value: string | null | undefined) {
   return "null";
 }
 
-function normalizeStage(value: string | null | undefined) {
-  if (!value) return "unknown";
-  return String(value).trim().toLowerCase().replace(/\s+/g, "_");
-}
-
 function getPreviewUrl(pet: PetRecord) {
   return pet.portrait_url || pet.sprite_url || pet.image_url || null;
 }
@@ -163,6 +148,23 @@ async function getAccessTokenSafe() {
 
 function getPetLabel(pet: PetRecord | null) {
   return pet?.nickname?.trim() || pet?.name?.trim() || "Your Delta";
+}
+
+function getDisplayedPersonality(
+  pet: Pick<
+    PetRecord,
+    "personality_name" | "personality" | "personality_key"
+  > | null,
+  personalityName?: string | null,
+) {
+  const direct =
+    personalityName ??
+    pet?.personality_name ??
+    pet?.personality ??
+    pet?.personality_key ??
+    null;
+
+  return direct ? titleCase(direct) : "Mysterious";
 }
 
 function getPersonalityTone(personalityName: string | null) {
@@ -592,6 +594,13 @@ export default function PetPage() {
     return getCareState({ hunger, clean, happy, bond });
   }, [hunger, clean, happy, bond]);
 
+  const hasMultipleTeamPets = team.filter((entry) => entry?.id).length > 1;
+  const nicknameLocked = Boolean(pet?.nickname?.trim());
+  const canSaveNickname =
+    !busy &&
+    !nicknameSaving &&
+    (!nicknameLocked || nicknameDraft.trim() === (pet?.nickname?.trim() || ""));
+
   if (authLoading || (!hasLoadedOnceRef.current && loadingPage)) {
     return (
       <div className="petRepoPage">
@@ -619,50 +628,84 @@ export default function PetPage() {
       {!loadErr && pet ? (
         <section className="petRepoStage">
           <header className="petRepoHeroCard">
-            <div className="petRepoHeroText">
+            <div className="petRepoHeroStatus petRepoHeroStatus--focusLeft">
+              <span className="petRepoStatusLabel">Current Focus</span>
+              <strong>{getPetLabel(pet)}</strong>
+              <span>{titleCase(pet.stage)}</span>
+            </div>
+
+            <div className="petRepoHeroText petRepoHeroTextShifted">
               <h1 className="petRepoTitle">Delta Care Chamber</h1>
-              <p className="petRepoSubtitle">
+              <p className="petRepoSubtitle petRepoSubtitle--centered">
                 Care is part of progression, but it does not force evolution.
                 This room is for upkeep, trust, and keeping your main team in
                 real condition.
               </p>
             </div>
-
-            <div className="petRepoHeroStatus">
-              <span className="petRepoStatusLabel">Current Focus</span>
-              <strong>{getPetLabel(pet)}</strong>
-              <span>{titleCase(pet.stage)}</span>
-            </div>
           </header>
 
           <section className="petRepoTeamPanel">
-            <SectionPill title="Main Team" />
+            <div className="petRepoTeamPanelHeader petRepoTeamPanelHeader--centered">
+              <div className="petRepoSectionLine" />
+              <h2 className="petRepoTeamPanelTitle">Main Team</h2>
+              <p className="petRepoTeamPanelCopy petRepoTeamPanelCopy--centered">
+                Your care room follows the 4-slot main team. Click any team pet
+                here to switch the Care panel focus.
+              </p>
+              <div className="petRepoSectionLine" />
+            </div>
 
             <div className="petRepoTeamGrid">
-              {team.length ? (
-                team.map((teamPet) => (
+              {Array.from({ length: 4 }, (_, index) => {
+                const teamPet = team[index] ?? null;
+
+                if (!teamPet) {
+                  return (
+                    <div
+                      key={`empty-slot-${index + 1}`}
+                      className="petRepoTeamCard petRepoTeamCard--empty"
+                    >
+                      <div className="petRepoTeamEmptyOnly">No Pet Yet</div>
+                    </div>
+                  );
+                }
+
+                const teamDisplayName =
+                  teamPet.nickname?.trim() || teamPet.species;
+
+                return (
                   <button
                     key={teamPet.id}
                     type="button"
-                    className={`petRepoTeamCard ${teamPet.isActive ? "is-active" : ""} ${teamPet.slotIndex === 1 ? "is-primary-slot" : ""}`}
+                    className={`petRepoTeamCard ${teamPet.isActive ? "is-active" : ""}`}
                     onClick={() => void switchActivePet(teamPet.id)}
                     disabled={busy || nicknameSaving}
                   >
-                    <div className="petRepoTeamSlot">
-                      Slot {teamPet.slotIndex}
+                    <div className="petRepoTeamInfoTop">
+                      <div className="petRepoTeamInfoLine">
+                        <span className="petRepoTeamInfoName">
+                          {teamDisplayName}
+                        </span>
+                        <span className="petRepoTeamInfoDot">•</span>
+                        <span>Lv {teamPet.level}</span>
+                        <span className="petRepoTeamInfoDot">•</span>
+                        <span>{teamPet.personality || "Mysterious"}</span>
+                        <span className="petRepoTeamInfoDot">•</span>
+                        <span>{teamPet.element}</span>
+                      </div>
                     </div>
 
-                    <div className="petRepoTeamCardBody">
-                      <div className="petRepoTeamPreview">
-                        {teamPet.previewUrl ? (
+                    <div className="petRepoTeamCardBody petRepoTeamCardBody--stacked">
+                      <div className="petRepoTeamPreview petRepoTeamPreview--large">
+                        {teamPet.previewUrl && team.length > 1 ? (
                           <img
-                            className="petRepoTeamPreviewImage"
+                            className="petRepoTeamPreviewImage petRepoTeamPreviewImage--large"
                             src={teamPet.previewUrl}
-                            alt={teamPet.nickname}
+                            alt={teamDisplayName}
                           />
                         ) : (
                           <div
-                            className={`petRepoTeamCreature petRepoTeamCreature--${teamPet.elementKey} petRepoTeamCreatureStage--${teamPet.stageKey}`}
+                            className={`petRepoTeamCreature petRepoTeamCreature--${teamPet.elementKey} petRepoTeamCreatureStage--${teamPet.stageKey} petRepoTeamCreature--large`}
                             aria-hidden="true"
                           >
                             <span className="petRepoTeamCreatureEye petRepoTeamCreatureEyeLeft" />
@@ -671,36 +714,10 @@ export default function PetPage() {
                           </div>
                         )}
                       </div>
-
-                      <div className="petRepoTeamText">
-                        <div className="petRepoTeamName">
-                          {teamPet.nickname}
-                        </div>
-                        <div className="petRepoTeamMeta">
-                          {teamPet.species} · Lv {teamPet.level}
-                        </div>
-                        <div className="petRepoTeamMeta">{teamPet.stage}</div>
-                      </div>
                     </div>
-
-                    <div className="petRepoMiniMeters">
-                      <MiniMeter label="H" value={teamPet.hunger} />
-                      <MiniMeter label="C" value={teamPet.cleanliness} />
-                      <MiniMeter label="M" value={teamPet.happiness} />
-                      <MiniMeter label="B" value={teamPet.bond} />
-                    </div>
-
-                    <span className="petRepoTeamAction">
-                      {teamPet.isActive ? "Viewing" : "Switch"}
-                    </span>
                   </button>
-                ))
-              ) : (
-                <div className="petRepoEmptyTeam">
-                  No main team Deltas found yet. Put up to 4 in party slots and
-                  they’ll show here.
-                </div>
-              )}
+                );
+              })}
             </div>
           </section>
 
@@ -715,11 +732,19 @@ export default function PetPage() {
                   <div className="petRepoCreatureArt">
                     <div className="petRepoCreatureBackGlow" />
                     <div className="petRepoCreatureFrame">
-                      <div className="petRepoCreatureCore">
-                        <span className="petRepoCreatureEye petRepoTeamCreatureEyeLeft" />
-                        <span className="petRepoCreatureEye petRepoTeamCreatureEyeRight" />
-                        <span className="petRepoCreatureBeak" />
-                      </div>
+                      {getPreviewUrl(pet) ? (
+                        <img
+                          className="petRepoCreatureFrameImage"
+                          src={getPreviewUrl(pet) ?? undefined}
+                          alt={getPetLabel(pet)}
+                        />
+                      ) : (
+                        <div className="petRepoCreatureCore">
+                          <span className="petRepoCreatureEye petRepoCreatureEyeLeft" />
+                          <span className="petRepoCreatureEye petRepoCreatureEyeRight" />
+                          <span className="petRepoCreatureBeak" />
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -736,7 +761,9 @@ export default function PetPage() {
                           {titleCase(pet.element || pet.line || "Null")}
                         </span>
                         <span>Lv {safeNum(pet.level, 1)}</span>
-                        <span>{personalityName || "—"}</span>
+                        <span>
+                          {getDisplayedPersonality(pet, personalityName)}
+                        </span>
                       </div>
                     </div>
 
@@ -848,15 +875,25 @@ export default function PetPage() {
                           setNicknameDraft(event.target.value)
                         }
                         placeholder="Give your Delta a nickname"
+                        disabled={nicknameLocked}
                       />
 
                       <button
                         type="button"
                         className="petRepoSaveNickname"
                         onClick={() => void saveNickname()}
-                        disabled={nicknameSaving || busy}
+                        disabled={!canSaveNickname}
+                        title={
+                          nicknameLocked
+                            ? "Nickname already set once."
+                            : undefined
+                        }
                       >
-                        {nicknameSaving ? "Saving..." : "Save"}
+                        {nicknameSaving
+                          ? "Saving..."
+                          : nicknameLocked
+                            ? "Locked"
+                            : "Save"}
                       </button>
                     </div>
                   </div>
@@ -876,7 +913,7 @@ export default function PetPage() {
                     <InfoRow label="Stage" value={titleCase(pet.stage)} />
                     <InfoRow
                       label="Personality"
-                      value={personalityName || "—"}
+                      value={getDisplayedPersonality(pet, personalityName)}
                     />
                   </div>
                 </article>
@@ -985,17 +1022,6 @@ function MeterRow({
           className={`petRepoMeterFill petRepoMeterFill-${tone}`}
           style={{ width: `${value}%` }}
         />
-      </div>
-    </div>
-  );
-}
-
-function MiniMeter({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="petRepoMiniMeter">
-      <span>{label}</span>
-      <div className="petRepoMiniMeterTrack">
-        <div className="petRepoMiniMeterFill" style={{ width: `${value}%` }} />
       </div>
     </div>
   );
