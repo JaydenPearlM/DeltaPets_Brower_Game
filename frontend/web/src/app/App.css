@@ -88,7 +88,7 @@
 
 .dp-headerBrandTitle {
   display: block;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-heading);
   font-size: 35px;
   line-height: 0.95;
   letter-spacing: 0.04em;
@@ -108,7 +108,7 @@
   display: block;
   width: 100%;
   text-align: center;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-heading);
   font-size: 30px;
   line-height: 0.9;
   letter-spacing: 0.04em;
@@ -183,8 +183,8 @@
 }
 
 .dp-signalBannerTitle {
-  font-family: "Space Mono", monospace;
   font-size: 1.08rem;
+  font-family: var(--font-heading);
   font-weight: 900;
   letter-spacing: 0.1em;
   color: #f3d63f;
@@ -198,7 +198,7 @@
 
 .dp-signalOnlineNow {
   margin-top: 4px;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-heading);
   font-size: 1rem;
   font-weight: 700;
   color: #f3d63f;
@@ -260,8 +260,8 @@
 }
 
 .dp-alphaBadge {
-  font-family: "Space Mono", monospace;
   font-size: 0.78rem;
+  font-family: var(--font-heading);
   font-weight: 900;
   letter-spacing: 0.04em;
   color: rgba(255, 242, 216, 0.72);
@@ -351,8 +351,8 @@
 }
 
 .dp-footerCopyright {
-  font-family: "Space Mono", monospace;
   font-size: 0.82rem;
+  font-family: var(--font-heading);
   font-weight: 700;
   color: rgba(255, 242, 216, 0.82);
 }
@@ -375,8 +375,8 @@
 }
 
 .dp-footerStatusText {
-  font-family: "Space Mono", monospace;
   font-size: 0.8rem;
+  font-family: var(--font-heading);
   font-weight: 800;
   color: rgba(255, 247, 226, 0.92);
   text-transform: uppercase;
@@ -457,7 +457,7 @@
 
 .dp-footerModalTitle {
   margin: 0;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-heading);
   font-size: 1rem;
   font-weight: 900;
   letter-spacing: 0.04em;

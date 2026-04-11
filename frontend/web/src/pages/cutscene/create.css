@@ -73,9 +73,6 @@
 ========================= */
 
 .dp-chat-text {
-  font-family:
-    ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
   color: rgba(255, 255, 255, 0.94);
 }
 

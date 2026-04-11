@@ -165,7 +165,6 @@
   position: relative;
   z-index: 4;
 
-  font-family: "Quantico", system-ui, sans-serif;
   font-size: 72px; /* HERO default */
   font-weight: 900;
   letter-spacing: 0.8px;
@@ -186,7 +185,7 @@
   z-index: 4;
 
   margin-top: 10px; /* HERO default */
-  font-family: "Space Mono", ui-monospace, monospace;
+
   font-size: 20px; /* HERO default */
   letter-spacing: 2px;
   font-weight: 700;
@@ -208,7 +207,7 @@
   transform: translate(-50%, -50%) translateX(40px);
 
   z-index: 5;
-  font-family: "Quantico", system-ui, sans-serif;
+
   font-size: 30px; /* HERO default */
   font-weight: 900;
   letter-spacing: 3px;

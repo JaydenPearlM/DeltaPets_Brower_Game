@@ -182,6 +182,10 @@
   align-items: start;
 }
 
+.mainTeamTopRow--empty {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .mainTeamTopLeft {
   min-width: 0;
   display: grid;

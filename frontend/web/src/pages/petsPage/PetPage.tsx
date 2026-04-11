@@ -227,63 +227,6 @@ function buildPetDescription(
   return `${label} is a ${stage} ${element} Delta with a ${personality.toLowerCase()} personality. ${tone}`;
 }
 
-function getCareState(values: {
-  hunger: number;
-  clean: number;
-  happy: number;
-  bond: number;
-}) {
-  const { hunger, clean, happy, bond } = values;
-  const avg = (hunger + clean + happy + bond) / 4;
-
-  if (hunger < 35) {
-    return {
-      title: "Needs Feeding",
-      text: "Energy is dropping. Feeding keeps your Delta stable for training and daily care cycles.",
-    };
-  }
-
-  if (clean < 35) {
-    return {
-      title: "Needs Cleaning",
-      text: "A messy Delta gets uncomfortable fast. Care matters because upkeep supports long-term condition, not just vibes.",
-    };
-  }
-
-  if (happy < 35) {
-    return {
-      title: "Needs Attention",
-      text: "Mood is low. Play and affection help restore comfort and improve the room’s overall care state.",
-    };
-  }
-
-  if (bond < 35) {
-    return {
-      title: "Bond Is Weak",
-      text: "Bond is still building. Bond does not force evolution, but it should matter for trust-based systems later.",
-    };
-  }
-
-  if (avg >= 85) {
-    return {
-      title: "Excellent Condition",
-      text: "Your Delta is thriving. This is the kind of care state you want before harder content and later progression systems.",
-    };
-  }
-
-  if (avg >= 65) {
-    return {
-      title: "Stable Condition",
-      text: "Your Delta is doing well. Keep the room maintained so one neglected meter doesn’t drag the rest down.",
-    };
-  }
-
-  return {
-    title: "Needs Maintenance",
-    text: "Your Delta is okay, but not comfortable. A real care room should reward consistency, not spam clicking.",
-  };
-}
-
 export default function PetPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -301,6 +244,7 @@ export default function PetPage() {
 
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
+  const [showNicknameEditor, setShowNicknameEditor] = useState(false);
 
   const hasLoadedOnceRef = useRef(false);
 
@@ -351,6 +295,7 @@ export default function PetPage() {
         setElements(nextElements);
         setTeam(nextTeam);
         setNicknameDraft(nextPet?.nickname?.trim() || "");
+        setShowNicknameEditor(false);
 
         const directPersonality =
           nextPet?.personality_name ??
@@ -373,6 +318,7 @@ export default function PetPage() {
         setElements(null);
         setTeam([]);
         setPersonalityName(null);
+        setShowNicknameEditor(false);
       } finally {
         setLoadingPage(false);
       }
@@ -523,11 +469,8 @@ export default function PetPage() {
         throw new Error(error.message);
       }
 
-      setActionMsg(
-        trimmed
-          ? `Nickname updated to ${trimmed}.`
-          : "Nickname cleared. Species name will display instead.",
-      );
+      setActionMsg(`Nickname locked in as ${trimmed}.`);
+      setShowNicknameEditor(false);
 
       await loadPetPage(false);
     } catch (error) {
@@ -590,16 +533,16 @@ export default function PetPage() {
     return buildPetDescription(pet, personalityName);
   }, [pet, personalityName]);
 
-  const careState = useMemo(() => {
-    return getCareState({ hunger, clean, happy, bond });
-  }, [hunger, clean, happy, bond]);
-
-  const hasMultipleTeamPets = team.filter((entry) => entry?.id).length > 1;
   const nicknameLocked = Boolean(pet?.nickname?.trim());
+  const canRenameNickname = !nicknameLocked;
+  const trimmedNicknameDraft = nicknameDraft.trim();
   const canSaveNickname =
     !busy &&
     !nicknameSaving &&
-    (!nicknameLocked || nicknameDraft.trim() === (pet?.nickname?.trim() || ""));
+    canRenameNickname &&
+    showNicknameEditor &&
+    Boolean(trimmedNicknameDraft) &&
+    trimmedNicknameDraft !== (pet?.nickname?.trim() || "");
 
   if (authLoading || (!hasLoadedOnceRef.current && loadingPage)) {
     return (
@@ -631,7 +574,6 @@ export default function PetPage() {
             <div className="petRepoHeroStatus petRepoHeroStatus--focusLeft">
               <span className="petRepoStatusLabel">Current Focus</span>
               <strong>{getPetLabel(pet)}</strong>
-              <span>{titleCase(pet.stage)}</span>
             </div>
 
             <div className="petRepoHeroText petRepoHeroTextShifted">
@@ -665,7 +607,15 @@ export default function PetPage() {
                       key={`empty-slot-${index + 1}`}
                       className="petRepoTeamCard petRepoTeamCard--empty"
                     >
-                      <div className="petRepoTeamEmptyOnly">No Pet Yet</div>
+                      <div className="petRepoTeamInfoTop">
+                        <div className="petRepoTeamInfoLine">
+                          <span className="petRepoTeamInfoName">
+                            No Pet Yet
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="petRepoTeamCardBody petRepoTeamCardBody--stacked" />
                     </div>
                   );
                 }
@@ -677,7 +627,7 @@ export default function PetPage() {
                   <button
                     key={teamPet.id}
                     type="button"
-                    className={`petRepoTeamCard ${teamPet.isActive ? "is-active" : ""}`}
+                    className={`petRepoTeamCard petRepoTeamCard--compact ${teamPet.isActive ? "is-active" : ""}`}
                     onClick={() => void switchActivePet(teamPet.id)}
                     disabled={busy || nicknameSaving}
                   >
@@ -686,31 +636,20 @@ export default function PetPage() {
                         <span className="petRepoTeamInfoName">
                           {teamDisplayName}
                         </span>
-                        <span className="petRepoTeamInfoDot">•</span>
-                        <span>Lv {teamPet.level}</span>
-                        <span className="petRepoTeamInfoDot">•</span>
-                        <span>{teamPet.personality || "Mysterious"}</span>
-                        <span className="petRepoTeamInfoDot">•</span>
-                        <span>{teamPet.element}</span>
                       </div>
                     </div>
 
                     <div className="petRepoTeamCardBody petRepoTeamCardBody--stacked">
-                      <div className="petRepoTeamPreview petRepoTeamPreview--large">
-                        {teamPet.previewUrl && team.length > 1 ? (
+                      <div className="petRepoTeamPreview petRepoTeamPreview--circle">
+                        {teamPet.previewUrl ? (
                           <img
-                            className="petRepoTeamPreviewImage petRepoTeamPreviewImage--large"
+                            className="petRepoTeamPreviewImage petRepoTeamPreviewImage--circle"
                             src={teamPet.previewUrl}
                             alt={teamDisplayName}
                           />
                         ) : (
-                          <div
-                            className={`petRepoTeamCreature petRepoTeamCreature--${teamPet.elementKey} petRepoTeamCreatureStage--${teamPet.stageKey} petRepoTeamCreature--large`}
-                            aria-hidden="true"
-                          >
-                            <span className="petRepoTeamCreatureEye petRepoTeamCreatureEyeLeft" />
-                            <span className="petRepoTeamCreatureEye petRepoTeamCreatureEyeRight" />
-                            <span className="petRepoTeamCreatureBeak" />
+                          <div className="petRepoTeamPreviewFallback">
+                            No Image
                           </div>
                         )}
                       </div>
@@ -724,9 +663,10 @@ export default function PetPage() {
           <section className="petRepoMainGrid">
             <div className="petRepoLeftColumn">
               <article className="petRepoCareCard">
-                <div className="petRepoCreatureStageBadge">
-                  {titleCase(pet.stage)}
-                </div>
+                <SectionPill
+                  title="Pet Details"
+                  className="petRepoSectionHeader--careDetails"
+                />
 
                 <div className="petRepoCreatureTop">
                   <div className="petRepoCreatureArt">
@@ -749,30 +689,98 @@ export default function PetPage() {
                   </div>
 
                   <div className="petRepoCreatureInfo">
-                    <div className="petRepoIdentityBlock">
-                      <div className="petRepoIdentityName">
-                        {getPetLabel(pet)}
-                      </div>
-                      <div className="petRepoIdentityMeta">
-                        {pet.name || "Unknown Species"}
-                      </div>
-                      <div className="petRepoIdentityTags">
-                        <span>
-                          {titleCase(pet.element || pet.line || "Null")}
-                        </span>
-                        <span>Lv {safeNum(pet.level, 1)}</span>
-                        <span>
-                          {getDisplayedPersonality(pet, personalityName)}
-                        </span>
-                      </div>
-                    </div>
+                    <article className="petRepoCreatureDetailsPanel">
+                      <div className="petRepoStatList petRepoStatList--creatureDetails">
+                        <InfoRow label="Species" value={pet.name || "—"} />
 
-                    <div className="petRepoCareStatusCard">
-                      <div className="petRepoCareStatusTitle">
-                        {careState.title}
+                        <button
+                          type="button"
+                          className={`petRepoInfoRow petRepoInfoRowButton ${canRenameNickname ? "is-clickable" : "is-locked"}`}
+                          onClick={() => {
+                            if (!canRenameNickname) return;
+                            setNicknameDraft(
+                              pet?.nickname?.trim() || pet?.name?.trim() || "",
+                            );
+                            setShowNicknameEditor(true);
+                          }}
+                          disabled={
+                            !canRenameNickname || nicknameSaving || busy
+                          }
+                          title={
+                            canRenameNickname
+                              ? "Click to choose this Delta's nickname."
+                              : "This Delta's nickname is already locked."
+                          }
+                        >
+                          <span>Nickname</span>
+                          <span>{getPetLabel(pet)}</span>
+                        </button>
+
+                        {showNicknameEditor && canRenameNickname ? (
+                          <div className="petRepoNicknameEditor">
+                            <label
+                              htmlFor="pet-nickname"
+                              className="petRepoInputLabel"
+                            >
+                              Set Nickname
+                            </label>
+
+                            <div className="petRepoNicknameRow">
+                              <input
+                                id="pet-nickname"
+                                className="petRepoInput"
+                                type="text"
+                                maxLength={32}
+                                value={nicknameDraft}
+                                onChange={(event) =>
+                                  setNicknameDraft(event.target.value)
+                                }
+                                onKeyDown={(event) => {
+                                  if (
+                                    event.key === "Enter" &&
+                                    canSaveNickname
+                                  ) {
+                                    event.preventDefault();
+                                    void saveNickname();
+                                  }
+                                }}
+                                placeholder="Give your Delta a nickname"
+                                autoFocus
+                              />
+
+                              <button
+                                type="button"
+                                className="petRepoSaveNickname"
+                                onClick={() => void saveNickname()}
+                                disabled={!canSaveNickname}
+                              >
+                                {nicknameSaving ? "Saving..." : "Save"}
+                              </button>
+                            </div>
+
+                            <p className="petRepoNicknameHelp">
+                              Pick carefully. After you save it once, that name
+                              is locked in.
+                            </p>
+                          </div>
+                        ) : null}
+
+                        <InfoRow
+                          label="Level"
+                          value={String(safeNum(pet.level, 1))}
+                        />
+                        <InfoRow label="Gender" value={titleCase(pet.gender)} />
+                        <InfoRow
+                          label="Element"
+                          value={titleCase(pet.element || pet.line || "Null")}
+                        />
+                        <InfoRow label="Stage" value={titleCase(pet.stage)} />
+                        <InfoRow
+                          label="Personality"
+                          value={getDisplayedPersonality(pet, personalityName)}
+                        />
                       </div>
-                      <p>{careState.text}</p>
-                    </div>
+                    </article>
                   </div>
                 </div>
 
@@ -857,68 +865,6 @@ export default function PetPage() {
             <div className="petRepoRightColumn">
               <div className="petRepoInfoStack">
                 <article className="petRepoPanel">
-                  <SectionPill title="Pet Details" />
-
-                  <div className="petRepoNicknameEditor">
-                    <label htmlFor="pet-nickname" className="petRepoInputLabel">
-                      Nickname
-                    </label>
-
-                    <div className="petRepoNicknameRow">
-                      <input
-                        id="pet-nickname"
-                        className="petRepoInput"
-                        type="text"
-                        maxLength={32}
-                        value={nicknameDraft}
-                        onChange={(event) =>
-                          setNicknameDraft(event.target.value)
-                        }
-                        placeholder="Give your Delta a nickname"
-                        disabled={nicknameLocked}
-                      />
-
-                      <button
-                        type="button"
-                        className="petRepoSaveNickname"
-                        onClick={() => void saveNickname()}
-                        disabled={!canSaveNickname}
-                        title={
-                          nicknameLocked
-                            ? "Nickname already set once."
-                            : undefined
-                        }
-                      >
-                        {nicknameSaving
-                          ? "Saving..."
-                          : nicknameLocked
-                            ? "Locked"
-                            : "Save"}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="petRepoStatList">
-                    <InfoRow label="Species" value={pet.name || "—"} />
-                    <InfoRow label="Current Name" value={getPetLabel(pet)} />
-                    <InfoRow
-                      label="Level"
-                      value={String(safeNum(pet.level, 1))}
-                    />
-                    <InfoRow label="Gender" value={titleCase(pet.gender)} />
-                    <InfoRow
-                      label="Element"
-                      value={titleCase(pet.element || pet.line || "Null")}
-                    />
-                    <InfoRow label="Stage" value={titleCase(pet.stage)} />
-                    <InfoRow
-                      label="Personality"
-                      value={getDisplayedPersonality(pet, personalityName)}
-                    />
-                  </div>
-                </article>
-
-                <article className="petRepoPanel">
                   <SectionPill title="Pet Description" />
                   <p className="petRepoDescription">
                     {pet.description?.trim() || petDescription}
@@ -975,9 +921,15 @@ export default function PetPage() {
   );
 }
 
-function SectionPill({ title }: { title: string }) {
+function SectionPill({
+  title,
+  className = "",
+}: {
+  title: string;
+  className?: string;
+}) {
   return (
-    <div className="petRepoSectionHeader">
+    <div className={`petRepoSectionHeader ${className}`.trim()}>
       <div className="petRepoSectionLine" />
       <div className="petRepoSectionPill">{title}</div>
       <div className="petRepoSectionLine" />

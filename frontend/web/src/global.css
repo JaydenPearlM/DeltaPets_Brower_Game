@@ -2,7 +2,7 @@
 
 :root {
   --font-heading: "Space Mono", "Quantico", monospace;
-  --font-body: "Nunito", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
   --font-display: "New Rocker", "Space Grotesk", cursive;
 
   /* warm background */

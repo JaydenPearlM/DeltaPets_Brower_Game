@@ -209,16 +209,10 @@ function MainTeamSlotCard(props: {
           onClick={onSelect}
           title={`Main Team Slot ${slot.slotIndex}`}
         >
-          <div className="mainTeamTopRow">
+          <div className="mainTeamTopRow mainTeamTopRow--empty">
             <div className="mainTeamTopLeft">
               <div className="mainTeamSlotName">Empty Slot</div>
               <div className="mainTeamLevelBadge isEmpty">Lv. --</div>
-            </div>
-
-            <div className="mainTeamTopRight">
-              <div className="mainTeamSlotPortrait isEmpty">
-                <div className="mainTeamSlotPortraitInner">+</div>
-              </div>
             </div>
           </div>
 
