@@ -4,6 +4,7 @@ import { Router } from "express";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
+import { fetchActivePet } from "../routePets/petsRepo";
 
 export const careRouter = Router();
 
@@ -22,27 +23,15 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
   const userId = req.user!.id;
 
   try {
-    const [
-      { data: activePet, error: petError },
-      { data: slotRows, error: slotError },
-    ] = await Promise.all([
-      supabaseAdmin
-        .from("pets")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("is_active", true)
-        .maybeSingle(),
-
-      supabaseAdmin
-        .from("party_slots")
-        .select("pet_id,slot_index")
-        .eq("user_id", userId)
-        .order("slot_index", { ascending: true }),
-    ]);
-
-    if (petError) {
-      return res.status(500).json({ error: petError.message });
-    }
+    const [activePetResult, { data: slotRows, error: slotError }] =
+      await Promise.all([
+        fetchActivePet(userId),
+        supabaseAdmin
+          .from("party_slots")
+          .select("pet_id,slot_index")
+          .eq("user_id", userId)
+          .order("slot_index", { ascending: true }),
+      ]);
 
     if (slotError) {
       return res.status(500).json({ error: slotError.message });
@@ -165,7 +154,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
         .filter(Boolean);
     }
 
-    let activePetResolved: any = activePet;
+    let activePetResolved: any = activePetResult?.pet ?? null;
 
     if (
       activePetResolved?.personality_id &&

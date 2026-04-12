@@ -5,7 +5,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../../lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "../../app/providers/useAuth";
 import { MYSTERY_EGG } from "../../Pets_Creation/assets/eggs/eggType";
 import "./create.css";
@@ -174,6 +174,11 @@ export default function CreatePage() {
   const [status, setStatus] = useState("Initializing…");
   const [fatalError, setFatalError] = useState<string | null>(null);
 
+  // Incrementing this re-runs the cutscene useEffect — used by the Retry button.
+  // navigate("/create") doesn't re-trigger the effect since we're already on that
+  // route, so retryCount is the correct mechanism here.
+  const [retryCount, setRetryCount] = useState(0);
+
   const runIdRef = useRef(0);
 
   useEffect(() => {
@@ -283,6 +288,11 @@ export default function CreatePage() {
           try {
             const token = await getAccessTokenOrThrow();
 
+            // Step 1: Create the egg. This MUST succeed before navigating.
+            //
+            // FIX (was broken): the old code wrapped this in a catch that did
+            // console.warn and kept going — user landed on /hatchery with no egg.
+            setStatus("Creating your egg…");
             const ensure = await postJson("/api/pets/ensure-egg", token, {
               line: starterLine,
               worldTime,
@@ -293,35 +303,40 @@ export default function CreatePage() {
 
             if (!ensure.ok) {
               throw new Error(
-                ensure.data?.error ?? `ensure-egg HTTP ${ensure.status}`,
+                ensure.data?.error ??
+                  `ensure-egg failed (HTTP ${ensure.status})`,
               );
             }
 
-            const seen = await postJson("/api/me/intro/seen", token);
-            if (!seen.ok) {
-              console.warn("[create] intro/seen failed", {
-                status: seen.status,
-                data: seen.data,
-              });
-            }
-          } catch (err) {
-            console.warn(
-              "[create] ensure-egg / intro-seen failed (continuing cutscene)",
-              err,
-            );
+            // Step 2: Mark intro seen. Fire-and-forget — never blocks navigation.
+            //
+            // FIX (was broken): was inside the same try block, so if ensure-egg
+            // threw, intro/seen never fired → intro_seen stayed false → user
+            // looped back to /create on every login forever.
+            postJson("/api/me/intro/seen", token).catch((err) => {
+              console.warn("[create] intro/seen failed (non-fatal):", err);
+            });
+          } catch (err: any) {
+            // ensure-egg hard-failed. Show error, do NOT navigate.
+            console.error("[create] ensure-egg failed:", err);
 
-            setStatus(
-              DEV
-                ? "Backend offline — continuing (dev)"
-                : "Backend unavailable — continuing",
-            );
-          } finally {
-            if (alive()) setBusy(false);
+            if (alive()) {
+              setBusy(false);
+              setFatalError(
+                err?.message ?? "Failed to create your egg. Please try again.",
+              );
+            }
+
+            // Early return — cutscene stops here, no navigate("/hatchery").
+            return;
           }
+
+          if (alive()) setBusy(false);
         }
 
         if (!alive()) return;
 
+        // Egg confirmed created (or replay mode). Navigate to hatchery.
         setPhase("done");
         navigate("/hatchery", { replace: true });
       } catch (err: any) {
@@ -335,7 +350,15 @@ export default function CreatePage() {
     return () => {
       if (runIdRef.current === myRunId) runIdRef.current++;
     };
-  }, [authLoading, user, navigate, playerName, starterLine, worldTime]);
+  }, [
+    authLoading,
+    user,
+    navigate,
+    playerName,
+    starterLine,
+    worldTime,
+    retryCount,
+  ]);
 
   const showCursorLine1 = phase === "typeLine1" || phase === "deleteLine1";
   const showCursorLine2 =
@@ -418,6 +441,14 @@ export default function CreatePage() {
               <button
                 type="button"
                 className="dp-debug-btn"
+                onClick={() => setRetryCount((c) => c + 1)}
+              >
+                Retry
+              </button>
+              <button
+                type="button"
+                className="dp-debug-btn"
+                style={{ marginLeft: 8 }}
                 onClick={() => navigate("/", { replace: true })}
               >
                 Go Home

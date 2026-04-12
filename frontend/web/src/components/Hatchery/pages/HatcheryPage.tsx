@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/useAuth";
-import { supabase } from "../../../lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";

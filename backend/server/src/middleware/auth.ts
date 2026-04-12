@@ -1,7 +1,12 @@
 // backend/server/src/middleware/auth.ts
 
+import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 /**
  * Request type with user attached by auth middleware.
@@ -13,6 +18,10 @@ export type AuthedRequest = Request & {
   };
 };
 
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
 function getBearerToken(req: Request) {
   const header = req.headers.authorization;
   if (!header) return null;
@@ -21,30 +30,13 @@ function getBearerToken(req: Request) {
   return match ? match[1] : null;
 }
 
-/**
- * Throws if req.user is missing.
- */
-export function getUserId(req: AuthedRequest): string {
-  const id = req.user?.id;
+// ---------------------------------------------------------------------------
+// Middleware
+// ---------------------------------------------------------------------------
 
-  if (!id) {
-    throw new Error("Unauthorized: req.user missing");
-  }
-
-  return id;
-}
-/**
- * Lightweight auth helper routes.
- */
-export const authRouter = Router();
-
-/** Health-ish ping for the auth router */
-authRouter.get("/auth/ping", (_req, res: Response) => {
-  return res.json({ ok: true });
-});
 /**
  * Middleware: requires a valid Supabase bearer token.
- * Attaches req.user = { id, email }.
+ * Attaches req.user = { id, email } on success.
  */
 export async function requireUser(
   req: AuthedRequest,
@@ -74,3 +66,39 @@ export async function requireUser(
     return res.status(401).json({ error: "Unauthorized" });
   }
 }
+
+/**
+ * Throws if req.user is missing. Use inside route handlers after requireUser.
+ */
+export function getUserId(req: AuthedRequest): string {
+  const id = req.user?.id;
+
+  if (!id) {
+    throw new Error("Unauthorized: req.user missing");
+  }
+
+  return id;
+}
+
+// ---------------------------------------------------------------------------
+// Auth routes
+// (Previously in routes/auth.ts — consolidated here to keep auth in one place)
+// ---------------------------------------------------------------------------
+
+/**
+ * Lightweight auth helper routes.
+ *
+ * Your main auth is Supabase (frontend gets session, backend verifies bearer token).
+ * These endpoints are optional but handy for debugging + "who am I" checks.
+ */
+export const authRouter = Router();
+
+/** Health-ish ping — confirms the API is reachable */
+authRouter.get("/auth/ping", (_req, res: Response) => {
+  return res.json({ ok: true });
+});
+
+/** Validate bearer token and return the user id/email. */
+authRouter.get("/auth/me", requireUser, (req: AuthedRequest, res: Response) => {
+  return res.json({ user: req.user ?? null });
+});

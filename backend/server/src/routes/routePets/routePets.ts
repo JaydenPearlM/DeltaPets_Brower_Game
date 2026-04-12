@@ -17,19 +17,15 @@ import {
   fetchStarterPetAnyStage,
 } from "./petsRepo";
 
-import {
-  fetchBaseStatsMapped,
-  fetchTotalPoints,
-  insertBaseStats,
-} from "./petsStats";
+import { fetchTotalPoints, insertBaseStats } from "./petsStats";
 
-import { findStarterByName, getStarterForSelection } from "./starters";
+// STARTERS needed for random pick + line-based fallback lookup at hatch
+import { findStarterByName, STARTERS } from "./starters";
 
 import {
   BASIC_EGG_HATCH_MINUTES,
   HATCH_ALLOCATION_POINTS,
   type ElementalLine,
-  type EnsureEggBody,
 } from "./petsType";
 
 import {
@@ -42,14 +38,60 @@ import {
 
 export const petsRouter = Router();
 
-function pickStarterForRequest(body?: EnsureEggBody | null) {
-  return getStarterForSelection({
-    line: body?.line ?? null,
-    worldTime: body?.worldTime ?? null,
-    personalityKey: body?.personalityKey ?? null,
-  });
+// ---------------------------------------------------------------
+// Personality roll — picks from the personality_trait enum values
+// ---------------------------------------------------------------
+const PERSONALITY_KEYS = [
+  "friendly",
+  "honest",
+  "deceiver",
+  "loyal",
+  "cowardly",
+  "brave",
+  "vengeful",
+  "impulsive",
+  "reasonable",
+  "lazy",
+  "diligent",
+  "naive",
+  "cruel",
+  "optimistic",
+  "pessimistic",
+  "arrogant",
+  "humble",
+  "snob",
+  "respectful",
+  "greedy",
+  "generous",
+  "kind",
+] as const;
+
+type PersonalityKey = (typeof PERSONALITY_KEYS)[number];
+
+function rollPersonality(): PersonalityKey {
+  return PERSONALITY_KEYS[Math.floor(Math.random() * PERSONALITY_KEYS.length)];
 }
 
+async function resolvePersonalityId(key: string): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("personalities")
+    .select("id")
+    .eq("key", key)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
+// ---------------------------------------------------------------
+// Mystery egg: random species picked server-side
+// ---------------------------------------------------------------
+function pickRandomStarter() {
+  if (!STARTERS.length) throw new Error("No starter species defined.");
+  return STARTERS[Math.floor(Math.random() * STARTERS.length)];
+}
+
+// ---------------------------------------------------------------
+// Party slot assignment
+// ---------------------------------------------------------------
 async function assignPetToMainParty(userId: string, petId: string) {
   const { data: existingRows, error: slotsError } = await supabaseAdmin
     .from("party_slots")
@@ -62,9 +104,7 @@ async function assignPetToMainParty(userId: string, petId: string) {
   const rows = existingRows ?? [];
 
   const alreadyAssigned = rows.find((row: any) => row.pet_id === petId);
-  if (alreadyAssigned) {
-    return Number(alreadyAssigned.slot_index);
-  }
+  if (alreadyAssigned) return Number(alreadyAssigned.slot_index);
 
   const usedSlots = new Set<number>(
     rows.map((row: any) => Number(row.slot_index)).filter(Number.isFinite),
@@ -75,23 +115,19 @@ async function assignPetToMainParty(userId: string, petId: string) {
       (slot) => !usedSlots.has(slot),
     ) ?? null;
 
-  if (!targetSlot) {
-    return null;
-  }
+  if (!targetSlot) return null;
 
   const { error: insertError } = await supabaseAdmin
     .from("party_slots")
-    .insert({
-      user_id: userId,
-      slot_index: targetSlot,
-      pet_id: petId,
-    });
+    .insert({ user_id: userId, slot_index: targetSlot, pet_id: petId });
 
   if (insertError) throw insertError;
-
   return targetSlot;
 }
 
+// ============================================================
+// GET /api/pets/active
+// ============================================================
 petsRouter.get(
   "/active",
   requireUser,
@@ -117,8 +153,8 @@ petsRouter.get(
       const decayedHunger = await applyHungerDecay(pet.id);
       const hydratedPet = { ...pet, hunger: decayedHunger };
 
-      const stats = await fetchBaseStatsMapped(hydratedPet.id);
       const points = await fetchTotalPoints(hydratedPet.id);
+      const stats = points?.base ?? null;
       const elements = elementMapForLine(
         (hydratedPet.line ?? "null_element") as ElementalLine,
       );
@@ -141,24 +177,28 @@ petsRouter.get(
   },
 );
 
+// ============================================================
+// POST /api/pets/ensure-egg
+//
+// FIX 1: Species picked randomly server-side (true mystery egg).
+//         Frontend line value is ignored entirely.
+// FIX 2: `gender` removed from insert — column didn't exist in DB,
+//         caused 500 on every call. Now set at hatch.
+// FIX 3: Egg name is "Mystery Egg" — real name revealed at hatch.
+// ============================================================
 petsRouter.post(
   "/ensure-egg",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
     try {
       const userId = req.user!.id;
-      const body = (req.body ?? {}) as EnsureEggBody;
-      const existing = await fetchStarterPetAnyStage(userId);
 
+      const existing = await fetchStarterPetAnyStage(userId);
       if (existing) {
-        return res.json({
-          ok: true,
-          created: false,
-          pet: existing,
-        });
+        return res.json({ ok: true, created: false, pet: existing });
       }
 
-      const starter = pickStarterForRequest(body);
+      const starter = pickRandomStarter();
       const nowMs = Date.now();
       const hatchEndsAt = new Date(
         nowMs + BASIC_EGG_HATCH_MINUTES * 60 * 1000,
@@ -168,10 +208,9 @@ petsRouter.post(
         .from("pets")
         .insert({
           user_id: userId,
-          name: starter.eggName,
+          name: "Mystery Egg",
           stage: "egg",
           line: starter.line,
-          gender: rollGender(),
           location: "hatchery",
           is_active: false,
           hatch_ends_at: hatchEndsAt,
@@ -198,6 +237,9 @@ petsRouter.post(
   },
 );
 
+// ============================================================
+// GET /api/pets/hatchery
+// ============================================================
 petsRouter.get(
   "/hatchery",
   requireUser,
@@ -210,6 +252,31 @@ petsRouter.get(
         fetchHatcherySlots(userId),
         fetchHatcheryShelfSlots(userId),
       ]);
+
+      const slotMapper = (slot: any) => ({
+        id: slot.id,
+        slot_index: slot.slot_index,
+        unlocked: slot.unlocked,
+        pet: slot.pet
+          ? {
+              id: slot.pet.id,
+              name: slot.pet.name ?? null,
+              stage: slot.pet.stage ?? null,
+              line: slot.pet.line ?? null,
+            }
+          : null,
+        hatch:
+          slot.pet && slot.pet.stage === "egg"
+            ? hatchPayload(slot.pet, serverNowMs)
+            : null,
+      });
+
+      const shelfMapper = (slot: any) => ({
+        id: slot.id,
+        slot_index: slot.slot_index,
+        unlocked: slot.unlocked,
+        item_key: slot.item_key,
+      });
 
       const firstEggSlot =
         slots.find(
@@ -224,29 +291,8 @@ petsRouter.get(
       if (!egg) {
         return res.json({
           server_now: new Date(serverNowMs).toISOString(),
-          slots: slots.map((slot) => ({
-            id: slot.id,
-            slot_index: slot.slot_index,
-            unlocked: slot.unlocked,
-            pet: slot.pet
-              ? {
-                  id: slot.pet.id,
-                  name: slot.pet.name ?? null,
-                  stage: slot.pet.stage ?? null,
-                  line: slot.pet.line ?? null,
-                }
-              : null,
-            hatch:
-              slot.pet && slot.pet.stage === "egg"
-                ? hatchPayload(slot.pet, serverNowMs)
-                : null,
-          })),
-          shelf_slots: shelfSlots.map((slot) => ({
-            id: slot.id,
-            slot_index: slot.slot_index,
-            unlocked: slot.unlocked,
-            item_key: slot.item_key,
-          })),
+          slots: slots.map(slotMapper),
+          shelf_slots: shelfSlots.map(shelfMapper),
           pet: null,
           hatch: null,
           stats: null,
@@ -255,37 +301,16 @@ petsRouter.get(
         });
       }
 
-      const stats = await fetchBaseStatsMapped(egg.id);
       const points = await fetchTotalPoints(egg.id);
+      const stats = points?.base ?? null;
       const elements = elementMapForLine(
         (egg.line ?? "null_element") as ElementalLine,
       );
 
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
-        slots: slots.map((slot) => ({
-          id: slot.id,
-          slot_index: slot.slot_index,
-          unlocked: slot.unlocked,
-          pet: slot.pet
-            ? {
-                id: slot.pet.id,
-                name: slot.pet.name ?? null,
-                stage: slot.pet.stage ?? null,
-                line: slot.pet.line ?? null,
-              }
-            : null,
-          hatch:
-            slot.pet && slot.pet.stage === "egg"
-              ? hatchPayload(slot.pet, serverNowMs)
-              : null,
-        })),
-        shelf_slots: shelfSlots.map((slot) => ({
-          id: slot.id,
-          slot_index: slot.slot_index,
-          unlocked: slot.unlocked,
-          item_key: slot.item_key,
-        })),
+        slots: slots.map(slotMapper),
+        shelf_slots: shelfSlots.map(shelfMapper),
         pet: {
           id: egg.id,
           name: egg.name ?? null,
@@ -303,6 +328,13 @@ petsRouter.get(
   },
 );
 
+// ============================================================
+// POST /api/pets/hatch
+//
+// The mystery is revealed here.
+// - Starter found by egg.line (not egg.name — it's "Mystery Egg")
+// - gender, personality_key, personality_id all rolled and written now
+// ============================================================
 petsRouter.post(
   "/hatch",
   requireUser,
@@ -325,15 +357,20 @@ petsRouter.post(
         });
       }
 
-      const starter = findStarterByName(egg.name);
+      // Find starter by line since egg name is "Mystery Egg"
+      const starter =
+        findStarterByName(egg.name) ??
+        STARTERS.find((s) => s.line === (egg as any).line) ??
+        null;
+
       if (!starter) {
         return res.status(500).json({
-          error: `Could not resolve starter data for egg name: ${egg.name ?? "unknown"}`,
+          error: `Could not resolve starter for egg (line: ${(egg as any).line ?? "unknown"})`,
         });
       }
 
-      const baseRowMapped = await fetchBaseStatsMapped(egg.id);
-      if (!baseRowMapped) {
+      const existingPoints = await fetchTotalPoints(egg.id);
+      if (!existingPoints?.base) {
         await insertBaseStats(egg.id, starter.baseStats);
       }
 
@@ -345,15 +382,12 @@ petsRouter.post(
         .eq("pet_id", egg.id)
         .maybeSingle();
 
-      if (baseRawErr) {
+      if (baseRawErr)
         return res.status(500).json({ error: baseRawErr.message });
-      }
-
-      if (!baseRaw) {
+      if (!baseRaw)
         return res
           .status(500)
           .json({ error: "Missing pet_stats row after ensure." });
-      }
 
       const baseSum = sumBase5({
         base_hp: (baseRaw as any).base_hp,
@@ -378,9 +412,7 @@ petsRouter.post(
           } as any)
           .eq("pet_id", egg.id);
 
-        if (fixErr) {
-          return res.status(500).json({ error: fixErr.message });
-        }
+        if (fixErr) return res.status(500).json({ error: fixErr.message });
 
         (baseRaw as any).base_hp = starter.baseStats.hp;
         (baseRaw as any).base_atk = starter.baseStats.atk;
@@ -412,9 +444,8 @@ petsRouter.post(
           { onConflict: "pet_id,level" },
         );
 
-      if (ivUpsertErr) {
+      if (ivUpsertErr)
         return res.status(500).json({ error: ivUpsertErr.message });
-      }
 
       const baseHp = Number((baseRaw as any).base_hp ?? 0);
       const baseAtk = Number((baseRaw as any).base_atk ?? 0);
@@ -433,16 +464,25 @@ petsRouter.post(
 
       const nowIso = new Date(serverNowMs).toISOString();
 
+      // Roll gender and personality at hatch — the full mystery reveal
+      const gender = rollGender();
+      const personalityKey = rollPersonality();
+      const personalityId = await resolvePersonalityId(personalityKey);
+
       const { data: hatched, error: hatchUpdateError } = await supabaseAdmin
         .from("pets")
         .update({
-          name: starter.hatchlingName,
+          name: starter.hatchlingName, // Mystery revealed!
           stage: "hatchling",
           hatched_at: nowIso,
           hatch_ends_at: null,
           unspent_points: 0,
           is_active: false,
           location: "storage",
+          gender,
+          personality: personalityKey, // personality_trait enum column
+          personality_key: personalityKey, // text column (quick reads)
+          personality_id: personalityId, // FK to personalities table
           atk: totalAtk,
           def: totalDef,
           spd: totalSpd,
@@ -470,16 +510,12 @@ petsRouter.post(
       if (assignedPartySlot) {
         const { error: activateErr } = await supabaseAdmin
           .from("pets")
-          .update({
-            location: "active",
-            is_active: true,
-          } as any)
+          .update({ location: "active", is_active: true } as any)
           .eq("id", egg.id)
           .eq("user_id", userId);
 
-        if (activateErr) {
+        if (activateErr)
           return res.status(500).json({ error: activateErr.message });
-        }
 
         finalLocation = "active";
         finalIsActive = true;
@@ -488,16 +524,11 @@ petsRouter.post(
       } else {
         const { error: storeErr } = await supabaseAdmin
           .from("pets")
-          .update({
-            location: "storage",
-            is_active: false,
-          } as any)
+          .update({ location: "storage", is_active: false } as any)
           .eq("id", egg.id)
           .eq("user_id", userId);
 
-        if (storeErr) {
-          return res.status(500).json({ error: storeErr.message });
-        }
+        if (storeErr) return res.status(500).json({ error: storeErr.message });
 
         finalLocation = "storage";
         finalIsActive = false;
@@ -518,10 +549,12 @@ petsRouter.post(
         awarded_points: HATCH_ALLOCATION_POINTS,
         iv,
         points,
+        gender,
+        personality_key: personalityKey,
         party_slot_assigned: assignedPartySlot,
         post_hatch_destination: postHatchDestination,
         storage_result: storageResult,
-        is_mystery_starter_hatch: Boolean(starter),
+        is_mystery_starter_hatch: true,
         starter_species_id: starter.speciesId,
       });
     } catch (e: any) {

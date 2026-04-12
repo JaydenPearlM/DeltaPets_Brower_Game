@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PetDetailsPanel from "./components/petDetailsPanel/PetDetailsPanel";
 import { useAuth } from "../../app/providers/useAuth";
-import { supabase } from "../../lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import "./PetPage.css";
 
 type CareAction = "feed" | "clean" | "play" | "pet";

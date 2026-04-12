@@ -3,7 +3,7 @@ import type { FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import "./LoginMenus.css";
-import { supabase } from "../../lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 type AuthView = "login" | "signup";
 type ForcedAuthView = AuthView | "none";

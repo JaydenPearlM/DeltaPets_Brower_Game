@@ -4,7 +4,7 @@ import { Router } from "express";
 
 import { healthRouter } from "./health";
 import { meRouter } from "./me";
-import { authRouter } from "./auth";
+import { authRouter } from "../middleware/auth";
 
 import { petsRouter } from "./routePets/routePets";
 import { petActionsRouter } from "./petActions";
