@@ -1,7 +1,7 @@
 // backend/server/src/routes/care/care.ts
 
 import { Router } from "express";
-import { requireAuth, type AuthedRequest } from "../../middleware/auth";
+import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
 
@@ -18,7 +18,7 @@ function titleCaseValue(value: unknown, fallback = "Mysterious") {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-careRouter.get("/current", requireAuth, async (req: AuthedRequest, res) => {
+careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
   const userId = req.user!.id;
 
   try {

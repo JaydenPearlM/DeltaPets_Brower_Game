@@ -3,8 +3,6 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { readFileSync } from "node:fs";
 
-// Pull the app version from package.json at build/dev time.
-// (We inject it into the client bundle via `define` so we don't need TS json imports.)
 const pkg = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url), "utf-8"),
 ) as { version?: string };
@@ -34,6 +32,18 @@ export default defineConfig({
     },
     fs: {
       allow: [path.resolve(__dirname, "../..")],
+    },
+  },
+  build: {
+    sourcemap: false,
+    minify: "esbuild",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          supabase: ["@supabase/supabase-js"],
+        },
+      },
     },
   },
 });

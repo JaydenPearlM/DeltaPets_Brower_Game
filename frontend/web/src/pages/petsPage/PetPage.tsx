@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import PetDetailsPanel from "./components/petDetailsPanel/PetDetailsPanel";
 import { useAuth } from "../../app/providers/useAuth";
 import { supabase } from "../../lib/supabase/client";
 import "./PetPage.css";
@@ -26,6 +26,7 @@ type PetRecord = {
   hunger?: number | null;
   cleanliness?: number | null;
   happiness?: number | null;
+  energy?: number | null;
   bond?: number | null;
 
   description?: string | null;
@@ -485,6 +486,7 @@ export default function PetPage() {
   const hunger = clampPercent(pet?.hunger);
   const clean = clampPercent(pet?.cleanliness);
   const happy = clampPercent(pet?.happiness);
+  const energy = clampPercent(pet?.energy);
   const bond = clampPercent(pet?.bond);
 
   const totalStats = useMemo(() => {
@@ -648,8 +650,12 @@ export default function PetPage() {
                             alt={teamDisplayName}
                           />
                         ) : (
-                          <div className="petRepoTeamPreviewFallback">
-                            No Image
+                          <div className="petRepoTeamPreviewFallback petRepoTeamPreviewFallback--orb">
+                            <div className="petRepoCreatureCore petRepoCreatureCore--team">
+                              <span className="petRepoCreatureEye petRepoCreatureEyeLeft" />
+                              <span className="petRepoCreatureEye petRepoCreatureEyeRight" />
+                              <span className="petRepoCreatureSmile" />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -662,180 +668,28 @@ export default function PetPage() {
 
           <section className="petRepoMainGrid">
             <div className="petRepoLeftColumn">
-              <article className="petRepoCareCard">
-                <SectionPill
-                  title="Pet Details"
-                  className="petRepoSectionHeader--careDetails"
-                />
-
-                <div className="petRepoCreatureTop">
-                  <div className="petRepoCreatureArt">
-                    <div className="petRepoCreatureBackGlow" />
-                    <div className="petRepoCreatureFrame">
-                      {getPreviewUrl(pet) ? (
-                        <img
-                          className="petRepoCreatureFrameImage"
-                          src={getPreviewUrl(pet) ?? undefined}
-                          alt={getPetLabel(pet)}
-                        />
-                      ) : (
-                        <div className="petRepoCreatureCore">
-                          <span className="petRepoCreatureEye petRepoCreatureEyeLeft" />
-                          <span className="petRepoCreatureEye petRepoCreatureEyeRight" />
-                          <span className="petRepoCreatureBeak" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="petRepoCreatureInfo">
-                    <article className="petRepoCreatureDetailsPanel">
-                      <div className="petRepoStatList petRepoStatList--creatureDetails">
-                        <InfoRow label="Species" value={pet.name || "—"} />
-
-                        <button
-                          type="button"
-                          className={`petRepoInfoRow petRepoInfoRowButton ${canRenameNickname ? "is-clickable" : "is-locked"}`}
-                          onClick={() => {
-                            if (!canRenameNickname) return;
-                            setNicknameDraft(
-                              pet?.nickname?.trim() || pet?.name?.trim() || "",
-                            );
-                            setShowNicknameEditor(true);
-                          }}
-                          disabled={
-                            !canRenameNickname || nicknameSaving || busy
-                          }
-                          title={
-                            canRenameNickname
-                              ? "Click to choose this Delta's nickname."
-                              : "This Delta's nickname is already locked."
-                          }
-                        >
-                          <span>Nickname</span>
-                          <span>{getPetLabel(pet)}</span>
-                        </button>
-
-                        {showNicknameEditor && canRenameNickname ? (
-                          <div className="petRepoNicknameEditor">
-                            <label
-                              htmlFor="pet-nickname"
-                              className="petRepoInputLabel"
-                            >
-                              Set Nickname
-                            </label>
-
-                            <div className="petRepoNicknameRow">
-                              <input
-                                id="pet-nickname"
-                                className="petRepoInput"
-                                type="text"
-                                maxLength={32}
-                                value={nicknameDraft}
-                                onChange={(event) =>
-                                  setNicknameDraft(event.target.value)
-                                }
-                                onKeyDown={(event) => {
-                                  if (
-                                    event.key === "Enter" &&
-                                    canSaveNickname
-                                  ) {
-                                    event.preventDefault();
-                                    void saveNickname();
-                                  }
-                                }}
-                                placeholder="Give your Delta a nickname"
-                                autoFocus
-                              />
-
-                              <button
-                                type="button"
-                                className="petRepoSaveNickname"
-                                onClick={() => void saveNickname()}
-                                disabled={!canSaveNickname}
-                              >
-                                {nicknameSaving ? "Saving..." : "Save"}
-                              </button>
-                            </div>
-
-                            <p className="petRepoNicknameHelp">
-                              Pick carefully. After you save it once, that name
-                              is locked in.
-                            </p>
-                          </div>
-                        ) : null}
-
-                        <InfoRow
-                          label="Level"
-                          value={String(safeNum(pet.level, 1))}
-                        />
-                        <InfoRow label="Gender" value={titleCase(pet.gender)} />
-                        <InfoRow
-                          label="Element"
-                          value={titleCase(pet.element || pet.line || "Null")}
-                        />
-                        <InfoRow label="Stage" value={titleCase(pet.stage)} />
-                        <InfoRow
-                          label="Personality"
-                          value={getDisplayedPersonality(pet, personalityName)}
-                        />
-                      </div>
-                    </article>
-                  </div>
-                </div>
-
-                <div className="petRepoBars">
-                  <MeterRow label="Hunger" value={hunger} tone="blue" />
-                  <MeterRow label="Clean" value={clean} tone="purple" />
-                  <MeterRow label="Happy" value={happy} tone="red" />
-                  <MeterRow label="Bond" value={bond} tone="gold" />
-                </div>
-
-                <div className="petRepoActionGrid">
-                  <button
-                    type="button"
-                    className="petRepoAction petRepoActionBlue"
-                    onClick={() => void runCareAction("feed")}
-                    disabled={busy || nicknameSaving}
-                  >
-                    Feed
-                  </button>
-
-                  <button
-                    type="button"
-                    className="petRepoAction petRepoActionPurple"
-                    onClick={() => void runCareAction("clean")}
-                    disabled={busy || nicknameSaving}
-                  >
-                    Clean
-                  </button>
-
-                  <button
-                    type="button"
-                    className="petRepoAction petRepoActionRed"
-                    onClick={() => void runCareAction("play")}
-                    disabled={busy || nicknameSaving}
-                  >
-                    Play
-                  </button>
-
-                  <button
-                    type="button"
-                    className="petRepoAction petRepoActionYellow"
-                    onClick={() => void runCareAction("pet")}
-                    disabled={busy || nicknameSaving}
-                  >
-                    Pet
-                  </button>
-                </div>
-
-                {actionMsg ? (
-                  <div className="petRepoInlineMessage">{actionMsg}</div>
-                ) : null}
-              </article>
+              <PetDetailsPanel
+                pet={pet}
+                personalityName={personalityName}
+                nicknameDraft={nicknameDraft}
+                nicknameSaving={nicknameSaving}
+                showNicknameEditor={showNicknameEditor}
+                canRenameNickname={canRenameNickname}
+                canSaveNickname={canSaveNickname}
+                busy={busy}
+                hunger={hunger}
+                clean={clean}
+                happy={happy}
+                energy={energy}
+                bond={bond}
+                actionMsg={actionMsg}
+                setNicknameDraft={setNicknameDraft}
+                setShowNicknameEditor={setShowNicknameEditor}
+                saveNickname={saveNickname}
+                runCareAction={runCareAction}
+              />
 
               <article className="petRepoPanel petRepoPanel--careNotes">
-                <SectionPill title="Care Room Purpose" />
                 <div className="petRepoCareNotes">
                   <div className="petRepoCareNote">
                     <strong>Upkeep matters.</strong>
@@ -936,7 +790,6 @@ function SectionPill({
     </div>
   );
 }
-
 function InfoRow({
   label,
   value,
@@ -950,31 +803,6 @@ function InfoRow({
     <div className={`petRepoInfoRow ${strong ? "is-strong" : ""}`}>
       <span>{label}</span>
       <span>{value}</span>
-    </div>
-  );
-}
-
-function MeterRow({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone: "blue" | "purple" | "red" | "gold";
-}) {
-  return (
-    <div className="petRepoMeterRow">
-      <div className="petRepoMeterMeta">
-        <span className="petRepoMeterLabel">{label}</span>
-        <span className="petRepoMeterValue">{value}</span>
-      </div>
-      <div className="petRepoMeterTrack" aria-hidden="true">
-        <div
-          className={`petRepoMeterFill petRepoMeterFill-${tone}`}
-          style={{ width: `${value}%` }}
-        />
-      </div>
     </div>
   );
 }

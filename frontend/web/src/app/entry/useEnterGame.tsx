@@ -2,6 +2,14 @@ import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase/client";
 
+const DEV = import.meta.env.DEV;
+
+function debugLog(...args: unknown[]) {
+  if (DEV) {
+    console.log(...args);
+  }
+}
+
 function sleep(ms: number) {
   return new Promise<void>((resolve) => {
     window.setTimeout(resolve, ms);
@@ -42,10 +50,8 @@ export function useEnterGame() {
     setLoading(true);
 
     try {
-      // Small delay helps right after login/signup while session finishes hydrating.
       await sleep(150);
 
-      // 1) Check auth
       const {
         data: { user },
         error: userError,
@@ -61,7 +67,6 @@ export function useEnterGame() {
         return;
       }
 
-      // 2) Ask backend for authoritative routing state
       const token = await getAccessToken();
 
       const res = await fetch("/api/me/intro", {
@@ -79,8 +84,8 @@ export function useEnterGame() {
         details?: string;
       };
 
-      console.log("[enterGame] /api/me/intro status:", res.status);
-      console.log("[enterGame] /api/me/intro payload:", payload);
+      debugLog("[enterGame] /api/me/intro status:", res.status);
+      debugLog("[enterGame] /api/me/intro payload:", payload);
 
       if (!res.ok) {
         throw new Error(payload?.error ?? "Intro state check failed");
@@ -89,23 +94,22 @@ export function useEnterGame() {
       const introSeen = Boolean(payload.intro_seen);
       const hasEgg = Boolean(payload.has_hatchery_egg);
 
-      console.log("[enterGame] introSeen:", introSeen);
-      console.log("[enterGame] hasEgg:", hasEgg);
+      debugLog("[enterGame] introSeen:", introSeen);
+      debugLog("[enterGame] hasEgg:", hasEgg);
 
-      // 3) Route
       if (!introSeen) {
-        console.log("[enterGame] routing -> /create");
+        debugLog("[enterGame] routing -> /create");
         navigate("/create", { replace: true });
         return;
       }
 
       if (hasEgg) {
-        console.log("[enterGame] routing -> /hatchery");
+        debugLog("[enterGame] routing -> /hatchery");
         navigate("/hatchery", { replace: true });
         return;
       }
 
-      console.log("[enterGame] routing -> /pet");
+      debugLog("[enterGame] routing -> /pet");
       navigate("/pet", { replace: true });
     } catch (err) {
       console.error("[enterGame] failed:", err);

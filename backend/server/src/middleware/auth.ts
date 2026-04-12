@@ -14,25 +14,34 @@ export type AuthedRequest = Request & {
 };
 
 function getBearerToken(req: Request) {
-  const h = req.headers.authorization;
-  if (!h) return null;
+  const header = req.headers.authorization;
+  if (!header) return null;
 
-  const m = h.match(/^Bearer\s+(.+)$/i);
-  return m ? m[1] : null;
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1] : null;
 }
 
 /**
  * Throws if req.user is missing.
- * Useful inside protected route handlers after requireUser/requireAuth runs.
  */
-export function getUserId(req: Request): string {
+export function getUserId(req: AuthedRequest): string {
   const id = req.user?.id;
+
   if (!id) {
     throw new Error("Unauthorized: req.user missing");
   }
+
   return id;
 }
+/**
+ * Lightweight auth helper routes.
+ */
+export const authRouter = Router();
 
+/** Health-ish ping for the auth router */
+authRouter.get("/auth/ping", (_req, res: Response) => {
+  return res.json({ ok: true });
+});
 /**
  * Middleware: requires a valid Supabase bearer token.
  * Attaches req.user = { id, email }.
@@ -65,8 +74,3 @@ export async function requireUser(
     return res.status(401).json({ error: "Unauthorized" });
   }
 }
-
-/**
- * Alias kept for naming preference in route files.
- */
-export const requireAuth = requireUser;

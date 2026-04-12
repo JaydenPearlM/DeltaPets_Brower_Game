@@ -7,7 +7,6 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | undefined;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  // Throwing early prevents "it kinda works" broken auth states.
   throw new Error(
     "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Check your .env.local file.",
   );
