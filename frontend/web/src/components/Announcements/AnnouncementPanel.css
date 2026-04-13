@@ -33,25 +33,24 @@
 }
 
 .anp-title {
-  margin: 0;
-
-  font-size: clamp(2.6rem, 4vw, 3.6rem);
+  font-family: var(--font-heading);
+  font-size: 8rem;
+  font-weight: 900;
   line-height: 1;
-  letter-spacing: 0.3em;
-  padding: 5px;
-  color: #ffd66e;
+  letter-spacing: 0.03em;
+  color: #f3d63f;
+  -webkit-text-stroke: 1px #b23a24;
   text-shadow:
-    -1px 0 #9f1f1f,
-    1px 0 #9f1f1f,
-    0 -1px #9f1f1f,
-    0 1px #9f1f1f,
-    0 1px 0 rgba(255, 255, 255, 0.18),
-    0 2px 8px rgba(0, 0, 0, 0.18);
+    0 1px 0 rgba(255, 250, 217, 0.95),
+    0 2px 0 #b23a24,
+    0 3px 0 #8d2b1d,
+    0 6px 10px rgba(44, 25, 10, 0.18);
+}
 }
 
 .anp-subtitle {
   margin: 8px 0 0;
-  color: #dbe7ff;
+  color: #9cb6ec;
   font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.45;
@@ -262,4 +261,29 @@
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.72;
+}
+.hp-aliuneNewsTitle {
+  font-family: var(--font-heading);
+  font-size: 2.9rem;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: 0.03em;
+  color: #f3d63f;
+  -webkit-text-stroke: 1px #b23a24;
+  text-shadow:
+    0 1px 0 rgba(255, 250, 217, 0.95),
+    0 2px 0 #b23a24,
+    0 3px 0 #b23a24,
+    0 6px 10px rgba(44, 25, 10, 0.18);
+}
+
+.hp-aliuneNewsDelta {
+  color: #f3d63f;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+.anp-subtitle {
+  font-size: 0.9rem;
+  padding: 18px;
+  color: white;
 }

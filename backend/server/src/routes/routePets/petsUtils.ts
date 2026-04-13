@@ -8,17 +8,17 @@ import type { ElementalLine, PetGender } from "./petsType";
 
 /**
  * Gender roll:
- * - male: 48.5%
- * - female: 48.5%
- * - null_gender: 3%
+ * - male: 49.995%
+ * - female: 49.995%
+ * - null_gender: 0.01%
  *
  * cryptoRandomInt(100_000) => 0..99,999
  */
 export function rollGender(): PetGender {
   const r = cryptoRandomInt(100_000);
 
-  if (r < 48_500) return "male";
-  if (r < 97_000) return "female";
+  if (r < 49_995) return "male";
+  if (r < 99_990) return "female";
   return "null_gender";
 }
 

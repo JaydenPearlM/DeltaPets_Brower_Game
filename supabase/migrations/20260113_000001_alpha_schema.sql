@@ -1,5 +1,5 @@
 /* ============================================================================
-   DeltaPets — Alpha Schema (Levels 0–10)
+   DeltaPets " " Alpha Schema (Levels 0–10)
    Postgres / Supabase-ready, single-file, organized + idempotent-ish.
 
    Notes:
@@ -242,7 +242,7 @@ values
   ))
 on conflict (key) do nothing;
 
--- 4.2 Birth stats (pet_stats) — later we’ll rename these to base_* via migration section
+-- 4.2 Birth stats (pet_stats) " " later we’ll rename these to base_* via migration section
 create table if not exists public.pet_stats (
   pet_id uuid primary key references public.pets(id) on delete cascade,
 
@@ -632,7 +632,7 @@ group by
 
 
 -- /* ============================================================================
---    DeltaPets Alpha — Minimal Ownership RLS (based on your schema)
+--    DeltaPets Alpha " " Minimal Ownership RLS (based on your schema)
 --    - Correct > perfect
 --    - Two-policy vibe: SELECT own + WRITE own
 --    - Uses your actual columns: user_id, pet_id, run_id

@@ -1,6 +1,7 @@
 import express from "express";
 import apiRouter from "./routes";
 import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
+import type { Request, Response, NextFunction } from "express";
 
 export function createApp() {
   const app = express();
@@ -23,6 +24,12 @@ export function createApp() {
 
   app.use((req, res) => {
     res.status(404).json({ error: "Not found", path: req.path });
+  });
+
+  // Global error handler — must have 4 arguments to work in Express
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    console.error("[unhandled error]", err);
+    res.status(500).json({ error: "Internal server error" });
   });
 
   return app;

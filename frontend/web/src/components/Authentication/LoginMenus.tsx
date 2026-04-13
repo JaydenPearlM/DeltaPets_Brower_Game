@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./LoginMenus.css";
 import { supabase } from "@/lib/supabase/client";
 
@@ -86,6 +86,7 @@ function isValidNickname(value: string) {
 
 export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<AuthView>("login");
@@ -187,6 +188,10 @@ export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
     setMessage(null);
     setLoading(false);
     setLoginPassword("");
+
+    if (location.pathname === "/signup" || location.pathname === "/signin") {
+      navigate("/", { replace: true });
+    }
   }
 
   async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
@@ -204,6 +209,7 @@ export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
     }
 
     setLoading(true);
+    console.log("[auth] sign-in request started");
 
     try {
       const { data: authData, error } = await supabase.auth.signInWithPassword({
@@ -229,6 +235,8 @@ export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
         return;
       }
 
+      console.log("[auth] sign-in success userId=%s", userId);
+
       const { data: existingPet, error: petLookupError } = await supabase
         .from("pets")
         .select("id")
@@ -237,8 +245,9 @@ export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
         .maybeSingle();
 
       if (petLookupError) {
-        console.error("[login] pet lookup failed:", petLookupError);
+        console.error("[auth] pet lookup failed:", petLookupError);
         closeModal();
+        console.log("[auth] routing -> /pet (pet lookup fallback)");
         navigate("/pet");
         return;
       }
@@ -246,12 +255,16 @@ export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
       closeModal();
 
       if (existingPet) {
+        console.log("[auth] pet lookup -> existing pet found");
+        console.log("[auth] routing -> /pet");
         navigate("/pet");
       } else {
+        console.log("[auth] pet lookup -> no pet found");
+        console.log("[auth] routing -> /create");
         navigate("/create");
       }
     } catch (error) {
-      console.error("[login] failed:", error);
+      console.error("[auth] sign-in failed:", error);
       setMessage({
         type: "error",
         text: "Sign in failed. Please try again.",

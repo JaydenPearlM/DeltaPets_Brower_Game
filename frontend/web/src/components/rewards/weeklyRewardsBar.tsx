@@ -146,7 +146,7 @@ export function WeeklyRewardsBar() {
         </button>
 
         <div className="wr-preview">
-          Next: <b>{status.preview?.label ?? "—"}</b>
+          Next: <b>{status.preview?.label ?? ""}</b>
           {!status.week1 && (
             <span className="wr-randomTag"> (Random pool)</span>
           )}

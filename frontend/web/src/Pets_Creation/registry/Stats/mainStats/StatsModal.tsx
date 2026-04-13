@@ -243,7 +243,7 @@ export function StatsModal(props: {
       >
         <div className="statsModal__header">
           <div className="statsModal__headerLeft">
-            <h2 className="statsModal__title">{nameForTitle} — Stats</h2>
+            <h2 className="statsModal__title">{nameForTitle} " " Stats</h2>
             {typeof level === "number" ? (
               <div className="statsModal__subtitle">Level {level}</div>
             ) : null}

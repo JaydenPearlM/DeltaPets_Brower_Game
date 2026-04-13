@@ -2,6 +2,7 @@ import "./homepage.css";
 import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { AlphaSystemsPanel } from "@/components/AlphaSystems/AlphaSystemsPanel";
 import { useHomepageBanner } from "./useHomepageBanner";
+import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
 
 type HeroFeature = {
   label: string;
@@ -31,19 +32,32 @@ const HERO_FEATURES: HeroFeature[] = [
   },
 ];
 
-const DELTA_SPOTLIGHT = {
-  name: "Solite",
-  meta: "Light • Hatchling • Level 1",
-  text: "Gentle, bright-eyed, and protective. Solite looks harmless right up until it shields its trainer without hesitation.",
-  tags: ["Light", "Bond 14", "Defender"],
-};
-
 export default function Homepage() {
   const { banner } = useHomepageBanner();
+  const {
+    pet: spotlightPet,
+    displayName: spotlightDisplayName,
+    loading: spotlightLoading,
+  } = useHomepageSpotlightPet();
+
+  const bannerItems =
+    banner?.enabled && Array.isArray(banner.items)
+      ? [...banner.items, ...banner.items]
+      : [];
+
+  const displayElement =
+    spotlightPet.element === "null"
+      ? "Null"
+      : spotlightPet.element.charAt(0).toUpperCase() +
+        spotlightPet.element.slice(1);
+
+  const displayStage = spotlightPet.stage
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
   return (
     <div className="hp-root">
-      {banner?.enabled && banner.items.length > 0 ? (
+      {banner?.enabled && bannerItems.length > 0 ? (
         <section
           className={`hp-banner hp-banner--${banner.theme}`}
           aria-label="Site banner"
@@ -51,7 +65,7 @@ export default function Homepage() {
           <div className="hp-bannerContent">
             <div className="hp-bannerTickerViewport">
               <div className="hp-bannerTickerTrack">
-                {[...banner.items, ...banner.items].map((item, itemIndex) => (
+                {bannerItems.map((item, itemIndex) => (
                   <span
                     key={`${item}-${itemIndex}`}
                     className="hp-bannerTickerItem"
@@ -91,12 +105,15 @@ export default function Homepage() {
             </p>
 
             <div className="hp-heroCtaRow">
-              <a
+              <button
+                type="button"
                 className="hp-primaryBtn hp-primaryBtn--journey"
-                href="/signup"
+                onClick={() => {
+                  window.dispatchEvent(new Event("deltapets:open-signup"));
+                }}
               >
                 Start Your Journey Today!
-              </a>
+              </button>
             </div>
 
             <div className="hp-heroFeatureRow">
@@ -124,43 +141,74 @@ export default function Homepage() {
           <div className="hp-spotlightColumn">
             <section
               className="hp-panel hp-panel--amber hp-spotlightPanel hp-spotlightPanel--featured"
-              aria-label="Delta Spotlight"
+              aria-label="Spotlight"
             >
               <div className="hp-panelHeader">
                 <div>
-                  <h2 className="hp-panelTitle">Delta Spotlight</h2>
-                  <p className="hp-panelDeck">Featured companion</p>
+                  <h2 className="hp-panelTitle">Spotlight</h2>
                 </div>
               </div>
 
               <div className="hp-panelBody hp-spotlightBody">
-                <div className="hp-spotlightVisual">
-                  <div
-                    className="hp-spotlightOrb hp-spotlightOrb--light"
-                    aria-hidden="true"
-                  />
-                </div>
+                {spotlightLoading ? (
+                  <p className="hp-loadingBlock">Loading spotlight pet...</p>
+                ) : (
+                  <>
+                    <div className="hp-spotlightTop">
+                      <div className="hp-spotlightIdentity">
+                        <h3
+                          className={`hp-spotlightName hp-spotlightName--${spotlightPet.element}`}
+                        >
+                          {spotlightDisplayName}
+                        </h3>
 
-                <div className="hp-spotlightContent">
-                  <div className="hp-spotlightTopline">
-                    <h3 className="hp-spotlightName">{DELTA_SPOTLIGHT.name}</h3>
-                    <p className="hp-spotlightMeta">{DELTA_SPOTLIGHT.meta}</p>
-                  </div>
+                        <div className="hp-spotlightMetaRow">
+                          <span className="hp-spotlightMetaItem">
+                            <span className="hp-spotlightAccent">Level:</span>{" "}
+                            {spotlightPet.level}
+                          </span>
 
-                  <p className="hp-spotlightText">{DELTA_SPOTLIGHT.text}</p>
+                          <span className="hp-spotlightMetaItem">
+                            <span className="hp-spotlightAccent">Element:</span>{" "}
+                            {displayElement}
+                          </span>
 
-                  <div className="hp-spotlightTags">
-                    {DELTA_SPOTLIGHT.tags.map((tag) => (
-                      <span key={tag} className="hp-elBadge">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                          <span className="hp-spotlightMetaItem">
+                            <span className="hp-spotlightAccent">Stage:</span>{" "}
+                            {displayStage}
+                          </span>
+
+                          <span className="hp-spotlightMetaItem">
+                            <span className="hp-spotlightAccent">
+                              Personality:
+                            </span>{" "}
+                            {spotlightPet.personality}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`hp-spotlightVisual hp-spotlightVisual--${spotlightPet.element}`}
+                    >
+                      <div
+                        className={`hp-spotlightOrb hp-spotlightOrb--${spotlightPet.element}`}
+                        aria-hidden="true"
+                      />
+                    </div>
+
+                    <div className="hp-spotlightContent">
+                      <p className="hp-spotlightText">
+                        {spotlightPet.description?.trim() ||
+                          "This Delta's description will appear here."}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             </section>
 
-            <AlphaSystemsPanel className="hp-panel hp-panel--blue hp-createdPanel" />
+            <AlphaSystemsPanel />
           </div>
         </section>
       </div>

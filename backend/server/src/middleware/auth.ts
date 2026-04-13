@@ -82,7 +82,7 @@ export function getUserId(req: AuthedRequest): string {
 
 // ---------------------------------------------------------------------------
 // Auth routes
-// (Previously in routes/auth.ts — consolidated here to keep auth in one place)
+// (Previously in routes/auth.ts consolidated here to keep auth in one place)
 // ---------------------------------------------------------------------------
 
 /**
@@ -93,7 +93,7 @@ export function getUserId(req: AuthedRequest): string {
  */
 export const authRouter = Router();
 
-/** Health-ish ping — confirms the API is reachable */
+/** Health-ish ping " " confirms the API is reachable */
 authRouter.get("/auth/ping", (_req, res: Response) => {
   return res.json({ ok: true });
 });

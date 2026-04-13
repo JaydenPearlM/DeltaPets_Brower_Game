@@ -40,7 +40,7 @@ export default function PetBondHome() {
         </div>
 
         <div className="bondNote">
-          Care Room is NOT here anymore — it lives as a component inside{" "}
+          Care Room is NOT here anymore " " it lives as a component inside{" "}
           <code>/pet</code>.
         </div>
       </div>

@@ -83,7 +83,7 @@ export function RoomTopDown({
               height: s.h * TILE,
               position: "absolute",
             }}
-            title={`${def.label} — ${def.description}`}
+            title={`${def.label} " " ${def.description}`}
           >
             <div className="furn__label">{def.label}</div>
           </div>

@@ -61,7 +61,8 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
               "hp_max",
               "hp_cur",
               "age",
-              "personality",
+              "personality_id",
+              "personality_key",
               "created_at",
             ].join(", "),
           )

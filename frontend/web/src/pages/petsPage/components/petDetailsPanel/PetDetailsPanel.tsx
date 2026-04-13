@@ -53,7 +53,7 @@ type PetDetailsPanelProps = {
 };
 
 function titleCase(value: string | null | undefined) {
-  if (!value) return "—";
+  if (!value) return "";
 
   return String(value)
     .replace(/_/g, " ")
@@ -196,6 +196,18 @@ export default function PetDetailsPanel({
     .replace(/\s+/g, "_");
 
   const condition = getCareCondition([hunger, clean, happy, energy]);
+  const energyIsFull = energy >= 100;
+
+  const bondToneClass =
+    bond < 25
+      ? "is-low"
+      : bond < 50
+        ? "is-mid"
+        : bond < 75
+          ? "is-warm"
+          : "is-high";
+
+  const bondAngle = `${Math.max(0, Math.min(100, bond)) * 3.6}deg`;
 
   return (
     <article className={`petRepoCareCard petRepoElement-${elementKey}`}>
@@ -205,46 +217,45 @@ export default function PetDetailsPanel({
       />
 
       <section className="petRepoBondHero" aria-label="Bond and energy status">
-        <div className="petRepoBondHeroSplit">
-          <div className="petRepoBondHeroStat">
-            <div className="petRepoBondHeroHeader">
-              <div>
-                <span className="petRepoBondHeroEyebrow">Core Bond</span>
-                <strong className="petRepoBondHeroTitle">
-                  Bond matters most
-                </strong>
-              </div>
-
-              <div className="petRepoBondHeroValue">{bond}</div>
-            </div>
-
-            <div className="petRepoBondHeroTrack" aria-hidden="true">
-              <div
-                className="petRepoBondHeroFill"
-                style={{ width: `${bond}%` }}
-              />
-            </div>
+        <div className="petRepoBondHeroTop">
+          <div className="petRepoBondHeroCopy">
+            <span className="petRepoBondHeroEyebrow">Core Bond</span>
+            <strong className="petRepoBondHeroTitle">Bond matters most</strong>
           </div>
 
-          <div className="petRepoBondHeroStat petRepoBondHeroStatEnergy">
-            <div className="petRepoBondHeroHeader">
-              <div>
-                <span className="petRepoBondHeroEyebrow">Vital Energy</span>
-                <strong className="petRepoBondHeroTitle">Ready to play</strong>
-              </div>
+          <div
+            className={`petRepoBondCircle ${bondToneClass}`}
+            style={{ ["--bond-angle" as string]: bondAngle }}
+            aria-label={`Bond ${bond}`}
+          >
+            <div className="petRepoBondCircleInner">{bond}</div>
+          </div>
+        </div>
 
-              <div className="petRepoBondHeroValue">{energy}</div>
+        <div className="petRepoBondEnergy">
+          <div className="petRepoBondEnergyHeader">
+            <div>
+              <span className="petRepoBondHeroEyebrow">Vital Energy</span>
+              <strong
+                className={`petRepoBondHeroTitle ${
+                  energyIsFull ? "petRepoBondHeroTitle--sleep" : ""
+                }`}
+              >
+                {energyIsFull ? "Needs sleep" : "Ready to play"}
+              </strong>
             </div>
 
+            <div className="petRepoBondEnergyValue">{energy}</div>
+          </div>
+
+          <div
+            className="petRepoBondHeroTrack petRepoBondHeroTrackEnergy"
+            aria-hidden="true"
+          >
             <div
-              className="petRepoBondHeroTrack petRepoBondHeroTrackEnergy"
-              aria-hidden="true"
-            >
-              <div
-                className="petRepoBondHeroFill petRepoBondHeroFillEnergy"
-                style={{ width: `${energy}%` }}
-              />
-            </div>
+              className="petRepoBondHeroFill petRepoBondHeroFillEnergy"
+              style={{ width: `${energy}%` }}
+            />
           </div>
         </div>
       </section>
@@ -273,7 +284,7 @@ export default function PetDetailsPanel({
         <div className="petRepoCreatureInfo">
           <article className="petRepoCreatureDetailsPanel">
             <div className="petRepoStatList petRepoStatList--creatureDetails">
-              <InfoRow label="Species:" value={pet.name || "—"} />
+              <InfoRow label="Species:" value={pet.name || ""} />
 
               <button
                 type="button"

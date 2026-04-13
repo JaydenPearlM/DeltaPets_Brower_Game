@@ -26,8 +26,8 @@ function formatDate(dateString?: string | null) {
 export function AnnouncementPanel({
   className = "",
   pageScope = "homepage",
-  title = "Aliune News Δ",
-  subtitle = "Click Below to read the Newest Transmission",
+  title = "Aliune Channel △",
+  subtitle = "Click Below to read the Newest Announcements and Events.",
 }: AnnouncementsPanelProps) {
   const { items, loading, error, usingFallback } = useAnnouncements(
     6,
@@ -59,7 +59,9 @@ export function AnnouncementPanel({
         aria-label={title}
       >
         <div className="anp-header">
-          <h2 className="anp-title">{title}</h2>
+          <h2 className="hp-aliuneNewsTitle">
+            Aliune Channel <span className="hp-aliuneNewsDelta">△</span>
+          </h2>
           <p className="anp-subtitle">{subtitle}</p>
         </div>
 

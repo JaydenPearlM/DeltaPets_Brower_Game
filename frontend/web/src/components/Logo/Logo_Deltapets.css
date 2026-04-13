@@ -50,7 +50,7 @@
   z-index: 0;
 }
 
-/* Duplicate pill (scaled down 10px) — BEHIND EVERYTHING */
+/* Duplicate pill (scaled down 10px) " " BEHIND EVERYTHING */
 .dp-banner::after {
   content: "";
   position: absolute;
@@ -240,7 +240,7 @@
 
 .dp-banner--header {
   padding: 12px 14px;
-  transform: scale(1.15); /* ~5% larger — visually about 2–4px bump */
+  transform: scale(1.15); /* ~5% larger " " visually about 2–4px bump */
   transform-origin: left center; /* keeps it anchored properly */
 
   box-shadow:

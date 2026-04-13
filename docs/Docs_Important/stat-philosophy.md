@@ -1,4 +1,4 @@
-# DeltaPets Alpha — Stat Philosophy (0–10)
+# DeltaPets Alpha " " Stat Philosophy (0–10)
 
 ## Goals
 

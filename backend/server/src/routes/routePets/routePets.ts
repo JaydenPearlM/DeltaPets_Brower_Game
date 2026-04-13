@@ -8,6 +8,7 @@ import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { applyHungerDecay } from "../../pets/hunger";
 import { rollIV, sumStats } from "../../lib/stats/individualValues";
+import { applyCareDecay } from "../../shared/pets/care/CareDecay";
 
 import {
   fetchActivePet,
@@ -39,31 +40,31 @@ import {
 export const petsRouter = Router();
 
 // ---------------------------------------------------------------
-// Personality roll — picks from the personality_trait enum values
+// Personality roll
+// IMPORTANT:
+// These keys MUST match the real keys in public.personalities.
 // ---------------------------------------------------------------
 const PERSONALITY_KEYS = [
-  "friendly",
-  "honest",
-  "deceiver",
-  "loyal",
-  "cowardly",
-  "brave",
-  "vengeful",
-  "impulsive",
-  "reasonable",
-  "lazy",
-  "diligent",
-  "naive",
-  "cruel",
-  "optimistic",
-  "pessimistic",
-  "arrogant",
-  "humble",
-  "snob",
-  "respectful",
-  "greedy",
-  "generous",
-  "kind",
+  "gremlin",
+  "sprinter",
+  "loyalist",
+  "scholar",
+  "radiant",
+  "guardian",
+  "anxious",
+  "wildheart",
+  "brightspark",
+  "prankster",
+  "shadowed",
+  "drifter",
+  "glutton",
+  "dreamer",
+  "stoic",
+  "tinker",
+  "feral",
+  "blazeborn",
+  "gentle",
+  "royal",
 ] as const;
 
 type PersonalityKey = (typeof PERSONALITY_KEYS)[number];
@@ -72,13 +73,22 @@ function rollPersonality(): PersonalityKey {
   return PERSONALITY_KEYS[Math.floor(Math.random() * PERSONALITY_KEYS.length)];
 }
 
-async function resolvePersonalityId(key: string): Promise<string | null> {
-  const { data } = await supabaseAdmin
+async function resolvePersonalityId(key: PersonalityKey): Promise<string> {
+  const { data, error } = await supabaseAdmin
     .from("personalities")
     .select("id")
     .eq("key", key)
     .maybeSingle();
-  return data?.id ?? null;
+
+  if (error) {
+    throw new Error(`Failed to resolve personality "${key}": ${error.message}`);
+  }
+
+  if (!data?.id) {
+    throw new Error(`No personality found for key "${key}"`);
+  }
+
+  return data.id;
 }
 
 // ---------------------------------------------------------------
@@ -150,8 +160,26 @@ petsRouter.get(
         });
       }
 
-      const decayedHunger = await applyHungerDecay(pet.id);
-      const hydratedPet = { ...pet, hunger: decayedHunger };
+      const hydratedPet = applyCareDecay(pet);
+
+      const careChanged =
+        hydratedPet.hunger !== pet.hunger ||
+        hydratedPet.clean !== pet.clean ||
+        hydratedPet.happy !== pet.happy ||
+        hydratedPet.neglect_hours !== pet.neglect_hours ||
+        hydratedPet.ran_away !== pet.ran_away ||
+        hydratedPet.last_care_update !== pet.last_care_update;
+
+      if (careChanged) {
+        await updatePetCareStats(hydratedPet.id, {
+          hunger: hydratedPet.hunger,
+          clean: hydratedPet.clean,
+          happy: hydratedPet.happy,
+          neglect_hours: hydratedPet.neglect_hours,
+          ran_away: hydratedPet.ran_away,
+          last_care_update: hydratedPet.last_care_update,
+        });
+      }
 
       const points = await fetchTotalPoints(hydratedPet.id);
       const stats = points?.base ?? null;
@@ -182,9 +210,8 @@ petsRouter.get(
 //
 // FIX 1: Species picked randomly server-side (true mystery egg).
 //         Frontend line value is ignored entirely.
-// FIX 2: `gender` removed from insert — column didn't exist in DB,
-//         caused 500 on every call. Now set at hatch.
-// FIX 3: Egg name is "Mystery Egg" — real name revealed at hatch.
+// FIX 2: `gender` removed from insert because it is set at hatch.
+// FIX 3: Egg name is "Mystery Egg" and real name revealed at hatch.
 // ============================================================
 petsRouter.post(
   "/ensure-egg",
@@ -332,8 +359,10 @@ petsRouter.get(
 // POST /api/pets/hatch
 //
 // The mystery is revealed here.
-// - Starter found by egg.line (not egg.name — it's "Mystery Egg")
-// - gender, personality_key, personality_id all rolled and written now
+// - Starter found by egg.line (not egg.name; it's "Mystery Egg")
+// - gender rolled at hatch
+// - personality is only rolled if the egg does not already have one
+// - if personality_id already exists, we preserve it and backfill personality_key
 // ============================================================
 petsRouter.post(
   "/hatch",
@@ -344,12 +373,16 @@ petsRouter.post(
       const serverNowMs = Date.now();
 
       const { pet: egg } = await fetchHatcheryEgg(userId);
+
       if (!egg) {
+        console.error("[hatch] no hatchery egg found for user:", userId);
         return res.status(404).json({ error: "No hatchery egg found" });
       }
 
       const remaining = msUntil(egg.hatch_ends_at, serverNowMs);
+
       if (remaining > 0) {
+        console.warn("[hatch] egg is not ready yet");
         return res.status(409).json({
           error: "Egg is not ready yet",
           server_now: new Date(serverNowMs).toISOString(),
@@ -357,19 +390,30 @@ petsRouter.post(
         });
       }
 
-      // Find starter by line since egg name is "Mystery Egg"
+      console.log(
+        "[hatch] egg found -> line=%s, ready=%s",
+        (egg as any).line ?? "unknown",
+        true,
+      );
+
       const starter =
         findStarterByName(egg.name) ??
         STARTERS.find((s) => s.line === (egg as any).line) ??
         null;
 
       if (!starter) {
+        console.error(
+          `[hatch] could not resolve starter for egg line: ${(egg as any).line ?? "unknown"}`,
+        );
         return res.status(500).json({
           error: `Could not resolve starter for egg (line: ${(egg as any).line ?? "unknown"})`,
         });
       }
 
+      console.log("[hatch] starter resolved -> %s", starter.hatchlingName);
+
       const existingPoints = await fetchTotalPoints(egg.id);
+
       if (!existingPoints?.base) {
         await insertBaseStats(egg.id, starter.baseStats);
       }
@@ -382,12 +426,20 @@ petsRouter.post(
         .eq("pet_id", egg.id)
         .maybeSingle();
 
-      if (baseRawErr)
+      if (baseRawErr) {
+        console.error("[hatch] pet_stats select failed:", baseRawErr);
         return res.status(500).json({ error: baseRawErr.message });
-      if (!baseRaw)
+      }
+
+      if (!baseRaw) {
+        console.error(
+          "[hatch] missing pet_stats row after ensure for pet:",
+          egg.id,
+        );
         return res
           .status(500)
           .json({ error: "Missing pet_stats row after ensure." });
+      }
 
       const baseSum = sumBase5({
         base_hp: (baseRaw as any).base_hp,
@@ -399,6 +451,8 @@ petsRouter.post(
       });
 
       if (baseSum !== 10) {
+        console.warn("[hatch] baseSum was not 10, repairing base stats");
+
         const { error: fixErr } = await supabaseAdmin
           .from("pet_stats")
           .update({
@@ -412,7 +466,10 @@ petsRouter.post(
           } as any)
           .eq("pet_id", egg.id);
 
-        if (fixErr) return res.status(500).json({ error: fixErr.message });
+        if (fixErr) {
+          console.error("[hatch] pet_stats repair failed:", fixErr);
+          return res.status(500).json({ error: fixErr.message });
+        }
 
         (baseRaw as any).base_hp = starter.baseStats.hp;
         (baseRaw as any).base_atk = starter.baseStats.atk;
@@ -423,8 +480,12 @@ petsRouter.post(
         (baseRaw as any).base_total = 10;
       }
 
+      console.log("[hatch] base stats loaded -> total=%s", 10);
+
       const iv = rollIV(HATCH_ALLOCATION_POINTS);
+
       if (sumStats(iv) !== HATCH_ALLOCATION_POINTS) {
+        console.error("[hatch] IV generation failed integrity check:", iv);
         throw new Error("IV generation failed integrity check");
       }
 
@@ -444,8 +505,18 @@ petsRouter.post(
           { onConflict: "pet_id,level" },
         );
 
-      if (ivUpsertErr)
+      if (ivUpsertErr) {
+        console.error(
+          "[hatch] pet_stat_allocations upsert failed:",
+          ivUpsertErr,
+        );
         return res.status(500).json({ error: ivUpsertErr.message });
+      }
+
+      const ivTotal = sumStats(iv);
+
+      console.log("[hatch] hatch bonus rolled -> total=%s", ivTotal);
+      console.log("[hatch] final level 1 stats -> total=%s", 10 + ivTotal);
 
       const baseHp = Number((baseRaw as any).base_hp ?? 0);
       const baseAtk = Number((baseRaw as any).base_atk ?? 0);
@@ -464,43 +535,95 @@ petsRouter.post(
 
       const nowIso = new Date(serverNowMs).toISOString();
 
-      // Roll gender and personality at hatch — the full mystery reveal
       const gender = rollGender();
-      const personalityKey = rollPersonality();
-      const personalityId = await resolvePersonalityId(personalityKey);
+
+      let personalityId = egg.personality_id ?? null;
+      let personalityKey = egg.personality_key ?? null;
+
+      if (personalityId) {
+        if (!personalityKey) {
+          const { data: personalityRow, error: personalityRowError } =
+            await supabaseAdmin
+              .from("personalities")
+              .select("id, key")
+              .eq("id", personalityId)
+              .maybeSingle();
+
+          if (personalityRowError) {
+            console.error(
+              "[hatch] failed to backfill personality key from personality_id:",
+              personalityRowError,
+            );
+            return res.status(500).json({ error: personalityRowError.message });
+          }
+
+          if (!personalityRow?.key) {
+            console.error(
+              "[hatch] personality_id exists on egg but no matching personality row found:",
+              personalityId,
+            );
+            return res.status(500).json({
+              error: `Missing personalities row for id "${personalityId}"`,
+            });
+          }
+
+          personalityKey = personalityRow.key;
+        }
+      } else {
+        personalityKey = rollPersonality();
+        personalityId = await resolvePersonalityId(personalityKey);
+      }
+
+      const petUpdatePayload: Record<string, any> = {
+        name: starter.hatchlingName,
+        stage: "hatchling",
+        hatched_at: nowIso,
+        hatch_ends_at: null,
+        unspent_points: 0,
+        is_active: false,
+        location: "storage",
+        gender,
+        atk: totalAtk,
+        def: totalDef,
+        spd: totalSpd,
+        magi: totalMagi,
+        mana: totalMana,
+        hp_max: hpMax,
+        hp_cur: hpMax,
+      };
+
+      if (!egg.personality_id && personalityId) {
+        petUpdatePayload.personality_id = personalityId;
+      }
+
+      if (
+        (!egg.personality_key || egg.personality_key !== personalityKey) &&
+        personalityKey
+      ) {
+        petUpdatePayload.personality_key = personalityKey;
+      }
 
       const { data: hatched, error: hatchUpdateError } = await supabaseAdmin
         .from("pets")
-        .update({
-          name: starter.hatchlingName, // Mystery revealed!
-          stage: "hatchling",
-          hatched_at: nowIso,
-          hatch_ends_at: null,
-          unspent_points: 0,
-          is_active: false,
-          location: "storage",
-          gender,
-          personality: personalityKey, // personality_trait enum column
-          personality_key: personalityKey, // text column (quick reads)
-          personality_id: personalityId, // FK to personalities table
-          atk: totalAtk,
-          def: totalDef,
-          spd: totalSpd,
-          magi: totalMagi,
-          mana: totalMana,
-          hp_max: hpMax,
-          hp_cur: hpMax,
-        } as any)
+        .update(petUpdatePayload)
         .eq("id", egg.id)
         .eq("user_id", userId)
         .select("*")
         .single();
 
       if (hatchUpdateError) {
+        console.error("[hatch] pets update failed:", hatchUpdateError);
         return res.status(500).json({ error: hatchUpdateError.message });
       }
 
+      console.log("[hatch] pet updated -> stage=hatchling");
+
       const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
+
+      console.log(
+        "[hatch] party slot assigned -> %s",
+        assignedPartySlot ?? "none",
+      );
 
       let finalLocation: "active" | "storage" = "storage";
       let finalIsActive = false;
@@ -514,8 +637,10 @@ petsRouter.post(
           .eq("id", egg.id)
           .eq("user_id", userId);
 
-        if (activateErr)
+        if (activateErr) {
+          console.error("[hatch] activate pet failed:", activateErr);
           return res.status(500).json({ error: activateErr.message });
+        }
 
         finalLocation = "active";
         finalIsActive = true;
@@ -528,7 +653,10 @@ petsRouter.post(
           .eq("id", egg.id)
           .eq("user_id", userId);
 
-        if (storeErr) return res.status(500).json({ error: storeErr.message });
+        if (storeErr) {
+          console.error("[hatch] store pet failed:", storeErr);
+          return res.status(500).json({ error: storeErr.message });
+        }
 
         finalLocation = "storage";
         finalIsActive = false;
@@ -537,6 +665,12 @@ petsRouter.post(
       }
 
       const points = await fetchTotalPoints(egg.id);
+
+      console.log(
+        "[hatch] destination -> %s",
+        postHatchDestination ?? "storage",
+      );
+      console.log("[hatch] success");
 
       return res.json({
         server_now: nowIso,
@@ -551,6 +685,7 @@ petsRouter.post(
         points,
         gender,
         personality_key: personalityKey,
+        personality_id: personalityId,
         party_slot_assigned: assignedPartySlot,
         post_hatch_destination: postHatchDestination,
         storage_result: storageResult,
@@ -558,9 +693,11 @@ petsRouter.post(
         starter_species_id: starter.speciesId,
       });
     } catch (e: any) {
-      return res.status(500).json({ error: e?.message ?? "Server error" });
+      console.error("[POST /api/pets/hatch] crash:", e);
+      return res.status(500).json({
+        error: e?.message ?? "Server error",
+      });
     }
   },
 );
-
 export default petsRouter;

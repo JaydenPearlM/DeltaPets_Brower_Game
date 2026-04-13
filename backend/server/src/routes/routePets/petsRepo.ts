@@ -79,7 +79,7 @@ export async function fetchStarterPetAnyStage(userId: string) {
 
 /**
  * Returns true if this user's hatchery slots have already been set up.
- * Falls back to false if the column is missing or profile row doesn't exist —
+ * Falls back to false if the column is missing or profile row doesn't exist
  * both cases mean we should still run ensure.
  */
 async function isHatcheryInitialized(userId: string): Promise<boolean> {
@@ -95,7 +95,7 @@ async function isHatcheryInitialized(userId: string): Promise<boolean> {
 
 /**
  * Flips hatchery_initialized = true so future visits skip the ensure step.
- * Fire-and-forget — never throws. A missed flip just costs one extra ensure
+ * Fire-and-forget " " never throws. A missed flip just costs one extra ensure
  * on the next load, which is harmless.
  */
 function markHatcheryInitialized(userId: string): void {
@@ -114,7 +114,7 @@ function markHatcheryInitialized(userId: string): void {
 }
 
 // ---------------------------------------------------------------------------
-// Ensure functions — private, run ONCE per user on first hatchery visit
+// Ensure functions private, run ONCE per user on first hatchery visit
 // ---------------------------------------------------------------------------
 
 /**
@@ -219,12 +219,12 @@ async function initializeHatcheryForUser(userId: string): Promise<void> {
     runEnsureHatcheryShelfSlots(userId),
   ]);
 
-  // Fire-and-forget — don't block the response on this profile write
+  // Fire-and-forget " " don't block the response on this profile write
   markHatcheryInitialized(userId);
 }
 
 // ---------------------------------------------------------------------------
-// Public fetch functions — what routes call
+// Public fetch functions " " what routes call
 // ---------------------------------------------------------------------------
 
 /**
@@ -283,7 +283,7 @@ export async function fetchHatcherySlots(userId: string) {
  * Fetches all hatchery shelf slots.
  *
  * The ensure step for shelf slots is handled inside fetchHatcherySlots via
- * initializeHatcheryForUser — both tables are set up in one pass. This
+ * initializeHatcheryForUser " " both tables are set up in one pass. This
  * function is now a clean read-only fetch with no ensure overhead at all.
  *
  * routePets.ts calls fetchHatcherySlots and fetchHatcheryShelfSlots in

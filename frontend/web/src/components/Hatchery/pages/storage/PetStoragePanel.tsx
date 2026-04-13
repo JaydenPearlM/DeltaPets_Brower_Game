@@ -393,7 +393,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
             {partyCount}/{PARTY_SLOT_COUNT} Filled
           </div>
           <div className="storageHeaderMetaBottom">
-            Selected Slot: <strong>{targetSlot ?? "—"}</strong>
+            Selected Slot: <strong>{targetSlot ?? ""}</strong>
           </div>
         </div>
       </div>

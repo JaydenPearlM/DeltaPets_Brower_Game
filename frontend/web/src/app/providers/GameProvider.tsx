@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 
 export type GameContextValue = {
-  // Add/expand these as your app grows — keep it simple for Alpha
+  // Add/expand these as your app grows " " keep it simple for Alpha
   activePetId: string | null;
   setActivePetId: (id: string | null) => void;
 

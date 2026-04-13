@@ -63,7 +63,7 @@ function clamp0to100(n: number) {
 
 function prettyEnum(s: unknown) {
   const str = String(s ?? "").trim();
-  if (!str) return "—";
+  if (!str) return "";
   return str
     .replaceAll("_", " ")
     .split(" ")
@@ -74,14 +74,14 @@ function prettyEnum(s: unknown) {
 
 function displayStage(stageRaw: unknown) {
   const s = String(stageRaw ?? "").toLowerCase();
-  if (!s) return "—";
+  if (!s) return "";
   if (s.includes("hatchling")) return "hatchling";
   return prettyEnum(s);
 }
 
 function displayGender(g: unknown) {
   const s = String(g ?? "").toLowerCase();
-  if (!s) return "—";
+  if (!s) return "";
   if (s.includes("null")) return "Null";
   if (s.includes("male")) return "Male";
   if (s.includes("female")) return "Female";
@@ -571,7 +571,7 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
   const displayName = (
     existingNick ||
     String(pet?.name ?? "").trim() ||
-    "—"
+    ""
   ).trim();
 
   const lineKey = safeLineKey(pet?.line);
@@ -672,9 +672,9 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
         )}
 
         <div className="crPaperCard tamaIdentity">
-          <KV k="Name:" v={pet?.name ?? "—"} />
+          <KV k="Name:" v={pet?.name ?? " "} />
           {/* Hide the NickName row once a nickname exists (since we show it on the sprite card) */}
-          {!existingNick && <KV k="NickName:" v={"—"} />}
+          {!existingNick && <KV k="NickName:" v={""} />}
           <KV k="Level:" v={level} />
           <KV k="Gender:" v={displayGender(pet?.gender)} />
           <KV k="Element:" v={prettyEnum(pet?.line)} />

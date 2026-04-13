@@ -1,9 +1,9 @@
 -- supabase/migrations/20260412_000021_add_gender_personality_to_pets.sql
 --
 -- Adds three columns visible in the DB schema that were missing from migrations:
---   gender         — rolled at hatch (male / female / null_gender)
---   personality_id — FK to personalities lookup table
---   personality_key— plain text key for quick reads without a join
+--   gender         " " rolled at hatch (male / female / null_gender)
+--   personality_id " " FK to personalities lookup table
+--   personality_key" " plain text key for quick reads without a join
 --
 -- Also creates the personalities lookup table.
 
@@ -59,7 +59,7 @@ alter table public.pets
   add column if not exists personality_id  uuid references public.personalities(id) on delete set null,
   add column if not exists personality_key text;
 
--- 5) RLS — personalities is a public read-only lookup
+-- 5) RLS " " personalities is a public read-only lookup
 alter table public.personalities enable row level security;
 
 drop policy if exists "personalities_select_all" on public.personalities;

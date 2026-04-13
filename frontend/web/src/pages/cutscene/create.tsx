@@ -174,7 +174,7 @@ export default function CreatePage() {
   const [status, setStatus] = useState("Initializing…");
   const [fatalError, setFatalError] = useState<string | null>(null);
 
-  // Incrementing this re-runs the cutscene useEffect — used by the Retry button.
+  // Incrementing this re-runs the cutscene useEffect " " used by the Retry button.
   // navigate("/create") doesn't re-trigger the effect since we're already on that
   // route, so retryCount is the correct mechanism here.
   const [retryCount, setRetryCount] = useState(0);
@@ -291,7 +291,7 @@ export default function CreatePage() {
             // Step 1: Create the egg. This MUST succeed before navigating.
             //
             // FIX (was broken): the old code wrapped this in a catch that did
-            // console.warn and kept going — user landed on /hatchery with no egg.
+            // console.warn and kept going " " user landed on /hatchery with no egg.
             setStatus("Creating your egg…");
             const ensure = await postJson("/api/pets/ensure-egg", token, {
               line: starterLine,
@@ -308,7 +308,7 @@ export default function CreatePage() {
               );
             }
 
-            // Step 2: Mark intro seen. Fire-and-forget — never blocks navigation.
+            // Step 2: Mark intro seen. Fire-and-forget " " never blocks navigation.
             //
             // FIX (was broken): was inside the same try block, so if ensure-egg
             // threw, intro/seen never fired → intro_seen stayed false → user
@@ -327,7 +327,7 @@ export default function CreatePage() {
               );
             }
 
-            // Early return — cutscene stops here, no navigate("/hatchery").
+            // Early return " " cutscene stops here, no navigate("/hatchery").
             return;
           }
 

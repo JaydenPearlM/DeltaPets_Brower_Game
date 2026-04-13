@@ -12,7 +12,7 @@ import HatcheryPage from "../../components/Hatchery/pages/HatcheryPage";
 import PetBondHome from "../../pages/PetHome_SecretHaven/petBondComponents/petBondHome";
 
 function NotFound() {
-  return <div style={{ padding: 16 }}>404 — Page not found</div>;
+  return <div style={{ padding: 16 }}>404 " " Page not found</div>;
 }
 
 export const router = createBrowserRouter([

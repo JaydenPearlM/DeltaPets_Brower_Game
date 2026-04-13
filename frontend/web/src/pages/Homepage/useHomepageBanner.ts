@@ -144,7 +144,6 @@ export function useHomepageBanner(): UseHomepageBannerResult {
     const { data, error } = await supabase
       .from("homepage_alerts")
       .select("*")
-      .order("updated_at", { ascending: false })
       .limit(8);
 
     if (error) {

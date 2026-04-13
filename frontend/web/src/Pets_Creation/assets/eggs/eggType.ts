@@ -74,7 +74,7 @@ export const EGG_TYPES: EggType[] = [
     id: "void_chrysalis",
     name: "Void Chrysalis",
     element: "null_element",
-    description: "Weightless. Soundless. It reflects nothing — not even light.",
+    description: "Weightless. Soundless. It reflects nothing, not even light.",
   },
   {
     id: "MYSTERY_EGG",

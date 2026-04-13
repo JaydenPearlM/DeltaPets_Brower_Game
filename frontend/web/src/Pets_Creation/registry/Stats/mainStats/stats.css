@@ -3,7 +3,7 @@
 /* ---------------------------------
    Baseline theme vars (fallbacks)
    If your app already defines these globally,
-   these will just be overridden — no harm.
+   these will just be overridden " " no harm.
 ---------------------------------- */
 :root {
   --bg-elev: rgba(20, 22, 28, 0.96);

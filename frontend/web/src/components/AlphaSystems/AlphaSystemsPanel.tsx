@@ -8,7 +8,7 @@ type Props = {
 };
 
 function formatDate(value?: string | null) {
-  if (!value) return "—";
+  if (!value) return "";
   return new Date(value).toLocaleDateString();
 }
 
@@ -66,7 +66,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
                       <span className="alpha-name">{item.title}</span>
 
                       <span className="alpha-desc">
-                        {item.description || "—"}
+                        {item.description || ""}
                       </span>
 
                       <span className="alpha-date">
@@ -122,7 +122,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
                           ))}
                         </ul>
                       ) : (
-                        <p className="alpha-patchEmpty">—</p>
+                        <p className="alpha-patchEmpty"></p>
                       )}
                     </div>
 
@@ -136,7 +136,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
                           )}
                         </ul>
                       ) : (
-                        <p className="alpha-patchEmpty">—</p>
+                        <p className="alpha-patchEmpty"></p>
                       )}
                     </div>
 
@@ -150,7 +150,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
                           )}
                         </ul>
                       ) : (
-                        <p className="alpha-patchEmpty">—</p>
+                        <p className="alpha-patchEmpty"></p>
                       )}
                     </div>
 
@@ -162,7 +162,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
                           ))}
                         </ul>
                       ) : (
-                        <p className="alpha-patchEmpty">—</p>
+                        <p className="alpha-patchEmpty"></p>
                       )}
                     </div>
                   </div>

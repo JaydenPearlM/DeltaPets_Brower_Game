@@ -129,29 +129,13 @@ async function addWallet(
   currency: "dots" | "crystals",
   delta: number,
 ) {
-  await ensureWalletRow(user_id);
+  const { error } = await supabaseAdmin.rpc("increment_wallet", {
+    p_user_id: user_id,
+    p_dots: currency === "dots" ? delta : 0,
+    p_crystals: currency === "crystals" ? delta : 0,
+  });
 
-  const { data: w, error: readErr } = await supabaseAdmin
-    .from("wallets")
-    .select("dots, crystals")
-    .eq("user_id", user_id)
-    .single();
-  if (readErr) throw readErr;
-
-  const nextDots = (w?.dots ?? 0) + (currency === "dots" ? delta : 0);
-  const nextCrystals =
-    (w?.crystals ?? 0) + (currency === "crystals" ? delta : 0);
-
-  const { error: writeErr } = await supabaseAdmin
-    .from("wallets")
-    .update({
-      dots: nextDots,
-      crystals: nextCrystals,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", user_id);
-
-  if (writeErr) throw writeErr;
+  if (error) throw error;
 }
 
 async function giveItem(user_id: string, slug: string, qty: number) {

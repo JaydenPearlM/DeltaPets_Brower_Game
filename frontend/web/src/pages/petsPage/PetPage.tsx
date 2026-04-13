@@ -110,7 +110,7 @@ function safeNum(value: unknown, fallback = 0) {
 }
 
 function titleCase(value: string | null | undefined) {
-  if (!value) return "—";
+  if (!value) return "";
 
   return String(value)
     .replace(/_/g, " ")
@@ -222,7 +222,7 @@ function buildPetDescription(
   const stage = titleCase(pet.stage);
   const element = titleCase(pet.element || pet.line || "Null");
   const personality =
-    personalityName && personalityName !== "—" ? personalityName : "Mysterious";
+    personalityName && personalityName !== "" ? personalityName : "Mysterious";
   const tone = getPersonalityTone(personalityName);
 
   return `${label} is a ${stage} ${element} Delta with a ${personality.toLowerCase()} personality. ${tone}`;
@@ -261,6 +261,7 @@ export default function PetPage() {
 
       if (showSpinner) {
         setLoadingPage(true);
+        console.log("[pet] PetPage mounted");
       }
 
       setLoadErr(null);
@@ -270,6 +271,10 @@ export default function PetPage() {
 
         if (!token) {
           throw new Error("You are not authenticated.");
+        }
+
+        if (showSpinner) {
+          console.log("[pet] GET /api/care/current");
         }
 
         const res = await fetch("/api/care/current", {
@@ -309,6 +314,44 @@ export default function PetPage() {
         );
 
         hasLoadedOnceRef.current = true;
+
+        if (showSpinner) {
+          const activeSlot =
+            nextTeam.find((member) => member?.is_active)?.slot_index ??
+            nextTeam[0]?.slot_index ??
+            null;
+
+          const totalPoints =
+            typeof (json as any)?.total_points === "number"
+              ? (json as any).total_points
+              : nextStats
+                ? [
+                    Number(nextStats.hp ?? 0),
+                    Number(nextStats.atk ?? 0),
+                    Number(nextStats.def ?? 0),
+                    Number(nextStats.spd ?? 0),
+                    Number(nextStats.magi ?? 0),
+                    Number(nextStats.mana ?? 0),
+                  ].reduce((sum, value) => sum + value, 0)
+                : null;
+
+          console.log(
+            "[pet] active pet loaded -> %s (%s, %s, level %s)",
+            nextPet?.name ?? "None",
+            nextPet?.line ?? nextPet?.element ?? "unknown",
+            nextPet?.stage ?? "unknown",
+            nextPet?.level ?? "unknown",
+          );
+          console.log(
+            "[pet] stats loaded -> total_points=%s",
+            totalPoints ?? "unknown",
+          );
+          console.log(
+            "[pet] team loaded -> slot %s active",
+            activeSlot ?? "none",
+          );
+          console.log("[pet] render complete");
+        }
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to load pet page.";
@@ -320,13 +363,16 @@ export default function PetPage() {
         setTeam([]);
         setPersonalityName(null);
         setShowNicknameEditor(false);
+
+        if (showSpinner) {
+          console.error("[pet] load failed:", message);
+        }
       } finally {
         setLoadingPage(false);
       }
     },
     [user],
   );
-
   useEffect(() => {
     if (authLoading || !user) return;
 
