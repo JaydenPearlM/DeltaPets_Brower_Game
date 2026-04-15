@@ -15,15 +15,10 @@
   --pet-home-shell-bottom: #466894;
   --pet-home-shell-border: rgba(88, 112, 150, 0.84);
   --pet-home-shell-inner: rgba(234, 241, 250, 0.72);
-  --pet-home-shell-line: rgba(255, 255, 255, 0.18);
   --pet-home-shadow: rgba(18, 28, 49, 0.18);
-  --pet-home-cream: #ece3ca;
-  --pet-home-cream-2: #e3d8bb;
-  --pet-home-cream-line: rgba(173, 150, 97, 0.32);
   --pet-home-title-gold: #f3d63f;
   --pet-home-title-red: #b23a24;
   --pet-home-text: #2f4b76;
-  --pet-home-soft: #5b7599;
   --pet-home-green: #8ef39c;
 
   display: flex;
@@ -180,11 +175,6 @@
   color: #c0ffb5;
 }
 
-.petRepoHeroStatus span:last-child {
-  color: rgba(246, 248, 255, 0.92);
-  font-weight: 700;
-}
-
 .petRepoHeroStatus--focusLeft {
   margin-right: 6px;
 }
@@ -262,11 +252,6 @@
   text-align: center;
 }
 
-.petRepoTeamPanelHeader--centered {
-  align-items: center;
-  text-align: center;
-}
-
 .petRepoTeamPanelTitle {
   font-size: 1.5rem;
   line-height: 1.18;
@@ -274,7 +259,6 @@
   font-weight: 700;
   letter-spacing: 0.2em;
   color: #f0cf4b;
-  text-shadow: none;
 }
 
 .petRepoTeamPanelCopy {
@@ -291,163 +275,74 @@
 .petRepoTeamGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  align-items: stretch;
+  gap: 18px;
+  align-items: start;
+  justify-items: center;
 }
 
-.petRepoTeamCard {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 0;
-  min-height: 236px;
-  height: 236px;
-  padding: 0;
-  overflow: hidden;
-  border-radius: 14px;
-  border: 1px solid rgba(194, 211, 236, 0.7);
-  background: linear-gradient(
-    180deg,
-    rgba(235, 241, 250, 0.98) 0%,
-    rgba(219, 229, 243, 0.96) 100%
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    10px 14px 22px rgba(40, 60, 97, 0.12);
-  color: var(--pet-home-text);
-}
-
-.petRepoTeamCard:hover:not(:disabled) {
-  transform: translateY(-2px);
-  border-color: rgba(245, 214, 89, 0.82);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    12px 16px 26px rgba(40, 60, 97, 0.16);
-}
-
-.petRepoTeamCard.is-active {
-  border-color: rgba(245, 214, 89, 0.92);
-  background: linear-gradient(
-    180deg,
-    rgba(244, 239, 221, 0.98) 0%,
-    rgba(223, 232, 245, 0.97) 100%
-  );
-}
-
-.petRepoTeamCard:disabled {
-  opacity: 1;
-  cursor: default;
-}
-
-.petRepoTeamCard--empty {
-  justify-content: flex-start;
-  align-items: stretch;
-  border-style: solid;
-  border-color: rgba(194, 211, 236, 0.7);
-  cursor: default;
-}
-
-.petRepoTeamCard--empty:hover {
-  transform: none;
-}
-
-.petRepoTeamEmptyOnly {
-  display: none;
-}
-
-.petRepoTeamInfoTop {
-  display: flex;
-  justify-content: stretch;
-  align-items: stretch;
-  width: 100%;
-  min-height: 34px;
-  margin-bottom: 0;
-  padding: 0;
-  text-align: center;
-}
-
-.petRepoTeamInfoLine {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  min-height: 38px;
-  padding: 7px 12px;
-  margin: 0;
-  border-radius: 0;
-  border-bottom: 1px solid rgba(227, 186, 73, 0.55);
-  background: linear-gradient(
-    180deg,
-    rgba(52, 101, 184, 0.98) 0%,
-    rgba(28, 66, 133, 0.99) 100%
-  );
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.15;
-  color: var(--accent-green-neon) !important;
-  text-align: center;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.petRepoTeamInfoName {
-  font-family: var(--font-heading);
-  color: #f3d63f;
-  font-size: 1.12rem;
-  font-weight: 700;
-  text-shadow:
-    0 0 8px rgba(243, 214, 63, 0.28),
-    0 0 16px rgba(243, 214, 63, 0.16),
-    0 2px 6px rgba(70, 52, 10, 0.18);
-}
-
-.petRepoTeamInfoDot {
-  display: none;
-}
-
-.petRepoTeamCardBody {
-  display: flex;
-  width: 100%;
-  flex: 1;
-}
-
-.petRepoTeamCardBody--stacked {
+.petRepoTeamOrbWrap {
   position: relative;
-  z-index: 1;
   display: grid;
-  gap: 14px;
-  padding: 16px 18px 18px;
-  border-radius: 0 0 26px 26px;
-  background: linear-gradient(
-    180deg,
-    rgba(193, 206, 226, 0.98) 0%,
-    rgba(176, 191, 214, 0.98) 100%
-  );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  justify-items: center;
+  width: 100%;
+  min-width: 0;
 }
 
-.petRepoTeamCardBody--stacked::before {
-  content: "";
+.petRepoTeamOrbWrapButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.petRepoTeamOrbWrapButton:hover:not(:disabled) {
+  transform: translateY(-3px);
+}
+
+.petRepoTeamOrbWrapButton:disabled {
+  cursor: default;
+}
+
+.petRepoTeamOrb {
+  position: relative;
+  width: 214px;
+  height: 214px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.petRepoTeamOrbWrapButton.is-active .petRepoTeamOrb {
+  filter: drop-shadow(0 0 0.35rem rgba(255, 224, 102, 0.28));
+}
+
+.petRepoTeamRing {
   position: absolute;
-  inset: 0;
+  border-radius: 50%;
   pointer-events: none;
-  z-index: 0;
-  opacity: 1;
-  background:
-    radial-gradient(
-      circle at 1px 1px,
-      rgba(102, 128, 168, 0.34) 1.2px,
-      transparent 1.5px
-    ),
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.28) 0,
-      rgba(255, 255, 255, 0.28) 2px,
-      transparent 2px,
-      transparent 18px
-    );
-  background-size:
-    12px 12px,
-    18px 18px;
+}
+
+.petRepoTeamRing--bond {
+  inset: 0;
+  background: conic-gradient(rgba(0, 0, 0, 0) 0deg, rgba(0, 0, 0, 0) 360deg);
+  box-shadow:
+    inset 0 0 0 13px rgba(29, 49, 82, 0.78),
+    0 0 0 2px rgba(124, 153, 202, 0.22);
+}
+
+.petRepoTeamRing--bondEmpty {
+  box-shadow:
+    inset 0 0 0 13px rgba(29, 49, 82, 0.78),
+    0 0 0 2px rgba(124, 153, 202, 0.22);
+}
+
+.petRepoTeamRing--energy {
+  inset: 18px;
+  box-shadow:
+    inset 0 0 0 8px rgba(98, 238, 152, 0.96),
+    0 0 16px rgba(98, 238, 152, 0.16);
 }
 
 .petRepoTeamPreview {
@@ -460,242 +355,181 @@
 
 .petRepoTeamPreview--circle {
   position: relative;
-  z-index: 2;
-  width: 178px;
-  height: 178px;
+  width: 142px;
+  height: 142px;
   border-radius: 50%;
   overflow: hidden;
   margin: 0 auto;
-  background: #c7ccd4;
-  border: 2px solid rgba(255, 255, 255, 0.18);
+  background: radial-gradient(
+    circle at 50% 34%,
+    rgba(34, 72, 128, 0.98) 0%,
+    rgba(20, 49, 95, 0.98) 64%,
+    rgba(12, 29, 57, 0.98) 100%
+  );
+  border: 2px solid rgba(205, 225, 255, 0.2);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -12px 18px rgba(8, 18, 38, 0.28),
+    0 10px 22px rgba(12, 24, 46, 0.18);
+}
+
+.petRepoTeamPreview--empty {
+  background: radial-gradient(
+    circle at 50% 34%,
+    rgba(74, 88, 114, 0.9) 0%,
+    rgba(49, 61, 84, 0.92) 64%,
+    rgba(29, 37, 53, 0.96) 100%
+  );
+}
+
+.petRepoTeamPreviewGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(255, 232, 138, 0.16),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 50% 52%,
+      rgba(255, 255, 255, 0.06),
+      transparent 72%
+    );
+}
+
+.petRepoTeamPreviewPlatformOuter {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  width: 104px;
+  height: 24px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 223, 112, 0.96) 0%,
+    rgba(230, 183, 59, 0.98) 100%
+  );
+  box-shadow:
+    0 0 0 5px rgba(255, 212, 91, 0.1),
+    0 5px 14px rgba(255, 213, 104, 0.16);
+}
+
+.petRepoTeamPreviewPlatformInner {
+  position: absolute;
+  left: 50%;
+  bottom: 21px;
+  width: 56px;
+  height: 9px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 244, 197, 0.96) 0%,
+    rgba(255, 229, 135, 0.92) 100%
+  );
 }
 
 .petRepoTeamPreviewImage {
+  position: relative;
+  z-index: 2;
   display: block;
   width: 100%;
   height: 100%;
-  max-width: 136px;
-  max-height: 136px;
-  object-fit: cover;
+  max-width: 104px;
+  max-height: 104px;
+  object-fit: contain;
   background: transparent;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.22));
 }
 
 .petRepoTeamPreviewImage--circle {
   width: 100%;
   height: 100%;
-  max-width: 136px;
-  max-height: 136px;
-  object-fit: cover;
-  border-radius: 50%;
+  max-width: 104px;
+  max-height: 104px;
+  object-fit: contain;
+  border-radius: 0;
   display: block;
   background: transparent;
 }
 
-.petRepoTeamCreature {
+.petRepoTeamPreviewFallback {
   position: relative;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  box-shadow:
-    8px 10px 16px rgba(0, 0, 0, 0.18),
-    inset 0 2px 5px rgba(255, 255, 255, 0.22);
-}
-
-.petRepoTeamCreature--large {
-  width: 210px;
-  height: 210px;
-  border-radius: 50%;
-}
-
-.petRepoTeamCreatureStage--egg {
-  transform: scale(0.92);
-  border-radius: 46% 46% 52% 52%;
-}
-
-.petRepoTeamCreatureStage--hatchling {
-  transform: scale(1);
-}
-
-.petRepoTeamCreatureStage--lowform {
-  transform: scale(1.08);
-}
-
-.petRepoTeamCreatureStage--highform,
-.petRepoTeamCreatureStage--legion,
-.petRepoTeamCreatureStage--mythical_legendary {
-  transform: scale(1.12);
-}
-
-.petRepoTeamCreature--null {
-  background: radial-gradient(
-    circle at 35% 28%,
-    #f1f1f4 0%,
-    #c8ccd5 45%,
-    #9097a6 100%
-  );
-}
-
-.petRepoTeamCreature--water {
-  background: radial-gradient(
-    circle at 35% 28%,
-    #d8f3ff 0%,
-    #7ed5ff 45%,
-    #3d8fe8 100%
-  );
-}
-
-.petRepoTeamCreature--fire {
-  background: radial-gradient(
-    circle at 35% 28%,
-    #ffe0b9 0%,
-    #ff9f55 42%,
-    #d44a1e 100%
-  );
-}
-
-.petRepoTeamCreature--earth {
-  background: radial-gradient(
-    circle at 35% 28%,
-    #f1e0ac 0%,
-    #d5b45d 42%,
-    #9a6d23 100%
-  );
-}
-
-.petRepoTeamCreature--air {
-  background: radial-gradient(
-    circle at 35% 28%,
-    #f2fbff 0%,
-    #c9ecff 40%,
-    #7ec7ea 100%
-  );
-}
-
-.petRepoTeamCreature--ice {
-  background: radial-gradient(
-    circle at 35% 28%,
-    #f0fbff 0%,
-    #b7f0ff 42%,
-    #6fc8ea 100%
-  );
-}
-
-.petRepoTeamCreature--storm {
-  background: radial-gradient(
-    circle at 35% 28%,
-    #e7ebff 0%,
-    #a0aefc 42%,
-    #5a63d9 100%
-  );
-}
-
-.petRepoTeamCreature--light {
-  background: radial-gradient(
-    circle at 35% 28%,
-    #fff5b8 0%,
-    #ffe26c 42%,
-    #cd9814 100%
-  );
-}
-
-.petRepoTeamCreature--shadow {
-  background: radial-gradient(
-    circle at 35% 28%,
-    #807aa0 0%,
-    #4c456c 42%,
-    #232033 100%
-  );
-}
-
-.petRepoTeamCreatureEye {
-  position: absolute;
-  top: 16px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #2a2d34;
-}
-
-.petRepoTeamCreatureEyeLeft {
-  left: 11px;
-}
-
-.petRepoTeamCreatureEyeRight {
-  right: 11px;
-}
-
-.petRepoTeamCreatureBeak {
-  position: absolute;
-  left: 50%;
-  top: 22px;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  border-radius: 2px 2px 5px 5px;
-  background: #ff9b1f;
-}
-
-.petRepoTeamText {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-}
-
-.petRepoTeamText--empty {
-  justify-content: center;
-}
-
-.petRepoTeamName {
-  font-family: var(--font-heading);
-  font-size: 1.02rem;
-  font-weight: 900;
-  color: #335381;
-}
-
-.petRepoTeamMeta {
-  font-family: var(--font-heading);
-  color: #5b7599;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.petRepoEmptyTeam {
-  padding: 18px;
-  border-radius: 16px;
-  border: 1px dashed rgba(167, 190, 230, 0.28);
-  color: #5b7599;
-  text-align: center;
-}
-
-.petRepoMiniMeters {
+  z-index: 2;
   display: grid;
-  gap: 6px;
-  margin-top: 2px;
-}
-
-.petRepoMiniMeter {
-  display: grid;
-  grid-template-columns: 14px 1fr;
-  gap: 8px;
-  align-items: center;
-  color: #5b7599;
-  font-size: 0.74rem;
-  font-weight: 900;
-}
-
-.petRepoMiniMeterTrack {
-  height: 7px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: rgba(71, 104, 150, 0.16);
-  box-shadow: inset 0 1px 2px rgba(31, 49, 80, 0.1);
-}
-
-.petRepoMiniMeterFill {
+  place-items: center;
+  width: 100%;
   height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #f3d63f 0%, #72d8ff 100%);
+}
+
+.petRepoTeamPreviewFallback--orb .petRepoCreatureCore--team {
+  transform: scale(1.2) translateY(5px);
+  filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.2));
+}
+
+.petRepoTeamArcSvg {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: visible;
+  pointer-events: none;
+  transform: translateY(-19px);
+}
+
+.petRepoTeamArcText {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  dominant-baseline: middle;
+}
+
+.petRepoTeamArcText textPath {
+  text-anchor: middle;
+}
+
+.petRepoTeamArcText--silver {
+  fill: #e9eef8;
+}
+
+.petRepoTeamArcText--null {
+  fill: #dfe4ee;
+}
+
+.petRepoTeamArcText--water {
+  fill: #8ad9ff;
+}
+
+.petRepoTeamArcText--fire {
+  fill: #ffb18f;
+}
+
+.petRepoTeamArcText--earth {
+  fill: #d7bc79;
+}
+
+.petRepoTeamArcText--air {
+  fill: #f4fbff;
+}
+
+.petRepoTeamArcText--ice {
+  fill: #bff3ff;
+}
+
+.petRepoTeamArcText--storm {
+  fill: #b0bbff;
+}
+
+.petRepoTeamArcText--light {
+  fill: #fff0a9;
+}
+
+.petRepoTeamArcText--shadow {
+  fill: #d1c2ff;
 }
 
 .petRepoMainGrid {
@@ -813,36 +647,6 @@
   color: rgba(255, 248, 210, 0.96);
 }
 
-.petRepoCareNotes {
-  display: grid;
-  gap: 12px;
-}
-
-.petRepoCareNote {
-  display: grid;
-  gap: 4px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  border: 1px solid rgba(163, 188, 236, 0.14);
-  background: linear-gradient(
-    180deg,
-    rgba(73, 114, 191, 0.16),
-    rgba(14, 28, 56, 0.3)
-  );
-  box-shadow: 10px 12px 18px rgba(16, 28, 53, 0.12);
-}
-
-.petRepoCareNote strong {
-  color: #fff0b0;
-  font-size: 0.92rem;
-}
-
-.petRepoCareNote span {
-  color: rgba(235, 242, 255, 0.84);
-  line-height: 1.5;
-  font-size: 0.9rem;
-}
-
 .petRepoSectionHeader {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -904,16 +708,10 @@
     grid-template-columns: 1fr;
   }
 
-  .petRepoTeamPreview--circle,
-  .petRepoTeamPreviewImage,
-  .petRepoTeamPreviewImage--circle,
-  .petRepoTeamCreature--large {
-    width: 180px;
-    height: 180px;
-    min-width: 180px;
-    min-height: 180px;
-    max-width: 180px;
-    max-height: 180px;
+  .petRepoHeroTextShifted {
+    transform: none;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
@@ -935,20 +733,17 @@
     padding-left: 0;
   }
 
-  .petRepoTeamCard {
-    min-height: 280px;
-    height: 280px;
+  .petRepoTeamOrb {
+    width: 198px;
+    height: 198px;
   }
 
-  .petRepoTeamPreview--circle,
-  .petRepoTeamPreviewImage,
-  .petRepoTeamPreviewImage--circle,
-  .petRepoTeamCreature--large {
-    width: 170px;
-    height: 170px;
-    min-width: 170px;
-    min-height: 170px;
-    max-width: 170px;
-    max-height: 170px;
+  .petRepoTeamPreview--circle {
+    width: 132px;
+    height: 132px;
+  }
+
+  .petRepoTeamArcText {
+    font-size: 13px;
   }
 }

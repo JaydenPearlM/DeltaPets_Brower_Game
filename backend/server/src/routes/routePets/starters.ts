@@ -1,5 +1,3 @@
-// backend/server/src/routes/routePets/starters.ts
-
 import {
   STARTER_SPROUTS,
   findStarterByName as findSharedStarterByName,
@@ -122,7 +120,14 @@ function isSharedElementLine(value: string): value is SharedElementLine {
   ].includes(value);
 }
 
-function normalizeElementLine(line?: string | null): SharedElementLine {
+/**
+ * Minimal-safe fix:
+ * - keep your existing fallback behavior ("water")
+ * - make normalization reusable/exportable for the route layer
+ */
+export function normalizeStarterElementLine(
+  line?: string | null,
+): SharedElementLine {
   const candidate = (line ?? "").trim().toLowerCase();
 
   if (isSharedElementLine(candidate)) {
@@ -132,10 +137,25 @@ function normalizeElementLine(line?: string | null): SharedElementLine {
   return "water";
 }
 
+/**
+ * Optional helper for clearer route logging / response payloads.
+ * This gives the backend a single source of truth for what line was resolved.
+ */
+export function resolveStarterLine(
+  input: StarterSelectionInput,
+): SharedElementLine {
+  return normalizeStarterElementLine(input.line);
+}
+
 export function getStarterForSelection(
   input: StarterSelectionInput,
 ): StarterDefinition {
-  const normalizedLine = normalizeElementLine(input.line);
+  const normalizedLine = normalizeStarterElementLine(input.line);
+
+  console.log("[starters] requested line:", input.line ?? null);
+  console.log("[starters] resolved line:", normalizedLine);
+  console.log("[starters] world time:", input.worldTime ?? null);
+  console.log("[starters] personalityKey:", input.personalityKey ?? null);
 
   const species = getStarterSpeciesFromSelection(
     normalizedLine,

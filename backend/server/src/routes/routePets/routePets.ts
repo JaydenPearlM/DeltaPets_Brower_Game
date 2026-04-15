@@ -20,8 +20,12 @@ import {
 
 import { fetchTotalPoints, insertBaseStats } from "./petsStats";
 
-// STARTERS needed for random pick + line-based fallback lookup at hatch
-import { findStarterByName, STARTERS } from "./starters";
+// STARTERS needed for hatch fallback lookup + starter selection at egg creation
+import {
+  findStarterByName,
+  STARTERS,
+  getStarterForSelection,
+} from "./starters";
 
 import {
   BASIC_EGG_HATCH_MINUTES,
@@ -89,14 +93,6 @@ async function resolvePersonalityId(key: PersonalityKey): Promise<string> {
   }
 
   return data.id;
-}
-
-// ---------------------------------------------------------------
-// Mystery egg: random species picked server-side
-// ---------------------------------------------------------------
-function pickRandomStarter() {
-  if (!STARTERS.length) throw new Error("No starter species defined.");
-  return STARTERS[Math.floor(Math.random() * STARTERS.length)];
 }
 
 // ---------------------------------------------------------------
@@ -208,10 +204,11 @@ petsRouter.get(
 // ============================================================
 // POST /api/pets/ensure-egg
 //
-// FIX 1: Species picked randomly server-side (true mystery egg).
-//         Frontend line value is ignored entirely.
-// FIX 2: `gender` removed from insert because it is set at hatch.
-// FIX 3: Egg name is "Mystery Egg" and real name revealed at hatch.
+// FIX:
+// - respects frontend requested line
+// - resolves starter from your real starter system
+// - returns requested_line + resolved_line
+// - keeps mystery egg behavior (name hidden until hatch)
 // ============================================================
 petsRouter.post(
   "/ensure-egg",
@@ -219,51 +216,85 @@ petsRouter.post(
   async (req: AuthedRequest, res: Response) => {
     try {
       const userId = req.user!.id;
+      const requestedLine = req.body?.line ?? null;
+      const worldTime = req.body?.worldTime ?? null;
+      const personalityKey = req.body?.personalityKey ?? null;
 
-      const existing = await fetchStarterPetAnyStage(userId);
-      if (existing) {
-        return res.json({ ok: true, created: false, pet: existing });
+      console.log("[ensure-egg] requested_line:", requestedLine);
+
+      const existingPet = await fetchStarterPetAnyStage(userId);
+
+      if (existingPet) {
+        return res.status(200).json({
+          success: true,
+          existing: true,
+          requested_line: requestedLine,
+          resolved_line: existingPet.line ?? existingPet.element ?? null,
+          pet: existingPet,
+        });
       }
 
-      const starter = pickRandomStarter();
-      const nowMs = Date.now();
+      const starter = getStarterForSelection({
+        line: requestedLine,
+        worldTime,
+        personalityKey,
+      });
+
+      const resolvedLine = starter.line;
+      const now = new Date();
       const hatchEndsAt = new Date(
-        nowMs + BASIC_EGG_HATCH_MINUTES * 60 * 1000,
+        now.getTime() + BASIC_EGG_HATCH_MINUTES * 60 * 1000,
       ).toISOString();
 
-      const { data: insertedPet, error: insertPetError } = await supabaseAdmin
+      console.log("[ensure-egg] resolved_line:", resolvedLine);
+      console.log("[ensure-egg] starter_species_id:", starter.speciesId);
+
+      const { data: insertedPet, error: insertError } = await supabaseAdmin
         .from("pets")
         .insert({
           user_id: userId,
-          name: "Mystery Egg",
+          name: starter.eggName,
+          species: starter.speciesId,
+          line: resolvedLine,
           stage: "egg",
-          line: starter.line,
-          location: "hatchery",
-          is_active: false,
           hatch_ends_at: hatchEndsAt,
-          unspent_points: 0,
+          is_active: false,
+          location: "hatchery",
+          personality_key: personalityKey ?? null,
         } as any)
         .select("*")
         .single();
 
-      if (insertPetError) {
-        return res.status(500).json({ error: insertPetError.message });
+      if (insertError) {
+        console.error("[ensure-egg] pets insert failed:", insertError);
+        return res.status(500).json({ error: insertError.message });
       }
 
-      await insertBaseStats(insertedPet.id, starter.baseStats);
+      try {
+        await insertBaseStats(insertedPet.id, starter.baseStats);
+      } catch (statsError: any) {
+        console.error("[ensure-egg] insertBaseStats failed:", statsError);
+        return res.status(500).json({
+          error: statsError?.message ?? "Failed to insert base stats",
+        });
+      }
 
-      return res.json({
-        ok: true,
-        created: true,
-        pet: insertedPet,
+      return res.status(200).json({
+        success: true,
+        existing: false,
+        requested_line: requestedLine,
+        resolved_line: resolvedLine,
         starter_species_id: starter.speciesId,
+        pet: insertedPet,
       });
-    } catch (e: any) {
-      return res.status(500).json({ error: e?.message ?? "Server error" });
+    } catch (error: any) {
+      console.error("[ensure-egg] failed:", error);
+      return res.status(500).json({
+        error: error?.message ?? "Failed to ensure egg",
+      });
     }
   },
 );
-
 // ============================================================
 // GET /api/pets/hatchery
 // ============================================================
@@ -397,6 +428,7 @@ petsRouter.post(
       );
 
       const starter =
+        STARTERS.find((s) => s.speciesId === egg.species) ??
         findStarterByName(egg.name) ??
         STARTERS.find((s) => s.line === (egg as any).line) ??
         null;
@@ -700,4 +732,5 @@ petsRouter.post(
     }
   },
 );
+
 export default petsRouter;

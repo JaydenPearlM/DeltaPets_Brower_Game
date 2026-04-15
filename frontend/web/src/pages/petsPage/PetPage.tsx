@@ -133,10 +133,6 @@ function normalizeElement(value: string | null | undefined) {
   return "null";
 }
 
-function getPreviewUrl(pet: PetRecord) {
-  return pet.portrait_url || pet.sprite_url || pet.image_url || null;
-}
-
 async function getAccessTokenSafe() {
   const { data, error } = await supabase.auth.getSession();
 
@@ -149,23 +145,6 @@ async function getAccessTokenSafe() {
 
 function getPetLabel(pet: PetRecord | null) {
   return pet?.nickname?.trim() || pet?.name?.trim() || "Your Delta";
-}
-
-function getDisplayedPersonality(
-  pet: Pick<
-    PetRecord,
-    "personality_name" | "personality" | "personality_key"
-  > | null,
-  personalityName?: string | null,
-) {
-  const direct =
-    personalityName ??
-    pet?.personality_name ??
-    pet?.personality ??
-    pet?.personality_key ??
-    null;
-
-  return direct ? titleCase(direct) : "Mysterious";
 }
 
 function getPersonalityTone(personalityName: string | null) {
@@ -225,7 +204,44 @@ function buildPetDescription(
     personalityName && personalityName !== "" ? personalityName : "Mysterious";
   const tone = getPersonalityTone(personalityName);
 
-  return `${label} is a ${stage} ${element} Delta with a ${personality.toLowerCase()} personality. ${tone}`;
+  return `${label} is a ${stage} ${element} Delta with a ${personality.toLowerCase()} trait. ${tone}`;
+}
+
+function getTeamDisplayName(teamPet: TeamCardPet) {
+  return teamPet.nickname?.trim() || teamPet.species;
+}
+
+function getTeamElementKey(teamPet: TeamCardPet | null) {
+  if (!teamPet) return "silver";
+  return normalizeElement(teamPet.elementKey || teamPet.element || "null");
+}
+
+function buildArcId(raw: string) {
+  return `petRepoArc-${raw.replace(/[^a-zA-Z0-9_-]/g, "")}`;
+}
+
+function TeamOrbTextRing({
+  pathId,
+  label,
+  elementKey,
+}: {
+  pathId: string;
+  label: string;
+  elementKey: string;
+}) {
+  return (
+    <svg className="petRepoTeamArcSvg" viewBox="0 0 214 214" aria-hidden="true">
+      <defs>
+        <path id={pathId} d="M 6 107 A 101 101 0 0 1 208 107" />
+      </defs>
+
+      <text className={`petRepoTeamArcText petRepoTeamArcText--${elementKey}`}>
+        <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle">
+          {label}
+        </textPath>
+      </text>
+    </svg>
+  );
 }
 
 export default function PetPage() {
@@ -301,7 +317,7 @@ export default function PetPage() {
         setElements(nextElements);
         setTeam(nextTeam);
         setNicknameDraft(nextPet?.nickname?.trim() || "");
-        setShowNicknameEditor(false);
+        setShowNicknameEditor(!nextPet?.nickname?.trim());
 
         const directPersonality =
           nextPet?.personality_name ??
@@ -317,13 +333,13 @@ export default function PetPage() {
 
         if (showSpinner) {
           const activeSlot =
-            nextTeam.find((member) => member?.is_active)?.slot_index ??
-            nextTeam[0]?.slot_index ??
+            nextTeam.find((member) => member?.isActive)?.slotIndex ??
+            nextTeam[0]?.slotIndex ??
             null;
 
           const totalPoints =
-            typeof (json as any)?.total_points === "number"
-              ? (json as any).total_points
+            typeof json.total_points === "number"
+              ? json.total_points
               : nextStats
                 ? [
                     Number(nextStats.hp ?? 0),
@@ -373,6 +389,7 @@ export default function PetPage() {
     },
     [user],
   );
+
   useEffect(() => {
     if (authLoading || !user) return;
 
@@ -501,6 +518,18 @@ export default function PetPage() {
     if (!user?.id || !pet?.id) return;
 
     const trimmed = nicknameDraft.trim();
+    const existingNickname = pet.nickname?.trim() || "";
+
+    if (!trimmed) {
+      setActionMsg("Your Delta needs a nickname before you can lock it in.");
+      return;
+    }
+
+    if (existingNickname) {
+      setActionMsg("This Delta's nickname is already locked.");
+      setShowNicknameEditor(false);
+      return;
+    }
 
     setNicknameSaving(true);
     setActionMsg(null);
@@ -508,9 +537,10 @@ export default function PetPage() {
     try {
       const { error } = await supabase
         .from("pets")
-        .update({ nickname: trimmed || null })
+        .update({ nickname: trimmed })
         .eq("id", pet.id)
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .is("nickname", null);
 
       if (error) {
         throw new Error(error.message);
@@ -518,7 +548,6 @@ export default function PetPage() {
 
       setActionMsg(`Nickname locked in as ${trimmed}.`);
       setShowNicknameEditor(false);
-
       await loadPetPage(false);
     } catch (error) {
       setActionMsg(
@@ -527,7 +556,7 @@ export default function PetPage() {
     } finally {
       setNicknameSaving(false);
     }
-  }, [loadPetPage, nicknameDraft, pet?.id, user?.id]);
+  }, [loadPetPage, nicknameDraft, pet?.id, pet?.nickname, user?.id]);
 
   const hunger = clampPercent(pet?.hunger);
   const clean = clampPercent(pet?.cleanliness);
@@ -650,45 +679,73 @@ export default function PetPage() {
                 const teamPet = team[index] ?? null;
 
                 if (!teamPet) {
+                  const arcId = buildArcId(`empty-${index + 1}`);
+
                   return (
                     <div
                       key={`empty-slot-${index + 1}`}
-                      className="petRepoTeamCard petRepoTeamCard--empty"
+                      className="petRepoTeamOrbWrap"
                     >
-                      <div className="petRepoTeamInfoTop">
-                        <div className="petRepoTeamInfoLine">
-                          <span className="petRepoTeamInfoName">
-                            No Pet Yet
-                          </span>
-                        </div>
-                      </div>
+                      <div className="petRepoTeamOrb petRepoTeamOrb--empty">
+                        <div
+                          className="petRepoTeamRing petRepoTeamRing--bond petRepoTeamRing--bondEmpty"
+                          aria-hidden="true"
+                        />
+                        <div
+                          className="petRepoTeamRing petRepoTeamRing--energy"
+                          aria-hidden="true"
+                        />
 
-                      <div className="petRepoTeamCardBody petRepoTeamCardBody--stacked" />
+                        <div className="petRepoTeamPreview petRepoTeamPreview--circle petRepoTeamPreview--empty" />
+
+                        <TeamOrbTextRing
+                          pathId={arcId}
+                          label="No Pet Yet"
+                          elementKey="silver"
+                        />
+                      </div>
                     </div>
                   );
                 }
 
-                const teamDisplayName =
-                  teamPet.nickname?.trim() || teamPet.species;
+                const teamDisplayName = getTeamDisplayName(teamPet);
+                const elementKey = getTeamElementKey(teamPet);
+                const arcId = buildArcId(`${teamPet.id}-${index + 1}`);
 
                 return (
                   <button
                     key={teamPet.id}
                     type="button"
-                    className={`petRepoTeamCard petRepoTeamCard--compact ${teamPet.isActive ? "is-active" : ""}`}
+                    className={`petRepoTeamOrbWrap petRepoTeamOrbWrapButton ${teamPet.isActive ? "is-active" : ""}`}
                     onClick={() => void switchActivePet(teamPet.id)}
                     disabled={busy || nicknameSaving}
                   >
-                    <div className="petRepoTeamInfoTop">
-                      <div className="petRepoTeamInfoLine">
-                        <span className="petRepoTeamInfoName">
-                          {teamDisplayName}
-                        </span>
-                      </div>
-                    </div>
+                    <div
+                      className={`petRepoTeamOrb petRepoTeamOrb--${elementKey}`}
+                    >
+                      <div
+                        className="petRepoTeamRing petRepoTeamRing--bond petRepoTeamRing--bondEmpty"
+                        aria-hidden="true"
+                      />
+                      <div
+                        className="petRepoTeamRing petRepoTeamRing--energy"
+                        aria-hidden="true"
+                      />
 
-                    <div className="petRepoTeamCardBody petRepoTeamCardBody--stacked">
                       <div className="petRepoTeamPreview petRepoTeamPreview--circle">
+                        <div
+                          className="petRepoTeamPreviewGlow"
+                          aria-hidden="true"
+                        />
+                        <div
+                          className="petRepoTeamPreviewPlatformOuter"
+                          aria-hidden="true"
+                        />
+                        <div
+                          className="petRepoTeamPreviewPlatformInner"
+                          aria-hidden="true"
+                        />
+
                         {teamPet.previewUrl ? (
                           <img
                             className="petRepoTeamPreviewImage petRepoTeamPreviewImage--circle"
@@ -705,6 +762,12 @@ export default function PetPage() {
                           </div>
                         )}
                       </div>
+
+                      <TeamOrbTextRing
+                        pathId={arcId}
+                        label={teamDisplayName}
+                        elementKey={elementKey}
+                      />
                     </div>
                   </button>
                 );
@@ -734,32 +797,6 @@ export default function PetPage() {
                 saveNickname={saveNickname}
                 runCareAction={runCareAction}
               />
-
-              <article className="petRepoPanel petRepoPanel--careNotes">
-                <div className="petRepoCareNotes">
-                  <div className="petRepoCareNote">
-                    <strong>Upkeep matters.</strong>
-                    <span>
-                      Feeding and cleaning should support long-term readiness,
-                      not become a cheap evolution trigger.
-                    </span>
-                  </div>
-                  <div className="petRepoCareNote">
-                    <strong>Main team focus.</strong>
-                    <span>
-                      The active Delta is the one you see here, and you can swap
-                      between your 4 main companions above.
-                    </span>
-                  </div>
-                  <div className="petRepoCareNote">
-                    <strong>Future-proofed.</strong>
-                    <span>
-                      This layout is ready for later systems like trust checks,
-                      training readiness, events, or room bonuses.
-                    </span>
-                  </div>
-                </div>
-              </article>
             </div>
 
             <div className="petRepoRightColumn">
@@ -836,6 +873,7 @@ function SectionPill({
     </div>
   );
 }
+
 function InfoRow({
   label,
   value,

@@ -1,8 +1,3 @@
-// ========================================
-// pages/create.tsx
-// Intro cutscene -> starter egg creation
-// ========================================
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase/client";
@@ -174,9 +169,6 @@ export default function CreatePage() {
   const [status, setStatus] = useState("Initializing…");
   const [fatalError, setFatalError] = useState<string | null>(null);
 
-  // Incrementing this re-runs the cutscene useEffect " " used by the Retry button.
-  // navigate("/create") doesn't re-trigger the effect since we're already on that
-  // route, so retryCount is the correct mechanism here.
   const [retryCount, setRetryCount] = useState(0);
 
   const runIdRef = useRef(0);
@@ -287,19 +279,21 @@ export default function CreatePage() {
 
           try {
             const token = await getAccessTokenOrThrow();
+            const requestedLine = starterLine;
 
-            // Step 1: Create the egg. This MUST succeed before navigating.
-            //
-            // FIX (was broken): the old code wrapped this in a catch that did
-            // console.warn and kept going " " user landed on /hatchery with no egg.
             setStatus("Creating your egg…");
             const ensure = await postJson("/api/pets/ensure-egg", token, {
-              line: starterLine,
+              line: requestedLine,
               worldTime,
               personalityKey: null,
             });
 
             dlog("[create] ensure-egg response:", ensure);
+            dlog("[create] ensure-egg requested_line:", requestedLine);
+            dlog(
+              "[create] ensure-egg resolved_line:",
+              ensure?.data?.resolved_line ?? "(missing from backend response)",
+            );
 
             if (!ensure.ok) {
               throw new Error(
@@ -308,16 +302,10 @@ export default function CreatePage() {
               );
             }
 
-            // Step 2: Mark intro seen. Fire-and-forget " " never blocks navigation.
-            //
-            // FIX (was broken): was inside the same try block, so if ensure-egg
-            // threw, intro/seen never fired → intro_seen stayed false → user
-            // looped back to /create on every login forever.
             postJson("/api/me/intro/seen", token).catch((err) => {
               console.warn("[create] intro/seen failed (non-fatal):", err);
             });
           } catch (err: any) {
-            // ensure-egg hard-failed. Show error, do NOT navigate.
             console.error("[create] ensure-egg failed:", err);
 
             if (alive()) {
@@ -327,7 +315,6 @@ export default function CreatePage() {
               );
             }
 
-            // Early return " " cutscene stops here, no navigate("/hatchery").
             return;
           }
 
@@ -336,7 +323,6 @@ export default function CreatePage() {
 
         if (!alive()) return;
 
-        // Egg confirmed created (or replay mode). Navigate to hatchery.
         setPhase("done");
         navigate("/hatchery", { replace: true });
       } catch (err: any) {
