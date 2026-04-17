@@ -3,20 +3,18 @@
 import type { ElementLine } from "../../registry/creationTypes";
 import goldEgg from "./goldEgg.png";
 
-// adjust path if needed
-
 export type EggType = {
   id: string;
   name: string;
   element: ElementLine;
   description: string;
-  sprite?: string; //some eggs dont have a sprite yet
+  sprite?: string;
 };
 
 export const MYSTERY_EGG: EggType = {
   id: "mystery_egg",
   name: "Prismatic Unknown",
-  element: "hidden",
+  element: "null_element",
   description: "Unstable. Shifting. No known origin.",
   sprite: goldEgg,
 };

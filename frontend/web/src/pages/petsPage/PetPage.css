@@ -559,10 +559,144 @@
 
 .petRepoDescription {
   margin: 0;
-  color: rgba(234, 241, 255, 0.92);
-  line-height: 1.62;
-  font-size: 0.96rem;
+  color: #425977;
+  line-height: 1.78;
+  font-size: 1rem;
   font-weight: 700;
+}
+
+.petRepoPanel--description {
+  overflow: hidden;
+}
+
+.petRepoSpotlightCard {
+  display: grid;
+  grid-template-columns: 164px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 171, 210, 0.28);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 255, 255, 0.34),
+      transparent 36%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(242, 246, 253, 0.98),
+      rgba(224, 233, 246, 0.94)
+    );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.66);
+}
+
+.petRepoSpotlightVisual {
+  display: grid;
+  place-items: center;
+}
+
+.petRepoSpotlightOrb {
+  width: 138px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 6px rgba(255, 245, 196, 0.08),
+    0 16px 30px rgba(177, 143, 41, 0.22);
+}
+
+.petRepoSpotlightOrb--null {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #f3f3f3 0%,
+    #cccccc 35%,
+    #a7a7a7 72%,
+    #7e7e7e 100%
+  );
+}
+
+.petRepoSpotlightOrb--water {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #dff6ff 0%,
+    #7cd4ff 35%,
+    #3aa5e8 72%,
+    #236ba4 100%
+  );
+}
+
+.petRepoSpotlightOrb--fire {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #ffe4c7 0%,
+    #ffb366 35%,
+    #ff7a21 72%,
+    #b84712 100%
+  );
+}
+
+.petRepoSpotlightOrb--earth {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #f0e4bf 0%,
+    #bfa56b 35%,
+    #8d6f3e 72%,
+    #5c4523 100%
+  );
+}
+
+.petRepoSpotlightOrb--air {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #f9fdff 0%,
+    #d4ecff 35%,
+    #97cfff 72%,
+    #5b8fbd 100%
+  );
+}
+
+.petRepoSpotlightOrb--ice {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #f0ffff 0%,
+    #b8f0ff 35%,
+    #72d2ef 72%,
+    #3d8ca7 100%
+  );
+}
+
+.petRepoSpotlightOrb--storm {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #ece7ff 0%,
+    #b9a4ff 35%,
+    #7d63da 72%,
+    #49348e 100%
+  );
+}
+
+.petRepoSpotlightOrb--light {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #fff7c9 0%,
+    #f3dc83 35%,
+    #dfbf52 72%,
+    #bb9a2f 100%
+  );
+}
+
+.petRepoSpotlightOrb--shadow {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #d9d2ea 0%,
+    #8f7ba8 35%,
+    #5c4a73 72%,
+    #2e253c 100%
+  );
+}
+
+.petRepoSpotlightContent {
+  min-width: 0;
 }
 
 .petRepoStatList {
@@ -611,6 +745,39 @@
   font-size: 1.02rem;
 }
 
+.petRepoInfoRow.is-strong-stat {
+  border-radius: 14px;
+  border: 1px solid rgba(87, 227, 137, 0.92);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.02)
+  );
+  box-shadow:
+    0 0 0 1px rgba(87, 227, 137, 0.16),
+    0 0 16px rgba(87, 227, 137, 0.18),
+    inset 0 0 14px rgba(87, 227, 137, 0.08);
+}
+
+.petRepoInfoRow.is-weak-stat {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 96, 96, 0.92);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.02)
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 96, 96, 0.16),
+    0 0 16px rgba(255, 96, 96, 0.16),
+    inset 0 0 14px rgba(255, 96, 96, 0.08);
+}
+
+.petRepoInfoRow.is-strong-stat span,
+.petRepoInfoRow.is-weak-stat span {
+  color: #fff;
+}
+
 .petRepoInfoRow.is-strong-element {
   background: linear-gradient(
     180deg,
@@ -627,24 +794,81 @@
   );
 }
 
-.petRepoInfoRow.is-active-element {
-  box-shadow: inset 0 0 0 2px rgba(255, 232, 111, 0.95);
-}
-
 .petRepoInfoRow.is-strong-element span,
 .petRepoInfoRow.is-weak-element span {
   color: #fff;
 }
 
-.petRepoInfoRow.is-active-element::after {
-  content: "ACTIVE";
-  position: absolute;
-  right: 14px;
-  top: 5px;
-  font-size: 0.6rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  color: rgba(255, 248, 210, 0.96);
+.petRepoPanel--element-null .petRepoInfoRow--element-null {
+  background: linear-gradient(
+    180deg,
+    rgba(176, 182, 196, 0.34),
+    rgba(92, 98, 112, 0.4)
+  );
+}
+
+.petRepoPanel--element-water .petRepoInfoRow--element-water {
+  background: linear-gradient(
+    180deg,
+    rgba(73, 166, 224, 0.34),
+    rgba(19, 80, 126, 0.4)
+  );
+}
+
+.petRepoPanel--element-fire .petRepoInfoRow--element-fire {
+  background: linear-gradient(
+    180deg,
+    rgba(223, 116, 56, 0.34),
+    rgba(123, 44, 19, 0.4)
+  );
+}
+
+.petRepoPanel--element-earth .petRepoInfoRow--element-earth {
+  background: linear-gradient(
+    180deg,
+    rgba(161, 123, 66, 0.34),
+    rgba(88, 63, 27, 0.4)
+  );
+}
+
+.petRepoPanel--element-air .petRepoInfoRow--element-air {
+  background: linear-gradient(
+    180deg,
+    rgba(145, 198, 234, 0.34),
+    rgba(72, 111, 145, 0.4)
+  );
+}
+
+.petRepoPanel--element-ice .petRepoInfoRow--element-ice {
+  background: linear-gradient(
+    180deg,
+    rgba(102, 207, 230, 0.34),
+    rgba(39, 112, 138, 0.4)
+  );
+}
+
+.petRepoPanel--element-storm .petRepoInfoRow--element-storm {
+  background: linear-gradient(
+    180deg,
+    rgba(124, 101, 212, 0.34),
+    rgba(58, 44, 112, 0.4)
+  );
+}
+
+.petRepoPanel--element-light .petRepoInfoRow--element-light {
+  background: linear-gradient(
+    180deg,
+    rgba(223, 190, 81, 0.34),
+    rgba(136, 112, 33, 0.4)
+  );
+}
+
+.petRepoPanel--element-shadow .petRepoInfoRow--element-shadow {
+  background: linear-gradient(
+    180deg,
+    rgba(104, 87, 139, 0.34),
+    rgba(45, 36, 67, 0.4)
+  );
 }
 
 .petRepoSectionHeader {
@@ -746,4 +970,164 @@
   .petRepoTeamArcText {
     font-size: 13px;
   }
+}
+
+.petRepoInfoRow.is-active-element {
+  border-radius: 14px;
+}
+
+.petRepoInfoRow.is-active-element span {
+  color: #ffffff;
+}
+
+.petRepoInfoRow.is-active-element.petRepoInfoRow--element-null {
+  border: 1px solid rgba(196, 202, 214, 0.88);
+  background: linear-gradient(
+    180deg,
+    rgba(176, 182, 196, 0.28),
+    rgba(92, 98, 112, 0.3)
+  );
+  box-shadow:
+    0 0 0 1px rgba(196, 202, 214, 0.14),
+    0 0 16px rgba(196, 202, 214, 0.12),
+    inset 0 0 14px rgba(196, 202, 214, 0.06);
+}
+
+.petRepoInfoRow.is-active-element.petRepoInfoRow--element-water {
+  border: 1px solid rgba(98, 194, 255, 0.9);
+  background: linear-gradient(
+    180deg,
+    rgba(73, 166, 224, 0.28),
+    rgba(19, 80, 126, 0.3)
+  );
+  box-shadow:
+    0 0 0 1px rgba(98, 194, 255, 0.16),
+    0 0 16px rgba(98, 194, 255, 0.16),
+    inset 0 0 14px rgba(98, 194, 255, 0.08);
+}
+
+.petRepoInfoRow.is-active-element.petRepoInfoRow--element-fire {
+  border: 1px solid rgba(255, 131, 76, 0.92);
+  background: linear-gradient(
+    180deg,
+    rgba(223, 116, 56, 0.28),
+    rgba(123, 44, 19, 0.3)
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 131, 76, 0.16),
+    0 0 16px rgba(255, 131, 76, 0.18),
+    inset 0 0 14px rgba(255, 131, 76, 0.08);
+}
+
+.petRepoInfoRow.is-active-element.petRepoInfoRow--element-earth {
+  border: 1px solid rgba(187, 146, 87, 0.9);
+  background: linear-gradient(
+    180deg,
+    rgba(161, 123, 66, 0.28),
+    rgba(88, 63, 27, 0.3)
+  );
+  box-shadow:
+    0 0 0 1px rgba(187, 146, 87, 0.15),
+    0 0 16px rgba(187, 146, 87, 0.14),
+    inset 0 0 14px rgba(187, 146, 87, 0.07);
+}
+
+.petRepoInfoRow.is-active-element.petRepoInfoRow--element-air {
+  border: 1px solid rgba(187, 225, 255, 0.9);
+  background: linear-gradient(
+    180deg,
+    rgba(145, 198, 234, 0.24),
+    rgba(72, 111, 145, 0.28)
+  );
+  box-shadow:
+    0 0 0 1px rgba(187, 225, 255, 0.15),
+    0 0 16px rgba(187, 225, 255, 0.14),
+    inset 0 0 14px rgba(187, 225, 255, 0.08);
+}
+
+.petRepoInfoRow.is-active-element.petRepoInfoRow--element-ice {
+  border: 1px solid rgba(134, 233, 255, 0.92);
+  background: linear-gradient(
+    180deg,
+    rgba(102, 207, 230, 0.26),
+    rgba(39, 112, 138, 0.3)
+  );
+  box-shadow:
+    0 0 0 1px rgba(134, 233, 255, 0.14),
+    0 0 16px rgba(134, 233, 255, 0.15),
+    inset 0 0 14px rgba(134, 233, 255, 0.08);
+}
+
+.petRepoInfoRow.is-active-element.petRepoInfoRow--element-storm {
+  border: 1px solid rgba(157, 136, 255, 0.92);
+  background: linear-gradient(
+    180deg,
+    rgba(124, 101, 212, 0.28),
+    rgba(58, 44, 112, 0.3)
+  );
+  box-shadow:
+    0 0 0 1px rgba(157, 136, 255, 0.16),
+    0 0 16px rgba(157, 136, 255, 0.16),
+    inset 0 0 14px rgba(157, 136, 255, 0.08);
+}
+
+.petRepoInfoRow.is-active-element.petRepoInfoRow--element-light {
+  border: 1px solid rgba(255, 225, 118, 0.94);
+  background: linear-gradient(
+    180deg,
+    rgba(223, 190, 81, 0.28),
+    rgba(136, 112, 33, 0.3)
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 225, 118, 0.16),
+    0 0 16px rgba(255, 225, 118, 0.18),
+    inset 0 0 14px rgba(255, 225, 118, 0.08);
+}
+
+.petRepoInfoRow.is-active-element.petRepoInfoRow--element-shadow {
+  border: 1px solid rgba(154, 134, 214, 0.92);
+  background: linear-gradient(
+    180deg,
+    rgba(104, 87, 139, 0.28),
+    rgba(45, 36, 67, 0.3)
+  );
+  box-shadow:
+    0 0 0 1px rgba(154, 134, 214, 0.16),
+    0 0 16px rgba(154, 134, 214, 0.16),
+    inset 0 0 14px rgba(154, 134, 214, 0.08);
+}
+
+@media (max-width: 960px) {
+  .petRepoSpotlightCard {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+}
+.petRepoDescriptionCard {
+  background:
+    linear-gradient(180deg, rgba(24, 58, 110, 0.95), rgba(13, 34, 70, 0.96)),
+    linear-gradient(
+      135deg,
+      rgba(130, 190, 255, 0.08),
+      rgba(255, 255, 255, 0.03)
+    );
+  border: 1px solid rgba(170, 220, 255, 0.24);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 10px 24px rgba(0, 0, 0, 0.22);
+  border-radius: 20px;
+  padding: 18px 20px;
+}
+
+.petRepoDescriptionContent {
+  display: block;
+}
+
+.petRepoDescription {
+  margin: 0;
+  color: rgba(232, 243, 255, 0.96);
+  font-size: 1rem;
+  line-height: 1.75;
+  letter-spacing: 0.15em;
 }

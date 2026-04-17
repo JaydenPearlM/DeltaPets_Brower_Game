@@ -7,6 +7,8 @@ import "./PetPage.css";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
 
+type StatKey = "hp" | "atk" | "magi" | "def" | "spd" | "mana";
+
 type PetRecord = {
   id?: string;
   user_id?: string;
@@ -31,6 +33,9 @@ type PetRecord = {
 
   description?: string | null;
   is_active?: boolean | null;
+  growth_strong_stats?: StatKey[] | null;
+  growth_weak_stat?: StatKey | null;
+  hatch_time_alignment?: string | null;
 
   image_url?: string | null;
   sprite_url?: string | null;
@@ -98,6 +103,84 @@ const ELEMENT_ORDER: Array<keyof Omit<PetElementsRow, "pet_id">> = [
   "shadow",
 ];
 
+const STAT_ORDER: StatKey[] = ["hp", "atk", "def", "spd", "magi", "mana"];
+
+const STAT_LABELS: Record<StatKey, string> = {
+  hp: "HP",
+  atk: "ATK",
+  def: "DEF",
+  spd: "SPD",
+  magi: "MAGI",
+  mana: "MANA",
+};
+
+function isStatKey(value: unknown): value is StatKey {
+  return typeof value === "string" && STAT_ORDER.includes(value as StatKey);
+}
+
+function getPetGrowthTraits(pet: PetRecord | null, stats: PetStatsRow | null) {
+  const savedStrong = Array.isArray(pet?.growth_strong_stats)
+    ? pet.growth_strong_stats.filter(isStatKey)
+    : [];
+
+  const savedWeak = isStatKey(pet?.growth_weak_stat)
+    ? pet.growth_weak_stat
+    : null;
+
+  if (savedStrong.length || savedWeak) {
+    return {
+      strongStats: savedStrong,
+      weakStat: savedWeak,
+      source: "saved" as const,
+    };
+  }
+
+  const statValues: Array<{ key: StatKey; value: number }> = [
+    { key: "hp", value: safeNum(stats?.hp) },
+    { key: "atk", value: safeNum(stats?.atk) },
+    { key: "def", value: safeNum(stats?.def) },
+    { key: "spd", value: safeNum(stats?.spd) },
+    { key: "magi", value: safeNum(stats?.magi) },
+    { key: "mana", value: safeNum(stats?.mana) },
+  ];
+
+  const sorted = [...statValues].sort((a, b) => {
+    if (b.value !== a.value) return b.value - a.value;
+    return STAT_ORDER.indexOf(a.key) - STAT_ORDER.indexOf(b.key);
+  });
+
+  const strongestValue = sorted[0]?.value ?? 0;
+  const weakestValue = sorted[sorted.length - 1]?.value ?? 0;
+
+  const strongStats =
+    strongestValue > 0
+      ? sorted
+          .filter((row) => row.value === strongestValue)
+          .slice(0, 2)
+          .map((row) => row.key)
+      : [];
+
+  const weakStat =
+    sorted.length > 0 && weakestValue < strongestValue
+      ? ([...sorted]
+          .reverse()
+          .find(
+            (row: { key: StatKey; value: number }) =>
+              row.value === weakestValue,
+          )?.key ?? null)
+      : null;
+
+  return {
+    strongStats,
+    weakStat,
+    source: "derived" as const,
+  };
+}
+
+function getElementThemeKey(pet: PetRecord | null) {
+  return normalizeElement(pet?.element || pet?.line);
+}
+
 function clampPercent(value: unknown) {
   const n = Number(value ?? 0);
   if (!Number.isFinite(n)) return 0;
@@ -147,64 +230,15 @@ function getPetLabel(pet: PetRecord | null) {
   return pet?.nickname?.trim() || pet?.name?.trim() || "Your Delta";
 }
 
-function getPersonalityTone(personalityName: string | null) {
-  const p = String(personalityName ?? "").toLowerCase();
-
-  if (!p) {
-    return "This Delta is still figuring itself out, but it already feels attached to you.";
-  }
-
-  if (p.includes("brave") || p.includes("bold") || p.includes("heroic")) {
-    return "It carries itself with bright confidence and likes to face the world head-on.";
-  }
-
-  if (p.includes("calm") || p.includes("gentle") || p.includes("kind")) {
-    return "It has a calm aura and tends to make every moment feel softer and steadier.";
-  }
-
-  if (p.includes("shy") || p.includes("timid")) {
-    return "It can be a little cautious at first, but it clearly trusts you more every day.";
-  }
-
-  if (p.includes("playful") || p.includes("silly") || p.includes("cheerful")) {
-    return "It loves attention, movement, and the kind of fun that turns into instant bonding.";
-  }
-
-  if (p.includes("curious") || p.includes("clever") || p.includes("smart")) {
-    return "It constantly observes movement, sound, and energy patterns around it. It always seems one step away from discovering something new.";
-  }
-
-  if (p.includes("loyal") || p.includes("devoted")) {
-    return "It bonds deeply and gives off the feeling that once it chooses you, it means it.";
-  }
-
-  if (p.includes("fiery") || p.includes("fierce") || p.includes("wild")) {
-    return "It has a strong spark to it and reacts with a lot of emotion, energy, and presence.";
-  }
-
-  if (p.includes("lazy") || p.includes("sleepy")) {
-    return "It prefers comfort, naps, and taking life at its own weird little pace.";
-  }
-
-  return "Its personality is starting to show more clearly, and the bond between you two is shaping who it becomes.";
-}
-
-function buildPetDescription(
-  pet: PetRecord | null,
-  personalityName: string | null,
-) {
+function getPetPageDescription(pet: PetRecord | null) {
   if (!pet) {
     return "No active Delta is currently placed. Once you set a pet as active, its details will show here.";
   }
 
-  const label = getPetLabel(pet);
-  const stage = titleCase(pet.stage);
-  const element = titleCase(pet.element || pet.line || "Null");
-  const personality =
-    personalityName && personalityName !== "" ? personalityName : "Mysterious";
-  const tone = getPersonalityTone(personalityName);
-
-  return `${label} is a ${stage} ${element} Delta with a ${personality.toLowerCase()} trait. ${tone}`;
+  return (
+    pet.description?.trim() ||
+    "Your pet is quietly observing the world around it."
+  );
 }
 
 function getTeamDisplayName(teamPet: TeamCardPet) {
@@ -317,7 +351,9 @@ export default function PetPage() {
         setElements(nextElements);
         setTeam(nextTeam);
         setNicknameDraft(nextPet?.nickname?.trim() || "");
-        setShowNicknameEditor(!nextPet?.nickname?.trim());
+
+        // do NOT auto-open nickname editor anymore
+        setShowNicknameEditor(false);
 
         const directPersonality =
           nextPet?.personality_name ??
@@ -366,6 +402,29 @@ export default function PetPage() {
             "[pet] team loaded -> slot %s active",
             activeSlot ?? "none",
           );
+          console.log("[pet] active pet payload ->", {
+            id: nextPet?.id ?? null,
+            name: nextPet?.name ?? null,
+            nickname: nextPet?.nickname ?? null,
+            stage: nextPet?.stage ?? null,
+            element: nextPet?.element ?? null,
+            line: nextPet?.line ?? null,
+            hatch_time_alignment: nextPet?.hatch_time_alignment ?? null,
+            growth_strong_stats: nextPet?.growth_strong_stats ?? null,
+            growth_weak_stat: nextPet?.growth_weak_stat ?? null,
+            stats: nextStats
+              ? {
+                  hp: nextStats.hp ?? 0,
+                  atk: nextStats.atk ?? 0,
+                  def: nextStats.def ?? 0,
+                  spd: nextStats.spd ?? 0,
+                  magi: nextStats.magi ?? 0,
+                  mana: nextStats.mana ?? 0,
+                  base_total: nextStats.base_total ?? null,
+                }
+              : null,
+            elements: nextElements ?? null,
+          });
           console.log("[pet] render complete");
         }
       } catch (error) {
@@ -584,31 +643,24 @@ export default function PetPage() {
   }, [stats]);
 
   const activeElementKey = normalizeElement(pet?.element || pet?.line);
+  const petElementTheme = getElementThemeKey(pet);
 
   const elementRows = useMemo(() => {
-    const valueMap = ELEMENT_ORDER.map((key) => ({
+    return ELEMENT_ORDER.map((key) => ({
       key,
+      label: key === "null" ? "Null" : titleCase(key),
       value: safeNum(elements?.[key]),
-    }));
-
-    const values = valueMap.map((row) => row.value);
-    const maxValue = values.length ? Math.max(...values) : 0;
-    const minValue = values.length ? Math.min(...values) : 0;
-    const hasRange = maxValue !== minValue;
-
-    return valueMap.map((row) => ({
-      key: row.key,
-      label: row.key === "null" ? "Null" : titleCase(row.key),
-      value: row.value,
-      active: row.key === activeElementKey,
-      strong: hasRange && row.value === maxValue,
-      weak: hasRange && row.value === minValue,
+      active: key === activeElementKey,
     }));
   }, [elements, activeElementKey]);
 
   const petDescription = useMemo(() => {
-    return buildPetDescription(pet, personalityName);
-  }, [pet, personalityName]);
+    return getPetPageDescription(pet);
+  }, [pet]);
+
+  const growthTraits = useMemo(() => {
+    return getPetGrowthTraits(pet, stats);
+  }, [pet, stats]);
 
   const nicknameLocked = Boolean(pet?.nickname?.trim());
   const canRenameNickname = !nicknameLocked;
@@ -668,8 +720,7 @@ export default function PetPage() {
               <div className="petRepoSectionLine" />
               <h2 className="petRepoTeamPanelTitle">Main Team</h2>
               <p className="petRepoTeamPanelCopy petRepoTeamPanelCopy--centered">
-                Your care room follows the 4-slot main team. Click any team pet
-                here to switch the Care panel focus.
+                Click any team pet here to switch the Care panel focus.
               </p>
               <div className="petRepoSectionLine" />
             </div>
@@ -801,23 +852,42 @@ export default function PetPage() {
 
             <div className="petRepoRightColumn">
               <div className="petRepoInfoStack">
-                <article className="petRepoPanel">
+                <article className="petRepoPanel petRepoPanel--description">
                   <SectionPill title="Pet Description" />
-                  <p className="petRepoDescription">
-                    {pet.description?.trim() || petDescription}
-                  </p>
+                  <div className="petRepoDescriptionCard">
+                    <div className="petRepoDescriptionContent">
+                      <p className="petRepoDescription">{petDescription}</p>
+                    </div>
+                  </div>
                 </article>
 
                 <div className="petRepoDataTwoCol">
                   <article className="petRepoPanel">
                     <SectionPill title="Stats" />
                     <div className="petRepoStatList">
-                      <InfoRow label="HP" value={String(totalStats.hp)} />
-                      <InfoRow label="ATK" value={String(totalStats.atk)} />
-                      <InfoRow label="DEF" value={String(totalStats.def)} />
-                      <InfoRow label="SPD" value={String(totalStats.spd)} />
-                      <InfoRow label="MAGI" value={String(totalStats.magi)} />
-                      <InfoRow label="MANA" value={String(totalStats.mana)} />
+                      {STAT_ORDER.map((statKey) => {
+                        const value = totalStats[statKey];
+                        const rowClassNames = ["petRepoInfoRow"];
+
+                        if (growthTraits.strongStats.includes(statKey)) {
+                          rowClassNames.push("is-strong-stat");
+                        }
+
+                        if (growthTraits.weakStat === statKey) {
+                          rowClassNames.push("is-weak-stat");
+                        }
+
+                        return (
+                          <div
+                            key={statKey}
+                            className={rowClassNames.join(" ")}
+                          >
+                            <span>{STAT_LABELS[statKey]}</span>
+                            <span>{String(value)}</span>
+                          </div>
+                        );
+                      })}
+
                       <InfoRow
                         label="Total"
                         value={String(totalStats.total)}
@@ -826,15 +896,20 @@ export default function PetPage() {
                     </div>
                   </article>
 
-                  <article className="petRepoPanel">
+                  <article
+                    className={`petRepoPanel petRepoPanel--element petRepoPanel--element-${petElementTheme}`}
+                  >
                     <SectionPill title="Element Stats" />
                     <div className="petRepoStatList">
                       {elementRows.map((row) => {
-                        const rowClassNames = ["petRepoInfoRow"];
+                        const rowClassNames = [
+                          "petRepoInfoRow",
+                          `petRepoInfoRow--element-${row.key}`,
+                        ];
 
-                        if (row.strong) rowClassNames.push("is-strong-element");
-                        if (row.weak) rowClassNames.push("is-weak-element");
-                        if (row.active) rowClassNames.push("is-active-element");
+                        if (row.active) {
+                          rowClassNames.push("is-active-element");
+                        }
 
                         return (
                           <div

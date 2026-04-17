@@ -252,7 +252,7 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
     setItems((arr) => arr.filter((x) => x.id !== id));
   }
 
-  function onSelectItem(it: InventoryItem) {
+  function onSelectItem(_it: InventoryItem) {
     // Picker mode (later): choose equipment for pet or egg for hatchery
     if (!pick) return;
 

@@ -6,10 +6,9 @@
 import { Router, Response } from "express";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
-import { applyHungerDecay } from "../../pets/hunger";
 import { rollIV, sumStats } from "../../lib/stats/individualValues";
 import { applyCareDecay } from "../../shared/pets/care/CareDecay";
-
+import { generatePetDescription } from "./petDescription";
 import {
   fetchActivePet,
   fetchHatcheryEgg,
@@ -42,6 +41,65 @@ import {
 } from "./petsUtils";
 
 export const petsRouter = Router();
+
+function normalizeCarePet<T extends Record<string, any>>(pet: T): T {
+  return {
+    ...pet,
+    clean: Number(pet.clean ?? pet.cleanliness ?? 0),
+    cleanliness: Number(pet.cleanliness ?? pet.clean ?? 0),
+    happy: Number(pet.happy ?? pet.happiness ?? 0),
+    happiness: Number(pet.happiness ?? pet.happy ?? 0),
+    comfort: Number(pet.comfort ?? 0),
+    rest: Number(pet.rest ?? 0),
+    ran_away: Boolean(pet.ran_away ?? pet.is_runaway),
+    is_runaway: Boolean(pet.is_runaway ?? pet.ran_away),
+    last_care_update:
+      pet.last_care_update ??
+      pet.last_care_decay_at ??
+      new Date().toISOString(),
+    last_care_decay_at:
+      pet.last_care_decay_at ??
+      pet.last_care_update ??
+      new Date().toISOString(),
+  };
+}
+
+async function updatePetCareStats(
+  petId: string,
+  updates: {
+    hunger: number;
+    clean: number;
+    happy: number;
+    comfort: number;
+    rest: number;
+    neglect_hours: number;
+    ran_away: boolean;
+    runaway_at: string | null;
+    last_care_update: string;
+    last_care_decay_at: string;
+  },
+) {
+  const { error } = await supabaseAdmin
+    .from("pets")
+    .update({
+      hunger: updates.hunger,
+      clean: updates.clean,
+      cleanliness: updates.clean,
+      happy: updates.happy,
+      happiness: updates.happy,
+      comfort: updates.comfort,
+      rest: updates.rest,
+      neglect_hours: updates.neglect_hours,
+      ran_away: updates.ran_away,
+      is_runaway: updates.ran_away,
+      runaway_at: updates.runaway_at,
+      last_care_update: updates.last_care_update,
+      last_care_decay_at: updates.last_care_decay_at,
+    })
+    .eq("id", petId);
+
+  if (error) throw error;
+}
 
 // ---------------------------------------------------------------
 // Personality roll
@@ -93,6 +151,96 @@ async function resolvePersonalityId(key: PersonalityKey): Promise<string> {
   }
 
   return data.id;
+}
+
+// ---------------------------------------------------------------
+// Strength / weakness
+// Egg rolls these ONCE and they stay with the pet forever.
+// ---------------------------------------------------------------
+type GrowthStatKey = "hp" | "atk" | "def" | "spd" | "magi" | "mana";
+
+const GROWTH_STAT_KEYS: GrowthStatKey[] = [
+  "hp",
+  "atk",
+  "def",
+  "spd",
+  "magi",
+  "mana",
+];
+
+function shuffleArray<T>(items: T[]) {
+  const copy = [...items];
+
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+
+  return copy;
+}
+
+function rollGrowthTraits(): {
+  strongStats: GrowthStatKey[];
+  weakStat: GrowthStatKey | null;
+} {
+  const patternRoll = Math.random();
+
+  let strongCount = 0;
+  let hasWeak = false;
+
+  if (patternRoll < 0.2) {
+    strongCount = 2;
+    hasWeak = true;
+  } else if (patternRoll < 0.45) {
+    strongCount = 2;
+    hasWeak = false;
+  } else if (patternRoll < 0.7) {
+    strongCount = 1;
+    hasWeak = true;
+  } else if (patternRoll < 0.88) {
+    strongCount = 1;
+    hasWeak = false;
+  } else if (patternRoll < 0.96) {
+    strongCount = 0;
+    hasWeak = true;
+  } else {
+    strongCount = 0;
+    hasWeak = false;
+  }
+
+  const shuffledStats = shuffleArray(GROWTH_STAT_KEYS);
+  const strongStats = shuffledStats.slice(0, strongCount);
+
+  let weakStat: GrowthStatKey | null = null;
+
+  if (hasWeak) {
+    const weakPool = GROWTH_STAT_KEYS.filter(
+      (stat) => !strongStats.includes(stat),
+    );
+    weakStat = weakPool[Math.floor(Math.random() * weakPool.length)] ?? null;
+  }
+
+  return { strongStats, weakStat };
+}
+
+function sanitizeGrowthStrongStats(value: unknown): GrowthStatKey[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry) => String(entry).toLowerCase())
+    .filter((entry): entry is GrowthStatKey =>
+      GROWTH_STAT_KEYS.includes(entry as GrowthStatKey),
+    )
+    .slice(0, 2);
+}
+
+function sanitizeGrowthWeakStat(value: unknown): GrowthStatKey | null {
+  if (typeof value !== "string") return null;
+
+  const normalized = value.toLowerCase();
+  return GROWTH_STAT_KEYS.includes(normalized as GrowthStatKey)
+    ? (normalized as GrowthStatKey)
+    : null;
 }
 
 // ---------------------------------------------------------------
@@ -156,24 +304,32 @@ petsRouter.get(
         });
       }
 
-      const hydratedPet = applyCareDecay(pet);
+      const normalizedPet = normalizeCarePet(pet);
+      const hydratedPet = normalizeCarePet(applyCareDecay(normalizedPet));
 
       const careChanged =
-        hydratedPet.hunger !== pet.hunger ||
-        hydratedPet.clean !== pet.clean ||
-        hydratedPet.happy !== pet.happy ||
-        hydratedPet.neglect_hours !== pet.neglect_hours ||
-        hydratedPet.ran_away !== pet.ran_away ||
-        hydratedPet.last_care_update !== pet.last_care_update;
+        hydratedPet.hunger !== normalizedPet.hunger ||
+        hydratedPet.clean !== normalizedPet.clean ||
+        hydratedPet.happy !== normalizedPet.happy ||
+        hydratedPet.comfort !== normalizedPet.comfort ||
+        hydratedPet.rest !== normalizedPet.rest ||
+        hydratedPet.neglect_hours !== normalizedPet.neglect_hours ||
+        hydratedPet.ran_away !== normalizedPet.ran_away ||
+        hydratedPet.runaway_at !== normalizedPet.runaway_at ||
+        hydratedPet.last_care_decay_at !== normalizedPet.last_care_decay_at;
 
       if (careChanged) {
         await updatePetCareStats(hydratedPet.id, {
           hunger: hydratedPet.hunger,
           clean: hydratedPet.clean,
           happy: hydratedPet.happy,
+          comfort: hydratedPet.comfort,
+          rest: hydratedPet.rest,
           neglect_hours: hydratedPet.neglect_hours,
           ran_away: hydratedPet.ran_away,
+          runaway_at: hydratedPet.runaway_at ?? null,
           last_care_update: hydratedPet.last_care_update,
+          last_care_decay_at: hydratedPet.last_care_decay_at,
         });
       }
 
@@ -203,12 +359,6 @@ petsRouter.get(
 
 // ============================================================
 // POST /api/pets/ensure-egg
-//
-// FIX:
-// - respects frontend requested line
-// - resolves starter from your real starter system
-// - returns requested_line + resolved_line
-// - keeps mystery egg behavior (name hidden until hatch)
 // ============================================================
 petsRouter.post(
   "/ensure-egg",
@@ -249,6 +399,14 @@ petsRouter.post(
       console.log("[ensure-egg] resolved_line:", resolvedLine);
       console.log("[ensure-egg] starter_species_id:", starter.speciesId);
 
+      const { strongStats, weakStat } = rollGrowthTraits();
+
+      console.log("[ensure-egg] growth traits locked ->", {
+        speciesId: starter.speciesId,
+        strongStats,
+        weakStat,
+      });
+
       const { data: insertedPet, error: insertError } = await supabaseAdmin
         .from("pets")
         .insert({
@@ -261,6 +419,9 @@ petsRouter.post(
           is_active: false,
           location: "hatchery",
           personality_key: personalityKey ?? null,
+          hatch_time_alignment: worldTime ?? null,
+          growth_strong_stats: strongStats,
+          growth_weak_stat: weakStat,
         } as any)
         .select("*")
         .single();
@@ -295,6 +456,7 @@ petsRouter.post(
     }
   },
 );
+
 // ============================================================
 // GET /api/pets/hatchery
 // ============================================================
@@ -321,6 +483,8 @@ petsRouter.get(
               name: slot.pet.name ?? null,
               stage: slot.pet.stage ?? null,
               line: slot.pet.line ?? null,
+              growth_strong_stats: slot.pet.growth_strong_stats ?? [],
+              growth_weak_stat: slot.pet.growth_weak_stat ?? null,
             }
           : null,
         hatch:
@@ -374,6 +538,8 @@ petsRouter.get(
           name: egg.name ?? null,
           stage: egg.stage ?? null,
           line: egg.line ?? null,
+          growth_strong_stats: egg.growth_strong_stats ?? [],
+          growth_weak_stat: egg.growth_weak_stat ?? null,
         },
         hatch: hatchPayload(egg, serverNowMs),
         stats,
@@ -388,12 +554,6 @@ petsRouter.get(
 
 // ============================================================
 // POST /api/pets/hatch
-//
-// The mystery is revealed here.
-// - Starter found by egg.line (not egg.name; it's "Mystery Egg")
-// - gender rolled at hatch
-// - personality is only rolled if the egg does not already have one
-// - if personality_id already exists, we preserve it and backfill personality_key
 // ============================================================
 petsRouter.post(
   "/hatch",
@@ -606,6 +766,58 @@ petsRouter.post(
         personalityId = await resolvePersonalityId(personalityKey);
       }
 
+      // -----------------------------
+      // preserve egg strengths / weakness
+      // egg is the source of truth
+      // fallback roll only for older eggs with missing saved traits
+      // -----------------------------
+      const savedStrongStats = sanitizeGrowthStrongStats(
+        (egg as any).growth_strong_stats,
+      );
+
+      const savedWeakStat = sanitizeGrowthWeakStat(
+        (egg as any).growth_weak_stat,
+      );
+
+      const fallbackTraits =
+        savedStrongStats.length > 0 || savedWeakStat
+          ? null
+          : rollGrowthTraits();
+
+      const strengths =
+        savedStrongStats.length > 0
+          ? savedStrongStats
+          : (fallbackTraits?.strongStats ?? []);
+
+      const weakness = savedWeakStat ?? fallbackTraits?.weakStat ?? null;
+
+      console.log("[hatch] growth traits ->", {
+        pet_id: egg.id,
+        egg_growth_strong_stats: (egg as any).growth_strong_stats ?? null,
+        egg_growth_weak_stat: (egg as any).growth_weak_stat ?? null,
+        savedStrengths: savedStrongStats,
+        savedWeakness: savedWeakStat,
+        fallbackTraits,
+        finalStrengths: strengths,
+        finalWeakness: weakness,
+      });
+
+      // -----------------------------
+      // build description
+      // -----------------------------
+      const description = generatePetDescription({
+        species: starter.hatchlingName,
+        name: starter.hatchlingName,
+        nickname: null,
+        stage: "hatchling",
+        element: (egg as any).line ?? starter.line ?? null,
+        personality_name: personalityKey,
+        strengths,
+        weakness,
+      });
+
+      const hatchTimeAlignment = (egg as any).hatch_time_alignment ?? null;
+
       const petUpdatePayload: Record<string, any> = {
         name: starter.hatchlingName,
         stage: "hatchling",
@@ -622,6 +834,10 @@ petsRouter.post(
         mana: totalMana,
         hp_max: hpMax,
         hp_cur: hpMax,
+        description,
+        hatch_time_alignment: hatchTimeAlignment,
+        growth_strong_stats: strengths,
+        growth_weak_stat: weakness,
       };
 
       if (!egg.personality_id && personalityId) {
@@ -711,6 +927,7 @@ petsRouter.post(
           name: starter.hatchlingName,
           location: finalLocation,
           is_active: finalIsActive,
+          description,
         },
         awarded_points: HATCH_ALLOCATION_POINTS,
         iv,

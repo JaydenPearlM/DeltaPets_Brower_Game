@@ -41,6 +41,17 @@ type PetElementsRow = {
   shadow: number;
 };
 
+const STAT_ROWS = [
+  { key: "hp", label: "HP" },
+  { key: "atk", label: "ATK" },
+  { key: "magi", label: "MAGI" },
+  { key: "def", label: "DEF" },
+  { key: "spd", label: "SPD" },
+  { key: "mana", label: "MANA" },
+] as const;
+
+type EggStatKey = (typeof STAT_ROWS)[number]["key"];
+
 type HatcherySlotResponse = {
   id: string;
   slot_index: number;
@@ -50,6 +61,8 @@ type HatcherySlotResponse = {
     name?: string | null;
     stage?: string | null;
     line?: string | null;
+    growth_strong_stats?: EggStatKey[] | null;
+    growth_weak_stat?: EggStatKey | null;
   } | null;
   hatch: {
     ready: boolean;
@@ -74,6 +87,8 @@ type HatcheryResponse = {
     name?: string | null;
     stage?: string | null;
     line?: string | null;
+    growth_strong_stats?: EggStatKey[] | null;
+    growth_weak_stat?: EggStatKey | null;
   } | null;
   hatch: {
     ready: boolean;
@@ -110,6 +125,8 @@ type HatchEgg = {
   name: string;
   hatch_ends_at: string;
   line?: string;
+  growth_strong_stats?: EggStatKey[] | null;
+  growth_weak_stat?: EggStatKey | null;
 };
 
 type HatchSlot = {
@@ -125,6 +142,12 @@ type ShelfSlot = {
   itemKey: string | null;
 };
 
+type EggGrowthTraits = {
+  strongStats: EggStatKey[];
+  weakStat: EggStatKey | null;
+  flavorText: string;
+};
+
 const EMPTY_STATS: PetStatsRow = {
   pet_id: "",
   hp: 0,
@@ -134,23 +157,6 @@ const EMPTY_STATS: PetStatsRow = {
   spd: 0,
   mana: 0,
   base_total: 0,
-};
-
-const STAT_ROWS = [
-  { key: "hp", label: "HP" },
-  { key: "atk", label: "ATK" },
-  { key: "magi", label: "MAGI" },
-  { key: "def", label: "DEF" },
-  { key: "spd", label: "SPD" },
-  { key: "mana", label: "MANA" },
-] as const;
-
-type EggStatKey = (typeof STAT_ROWS)[number]["key"];
-
-type EggGrowthTraits = {
-  strongStats: EggStatKey[];
-  weakStat: EggStatKey | null;
-  flavorText: string;
 };
 
 const STAT_KEYS: EggStatKey[] = STAT_ROWS.map((row) => row.key);
@@ -163,44 +169,6 @@ const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
   spd: "speed",
   mana: "arcane flow",
 };
-
-function hashString(input: string): number {
-  let hash = 2166136261;
-
-  for (let i = 0; i < input.length; i += 1) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  return hash >>> 0;
-}
-
-function mulberry32(seed: number) {
-  let t = seed >>> 0;
-
-  return function next() {
-    t += 0x6d2b79f5;
-    let n = Math.imul(t ^ (t >>> 15), t | 1);
-    n ^= n + Math.imul(n ^ (n >>> 7), n | 61);
-    return ((n ^ (n >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function shuffleWithRng<T>(items: T[], rng: () => number): T[] {
-  const copy = [...items];
-
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(rng() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-
-  return copy;
-}
-
-function pickOneWithRng<T>(items: T[], rng: () => number): T | null {
-  if (items.length === 0) return null;
-  return items[Math.floor(rng() * items.length)] ?? null;
-}
 
 function formatTraitList(words: string[]) {
   if (words.length === 0) return "";
@@ -249,42 +217,17 @@ function getEggGrowthTraits(egg: HatchEgg | null): EggGrowthTraits {
     };
   }
 
-  const seed = hashString(`${egg.id}:${egg.name}:${egg.hatch_ends_at}`);
-  const rng = mulberry32(seed);
-  const patternRoll = rng();
+  const strongStats = Array.isArray(egg.growth_strong_stats)
+    ? egg.growth_strong_stats.filter((stat): stat is EggStatKey =>
+        STAT_KEYS.includes(stat),
+      )
+    : [];
 
-  let strongCount = 0;
-  let hasWeak = false;
-
-  if (patternRoll < 0.2) {
-    strongCount = 2;
-    hasWeak = true;
-  } else if (patternRoll < 0.45) {
-    strongCount = 2;
-    hasWeak = false;
-  } else if (patternRoll < 0.7) {
-    strongCount = 1;
-    hasWeak = true;
-  } else if (patternRoll < 0.88) {
-    strongCount = 1;
-    hasWeak = false;
-  } else if (patternRoll < 0.96) {
-    strongCount = 0;
-    hasWeak = true;
-  } else {
-    strongCount = 0;
-    hasWeak = false;
-  }
-
-  const shuffledStats = shuffleWithRng(STAT_KEYS, rng);
-  const strongStats = shuffledStats.slice(0, strongCount);
-
-  let weakStat: EggStatKey | null = null;
-
-  if (hasWeak) {
-    const weakPool = STAT_KEYS.filter((stat) => !strongStats.includes(stat));
-    weakStat = pickOneWithRng(weakPool, rng);
-  }
+  const weakStat =
+    typeof egg.growth_weak_stat === "string" &&
+    STAT_KEYS.includes(egg.growth_weak_stat as EggStatKey)
+      ? (egg.growth_weak_stat as EggStatKey)
+      : null;
 
   return {
     strongStats,
@@ -518,6 +461,8 @@ export default function HatcheryPage() {
                 name: slot.pet.name?.trim() || "Mystery Egg",
                 hatch_ends_at: slot.hatch.hatch_ends_at,
                 line: slot.pet.line ?? undefined,
+                growth_strong_stats: slot.pet.growth_strong_stats ?? [],
+                growth_weak_stat: slot.pet.growth_weak_stat ?? null,
               }
             : undefined,
       }));
@@ -533,6 +478,8 @@ export default function HatcheryPage() {
             name: pet.name?.trim() || "Mystery Egg",
             hatch_ends_at: hatchEndsAt,
             line: pet.line ?? undefined,
+            growth_strong_stats: pet.growth_strong_stats ?? [],
+            growth_weak_stat: pet.growth_weak_stat ?? null,
           }
         : undefined;
 

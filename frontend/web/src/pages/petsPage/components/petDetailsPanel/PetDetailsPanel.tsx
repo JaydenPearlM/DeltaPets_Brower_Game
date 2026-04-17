@@ -25,9 +25,10 @@ type PetRecord = {
   image_url?: string | null;
   sprite_url?: string | null;
   portrait_url?: string | null;
+  hatch_time_alignment?: string | null;
 };
 
-type MeterTone = "blue" | "purple" | "red";
+type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
 
 type PetDetailsPanelProps = {
   pet: PetRecord;
@@ -102,17 +103,97 @@ function getDisplayedElement(pet: PetRecord) {
   return titleCase(pet.element || pet.line || "Null");
 }
 
-function getCareCondition(values: number[]) {
-  const valid = values.filter((value) => Number.isFinite(value));
-  const average = valid.length
-    ? valid.reduce((sum, value) => sum + value, 0) / valid.length
-    : 0;
+function getStablePreference(pet: PetRecord) {
+  const alignment = String(pet.hatch_time_alignment ?? "")
+    .trim()
+    .toLowerCase();
 
-  if (average >= 85) return "Excellent";
-  if (average >= 70) return "Strong";
-  if (average >= 50) return "Steady";
-  if (average >= 30) return "Needs Care";
-  return "Critical";
+  if (alignment === "day") return "Day Pigeon";
+  if (alignment === "night") return "Night Owl";
+
+  return "--";
+}
+
+function getBehaviorLine(
+  pet: PetRecord,
+  hunger: number,
+  clean: number,
+  happy: number,
+  bond: number,
+) {
+  const baseSeed = `${pet.id ?? ""}|${pet.name ?? ""}|${pet.element ?? ""}|${pet.stage ?? ""}|${pet.nickname ?? ""}`;
+  let total = 0;
+
+  for (let i = 0; i < baseSeed.length; i += 1) {
+    total += baseSeed.charCodeAt(i);
+  }
+
+  const lowNeed = Math.min(hunger, clean, happy);
+
+  if (lowNeed <= 20) {
+    const harsh = [
+      "Your pet looks upset and turns away from you.",
+      "Your pet gives a grumpy stare and seems uncomfortable.",
+      "Your pet looks irritated and clearly wants care.",
+      "Your pet seems frustrated and refuses to settle down.",
+    ];
+    return harsh[total % harsh.length];
+  }
+
+  if (hunger <= 35) {
+    const hungryLines = [
+      "Your pet looks hungry and keeps glancing around for food.",
+      "Your pet nudges the air like it wants something to eat.",
+      "Your pet seems distracted by its stomach growling.",
+    ];
+    return hungryLines[total % hungryLines.length];
+  }
+
+  if (clean <= 35) {
+    const dirtyLines = [
+      "Your pet looks messy and a little uncomfortable.",
+      "Your pet shakes itself off like it wants to be cleaned.",
+      "Your pet seems bothered and could use a quick cleanup.",
+    ];
+    return dirtyLines[total % dirtyLines.length];
+  }
+
+  if (happy <= 35) {
+    const moodyLines = [
+      "Your pet looks moody and keeps to itself.",
+      "Your pet seems restless and a little annoyed.",
+      "Your pet watches you carefully but does not look impressed.",
+    ];
+    return moodyLines[total % moodyLines.length];
+  }
+
+  if (bond >= 80) {
+    const warmLines = [
+      "Your pet stays close and looks happy to be with you.",
+      "Your pet seems relaxed and trustful around you.",
+      "Your pet watches you warmly and looks completely at ease.",
+      "Your pet leans in like it enjoys your company.",
+    ];
+    return warmLines[total % warmLines.length];
+  }
+
+  if (bond >= 55) {
+    const neutralNiceLines = [
+      "Your pet is watching quietly.",
+      "Your pet seems calm and alert.",
+      "Your pet looks comfortable being near you.",
+      "Your pet watches the room with quiet curiosity.",
+    ];
+    return neutralNiceLines[total % neutralNiceLines.length];
+  }
+
+  const distantLines = [
+    "Your pet is watching quietly from a short distance.",
+    "Your pet seems cautious, but not unfriendly.",
+    "Your pet keeps an eye on you and the room around it.",
+    "Your pet looks curious, though still a little guarded.",
+  ];
+  return distantLines[total % distantLines.length];
 }
 
 function randomNickname(seedName: string) {
@@ -300,11 +381,25 @@ export default function PetDetailsPanel({
     .toLowerCase()
     .replace(/\s+/g, "_");
 
-  const condition = getCareCondition([hunger, clean, happy, energy]);
   const nicknameIsSet = hasNickname(pet);
 
   const clampedBond = Math.max(0, Math.min(100, bond));
   const clampedEnergy = Math.max(0, Math.min(100, energy));
+
+  const hungerLevel = Math.max(0, Math.min(100, safeNum(hunger, 50)));
+  const cleanLevel = Math.max(0, Math.min(100, safeNum(clean, 50)));
+  const moodLevel = Math.max(0, Math.min(100, safeNum(happy, 50)));
+  const restLevel = 50;
+  const comfortLevel = 50;
+
+  const stablePreference = getStablePreference(pet);
+  const behaviorLine = getBehaviorLine(
+    pet,
+    hungerLevel,
+    cleanLevel,
+    moodLevel,
+    clampedBond,
+  );
 
   useEffect(() => {
     if (!showNicknameEditor) return;
@@ -437,6 +532,8 @@ export default function PetDetailsPanel({
             className="petRepoVerticalCard"
             aria-label="Pet scene and details"
           >
+            <div className="petRepoBehaviorBanner">{behaviorLine}</div>
+
             <div
               className={`petRepoSceneOrb petRepoSceneOrb--${elementKey}`}
               style={
@@ -506,6 +603,7 @@ export default function PetDetailsPanel({
                 <InfoRow label="Gender" value={titleCase(pet.gender) || "--"} />
                 <InfoRow label="Element" value={getDisplayedElement(pet)} />
                 <InfoRow label="Stage" value={titleCase(pet.stage) || "--"} />
+                <InfoRow label="Prefers" value={stablePreference} />
                 <InfoRow
                   label="Trait"
                   value={getDisplayedPersonality(pet, personalityName)}
@@ -517,18 +615,15 @@ export default function PetDetailsPanel({
 
         <section className="petRepoCareStatusPanel" aria-label="Care status">
           <div className="petRepoCareStatusHeader">
-            <div>
-              <span className="petRepoCareStatusEyebrow">Daily upkeep</span>
-              <strong className="petRepoCareStatusTitle">Care status</strong>
-            </div>
-
-            <div className="petRepoCareConditionBadge">{condition}</div>
+            <strong className="petRepoCareStatusTitle">Care Status</strong>
           </div>
 
           <div className="petRepoBars">
-            <MeterRow label="Hunger" value={hunger} tone="blue" />
-            <MeterRow label="Clean" value={clean} tone="purple" />
-            <MeterRow label="Happy" value={happy} tone="red" />
+            <MeterRow label="Hunger" value={hungerLevel} tone="blue" />
+            <MeterRow label="Clean" value={cleanLevel} tone="purple" />
+            <MeterRow label="Mood" value={moodLevel} tone="red" />
+            <MeterRow label="Rest" value={restLevel} tone="green" />
+            <MeterRow label="Comfort" value={comfortLevel} tone="gold" />
           </div>
         </section>
 
@@ -566,7 +661,7 @@ export default function PetDetailsPanel({
             onClick={() => void runCareAction("pet")}
             disabled={busy || nicknameSaving}
           >
-            Bond
+            Pet
           </button>
         </div>
 

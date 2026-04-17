@@ -1,6 +1,5 @@
 // frontend/web/src/Pets_Creation/registry/Stats/mainStats/petMainstats.tsx
-import { getShadowHatchSpecies } from "../../shadowHatchResolver";
-import type { Starter } from "../../creationTypes";
+import { useMemo, useState } from "react";
 import "./petMainstats.css";
 
 type TrainingElements = {
@@ -18,29 +17,23 @@ type TrainingElements = {
 type PetMainStatsProps = {
   pet: {
     name: string | null;
-
     line: string;
     stage?: string;
     level: number;
-
     gender?: "male" | "female" | "null_gender";
-
     hp_max: number;
     hp_cur: number;
-
     hp_stat: number;
-
     atk: number;
     def: number;
     spd: number;
     magi?: number;
-
-    //  includes mana
     mana: number;
-
-    //  add personality (passed in from PetPage)
     personality_id?: string | null;
-
+    personality_key?: string | null;
+    personalityKey?: string | null;
+    personality_type?: string | null;
+    personalityType?: string | null;
     training?: Partial<TrainingElements>;
   } | null;
 };
@@ -71,11 +64,16 @@ function prettyElement(line?: string) {
 
 function prettyStage(stage?: string) {
   if (!stage) return "Hatchling";
-  return stage.charAt(0).toUpperCase() + stage.slice(1);
+  return stage
+    .replace(/[_-]+/g, " ")
+    .trim()
+    .split(/\s+/g)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
 function prettyPersonality(p?: string | null) {
-  if (!p) return "None";
+  if (!p) return "Unknown";
   return String(p)
     .replace(/[_-]+/g, " ")
     .trim()
@@ -85,8 +83,19 @@ function prettyPersonality(p?: string | null) {
 }
 
 export default function PetMainStats({ pet }: PetMainStatsProps) {
-  //  default hidden
   const [showTraining, setShowTraining] = useState(false);
+
+  const personality = useMemo(() => {
+    if (!pet) return null;
+    return (
+      pet.personality_key ??
+      pet.personalityKey ??
+      pet.personality_type ??
+      pet.personalityType ??
+      pet.personality_id ??
+      null
+    );
+  }, [pet]);
 
   const training = useMemo<TrainingElements>(() => {
     const base: TrainingElements = {
@@ -104,9 +113,10 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
     if (!pet?.training) return base;
 
     for (const k of ELEMENT_ORDER) {
-      const v = pet.training?.[k];
+      const v = pet.training[k];
       if (typeof v === "number") base[k] = v;
     }
+
     return base;
   }, [pet]);
 
@@ -119,7 +129,6 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
     const magi = Number(pet.magi ?? 0);
     const mana = Number(pet.mana ?? 0);
 
-    //  include mana in total
     return hp + atk + def + spd + magi + mana;
   }, [pet]);
 
@@ -149,16 +158,13 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
                 <span className="pet-mainstats__dot">•</span>
                 <span>Stage: {prettyStage(pet.stage)}</span>
                 <span className="pet-mainstats__dot">•</span>
-                <span>hatchling HP: {hatchlingHp}</span>
+                <span>Hatchling HP: {hatchlingHp}</span>
                 <span className="pet-mainstats__dot">•</span>
-                <span>{personality ?? "Unknown"}</span>
-                const personality = (pet as any)?.personality_key ?? (pet as
-                any)?.personalityKey ?? (pet as any)?.personality_type ?? (pet
-                as any)?.personalityType ?? null;
+                <span>Trait: {prettyPersonality(personality)}</span>
                 <button
                   type="button"
                   className="pet-mainstats__miniBtn"
-                  onClick={() => setShowTraining((v) => !v)}
+                  onClick={() => setShowTraining((v: boolean) => !v)}
                 >
                   {showTraining ? "Close Training" : "Training"}
                 </button>
@@ -204,11 +210,24 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
                   </div>
                 )}
 
-                {/*  Mana row */}
                 <div className="pet-mainstats__row pet-mainstats__row--tight">
                   <span>MANA</span>
                   <span className="pet-mainstats__value">
                     {Number(pet.mana ?? 0)}
+                  </span>
+                </div>
+
+                <div className="pet-mainstats__row pet-mainstats__row--tight">
+                  <span>HP Max</span>
+                  <span className="pet-mainstats__value">
+                    {Number(pet.hp_max ?? 0)}
+                  </span>
+                </div>
+
+                <div className="pet-mainstats__row pet-mainstats__row--tight">
+                  <span>HP Current</span>
+                  <span className="pet-mainstats__value">
+                    {Number(pet.hp_cur ?? 0)}
                   </span>
                 </div>
 
@@ -219,7 +238,6 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
               </div>
             </div>
 
-            {/*  Training flyout only renders if open */}
             {showTraining ? (
               <aside className="pet-mainstats__flyout is-open">
                 <div className="pet-mainstats__flyoutInner">

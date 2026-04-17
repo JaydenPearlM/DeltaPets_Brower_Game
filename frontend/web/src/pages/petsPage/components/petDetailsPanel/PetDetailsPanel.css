@@ -1,33 +1,36 @@
 .petRepoCareCard {
   --pet-element-solid: rgba(255, 221, 104, 0.9);
   --pet-element-rgb: 255, 228, 100;
-  --scene-ring-bond: #f4ce4f;
-  --scene-ring-energy: #53de77;
-  --scene-core-glow: rgba(255, 226, 122, 0.38);
-  --scene-inner-top: rgba(62, 88, 144, 0.96);
-  --scene-inner-mid: rgba(72, 41, 48, 0.92);
-  --scene-inner-bottom: rgba(56, 26, 33, 0.95);
+  --scene-ring-bond: #c8a84a;
+  --scene-ring-energy: #43cf6e;
+  --scene-core-glow: rgba(255, 220, 120, 0.18);
+  --scene-inner-top: rgba(46, 64, 108, 0.98);
+  --scene-inner-mid: rgba(77, 36, 45, 0.96);
+  --scene-inner-bottom: rgba(54, 21, 28, 0.98);
+  --scene-panel-border: rgba(190, 209, 247, 0.16);
+  --scene-panel-bg-top: rgba(17, 30, 58, 0.96);
+  --scene-panel-bg-bottom: rgba(10, 18, 37, 0.98);
 
   position: relative;
   padding: 20px;
-  border-radius: 24px;
+  border-radius: 22px;
   border: 1px solid rgba(255, 221, 104, 0.28);
   border-top: 5px solid var(--pet-element-solid);
   background:
     radial-gradient(
       circle at top left,
-      rgba(255, 221, 104, 0.14),
+      rgba(255, 221, 104, 0.1),
       transparent 24%
     ),
     linear-gradient(
       180deg,
-      rgba(74, 115, 176, 0.98) 0%,
-      rgba(42, 76, 134, 0.99) 48%,
-      rgba(17, 35, 69, 0.99) 100%
+      rgba(60, 92, 146, 0.98) 0%,
+      rgba(31, 55, 101, 0.99) 46%,
+      rgba(13, 25, 51, 0.99) 100%
     );
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    16px 20px 30px rgba(21, 33, 62, 0.22);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    14px 18px 28px rgba(15, 24, 46, 0.22);
   overflow: hidden;
 }
 
@@ -35,117 +38,117 @@
   content: "";
   position: absolute;
   inset: 10px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   pointer-events: none;
 }
 
 .petRepoElement-fire {
-  --pet-element-solid: #e34b4b;
-  --pet-element-rgb: 227, 75, 75;
-  --scene-ring-bond: #ffc16d;
-  --scene-ring-energy: #59dc74;
-  --scene-core-glow: rgba(255, 139, 73, 0.4);
-  --scene-inner-top: rgba(88, 93, 154, 0.96);
-  --scene-inner-mid: rgba(115, 48, 54, 0.94);
-  --scene-inner-bottom: rgba(82, 28, 34, 0.96);
-  border-color: rgba(240, 97, 97, 0.86);
+  --pet-element-solid: #ff6a63;
+  --pet-element-rgb: 255, 106, 99;
+  --scene-ring-bond: #d7a45a;
+  --scene-ring-energy: #45cf6f;
+  --scene-core-glow: rgba(255, 148, 91, 0.22);
+  --scene-inner-top: rgba(66, 71, 130, 0.98);
+  --scene-inner-mid: rgba(110, 42, 48, 0.97);
+  --scene-inner-bottom: rgba(74, 19, 26, 0.99);
+  border-color: rgba(255, 123, 118, 0.98);
 }
 
 .petRepoElement-water {
-  --pet-element-solid: #3f9bff;
-  --pet-element-rgb: 63, 155, 255;
-  --scene-ring-bond: #f2d56e;
-  --scene-ring-energy: #57de78;
-  --scene-core-glow: rgba(91, 195, 255, 0.34);
-  --scene-inner-top: rgba(44, 89, 142, 0.97);
-  --scene-inner-mid: rgba(82, 44, 58, 0.9);
-  --scene-inner-bottom: rgba(57, 28, 39, 0.94);
-  border-color: rgba(96, 176, 255, 0.86);
+  --pet-element-solid: #69b7ff;
+  --pet-element-rgb: 105, 183, 255;
+  --scene-ring-bond: #d2b166;
+  --scene-ring-energy: #45cf6f;
+  --scene-core-glow: rgba(108, 195, 255, 0.2);
+  --scene-inner-top: rgba(37, 79, 127, 0.99);
+  --scene-inner-mid: rgba(80, 36, 51, 0.94);
+  --scene-inner-bottom: rgba(51, 20, 33, 0.98);
+  border-color: rgba(124, 198, 255, 0.96);
 }
 
 .petRepoElement-earth {
-  --pet-element-solid: #4fa85e;
-  --pet-element-rgb: 79, 168, 94;
-  --scene-ring-bond: #eed06b;
-  --scene-ring-energy: #57de78;
-  --scene-core-glow: rgba(126, 223, 121, 0.34);
-  --scene-inner-top: rgba(49, 87, 130, 0.96);
-  --scene-inner-mid: rgba(86, 50, 48, 0.92);
-  --scene-inner-bottom: rgba(60, 33, 31, 0.95);
-  border-color: rgba(108, 191, 121, 0.86);
+  --pet-element-solid: #73d07f;
+  --pet-element-rgb: 115, 208, 127;
+  --scene-ring-bond: #d2b166;
+  --scene-ring-energy: #45cf6f;
+  --scene-core-glow: rgba(125, 216, 129, 0.18);
+  --scene-inner-top: rgba(43, 75, 112, 0.99);
+  --scene-inner-mid: rgba(83, 43, 39, 0.95);
+  --scene-inner-bottom: rgba(58, 27, 23, 0.98);
+  border-color: rgba(138, 230, 150, 0.96);
 }
 
 .petRepoElement-air {
-  --pet-element-solid: #f4fbff;
-  --pet-element-rgb: 244, 251, 255;
-  --scene-ring-bond: #ffe38b;
-  --scene-ring-energy: #66ef8b;
-  --scene-core-glow: rgba(223, 247, 255, 0.36);
-  --scene-inner-top: rgba(86, 109, 154, 0.96);
-  --scene-inner-mid: rgba(92, 55, 64, 0.9);
-  --scene-inner-bottom: rgba(65, 36, 43, 0.94);
-  border-color: rgba(255, 255, 255, 0.92);
+  --pet-element-solid: #ffffff;
+  --pet-element-rgb: 255, 255, 255;
+  --scene-ring-bond: #dcc57a;
+  --scene-ring-energy: #4ed97b;
+  --scene-core-glow: rgba(221, 244, 255, 0.18);
+  --scene-inner-top: rgba(77, 98, 140, 0.98);
+  --scene-inner-mid: rgba(83, 44, 55, 0.92);
+  --scene-inner-bottom: rgba(57, 24, 35, 0.98);
+  border-color: rgba(255, 255, 255, 0.98);
 }
 
 .petRepoElement-ice {
-  --pet-element-solid: #9fe8ff;
-  --pet-element-rgb: 159, 232, 255;
-  --scene-ring-bond: #ffe07c;
-  --scene-ring-energy: #67eb8a;
-  --scene-core-glow: rgba(187, 243, 255, 0.34);
-  --scene-inner-top: rgba(63, 103, 150, 0.96);
-  --scene-inner-mid: rgba(86, 48, 60, 0.9);
-  --scene-inner-bottom: rgba(61, 31, 40, 0.94);
-  border-color: rgba(184, 241, 255, 0.9);
+  --pet-element-solid: #b8f2ff;
+  --pet-element-rgb: 184, 242, 255;
+  --scene-ring-bond: #d3b56d;
+  --scene-ring-energy: #49d574;
+  --scene-core-glow: rgba(186, 238, 255, 0.18);
+  --scene-inner-top: rgba(55, 94, 138, 0.98);
+  --scene-inner-mid: rgba(81, 40, 54, 0.92);
+  --scene-inner-bottom: rgba(54, 22, 36, 0.98);
+  border-color: rgba(204, 248, 255, 0.98);
 }
 
 .petRepoElement-storm {
-  --pet-element-solid: #ffd84a;
-  --pet-element-rgb: 255, 216, 74;
-  --scene-ring-bond: #ffe26d;
-  --scene-ring-energy: #67eb8a;
-  --scene-core-glow: rgba(255, 221, 116, 0.38);
-  --scene-inner-top: rgba(62, 90, 148, 0.96);
-  --scene-inner-mid: rgba(100, 56, 58, 0.92);
-  --scene-inner-bottom: rgba(71, 34, 36, 0.95);
-  border-color: rgba(255, 229, 117, 0.92);
+  --pet-element-solid: #ffe067;
+  --pet-element-rgb: 255, 224, 103;
+  --scene-ring-bond: #d9b866;
+  --scene-ring-energy: #4bd776;
+  --scene-core-glow: rgba(255, 224, 118, 0.18);
+  --scene-inner-top: rgba(57, 83, 138, 0.98);
+  --scene-inner-mid: rgba(95, 46, 51, 0.95);
+  --scene-inner-bottom: rgba(65, 24, 28, 0.99);
+  border-color: rgba(255, 232, 132, 0.98);
 }
 
 .petRepoElement-light {
-  --pet-element-solid: #f6e7a8;
-  --pet-element-rgb: 246, 231, 168;
-  --scene-ring-bond: #fff0b2;
-  --scene-ring-energy: #71ee95;
-  --scene-core-glow: rgba(255, 245, 191, 0.38);
-  --scene-inner-top: rgba(77, 102, 147, 0.96);
-  --scene-inner-mid: rgba(96, 59, 63, 0.9);
-  --scene-inner-bottom: rgba(69, 38, 42, 0.94);
-  border-color: rgba(250, 239, 188, 0.92);
+  --pet-element-solid: #fff0bf;
+  --pet-element-rgb: 255, 240, 191;
+  --scene-ring-bond: #e2c984;
+  --scene-ring-energy: #53dc7f;
+  --scene-core-glow: rgba(255, 245, 194, 0.18);
+  --scene-inner-top: rgba(68, 91, 134, 0.98);
+  --scene-inner-mid: rgba(91, 50, 56, 0.92);
+  --scene-inner-bottom: rgba(63, 27, 34, 0.98);
+  border-color: rgba(255, 244, 210, 0.98);
 }
 
 .petRepoElement-shadow {
-  --pet-element-solid: #7a61d1;
-  --pet-element-rgb: 122, 97, 209;
-  --scene-ring-bond: #f1d065;
-  --scene-ring-energy: #65e685;
-  --scene-core-glow: rgba(153, 132, 255, 0.28);
-  --scene-inner-top: rgba(70, 82, 142, 0.96);
-  --scene-inner-mid: rgba(86, 42, 71, 0.94);
-  --scene-inner-bottom: rgba(54, 21, 49, 0.97);
-  border-color: rgba(152, 127, 238, 0.88);
+  --pet-element-solid: #9b86ff;
+  --pet-element-rgb: 155, 134, 255;
+  --scene-ring-bond: #d0b66d;
+  --scene-ring-energy: #49d776;
+  --scene-core-glow: rgba(157, 135, 255, 0.18);
+  --scene-inner-top: rgba(58, 66, 128, 0.99);
+  --scene-inner-mid: rgba(79, 34, 67, 0.98);
+  --scene-inner-bottom: rgba(44, 12, 40, 0.99);
+  border-color: rgba(181, 162, 255, 0.98);
 }
 
 .petRepoElement-null {
-  --pet-element-solid: #c7ced8;
-  --pet-element-rgb: 199, 206, 216;
-  --scene-ring-bond: #f1d676;
-  --scene-ring-energy: #67e48a;
-  --scene-core-glow: rgba(210, 220, 228, 0.26);
-  --scene-inner-top: rgba(66, 87, 132, 0.96);
-  --scene-inner-mid: rgba(90, 54, 61, 0.9);
-  --scene-inner-bottom: rgba(63, 35, 40, 0.94);
-  border-color: rgba(220, 226, 235, 0.82);
+  --pet-element-solid: #d9e2eb;
+  --pet-element-rgb: 217, 226, 235;
+  --scene-ring-bond: #d0b86c;
+  --scene-ring-energy: #47d371;
+  --scene-core-glow: rgba(215, 224, 232, 0.15);
+  --scene-inner-top: rgba(57, 74, 113, 0.98);
+  --scene-inner-mid: rgba(84, 45, 50, 0.92);
+  --scene-inner-bottom: rgba(57, 27, 31, 0.98);
+  border-color: rgba(232, 238, 245, 0.98);
 }
 
 .petRepoSectionHeader--careDetails {
@@ -161,20 +164,46 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
-  padding: 18px 18px 20px;
-  border-radius: 24px;
-  border: 5px solid var(--pet-element-solid, rgba(255, 221, 104, 0.9));
-  background: rgba(var(--pet-element-rgb, 255, 228, 100), 0.14);
+  gap: 16px;
+  padding: 18px 18px 18px;
+  border-radius: 18px;
+  border: 5px solid rgba(var(--pet-element-rgb, 255, 228, 100), 0.55);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 0 1px rgba(10, 18, 34, 0.18);
+    inset 0 0 0 1px rgba(var(--pet-element-rgb, 255, 228, 100), 0.22),
+    0 0 18px rgba(var(--pet-element-rgb, 255, 228, 100), 0.12),
+    0 0 0 1px rgba(8, 16, 32, 0.24);
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 60, 0.68) 0%,
+    rgba(11, 21, 42, 0.8) 100%
+  );
+}
+
+.petRepoBehaviorBanner {
+  width: min(100%, 470px);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(179, 197, 230, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.94),
+    rgba(9, 15, 29, 0.98)
+  );
+  color: rgba(214, 226, 248, 0.92);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .petRepoSceneOrb {
   --orb-size: min(100%, 470px);
-  --bond-thickness: 22px;
-  --energy-thickness: 14px;
+  --bond-thickness: 18px;
+  --energy-thickness: 10px;
   --bond: 0;
   --energy: 0;
 
@@ -182,6 +211,30 @@
   width: var(--orb-size);
   aspect-ratio: 1 / 1;
   margin: 0 auto;
+}
+
+.petRepoSceneOrb::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1px solid rgba(234, 221, 181, 0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 0 0 1px rgba(7, 13, 25, 0.12);
+  pointer-events: none;
+}
+
+.petRepoSceneOrb::after {
+  content: "";
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(206, 221, 252, 0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 0 0 1px rgba(7, 13, 25, 0.12);
+  pointer-events: none;
 }
 
 .petRepoSceneRing {
@@ -195,7 +248,7 @@
   background: conic-gradient(
     from -90deg,
     var(--scene-ring-bond) calc(var(--bond) * 1%),
-    rgba(154, 179, 223, 0.18) 0
+    rgba(113, 132, 173, 0.14) 0
   );
   -webkit-mask: radial-gradient(
     farthest-side,
@@ -207,15 +260,15 @@
     transparent calc(100% - var(--bond-thickness)),
     #000 calc(100% - var(--bond-thickness))
   );
-  filter: drop-shadow(0 0 14px rgba(255, 222, 117, 0.14));
+  filter: drop-shadow(0 0 10px rgba(220, 188, 104, 0.1));
 }
 
 .petRepoSceneRing--energy {
-  inset: 28px;
+  inset: 24px;
   background: conic-gradient(
     from -90deg,
     var(--scene-ring-energy) calc(var(--energy) * 1%),
-    rgba(121, 161, 222, 0.16) 0
+    rgba(93, 125, 175, 0.12) 0
   );
   -webkit-mask: radial-gradient(
     farthest-side,
@@ -227,44 +280,44 @@
     transparent calc(100% - var(--energy-thickness)),
     #000 calc(100% - var(--energy-thickness))
   );
-  filter: drop-shadow(0 0 14px rgba(97, 239, 140, 0.18));
+  filter: drop-shadow(0 0 12px rgba(72, 215, 120, 0.15));
 }
 
 .petRepoSceneInner {
   position: absolute;
-  inset: 52px;
+  inset: 42px;
   border-radius: 50%;
   overflow: hidden;
   background:
     radial-gradient(
-      circle at 50% 28%,
-      rgba(255, 243, 187, 0.13),
-      transparent 30%
+      circle at 50% 24%,
+      rgba(255, 245, 201, 0.08),
+      transparent 28%
     ),
     radial-gradient(
       circle at 50% 72%,
-      rgba(255, 160, 112, 0.18),
-      transparent 38%
+      rgba(255, 131, 92, 0.18),
+      transparent 42%
     ),
     linear-gradient(
       180deg,
       var(--scene-inner-top) 0%,
-      var(--scene-inner-mid) 54%,
+      var(--scene-inner-mid) 56%,
       var(--scene-inner-bottom) 100%
     );
-  border: 2px solid rgba(188, 214, 255, 0.34);
+  border: 1px solid rgba(190, 210, 245, 0.2);
   box-shadow:
-    inset 0 8px 18px rgba(255, 255, 255, 0.08),
-    inset 0 -18px 26px rgba(0, 0, 0, 0.24),
-    0 14px 26px rgba(8, 18, 38, 0.24);
+    inset 0 8px 20px rgba(255, 255, 255, 0.05),
+    inset 0 -18px 28px rgba(0, 0, 0, 0.28),
+    0 12px 24px rgba(8, 15, 31, 0.24);
 }
 
 .petRepoSceneInner::before {
   content: "";
   position: absolute;
-  inset: 12px;
+  inset: 10px;
   border-radius: 50%;
-  border: 1px solid rgba(201, 220, 255, 0.16);
+  border: 1px solid rgba(201, 220, 255, 0.1);
   pointer-events: none;
 }
 
@@ -273,31 +326,31 @@
   position: absolute;
   left: 14%;
   right: 14%;
-  top: 14px;
-  height: 30px;
+  top: 12px;
+  height: 24px;
   border-radius: 999px;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.14),
     rgba(255, 255, 255, 0)
   );
-  filter: blur(4px);
+  filter: blur(5px);
   pointer-events: none;
 }
 
 .petRepoSceneGlow {
   position: absolute;
   left: 50%;
-  top: 38%;
-  width: 58%;
-  height: 58%;
+  top: 36%;
+  width: 54%;
+  height: 54%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(
     circle,
     var(--scene-core-glow) 0%,
-    rgba(255, 222, 117, 0.14) 36%,
-    transparent 72%
+    rgba(255, 220, 120, 0.06) 38%,
+    transparent 74%
   );
   filter: blur(18px);
   pointer-events: none;
@@ -311,49 +364,49 @@
 
 .petRepoSceneSparkle {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
   background: radial-gradient(
     circle,
-    rgba(255, 248, 225, 1) 0%,
-    rgba(255, 230, 150, 0.92) 55%,
-    rgba(255, 230, 150, 0) 100%
+    rgba(255, 247, 223, 0.95) 0%,
+    rgba(255, 222, 150, 0.72) 56%,
+    rgba(255, 222, 150, 0) 100%
   );
-  box-shadow: 0 0 10px rgba(255, 227, 132, 0.5);
-  opacity: 0.82;
+  box-shadow: 0 0 8px rgba(255, 220, 132, 0.22);
+  opacity: 0.6;
 }
 
 .petRepoSceneSparkle-1 {
-  top: 28%;
+  top: 30%;
   left: 22%;
 }
 
 .petRepoSceneSparkle-2 {
   top: 22%;
   right: 24%;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 .petRepoSceneSparkle-3 {
   top: 42%;
   right: 18%;
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 .petRepoSceneSparkle-4 {
   top: 50%;
   left: 18%;
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 .petRepoScenePet {
   position: absolute;
   left: 50%;
-  bottom: 76px;
+  bottom: 74px;
   transform: translateX(-50%);
   width: min(74%, 290px);
   height: min(72%, 290px);
@@ -381,31 +434,30 @@
 }
 
 .petRepoScenePlatformOuter {
-  height: 36px;
+  height: 30px;
   border-radius: 999px;
   background: linear-gradient(
     180deg,
-    rgba(255, 242, 185, 0.98) 0%,
-    rgba(245, 213, 103, 0.94) 34%,
-    rgba(194, 145, 36, 0.96) 100%
+    rgba(220, 186, 95, 0.96) 0%,
+    rgba(158, 119, 39, 0.96) 100%
   );
   box-shadow:
-    0 0 24px rgba(255, 214, 90, 0.24),
-    inset 0 2px 0 rgba(255, 255, 255, 0.42),
-    inset 0 -4px 8px rgba(137, 94, 17, 0.2);
+    0 0 18px rgba(216, 174, 78, 0.12),
+    inset 0 1px 0 rgba(255, 241, 196, 0.28),
+    inset 0 -3px 7px rgba(84, 55, 10, 0.3);
 }
 
 .petRepoScenePlatformInner {
   width: 80%;
-  height: 14px;
-  margin: -24px auto 0;
+  height: 12px;
+  margin: -20px auto 0;
   border-radius: 999px;
   background: linear-gradient(
     180deg,
-    rgba(255, 251, 226, 0.98),
-    rgba(248, 224, 130, 0.96)
+    rgba(255, 245, 210, 0.96),
+    rgba(213, 179, 88, 0.94)
   );
-  box-shadow: 0 0 10px rgba(255, 232, 140, 0.34);
+  box-shadow: 0 0 8px rgba(230, 199, 109, 0.2);
 }
 
 .petRepoVerticalInfo {
@@ -418,16 +470,29 @@
 .petRepoStatStack {
   width: 100%;
   overflow: hidden;
-  border-radius: 18px;
-  border: 1px solid rgba(184, 204, 240, 0.18);
+  border-radius: 12px;
+  border: 1px solid rgba(var(--pet-element-rgb, 255, 228, 100), 0.36);
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--pet-element-rgb, 255, 228, 100), 0.14),
+    0 0 14px rgba(var(--pet-element-rgb, 255, 228, 100), 0.08),
+    8px 10px 18px rgba(8, 14, 29, 0.16);
   background: linear-gradient(
     180deg,
-    rgba(28, 47, 83, 0.94),
-    rgba(15, 28, 52, 0.98)
+    var(--scene-panel-bg-top) 0%,
+    var(--scene-panel-bg-bottom) 100%
   );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    10px 12px 18px rgba(13, 23, 43, 0.14);
+}
+
+.petRepoStatStack::before {
+  content: "";
+  display: block;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 226, 135, 0),
+    rgba(255, 226, 135, 0.48),
+    rgba(255, 226, 135, 0)
+  );
 }
 
 .petRepoCreatureCore {
@@ -482,31 +547,30 @@
 }
 
 .petRepoNicknamePulseOrb {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
   background: radial-gradient(
     circle at 35% 35%,
     rgba(224, 255, 231, 1) 0%,
-    rgba(121, 255, 157, 0.98) 40%,
+    rgba(121, 255, 157, 0.95) 40%,
     rgba(39, 203, 92, 1) 100%
   );
   box-shadow:
-    0 0 0 1px rgba(184, 255, 200, 0.2),
-    0 0 10px rgba(90, 255, 160, 0.9),
-    0 0 22px rgba(90, 255, 160, 0.58),
-    0 0 36px rgba(90, 255, 160, 0.34);
-  animation: petRepoNicknameOrbPulse 1.5s ease-in-out infinite;
+    0 0 0 1px rgba(184, 255, 200, 0.14),
+    0 0 8px rgba(90, 255, 160, 0.42),
+    0 0 18px rgba(90, 255, 160, 0.24);
+  animation: petRepoNicknameOrbPulse 1.8s ease-in-out infinite;
 }
 
 @keyframes petRepoNicknameOrbPulse {
   0%,
   100% {
     transform: scale(0.9);
-    opacity: 0.72;
+    opacity: 0.7;
   }
   50% {
-    transform: scale(1.16);
+    transform: scale(1.1);
     opacity: 1;
   }
 }
@@ -527,17 +591,17 @@
   position: relative;
   width: min(720px, calc(100vw - 48px));
   max-width: 720px;
-  border-radius: 24px;
+  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background:
     radial-gradient(
       120% 100% at 50% 0%,
-      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.08),
       rgba(255, 255, 255, 0) 58%
     ),
     linear-gradient(180deg, #1b315d 0%, #24457a 52%, #2f5e99 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 20px 50px rgba(5, 12, 25, 0.45);
   color: #ffffff;
   padding: 28px 28px 24px;
@@ -546,15 +610,13 @@
 .petRepoNicknameModalWindow::before {
   content: "";
   position: absolute;
-  inset: -3px;
-  border-radius: 28px;
+  inset: -2px;
+  border-radius: 20px;
   pointer-events: none;
-  border: 2px solid rgba(140, 255, 170, 0.95);
+  border: 1px solid rgba(140, 255, 170, 0.82);
   box-shadow:
-    0 0 8px rgba(90, 255, 160, 0.55),
-    0 0 18px rgba(90, 255, 160, 0.45),
-    0 0 34px rgba(90, 255, 160, 0.35),
-    0 0 56px rgba(90, 255, 160, 0.28);
+    0 0 8px rgba(90, 255, 160, 0.32),
+    0 0 18px rgba(90, 255, 160, 0.18);
 }
 
 .petRepoNicknameModalClose {
@@ -624,14 +686,14 @@
   color: rgba(231, 239, 255, 0.86);
   font-size: 0.82rem;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .petRepoInput {
   min-height: 42px;
   padding: 0 14px;
-  border-radius: 14px;
+  border-radius: 10px;
   border: 1px solid rgba(155, 182, 231, 0.22);
   background: linear-gradient(
     180deg,
@@ -641,7 +703,7 @@
   color: var(--text-invert);
   font: inherit;
   font-weight: 800;
-  box-shadow: 8px 10px 16px rgba(13, 23, 43, 0.12);
+  box-shadow: 6px 8px 14px rgba(13, 23, 43, 0.12);
 }
 
 .petRepoInput::placeholder {
@@ -652,9 +714,9 @@
   outline: none;
   border-color: rgba(126, 255, 164, 0.72);
   box-shadow:
-    0 0 0 1px rgba(126, 255, 164, 0.36),
-    0 0 0 4px rgba(90, 255, 160, 0.1),
-    8px 10px 16px rgba(13, 23, 43, 0.12);
+    0 0 0 1px rgba(126, 255, 164, 0.32),
+    0 0 0 4px rgba(90, 255, 160, 0.08),
+    6px 8px 14px rgba(13, 23, 43, 0.12);
 }
 
 .petRepoInputModal {
@@ -671,7 +733,7 @@
 .petRepoNicknameModalPrimary,
 .petRepoNicknameModalSecondary {
   min-height: 46px;
-  border-radius: 14px;
+  border-radius: 10px;
   border: 0;
   padding: 0 18px;
   font-weight: 900;
@@ -686,8 +748,8 @@
   );
   color: #112114;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    10px 12px 18px rgba(14, 30, 18, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    8px 10px 16px rgba(14, 30, 18, 0.16);
 }
 
 .petRepoNicknameModalPrimary:disabled {
@@ -698,60 +760,51 @@
 .petRepoNicknameModalSecondary {
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.16),
-    rgba(255, 255, 255, 0.08)
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.06)
   );
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-}
-
-.petRepoCareStatusEyebrow {
-  display: block;
-  margin-bottom: 4px;
-  color: rgba(255, 245, 215, 0.76);
-  font-size: 0.76rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.petRepoCareStatusTitle {
-  display: block;
-  color: rgba(255, 251, 240, 0.98);
-  font-size: 1.08rem;
-  font-weight: 900;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .petRepoCareStatusPanel {
   position: relative;
   margin-bottom: 16px;
-  padding: 16px 16px 18px;
-  border-radius: 22px;
-  border: 1px solid rgba(219, 228, 240, 0.26);
+  padding: 18px 18px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(181, 198, 230, 0.14);
   background: linear-gradient(
     180deg,
-    rgba(227, 232, 240, 0.24) 0%,
-    rgba(141, 151, 170, 0.2) 16%,
-    rgba(74, 83, 104, 0.62) 48%,
-    rgba(36, 43, 58, 0.92) 100%
+    rgba(13, 22, 41, 0.98) 0%,
+    rgba(9, 15, 30, 0.99) 100%
   );
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.28),
-    12px 16px 24px rgba(8, 14, 29, 0.22);
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    10px 12px 22px rgba(8, 14, 29, 0.2);
+  overflow: hidden;
 }
 
 .petRepoCareStatusPanel::before {
   content: "";
   position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 226, 135, 0),
+    rgba(255, 226, 135, 0.08),
+    rgba(255, 226, 135, 0)
+  );
+  height: 1px;
+  top: 0;
+  pointer-events: none;
+}
+
+.petRepoCareStatusPanel::after {
+  content: "";
+  position: absolute;
   inset: 1px;
   border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.18) 0%,
-    rgba(255, 255, 255, 0.04) 20%,
-    transparent 44%
-  );
+  border: 1px solid rgba(255, 255, 255, 0.03);
   pointer-events: none;
 }
 
@@ -759,39 +812,36 @@
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.petRepoCareConditionBadge {
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(235, 241, 248, 0.24);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.22),
-    rgba(94, 102, 120, 0.2)
-  );
-  color: rgba(248, 250, 255, 0.96);
-  font-size: 0.86rem;
+.petRepoCareStatusTitle {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  color: #ffe27b;
+  -webkit-text-stroke: 1px rgba(140, 30, 30, 0.78);
+  text-shadow:
+    0 1px 0 rgba(255, 250, 220, 0.18),
+    0 2px 12px rgba(120, 42, 18, 0.26);
 }
 
 .petRepoBars {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 12px;
+  gap: 13px;
 }
 
 .petRepoMeterRow {
   display: grid;
-  gap: 8px;
+  gap: 7px;
 }
 
 .petRepoMeterMeta {
@@ -802,35 +852,33 @@
 }
 
 .petRepoMeterLabel {
-  color: rgba(255, 248, 233, 0.88);
-  font-size: 0.92rem;
+  color: rgba(205, 218, 244, 0.82);
+  font-size: 0.76rem;
   font-weight: 900;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .petRepoMeterValue {
-  color: rgba(255, 250, 235, 0.96);
-  font-size: 0.95rem;
+  color: rgba(246, 249, 255, 0.96);
+  font-size: 0.9rem;
   font-weight: 900;
 }
 
 .petRepoMeterTrack {
   position: relative;
   overflow: hidden;
-  height: 12px;
+  height: 10px;
   border-radius: 999px;
   background: linear-gradient(
     180deg,
-    rgba(221, 229, 241, 0.36) 0%,
-    rgba(122, 136, 160, 0.28) 16%,
-    rgba(54, 64, 84, 0.9) 52%,
-    rgba(24, 30, 42, 0.96) 100%
+    rgba(63, 79, 116, 0.26) 0%,
+    rgba(22, 30, 48, 0.96) 100%
   );
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.36),
-    inset 1px 2px 5px rgba(0, 0, 0, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.32),
+    inset 1px 2px 4px rgba(0, 0, 0, 0.22);
 }
 
 .petRepoMeterTrack::before {
@@ -839,9 +887,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.18) 0%,
-    rgba(255, 255, 255, 0.08) 28%,
-    transparent 60%
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 34%,
+    transparent 70%
   );
   pointer-events: none;
 }
@@ -858,80 +906,122 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.26) 0%,
-    rgba(255, 255, 255, 0.1) 34%,
-    transparent 74%
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.03) 36%,
+    transparent 78%
   );
   pointer-events: none;
 }
 
 .petRepoMeterFill-blue {
-  background: linear-gradient(90deg, #59b1ff 0%, #88dbff 100%);
+  background: linear-gradient(90deg, #4e9be5 0%, #79c9ff 100%);
 }
 
 .petRepoMeterFill-purple {
-  background: linear-gradient(90deg, #a06fff 0%, #cfabff 100%);
+  background: linear-gradient(90deg, #8664d8 0%, #b899ff 100%);
 }
 
 .petRepoMeterFill-red {
-  background: linear-gradient(90deg, #c52841 0%, #ef6078 100%);
+  background: linear-gradient(90deg, #b54457 0%, #df7080 100%);
+}
+
+.petRepoMeterFill-green {
+  background: linear-gradient(90deg, #4ccf73 0%, #7ef0a1 100%);
+}
+
+.petRepoMeterFill-gold {
+  background: linear-gradient(90deg, #d2a84f 0%, #ffd970 100%);
 }
 
 .petRepoActionGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .petRepoAction {
-  min-height: 56px;
-  border-radius: 16px;
-  border: 0;
-  font-size: 1rem;
+  position: relative;
+  min-height: 54px;
+  padding: 0 16px 0 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(187, 202, 230, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(20, 30, 53, 0.96) 0%,
+    rgba(10, 17, 33, 0.98) 100%
+  );
+  color: rgba(244, 248, 255, 0.96);
+  font-size: 0.88rem;
   font-weight: 900;
-  color: #fff;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    8px 10px 16px rgba(7, 13, 25, 0.18);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
-    filter 0.18s ease;
+    border-color 0.18s ease,
+    background 0.18s ease;
+  overflow: hidden;
+}
+
+.petRepoAction::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  opacity: 0.92;
+}
+
+.petRepoAction::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  pointer-events: none;
 }
 
 .petRepoAction:hover:not(:disabled) {
   transform: translateY(-1px);
-  filter: brightness(1.04);
+  border-color: rgba(220, 230, 248, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    10px 14px 22px rgba(7, 13, 25, 0.24);
 }
 
 .petRepoAction:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.62;
 }
 
-.petRepoActionBlue {
-  background: linear-gradient(180deg, #f3a53d 0%, #d87f15 100%);
-  box-shadow: 0 12px 18px rgba(154, 97, 28, 0.22);
+.petRepoActionBlue::before {
+  background: linear-gradient(180deg, #f1ab57 0%, #c97a1b 100%);
 }
 
-.petRepoActionPurple {
-  background: linear-gradient(180deg, #53b7ff 0%, #2d7bc8 100%);
-  box-shadow: 0 12px 18px rgba(32, 91, 150, 0.22);
+.petRepoActionPurple::before {
+  background: linear-gradient(180deg, #5db7ff 0%, #2a77bf 100%);
 }
 
-.petRepoActionRed {
-  background: linear-gradient(180deg, #c05aff 0%, #7b34d0 100%);
-  box-shadow: 0 12px 18px rgba(88, 40, 143, 0.22);
+.petRepoActionRed::before {
+  background: linear-gradient(180deg, #bf73ff 0%, #7638c6 100%);
 }
 
-.petRepoActionYellow {
-  background: linear-gradient(180deg, #4fd37d 0%, #2f9d57 100%);
-  box-shadow: 0 12px 18px rgba(30, 103, 56, 0.22);
+.petRepoActionYellow::before {
+  background: linear-gradient(180deg, #4fd87d 0%, #27894a 100%);
 }
 
 .petRepoInlineMessage {
   margin-top: 14px;
   padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(12, 22, 43, 0.22);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 22, 43, 0.3);
   color: rgba(238, 245, 255, 0.92);
 }
 
@@ -948,30 +1038,30 @@
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.34),
+    rgba(255, 255, 255, 0.26),
     rgba(255, 255, 255, 0)
   );
 }
 
 .petRepoSectionPill {
-  padding: 8px 16px;
+  padding: 7px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 226, 128, 0.32);
+  border: 1px solid rgba(255, 226, 128, 0.22);
   background:
     linear-gradient(
       180deg,
-      rgba(255, 238, 185, 0.24),
-      rgba(186, 143, 44, 0.18)
+      rgba(255, 238, 185, 0.14),
+      rgba(186, 143, 44, 0.08)
     ),
-    linear-gradient(180deg, rgba(66, 90, 141, 0.9), rgba(35, 57, 104, 0.94));
-  color: #fff4cf;
-  font-size: 0.84rem;
+    linear-gradient(180deg, rgba(50, 70, 112, 0.94), rgba(30, 47, 84, 0.98));
+  color: #f6e7b9;
+  font-size: 0.8rem;
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    10px 12px 18px rgba(13, 23, 43, 0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    8px 10px 16px rgba(13, 23, 43, 0.14);
 }
 
 .petRepoInfoRow,
@@ -981,13 +1071,13 @@
   justify-content: space-between;
   gap: 14px;
   width: 100%;
-  min-height: 50px;
+  min-height: 48px;
   padding: 0 16px;
   border: 0;
-  border-bottom: 1px solid rgba(209, 224, 255, 0.08);
+  border-bottom: 1px solid rgba(209, 224, 255, 0.06);
   background: transparent;
-  color: rgba(236, 242, 255, 0.92);
-  font-size: 0.94rem;
+  color: rgba(236, 242, 255, 0.9);
+  font-size: 0.92rem;
   font-weight: 800;
   text-align: left;
 }
@@ -998,12 +1088,27 @@
 }
 
 .petRepoInfoRow.is-strong {
-  color: #fff6d2;
+  color: #fff1c5;
 }
 
-.petRepoInfoRow span:last-child,
-.petRepoInfoRowButtonValue {
+.petRepoInfoRow span:first-child {
+  color: rgba(203, 216, 245, 0.78);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.petRepoInfoRow.is-strong span:last-child {
+  font-family: var(--font-heading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff1c7;
+}
+
+.petRepoInfoRow span:last-child {
   text-align: right;
+  color: rgba(244, 248, 255, 0.96);
 }
 
 .petRepoInfoRowButton.is-clickable {
@@ -1019,34 +1124,118 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  color: rgba(203, 216, 245, 0.78);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .petRepoInfoRowButtonValue {
-  letter-spacing: 2px;
+  text-align: right;
+  color: rgba(244, 248, 255, 0.96);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .petRepoInfoRowButtonValuePrompt {
   color: rgba(190, 255, 204, 0.98);
 }
+.petRepoElementBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(10, 18, 40, 0.72);
+  color: #eaf4ff;
+  text-align: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
 
+/* null / default */
+.petRepoElementBadge--null {
+  opacity: 0.78;
+}
+
+/* fire */
+.petRepoElementBadge--fire {
+  box-shadow:
+    0 0 10px rgba(255, 80, 40, 0.6),
+    0 0 25px rgba(255, 80, 40, 0.3);
+}
+
+/* water */
+.petRepoElementBadge--water {
+  box-shadow:
+    0 0 10px rgba(60, 150, 255, 0.6),
+    0 0 25px rgba(60, 150, 255, 0.3);
+}
+
+/* earth */
+.petRepoElementBadge--earth {
+  box-shadow:
+    0 0 10px rgba(120, 180, 70, 0.6),
+    0 0 25px rgba(120, 180, 70, 0.3);
+}
+
+/* air */
+.petRepoElementBadge--air {
+  box-shadow:
+    0 0 10px rgba(210, 235, 255, 0.65),
+    0 0 25px rgba(210, 235, 255, 0.28);
+}
+
+/* ice */
+.petRepoElementBadge--ice {
+  box-shadow:
+    0 0 10px rgba(120, 245, 255, 0.65),
+    0 0 25px rgba(120, 245, 255, 0.3);
+}
+
+/* storm */
+.petRepoElementBadge--storm {
+  box-shadow:
+    0 0 10px rgba(157, 102, 255, 0.65),
+    0 0 25px rgba(157, 102, 255, 0.32);
+}
+
+/* light */
+.petRepoElementBadge--light {
+  box-shadow:
+    0 0 10px rgba(255, 223, 110, 0.7),
+    0 0 25px rgba(255, 223, 110, 0.32);
+}
+
+/* shadow */
+.petRepoElementBadge--shadow {
+  box-shadow:
+    0 0 12px rgba(120, 80, 255, 0.7),
+    0 0 30px rgba(120, 80, 255, 0.4);
+}
 @media (max-width: 900px) {
   .petRepoSceneOrb {
     --orb-size: min(100%, 400px);
-    --bond-thickness: 20px;
-    --energy-thickness: 12px;
+    --bond-thickness: 16px;
+    --energy-thickness: 10px;
   }
 
   .petRepoSceneInner {
-    inset: 46px;
+    inset: 38px;
   }
 
   .petRepoScenePet {
-    bottom: 70px;
+    bottom: 66px;
     width: min(72%, 250px);
     height: min(68%, 250px);
   }
 
-  .petRepoVerticalInfo {
+  .petRepoVerticalInfo,
+  .petRepoBehaviorBanner {
     width: min(100%, 400px);
   }
 }
@@ -1062,27 +1251,27 @@
 
   .petRepoSceneOrb {
     --orb-size: min(100%, 320px);
-    --bond-thickness: 17px;
-    --energy-thickness: 10px;
+    --bond-thickness: 15px;
+    --energy-thickness: 9px;
   }
 
   .petRepoSceneInner {
-    inset: 38px;
+    inset: 32px;
   }
 
   .petRepoScenePet {
-    bottom: 58px;
+    bottom: 52px;
     width: min(74%, 205px);
     height: min(65%, 205px);
   }
 
   .petRepoScenePlatformOuter {
-    height: 28px;
+    height: 25px;
   }
 
   .petRepoScenePlatformInner {
-    height: 12px;
-    margin-top: -19px;
+    height: 11px;
+    margin-top: -18px;
   }
 
   .petRepoCreatureCore--scene {

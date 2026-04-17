@@ -5,8 +5,14 @@ import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
 import { fetchActivePet } from "../routePets/petsRepo";
+import { applyCareDecay } from "../../shared/pets/care/CareDecay";
 
 export const careRouter = Router();
+
+function safeNum(value: unknown, fallback = 0) {
+  const n = Number(value ?? fallback);
+  return Number.isFinite(n) ? n : fallback;
+}
 
 function titleCaseValue(value: unknown, fallback = "Mysterious") {
   const raw = String(value ?? "").trim();
@@ -17,6 +23,67 @@ function titleCaseValue(value: unknown, fallback = "Mysterious") {
     .replace(/\s+/g, " ")
     .trim()
     .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function normalizePetForClient<T extends Record<string, any>>(pet: T) {
+  return {
+    ...pet,
+    clean: safeNum(pet.clean ?? pet.cleanliness),
+    cleanliness: safeNum(pet.cleanliness ?? pet.clean),
+    happy: safeNum(pet.happy ?? pet.happiness),
+    happiness: safeNum(pet.happiness ?? pet.happy),
+    comfort: safeNum(pet.comfort),
+    rest: safeNum(pet.rest),
+    ran_away: Boolean(pet.ran_away ?? pet.is_runaway),
+    is_runaway: Boolean(pet.is_runaway ?? pet.ran_away),
+    last_care_update:
+      pet.last_care_update ??
+      pet.last_care_decay_at ??
+      new Date().toISOString(),
+    last_care_decay_at:
+      pet.last_care_decay_at ??
+      pet.last_care_update ??
+      new Date().toISOString(),
+  };
+}
+
+async function updatePetCareStats(
+  petId: string,
+  updates: {
+    hunger: number;
+    clean: number;
+    happy: number;
+    comfort: number;
+    rest: number;
+    neglect_hours: number;
+    ran_away: boolean;
+    runaway_at: string | null;
+    last_care_update: string;
+    last_care_decay_at: string;
+  },
+) {
+  const patch = {
+    hunger: updates.hunger,
+    clean: updates.clean,
+    cleanliness: updates.clean,
+    happy: updates.happy,
+    happiness: updates.happy,
+    comfort: updates.comfort,
+    rest: updates.rest,
+    neglect_hours: updates.neglect_hours,
+    ran_away: updates.ran_away,
+    is_runaway: updates.ran_away,
+    runaway_at: updates.runaway_at,
+    last_care_update: updates.last_care_update,
+    last_care_decay_at: updates.last_care_decay_at,
+  };
+
+  const { error } = await supabaseAdmin
+    .from("pets")
+    .update(patch)
+    .eq("id", petId);
+
+  if (error) throw error;
 }
 
 careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
@@ -104,7 +171,10 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
 
           return [
             String(row.id),
-            { ...row, personality_name: derivedPersonality },
+            normalizePetForClient({
+              ...row,
+              personality_name: derivedPersonality,
+            }),
           ];
         }),
       );
@@ -187,6 +257,40 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       });
     }
 
+    activePetResolved = normalizePetForClient(activePetResolved);
+
+    const hydratedPet = normalizePetForClient(
+      applyCareDecay(activePetResolved),
+    );
+
+    const careChanged =
+      hydratedPet.hunger !== activePetResolved.hunger ||
+      hydratedPet.clean !== activePetResolved.clean ||
+      hydratedPet.happy !== activePetResolved.happy ||
+      hydratedPet.comfort !== activePetResolved.comfort ||
+      hydratedPet.rest !== activePetResolved.rest ||
+      hydratedPet.neglect_hours !== activePetResolved.neglect_hours ||
+      hydratedPet.ran_away !== activePetResolved.ran_away ||
+      hydratedPet.runaway_at !== activePetResolved.runaway_at ||
+      hydratedPet.last_care_decay_at !== activePetResolved.last_care_decay_at;
+
+    if (careChanged) {
+      await updatePetCareStats(hydratedPet.id, {
+        hunger: hydratedPet.hunger,
+        clean: hydratedPet.clean,
+        happy: hydratedPet.happy,
+        comfort: hydratedPet.comfort,
+        rest: hydratedPet.rest,
+        neglect_hours: hydratedPet.neglect_hours,
+        ran_away: hydratedPet.ran_away,
+        runaway_at: hydratedPet.runaway_at ?? null,
+        last_care_update: hydratedPet.last_care_update,
+        last_care_decay_at: hydratedPet.last_care_decay_at,
+      });
+
+      activePetResolved = hydratedPet;
+    }
+
     let stats: any = null;
     let total_points: number | null = null;
     let hp_display: number | null = null;
@@ -263,6 +367,226 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     return res.status(500).json({
       error:
         error instanceof Error ? error.message : "Failed to load pet page.",
+    });
+  }
+});
+
+careRouter.post("/feed", requireUser, async (req: AuthedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const amount = Math.max(1, Math.min(100, safeNum(req.body?.amount, 20)));
+
+    const { pet } = await fetchActivePet(userId);
+
+    if (!pet) {
+      return res.status(404).json({ error: "No active pet found" });
+    }
+
+    const current = normalizePetForClient(
+      applyCareDecay(normalizePetForClient(pet)),
+    );
+
+    const hunger = Math.min(100, safeNum(current.hunger) + amount);
+
+    await updatePetCareStats(current.id, {
+      hunger,
+      clean: current.clean,
+      happy: current.happy,
+      comfort: current.comfort,
+      rest: current.rest,
+      neglect_hours: current.neglect_hours ?? 0,
+      ran_away: current.ran_away ?? false,
+      runaway_at: current.runaway_at ?? null,
+      last_care_update: new Date().toISOString(),
+      last_care_decay_at: new Date().toISOString(),
+    });
+
+    return res.json({ success: true, hunger });
+  } catch (error) {
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : "Failed to feed pet.",
+    });
+  }
+});
+
+careRouter.post("/clean", requireUser, async (req: AuthedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const amount = Math.max(1, Math.min(100, safeNum(req.body?.amount, 20)));
+
+    const { pet } = await fetchActivePet(userId);
+
+    if (!pet) {
+      return res.status(404).json({ error: "No active pet found" });
+    }
+
+    const current = normalizePetForClient(
+      applyCareDecay(normalizePetForClient(pet)),
+    );
+
+    const clean = Math.min(100, safeNum(current.clean) + amount);
+
+    await updatePetCareStats(current.id, {
+      hunger: current.hunger,
+      clean,
+      happy: current.happy,
+      comfort: current.comfort,
+      rest: current.rest,
+      neglect_hours: current.neglect_hours ?? 0,
+      ran_away: current.ran_away ?? false,
+      runaway_at: current.runaway_at ?? null,
+      last_care_update: new Date().toISOString(),
+      last_care_decay_at: new Date().toISOString(),
+    });
+
+    return res.json({ success: true, clean });
+  } catch (error) {
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : "Failed to clean pet.",
+    });
+  }
+});
+
+careRouter.post("/play", requireUser, async (req: AuthedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const amount = Math.max(1, Math.min(100, safeNum(req.body?.amount, 20)));
+
+    const { pet } = await fetchActivePet(userId);
+
+    if (!pet) {
+      return res.status(404).json({ error: "No active pet found" });
+    }
+
+    const current = normalizePetForClient(
+      applyCareDecay(normalizePetForClient(pet)),
+    );
+
+    const happy = Math.min(100, safeNum(current.happy) + amount);
+
+    await updatePetCareStats(current.id, {
+      hunger: current.hunger,
+      clean: current.clean,
+      happy,
+      comfort: current.comfort,
+      rest: current.rest,
+      neglect_hours: current.neglect_hours ?? 0,
+      ran_away: current.ran_away ?? false,
+      runaway_at: current.runaway_at ?? null,
+      last_care_update: new Date().toISOString(),
+      last_care_decay_at: new Date().toISOString(),
+    });
+
+    return res.json({ success: true, happy });
+  } catch (error) {
+    return res.status(500).json({
+      error:
+        error instanceof Error ? error.message : "Failed to play with pet.",
+    });
+  }
+});
+
+careRouter.post("/pet", requireUser, async (req: AuthedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const comfortBoost = Math.max(
+      1,
+      Math.min(100, safeNum(req.body?.comfortAmount, 10)),
+    );
+    const moodBoost = Math.max(
+      1,
+      Math.min(100, safeNum(req.body?.moodAmount, 5)),
+    );
+
+    const { pet } = await fetchActivePet(userId);
+
+    if (!pet) {
+      return res.status(404).json({ error: "No active pet found" });
+    }
+
+    const current = normalizePetForClient(
+      applyCareDecay(normalizePetForClient(pet)),
+    );
+
+    const comfort = Math.min(100, safeNum(current.comfort) + comfortBoost);
+    const happy = Math.min(100, safeNum(current.happy) + moodBoost);
+
+    await updatePetCareStats(current.id, {
+      hunger: current.hunger,
+      clean: current.clean,
+      happy,
+      comfort,
+      rest: current.rest,
+      neglect_hours: current.neglect_hours ?? 0,
+      ran_away: current.ran_away ?? false,
+      runaway_at: current.runaway_at ?? null,
+      last_care_update: new Date().toISOString(),
+      last_care_decay_at: new Date().toISOString(),
+    });
+
+    return res.json({ success: true, comfort, happy });
+  } catch (error) {
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : "Failed to pet Delta.",
+    });
+  }
+});
+
+careRouter.post("/place", requireUser, async (req: AuthedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const petId = String(req.body?.petId ?? "").trim();
+
+    if (!petId) {
+      return res.status(400).json({ error: "petId is required." });
+    }
+
+    const { data: ownedPet, error: ownedPetError } = await supabaseAdmin
+      .from("pets")
+      .select("id,user_id,ran_away,is_runaway")
+      .eq("id", petId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (ownedPetError) {
+      return res.status(500).json({ error: ownedPetError.message });
+    }
+
+    if (!ownedPet?.id) {
+      return res.status(404).json({ error: "That Delta was not found." });
+    }
+
+    if (ownedPet.ran_away || ownedPet.is_runaway) {
+      return res
+        .status(400)
+        .json({ error: "That Delta has already run away." });
+    }
+
+    const { error: clearError } = await supabaseAdmin
+      .from("pets")
+      .update({ is_active: false, location: "storage" })
+      .eq("user_id", userId)
+      .eq("is_active", true);
+
+    if (clearError) {
+      return res.status(500).json({ error: clearError.message });
+    }
+
+    const { error: activateError } = await supabaseAdmin
+      .from("pets")
+      .update({ is_active: true, location: "active" })
+      .eq("id", petId)
+      .eq("user_id", userId);
+
+    if (activateError) {
+      return res.status(500).json({ error: activateError.message });
+    }
+
+    return res.json({ success: true, petId });
+  } catch (error) {
+    return res.status(500).json({
+      error:
+        error instanceof Error ? error.message : "Failed to place active pet.",
     });
   }
 });
