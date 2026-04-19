@@ -37,13 +37,7 @@
 }
 
 .hp-bannerTickerTrack {
-  display: inline-flex;
-  align-items: center;
-  gap: 32px;
-  width: max-content;
-  white-space: nowrap;
-  will-change: transform;
-  animation: hpBannerTickerLeft 26s linear infinite;
+  animation: hp-scroll 20s linear infinite !important;
 }
 
 @keyframes hpBannerTickerLeft {
@@ -113,7 +107,8 @@
 }
 
 .hp-banner--green {
-  background: linear-gradient(180deg, #dff8d8 0%, #bce9af 100%);
+  background: linear-gradient(180deg, #6f9f7c 0%, #5c8a6b 100%);
+  border: 2px solid rgba(78, 105, 148, 0.42);
 }
 
 .hp-heroCard {
@@ -1524,5 +1519,70 @@
 
   .hp-spotlightMetaItem {
     white-space: normal;
+  }
+}
+/* ===== COLOR THEMES ===== */
+.hp-banner--red {
+  background: linear-gradient(180deg, #5a1c1c, #8c2b2b);
+  border: 2px solid rgba(255, 120, 120, 0.5);
+}
+
+.hp-banner--yellow {
+  background: linear-gradient(180deg, #7a5a00, #c49a00);
+  border: 2px solid rgba(255, 215, 100, 0.6);
+}
+
+.hp-banner--green {
+  background: linear-gradient(180deg, #1f5c2f, #2fa85a);
+  border: 2px solid rgba(120, 255, 170, 0.6);
+}
+
+.hp-banner--blue {
+  background: linear-gradient(180deg, #1b3c6b, #2c6ed1);
+  border: 2px solid rgba(120, 180, 255, 0.6);
+}
+
+.hp-banner--pink {
+  background: linear-gradient(180deg, #6a1b4d, #c73a8f);
+  border: 2px solid rgba(255, 150, 210, 0.6);
+}
+
+/* ===== CONTENT ===== */
+.hp-bannerContent {
+  position: relative;
+  padding: 10px 0;
+}
+
+/* ===== VIEWPORT (THIS IS THE MAGIC) ===== */
+.hp-bannerTickerViewport {
+  overflow: hidden;
+  position: relative;
+  min-width: 0;
+  margin-inline: 0;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.hp-bannerTickerTrack {
+  display: flex;
+  gap: 48px;
+  white-space: nowrap;
+  width: max-content;
+  animation: hp-scroll 70s linear infinite !important;
+}
+
+.hp-bannerTickerItem {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+  color: #243b63;
+}
+
+@keyframes hp-scroll {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }
