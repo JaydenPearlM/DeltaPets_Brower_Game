@@ -82,10 +82,11 @@ function displayStage(stageRaw: unknown) {
 function displayGender(g: unknown) {
   const s = String(g ?? "").toLowerCase();
   if (!s) return "";
-  if (s.includes("null")) return "Null";
+  if (s.includes("null")) return "Void";
   if (s.includes("male")) return "Male";
   if (s.includes("female")) return "Female";
   return prettyEnum(s);
+}
 }
 
 /**
@@ -774,7 +775,7 @@ export function CareRoom({ mode = "auth" }: CareRoomProps) {
             </div>
 
             <div className="crPaperCard crStatsCard crElementCard">
-              <StatRow label="Null" value={elements?.null ?? 0} />
+              <StatRow label="VoidBorne" value={elements?.null ?? 0} />
               <StatRow label="Water" value={elements?.water ?? 0} />
               <StatRow label="Fire" value={elements?.fire ?? 0} />
               <StatRow label="Earth" value={elements?.earth ?? 0} />

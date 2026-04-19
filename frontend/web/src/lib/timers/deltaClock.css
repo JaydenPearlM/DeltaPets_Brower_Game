@@ -1,0 +1,188 @@
+.deltaClock {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 260px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(
+    180deg,
+    rgba(20, 34, 66, 0.96) 0%,
+    rgba(10, 18, 36, 0.98) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    10px 14px 26px rgba(4, 8, 18, 0.28);
+  color: #f7f8ff;
+  backdrop-filter: blur(6px);
+  text-align: left;
+}
+
+.deltaClock__label {
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(242, 231, 174, 0.95);
+}
+
+.deltaClock__primaryRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.deltaClock__time {
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+}
+
+.deltaClock__phase {
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.deltaClock__secondaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-top: 7px;
+  font-size: 0.84rem;
+  color: rgba(221, 230, 255, 0.86);
+}
+
+.deltaClock__time24,
+.deltaClock__day {
+  white-space: nowrap;
+  font-family: var(--font-heading, "Space Mono", monospace);
+}
+
+/* Phase colors */
+
+.deltaClock--dawn {
+  background: linear-gradient(
+    180deg,
+    rgba(93, 58, 33, 0.96) 0%,
+    rgba(42, 24, 22, 0.98) 100%
+  );
+  border-color: rgba(243, 166, 90, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(243, 166, 90, 0.08),
+    10px 14px 26px rgba(34, 18, 10, 0.34);
+}
+
+.deltaClock--dawn .deltaClock__phase,
+.deltaClock--dawn .deltaClock__time {
+  color: #ffd5a9;
+  text-shadow: 0 0 12px rgba(255, 213, 169, 0.2);
+}
+
+.deltaClock--day {
+  background: linear-gradient(
+    180deg,
+    rgba(94, 75, 25, 0.96) 0%,
+    rgba(43, 33, 13, 0.98) 100%
+  );
+  border-color: rgba(244, 207, 99, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(244, 207, 99, 0.08),
+    10px 14px 26px rgba(32, 24, 8, 0.34);
+}
+
+.deltaClock--day .deltaClock__phase,
+.deltaClock--day .deltaClock__time {
+  color: #fff0a9;
+  text-shadow: 0 0 12px rgba(255, 240, 169, 0.18);
+}
+
+.deltaClock--dusk {
+  background: linear-gradient(
+    180deg,
+    rgba(84, 42, 41, 0.96) 0%,
+    rgba(40, 20, 27, 0.98) 100%
+  );
+  border-color: rgba(214, 123, 114, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(214, 123, 114, 0.08),
+    10px 14px 26px rgba(29, 11, 14, 0.34);
+}
+
+.deltaClock--dusk .deltaClock__phase,
+.deltaClock--dusk .deltaClock__time {
+  color: #ffd0c7;
+  text-shadow: 0 0 12px rgba(255, 208, 199, 0.18);
+}
+
+.deltaClock--night {
+  background: linear-gradient(
+    180deg,
+    rgba(24, 40, 88, 0.96) 0%,
+    rgba(12, 21, 47, 0.98) 100%
+  );
+  border-color: rgba(198, 214, 255, 0.38);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(198, 214, 255, 0.08),
+    10px 14px 26px rgba(6, 10, 26, 0.36);
+}
+
+.deltaClock--night .deltaClock__time,
+.deltaClock--night .deltaClock__phase {
+  color: #ffffff;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.32),
+    0 0 22px rgba(214, 227, 255, 0.22);
+}
+
+.deltaClock--deep_night {
+  background: linear-gradient(
+    180deg,
+    rgba(39, 26, 89, 0.96) 0%,
+    rgba(18, 11, 45, 0.98) 100%
+  );
+  border-color: rgba(141, 107, 255, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(141, 107, 255, 0.08),
+    10px 14px 26px rgba(10, 6, 25, 0.38);
+}
+
+.deltaClock--deep_night .deltaClock__phase,
+.deltaClock--deep_night .deltaClock__time {
+  color: #f3eeff;
+  text-shadow: 0 0 14px rgba(220, 206, 255, 0.24);
+}
+
+.deltaClock--pre_dawn {
+  background: linear-gradient(
+    180deg,
+    rgba(26, 44, 82, 0.96) 0%,
+    rgba(10, 19, 39, 0.98) 100%
+  );
+  border-color: rgba(92, 127, 216, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(92, 127, 216, 0.08),
+    10px 14px 26px rgba(5, 10, 22, 0.36);
+}
+
+.deltaClock--pre_dawn .deltaClock__phase,
+.deltaClock--pre_dawn .deltaClock__time {
+  color: #d7e5ff;
+  text-shadow: 0 0 12px rgba(215, 229, 255, 0.18);
+}

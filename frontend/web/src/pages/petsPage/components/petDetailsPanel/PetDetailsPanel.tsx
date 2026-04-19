@@ -30,6 +30,8 @@ type PetRecord = {
 
 type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
 
+const CARE_MAX = 50;
+
 type PetDetailsPanelProps = {
   pet: PetRecord;
   personalityName: string | null;
@@ -42,8 +44,16 @@ type PetDetailsPanelProps = {
   hunger: number;
   clean: number;
   happy: number;
+  comfort: number;
+  rest: number;
   energy: number;
   bond: number;
+  inventoryCounts?: {
+    food: number;
+    soap: number;
+    toy: number;
+    bed: number;
+  };
   actionMsg: string | null;
   setNicknameDraft: (value: string) => void;
   setShowNicknameEditor: (value: boolean) => void;
@@ -100,7 +110,10 @@ function getPreviewUrl(pet: PetRecord) {
 }
 
 function getDisplayedElement(pet: PetRecord) {
-  return titleCase(pet.element || pet.line || "Null");
+  const value = String(pet.element || pet.line || "").toLowerCase();
+  if (!value || value === "null" || value === "null_element")
+    return "Voidborne";
+  return titleCase(value);
 }
 
 function getStablePreference(pet: PetRecord) {
@@ -322,17 +335,20 @@ function MeterRow({
   value: number;
   tone: MeterTone;
 }) {
+  const clampedValue = Math.max(0, Math.min(CARE_MAX, value));
+  const fillWidth = (clampedValue / CARE_MAX) * 100;
+
   return (
     <div className="petRepoMeterRow">
       <div className="petRepoMeterMeta">
         <span className="petRepoMeterLabel">{label}</span>
-        <span className="petRepoMeterValue">{value}</span>
+        <span className="petRepoMeterValue">{clampedValue}</span>
       </div>
 
       <div className="petRepoMeterTrack" aria-hidden="true">
         <div
           className={`petRepoMeterFill petRepoMeterFill-${tone}`}
-          style={{ width: `${value}%` }}
+          style={{ width: `${fillWidth}%` }}
         />
       </div>
     </div>
@@ -367,8 +383,11 @@ export default function PetDetailsPanel({
   hunger,
   clean,
   happy,
+  comfort,
+  rest,
   energy,
   bond,
+  inventoryCounts,
   actionMsg,
   setNicknameDraft,
   setShowNicknameEditor,
@@ -386,11 +405,17 @@ export default function PetDetailsPanel({
   const clampedBond = Math.max(0, Math.min(100, bond));
   const clampedEnergy = Math.max(0, Math.min(100, energy));
 
-  const hungerLevel = Math.max(0, Math.min(100, safeNum(hunger, 50)));
-  const cleanLevel = Math.max(0, Math.min(100, safeNum(clean, 50)));
-  const moodLevel = Math.max(0, Math.min(100, safeNum(happy, 50)));
-  const restLevel = 50;
-  const comfortLevel = 50;
+  const hungerLevel = Math.max(
+    0,
+    Math.min(CARE_MAX, safeNum(hunger, CARE_MAX)),
+  );
+  const cleanLevel = Math.max(0, Math.min(CARE_MAX, safeNum(clean, CARE_MAX)));
+  const moodLevel = Math.max(0, Math.min(CARE_MAX, safeNum(happy, CARE_MAX)));
+  const restLevel = Math.max(0, Math.min(CARE_MAX, safeNum(rest, CARE_MAX)));
+  const comfortLevel = Math.max(
+    0,
+    Math.min(CARE_MAX, safeNum(comfort, CARE_MAX)),
+  );
 
   const stablePreference = getStablePreference(pet);
   const behaviorLine = getBehaviorLine(
@@ -400,6 +425,13 @@ export default function PetDetailsPanel({
     moodLevel,
     clampedBond,
   );
+
+  const safeInventory = inventoryCounts ?? {
+    food: 0,
+    soap: 0,
+    toy: 0,
+    bed: 0,
+  };
 
   useEffect(() => {
     if (!showNicknameEditor) return;
@@ -632,27 +664,27 @@ export default function PetDetailsPanel({
             type="button"
             className="petRepoAction petRepoActionBlue"
             onClick={() => void runCareAction("feed")}
-            disabled={busy || nicknameSaving}
+            disabled={busy || nicknameSaving || safeInventory.food <= 0}
           >
-            Feed
+            Feed {safeInventory.food > 0 ? `· ${safeInventory.food}` : ""}
           </button>
 
           <button
             type="button"
             className="petRepoAction petRepoActionPurple"
             onClick={() => void runCareAction("clean")}
-            disabled={busy || nicknameSaving}
+            disabled={busy || nicknameSaving || safeInventory.soap <= 0}
           >
-            Clean
+            Clean {safeInventory.soap > 0 ? `· ${safeInventory.soap}` : ""}
           </button>
 
           <button
             type="button"
             className="petRepoAction petRepoActionRed"
             onClick={() => void runCareAction("play")}
-            disabled={busy || nicknameSaving}
+            disabled={busy || nicknameSaving || safeInventory.toy <= 0}
           >
-            Play
+            Play {safeInventory.toy > 0 ? `· ${safeInventory.toy}` : ""}
           </button>
 
           <button

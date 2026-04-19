@@ -666,8 +666,7 @@ a {
    only this section was updated
 ========================================================= */
 
-.dp-warningBanner,
-.hp-banner {
+.dp-warningBanner {
   width: min(100%, calc(var(--content-max) + 32px));
   margin: 0 auto 16px;
   border-radius: 0 0 16px 16px;

@@ -1,4 +1,5 @@
 import "./homepage.css";
+import { useNavigate } from "react-router-dom";
 import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { AlphaSystemsPanel } from "@/components/AlphaSystems/AlphaSystemsPanel";
 import { useHomepageBanner } from "./useHomepageBanner";
@@ -33,6 +34,7 @@ const HERO_FEATURES: HeroFeature[] = [
 ];
 
 export default function Homepage() {
+  const navigate = useNavigate();
   const { banner } = useHomepageBanner();
   const {
     pet: spotlightPet,
@@ -47,7 +49,7 @@ export default function Homepage() {
 
   const displayElement =
     spotlightPet.element === "null"
-      ? "Null"
+      ? "Voidborne"
       : spotlightPet.element.charAt(0).toUpperCase() +
         spotlightPet.element.slice(1);
 
@@ -108,9 +110,7 @@ export default function Homepage() {
               <button
                 type="button"
                 className="hp-primaryBtn hp-primaryBtn--journey"
-                onClick={() => {
-                  window.dispatchEvent(new Event("deltapets:open-signup"));
-                }}
+                onClick={() => navigate("/signup")}
               >
                 Start Your Journey Today!
               </button>

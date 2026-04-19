@@ -3,6 +3,14 @@ import { useNavigate } from "react-router-dom";
 import PetDetailsPanel from "./components/petDetailsPanel/PetDetailsPanel";
 import { useAuth } from "../../app/providers/useAuth";
 import { supabase } from "@/lib/supabase/client";
+import {
+  addCareItem,
+  consumeCareItem,
+  ensureStarterCareInventory,
+  getCareItemCount,
+  getInventoryChangeEventName,
+  type CareInventoryCategory,
+} from "../../components/inventory/inventory";
 import "./PetPage.css";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
@@ -28,6 +36,8 @@ type PetRecord = {
   hunger?: number | null;
   cleanliness?: number | null;
   happiness?: number | null;
+  comfort?: number | null;
+  rest?: number | null;
   energy?: number | null;
   bond?: number | null;
 
@@ -230,15 +240,27 @@ function getPetLabel(pet: PetRecord | null) {
   return pet?.nickname?.trim() || pet?.name?.trim() || "Your Delta";
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function getPetPageDescription(pet: PetRecord | null) {
   if (!pet) {
     return "No active Delta is currently placed. Once you set a pet as active, its details will show here.";
   }
 
-  return (
+  const nickname = pet.nickname?.trim();
+  const speciesName = pet.name?.trim();
+  const rawDescription =
     pet.description?.trim() ||
-    "Your pet is quietly observing the world around it."
-  );
+    "Your pet is quietly observing the world around it.";
+
+  if (!nickname || !speciesName) {
+    return rawDescription;
+  }
+
+  const speciesRegex = new RegExp(`\\b${escapeRegExp(speciesName)}\\b`, "gi");
+  return rawDescription.replace(speciesRegex, nickname);
 }
 
 function getTeamDisplayName(teamPet: TeamCardPet) {
@@ -296,6 +318,12 @@ export default function PetPage() {
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [showNicknameEditor, setShowNicknameEditor] = useState(false);
+  const [careInventoryCounts, setCareInventoryCounts] = useState({
+    food: 0,
+    soap: 0,
+    toy: 0,
+    bed: 0,
+  });
 
   const hasLoadedOnceRef = useRef(false);
 
@@ -304,6 +332,10 @@ export default function PetPage() {
       navigate("/", { replace: true });
     }
   }, [authLoading, user, navigate]);
+
+  useEffect(() => {
+    ensureStarterCareInventory();
+  }, []);
 
   const loadPetPage = useCallback(
     async (showSpinner: boolean) => {
@@ -449,6 +481,27 @@ export default function PetPage() {
     [user],
   );
 
+  const syncCareInventoryCounts = useCallback(() => {
+    ensureStarterCareInventory();
+    setCareInventoryCounts({
+      food: getCareItemCount("food"),
+      soap: getCareItemCount("soap"),
+      toy: getCareItemCount("toy"),
+      bed: getCareItemCount("bed"),
+    });
+  }, []);
+
+  useEffect(() => {
+    syncCareInventoryCounts();
+
+    const eventName = getInventoryChangeEventName();
+    window.addEventListener(eventName, syncCareInventoryCounts);
+
+    return () => {
+      window.removeEventListener(eventName, syncCareInventoryCounts);
+    };
+  }, [syncCareInventoryCounts]);
+
   useEffect(() => {
     if (authLoading || !user) return;
 
@@ -476,6 +529,34 @@ export default function PetPage() {
   const runCareAction = useCallback(
     async (action: CareAction) => {
       if (busy) return;
+
+      const inventoryCategoryByAction: Partial<
+        Record<CareAction, CareInventoryCategory>
+      > = {
+        feed: "food",
+        clean: "soap",
+        play: "toy",
+      };
+
+      const inventoryCategory = inventoryCategoryByAction[action] ?? null;
+
+      if (inventoryCategory) {
+        const didConsume = consumeCareItem(inventoryCategory, 1);
+
+        if (!didConsume) {
+          const missingLabel =
+            inventoryCategory === "food"
+              ? "food"
+              : inventoryCategory === "soap"
+                ? "soap"
+                : "toy";
+          setActionMsg(`You need ${missingLabel} in your inventory first.`);
+          syncCareInventoryCounts();
+          return;
+        }
+
+        syncCareInventoryCounts();
+      }
 
       setBusy(true);
       setActionMsg(null);
@@ -513,7 +594,13 @@ export default function PetPage() {
 
         setActionMsg(json?.message || defaultMessageMap[action]);
         await loadPetPage(false);
+        syncCareInventoryCounts();
       } catch (error) {
+        if (inventoryCategory) {
+          addCareItem(inventoryCategory, 1);
+          syncCareInventoryCounts();
+        }
+
         const message =
           error instanceof Error
             ? error.message
@@ -523,7 +610,7 @@ export default function PetPage() {
         setBusy(false);
       }
     },
-    [busy, loadPetPage],
+    [busy, loadPetPage, syncCareInventoryCounts],
   );
 
   const switchActivePet = useCallback(
@@ -620,6 +707,8 @@ export default function PetPage() {
   const hunger = clampPercent(pet?.hunger);
   const clean = clampPercent(pet?.cleanliness);
   const happy = clampPercent(pet?.happiness);
+  const comfort = Math.max(0, Math.min(50, safeNum((pet as any)?.comfort, 50)));
+  const rest = Math.max(0, Math.min(50, safeNum((pet as any)?.rest, 50)));
   const energy = clampPercent(pet?.energy);
   const bond = clampPercent(pet?.bond);
 
@@ -638,7 +727,6 @@ export default function PetPage() {
       spd,
       magi,
       mana,
-      total: hp + atk + def + spd + magi + mana,
     };
   }, [stats]);
 
@@ -648,7 +736,7 @@ export default function PetPage() {
   const elementRows = useMemo(() => {
     return ELEMENT_ORDER.map((key) => ({
       key,
-      label: key === "null" ? "Null" : titleCase(key),
+      label: key === "null" ? "Voidborne" : titleCase(key),
       value: safeNum(elements?.[key]),
       active: key === activeElementKey,
     }));
@@ -840,8 +928,11 @@ export default function PetPage() {
                 hunger={hunger}
                 clean={clean}
                 happy={happy}
+                comfort={comfort}
+                rest={rest}
                 energy={energy}
                 bond={bond}
+                inventoryCounts={careInventoryCounts}
                 actionMsg={actionMsg}
                 setNicknameDraft={setNicknameDraft}
                 setShowNicknameEditor={setShowNicknameEditor}
@@ -851,80 +942,76 @@ export default function PetPage() {
             </div>
 
             <div className="petRepoRightColumn">
-              <div className="petRepoInfoStack">
-                <article className="petRepoPanel petRepoPanel--description">
-                  <SectionPill title="Pet Description" />
-                  <div className="petRepoDescriptionCard">
-                    <div className="petRepoDescriptionContent">
-                      <p className="petRepoDescription">{petDescription}</p>
+              <article className="petRepoPanel petRepoPanel--infoShell">
+                <div className="petRepoInfoStack">
+                  <section className="petRepoInfoSection petRepoInfoSection--description">
+                    <SectionPill title="Pet Description" />
+                    <div className="petRepoDescriptionCard">
+                      <div className="petRepoDescriptionContent">
+                        <p className="petRepoDescription">{petDescription}</p>
+                      </div>
                     </div>
+                  </section>
+
+                  <div className="petRepoDataTwoCol">
+                    <section className="petRepoInfoSection petRepoInfoSection--stats">
+                      <SectionPill title="Stats" />
+                      <div className="petRepoStatList">
+                        {STAT_ORDER.map((statKey) => {
+                          const value = totalStats[statKey];
+                          const rowClassNames = ["petRepoInfoRow"];
+
+                          if (growthTraits.strongStats.includes(statKey)) {
+                            rowClassNames.push("is-strong-stat");
+                          }
+
+                          if (growthTraits.weakStat === statKey) {
+                            rowClassNames.push("is-weak-stat");
+                          }
+
+                          return (
+                            <div
+                              key={statKey}
+                              className={rowClassNames.join(" ")}
+                            >
+                              <span>{STAT_LABELS[statKey]}</span>
+                              <span>{String(value)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+
+                    <section
+                      className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme}`}
+                    >
+                      <SectionPill title="Element Stats" />
+                      <div className="petRepoStatList">
+                        {elementRows.map((row) => {
+                          const rowClassNames = [
+                            "petRepoInfoRow",
+                            `petRepoInfoRow--element-${row.key}`,
+                          ];
+
+                          if (row.active) {
+                            rowClassNames.push("is-active-element");
+                          }
+
+                          return (
+                            <div
+                              key={row.key}
+                              className={rowClassNames.join(" ")}
+                            >
+                              <span>{row.label}</span>
+                              <span>{row.value}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
                   </div>
-                </article>
-
-                <div className="petRepoDataTwoCol">
-                  <article className="petRepoPanel">
-                    <SectionPill title="Stats" />
-                    <div className="petRepoStatList">
-                      {STAT_ORDER.map((statKey) => {
-                        const value = totalStats[statKey];
-                        const rowClassNames = ["petRepoInfoRow"];
-
-                        if (growthTraits.strongStats.includes(statKey)) {
-                          rowClassNames.push("is-strong-stat");
-                        }
-
-                        if (growthTraits.weakStat === statKey) {
-                          rowClassNames.push("is-weak-stat");
-                        }
-
-                        return (
-                          <div
-                            key={statKey}
-                            className={rowClassNames.join(" ")}
-                          >
-                            <span>{STAT_LABELS[statKey]}</span>
-                            <span>{String(value)}</span>
-                          </div>
-                        );
-                      })}
-
-                      <InfoRow
-                        label="Total"
-                        value={String(totalStats.total)}
-                        strong
-                      />
-                    </div>
-                  </article>
-
-                  <article
-                    className={`petRepoPanel petRepoPanel--element petRepoPanel--element-${petElementTheme}`}
-                  >
-                    <SectionPill title="Element Stats" />
-                    <div className="petRepoStatList">
-                      {elementRows.map((row) => {
-                        const rowClassNames = [
-                          "petRepoInfoRow",
-                          `petRepoInfoRow--element-${row.key}`,
-                        ];
-
-                        if (row.active) {
-                          rowClassNames.push("is-active-element");
-                        }
-
-                        return (
-                          <div
-                            key={row.key}
-                            className={rowClassNames.join(" ")}
-                          >
-                            <span>{row.label}</span>
-                            <span>{row.value}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </article>
                 </div>
-              </div>
+              </article>
             </div>
           </section>
         </section>
@@ -945,23 +1032,6 @@ function SectionPill({
       <div className="petRepoSectionLine" />
       <div className="petRepoSectionPill">{title}</div>
       <div className="petRepoSectionLine" />
-    </div>
-  );
-}
-
-function InfoRow({
-  label,
-  value,
-  strong = false,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
-  return (
-    <div className={`petRepoInfoRow ${strong ? "is-strong" : ""}`}>
-      <span>{label}</span>
-      <span>{value}</span>
     </div>
   );
 }

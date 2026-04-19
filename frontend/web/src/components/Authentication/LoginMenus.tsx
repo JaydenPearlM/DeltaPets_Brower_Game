@@ -10,6 +10,7 @@ type ForcedAuthView = AuthView | "none";
 
 type LoginMenusProps = {
   forcedView?: ForcedAuthView;
+  showLaunchers?: boolean;
 };
 
 type AuthMessage = {
@@ -84,7 +85,10 @@ function isValidNickname(value: string) {
   return /^[a-z0-9_]{3,20}$/.test(value);
 }
 
-export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
+export function LoginMenus({
+  forcedView = "none",
+  showLaunchers = true,
+}: LoginMenusProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -115,55 +119,6 @@ export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
     localStorage.setItem("dp_login_identifier", email);
   }, [email]);
 
-  useEffect(() => {
-    const openLogin = () => {
-      setMessage(null);
-      setView("login");
-      setIsOpen(true);
-    };
-
-    const openSignup = () => {
-      setMessage(null);
-      setView("signup");
-      setIsOpen(true);
-    };
-
-    window.addEventListener("deltapets:open-login", openLogin);
-    window.addEventListener("deltapets:open-signup", openSignup);
-
-    return () => {
-      window.removeEventListener("deltapets:open-login", openLogin);
-      window.removeEventListener("deltapets:open-signup", openSignup);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (forcedView === "none") return;
-
-    setMessage(null);
-    setView(forcedView);
-    setIsOpen(true);
-  }, [forcedView]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeModal();
-      }
-    };
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [isOpen]);
-
   function openLogin() {
     setMessage(null);
     setView("login");
@@ -193,6 +148,51 @@ export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
       navigate("/", { replace: true });
     }
   }
+
+  useEffect(() => {
+    const handleOpenLogin = () => {
+      openLogin();
+    };
+
+    const handleOpenSignup = () => {
+      openSignup();
+    };
+
+    window.addEventListener("deltapets:open-login", handleOpenLogin);
+    window.addEventListener("deltapets:open-signup", handleOpenSignup);
+
+    return () => {
+      window.removeEventListener("deltapets:open-login", handleOpenLogin);
+      window.removeEventListener("deltapets:open-signup", handleOpenSignup);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (forcedView === "none") return;
+
+    setMessage(null);
+    setView(forcedView);
+    setIsOpen(true);
+  }, [forcedView]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen]);
 
   async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -625,23 +625,25 @@ export function LoginMenus({ forcedView = "none" }: LoginMenusProps) {
 
   return (
     <>
-      <div className="auth-launchers">
-        <button
-          type="button"
-          className="dp-btn dp-btn--blue"
-          onClick={openLogin}
-        >
-          Sign in
-        </button>
+      {showLaunchers ? (
+        <div className="auth-launchers">
+          <button
+            type="button"
+            className="dp-btn dp-btn--blue"
+            onClick={openLogin}
+          >
+            Sign in
+          </button>
 
-        <button
-          type="button"
-          className="dp-btn dp-btn--blue"
-          onClick={openSignup}
-        >
-          Sign up
-        </button>
-      </div>
+          <button
+            type="button"
+            className="dp-btn dp-btn--blue"
+            onClick={openSignup}
+          >
+            Sign up
+          </button>
+        </div>
+      ) : null}
 
       {modalMarkup}
     </>

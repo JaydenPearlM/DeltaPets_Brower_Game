@@ -1,7 +1,117 @@
-// frontend/web/src/pages/inventory.tsx
+// frontend/web/src/components/inventory/inventory.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./inventory.css";
+
+export type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
+
+type CareInventoryState = Record<CareInventoryCategory, number>;
+
+const CARE_INVENTORY_STORAGE_KEY = "deltapets-care-inventory";
+const CARE_INVENTORY_CHANGE_EVENT = "deltapets:inventory-changed";
+
+const DEFAULT_CARE_INVENTORY: CareInventoryState = {
+  food: 3,
+  soap: 3,
+  toy: 2,
+  bed: 1,
+};
+
+function isBrowser() {
+  return typeof window !== "undefined";
+}
+
+function clampCount(value: unknown) {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.floor(n));
+}
+
+function normalizeCareInventory(value: unknown): CareInventoryState {
+  const raw = (value && typeof value === "object" ? value : {}) as Partial<
+    Record<CareInventoryCategory, unknown>
+  >;
+
+  return {
+    food: clampCount(raw.food),
+    soap: clampCount(raw.soap),
+    toy: clampCount(raw.toy),
+    bed: clampCount(raw.bed),
+  };
+}
+
+function readCareInventory(): CareInventoryState {
+  if (!isBrowser()) return { ...DEFAULT_CARE_INVENTORY };
+
+  try {
+    const raw = window.localStorage.getItem(CARE_INVENTORY_STORAGE_KEY);
+    if (!raw) return { ...DEFAULT_CARE_INVENTORY };
+    return {
+      ...DEFAULT_CARE_INVENTORY,
+      ...normalizeCareInventory(JSON.parse(raw)),
+    };
+  } catch {
+    return { ...DEFAULT_CARE_INVENTORY };
+  }
+}
+
+function writeCareInventory(next: CareInventoryState) {
+  if (!isBrowser()) return;
+  window.localStorage.setItem(CARE_INVENTORY_STORAGE_KEY, JSON.stringify(next));
+  window.dispatchEvent(new Event(CARE_INVENTORY_CHANGE_EVENT));
+}
+
+export function ensureStarterCareInventory() {
+  if (!isBrowser()) return;
+
+  const existing = window.localStorage.getItem(CARE_INVENTORY_STORAGE_KEY);
+  if (!existing) {
+    writeCareInventory({ ...DEFAULT_CARE_INVENTORY });
+    return;
+  }
+
+  try {
+    const parsed = normalizeCareInventory(JSON.parse(existing));
+    writeCareInventory({ ...DEFAULT_CARE_INVENTORY, ...parsed });
+  } catch {
+    writeCareInventory({ ...DEFAULT_CARE_INVENTORY });
+  }
+}
+
+export function getCareItemCount(category: CareInventoryCategory) {
+  const inventory = readCareInventory();
+  return inventory[category] ?? 0;
+}
+
+export function consumeCareItem(category: CareInventoryCategory, amount = 1) {
+  const inventory = readCareInventory();
+  const current = inventory[category] ?? 0;
+
+  if (current < amount) {
+    return false;
+  }
+
+  writeCareInventory({
+    ...inventory,
+    [category]: current - amount,
+  });
+
+  return true;
+}
+
+export function addCareItem(category: CareInventoryCategory, amount = 1) {
+  const inventory = readCareInventory();
+  const current = inventory[category] ?? 0;
+
+  writeCareInventory({
+    ...inventory,
+    [category]: current + Math.max(0, Math.floor(amount)),
+  });
+}
+
+export function getInventoryChangeEventName() {
+  return CARE_INVENTORY_CHANGE_EVENT;
+}
 
 type InventoryTab = "all" | "equipment" | "battle" | "health" | "eggs";
 
@@ -11,9 +121,9 @@ type InventoryItem = {
   id: string;
   kind: InventoryKind;
   name: string;
-  qty?: number; // stackables
+  qty?: number;
   rarity?: "common" | "rare" | "epic" | "legendary";
-  icon?: string; // optional URL later
+  icon?: string;
 };
 
 type Caps = {
@@ -30,7 +140,6 @@ type UsedSlots = {
   eggs: number;
 };
 
-// --- Alpha starter config ---
 const START_CAPS: Caps = {
   equipment: 5,
   battle: 5,
@@ -38,10 +147,8 @@ const START_CAPS: Caps = {
   eggs: 5,
 };
 
-// +5 slots per upgrade. Costs are per-category.
 const UPGRADE_COSTS = [50, 100, 200, 350, 550, 800, 1100, 1450, 1850];
 
-// Map tab -> item kind(s)
 function tabMatches(tab: InventoryTab, item: InventoryItem) {
   if (tab === "all") return true;
   if (tab === "equipment") return item.kind === "equipment";
@@ -72,8 +179,6 @@ function safeParseInt(v: string | null, fallback: number) {
 }
 
 function computeUsedSlots(items: InventoryItem[]): UsedSlots {
-  // Slots = number of stacks (each unique item row = 1 slot)
-  // Stackables just have qty but still count as 1 slot.
   const used: UsedSlots = { equipment: 0, battle: 0, health: 0, eggs: 0 };
   for (const it of items) {
     const k = kindToCapKey(it.kind);
@@ -83,25 +188,16 @@ function computeUsedSlots(items: InventoryItem[]): UsedSlots {
 }
 
 function getUpgradeCountFromCap(cap: number) {
-  // start is 5. each upgrade adds +5. so:
-  // cap = 5 + 5*u -> u = (cap-5)/5
   const u = Math.max(0, Math.floor((cap - 5) / 5));
   return u;
 }
 
 function nextUpgradeCost(currentCap: number) {
   const u = getUpgradeCountFromCap(currentCap);
-  return UPGRADE_COSTS[u] ?? null; // null means maxed for now
+  return UPGRADE_COSTS[u] ?? null;
 }
 
-// ------------------------------------------------------------
-// Inventory UI can be used as:
-// - Full page (/inventory)
-// - Popup overlay (render <InventoryPanel mode="overlay" ... />)
-// ------------------------------------------------------------
-
 export default function InventoryPage() {
-  // Page version
   return (
     <div className="invPage">
       <InventoryPanel mode="page" />
@@ -111,29 +207,22 @@ export default function InventoryPage() {
 
 type InventoryPanelProps = {
   mode: "page" | "overlay";
-  onRequestClose?: () => void; //  allow overlay to close
-  // later: you can pass context like { pick: "egg", from: "hatchery" }
+  onRequestClose?: () => void;
 };
 
 export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
   const nav = useNavigate();
   const location = useLocation();
 
-  // Query params for “picker mode” (future wiring)
   const qs = useMemo(
     () => new URLSearchParams(location.search),
     [location.search],
   );
-  const pick = qs.get("pick"); // "equipment" | "egg" etc (optional)
-  const inBattle = qs.get("battle") === "1"; // temporary lock demo
+  const pick = qs.get("pick");
+  const inBattle = qs.get("battle") === "1";
 
-  // Dots for upgrades (Alpha stub; later comes from user profile)
   const [dots, setDots] = useState<number>(420);
-
-  // Capacity per category (Alpha: local state; later from DB)
   const [caps, setCaps] = useState<Caps>(START_CAPS);
-
-  // Inventory items (Alpha: mock data; later from Supabase)
   const [items, setItems] = useState<InventoryItem[]>(() => [
     { id: "eq_001", kind: "equipment", name: "Twig Blade", rarity: "common" },
     { id: "eq_002", kind: "equipment", name: "Leaf Cloak", rarity: "rare" },
@@ -154,8 +243,16 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
     { id: "egg_001", kind: "egg", name: "Warm Egg", rarity: "rare" },
     { id: "egg_002", kind: "egg", name: "Mystery Egg", rarity: "epic" },
   ]);
-
   const [tab, setTab] = useState<InventoryTab>("all");
+  const [careInventory, setCareInventory] = useState<CareInventoryState>(() => {
+    ensureStarterCareInventory();
+    return {
+      food: getCareItemCount("food"),
+      soap: getCareItemCount("soap"),
+      toy: getCareItemCount("toy"),
+      bed: getCareItemCount("bed"),
+    };
+  });
 
   const filtered = useMemo(
     () => items.filter((it) => tabMatches(tab, it)),
@@ -163,13 +260,27 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
   );
   const used = useMemo(() => computeUsedSlots(items), [items]);
 
-  // ------------------------------------------------------------
-  // Hotkeys
-  // - Esc: ALWAYS works
-  //   - overlay -> close overlay
-  //   - page -> navigate back
-  // - We do NOT handle Ctrl+I here (global UIProvider handles that)
-  // ------------------------------------------------------------
+  useEffect(() => {
+    ensureStarterCareInventory();
+
+    const syncCareInventory = () => {
+      setCareInventory({
+        food: getCareItemCount("food"),
+        soap: getCareItemCount("soap"),
+        toy: getCareItemCount("toy"),
+        bed: getCareItemCount("bed"),
+      });
+    };
+
+    syncCareInventory();
+    const eventName = getInventoryChangeEventName();
+    window.addEventListener(eventName, syncCareInventory);
+
+    return () => {
+      window.removeEventListener(eventName, syncCareInventory);
+    };
+  }, []);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -181,7 +292,6 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
 
       if (isTyping) return;
 
-      //  ESC should always work (even if inBattle)
       if (e.key === "Escape") {
         if (mode === "overlay") {
           onRequestClose?.();
@@ -191,7 +301,6 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
         return;
       }
 
-      // If you add other keys later, you can block them in battle here.
       if (inBattle) return;
     };
 
@@ -199,9 +308,6 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [mode, nav, inBattle, onRequestClose]);
 
-  // ------------------------------------------------------------
-  // Actions
-  // ------------------------------------------------------------
   function upgradeCategory(cat: keyof Caps) {
     const cost = nextUpgradeCost(caps[cat]);
     if (cost == null) return;
@@ -221,7 +327,6 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
   }
 
   function debugAddItem(kind: InventoryKind) {
-    // Adds a new stack, so capacity rules apply
     if (!canAddNewStack(kind)) {
       alert("That category is full. Upgrade slots with Dots.");
       return;
@@ -253,14 +358,14 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
   }
 
   function onSelectItem(_it: InventoryItem) {
-    // Picker mode (later): choose equipment for pet or egg for hatchery
     if (!pick) return;
-
-    // Example behavior: go back and pass selection in router state
     nav(-1);
   }
 
-  // Header capacity display per category
+  function addStarterCareItem(category: CareInventoryCategory) {
+    addCareItem(category, 1);
+  }
+
   const capRows = [
     {
       key: "equipment" as const,
@@ -283,6 +388,23 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
     { key: "eggs" as const, label: "Eggs", used: used.eggs, cap: caps.eggs },
   ];
 
+  const careRows: Array<{
+    key: CareInventoryCategory;
+    label: string;
+    icon: string;
+    blurb: string;
+  }> = [
+    { key: "food", label: "Food", icon: "🍎", blurb: "Used for Feed." },
+    { key: "soap", label: "Soap", icon: "🫧", blurb: "Used for Clean." },
+    { key: "toy", label: "Toy", icon: "🧸", blurb: "Used for Play." },
+    {
+      key: "bed",
+      label: "Bed",
+      icon: "🛏️",
+      blurb: "Comfort helper for later.",
+    },
+  ];
+
   return (
     <div className={mode === "overlay" ? "invShell invOverlay" : "invShell"}>
       <div className="invTopBar">
@@ -296,15 +418,12 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
         </div>
 
         <div className="invTopActions">
-          {/* Debug buttons: remove later */}
           <button className="invBtn" onClick={() => debugAddItem("equipment")}>
             + Gear
           </button>
           <button
             className="invBtn"
-            onClick={() => {
-              nav(-1);
-            }}
+            onClick={() => debugAddItem("battle_potion")}
           >
             + Battle
           </button>
@@ -360,6 +479,31 @@ export function InventoryPanel({ mode, onRequestClose }: InventoryPanelProps) {
           >
             {prettyTab(t)}
           </button>
+        ))}
+      </div>
+
+      <div className="invGrid" style={{ marginBottom: 18 }}>
+        {careRows.map((row) => (
+          <div key={row.key} className="invItem">
+            <div className="invItemIcon" aria-hidden="true">
+              {row.icon}
+            </div>
+            <div className="invItemInfo">
+              <div className="invItemName">{row.label}</div>
+              <div className="invItemMeta">
+                <span className="invPill">care item</span>
+                <span className="invPill">x{careInventory[row.key]}</span>
+                <span className="invPill">{row.blurb}</span>
+              </div>
+            </div>
+            <button
+              className="invDeleteBtn"
+              onClick={() => addStarterCareItem(row.key)}
+              type="button"
+            >
+              +1
+            </button>
+          </div>
         ))}
       </div>
 

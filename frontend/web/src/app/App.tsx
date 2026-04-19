@@ -1,304 +1,298 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { UIProvider } from "./providers/UIProvider";
-import { useAuth } from "./providers/useAuth";
-import { InventoryOverlay } from "../components/inventory/inventoryOverlay";
-import { LoginMenus } from "../components/Authentication/LoginMenus";
 import { LogoutButton } from "../components/Authentication/LogoutButton";
+import { LoginMenus } from "../components/Authentication/LoginMenus";
 import { useAliuneSignal } from "../pages/Homepage/useAliuneSignal";
-
+import { DeltaClock } from "../lib/timers/deltaClock";
 import "./App.css";
 
-type FooterModalKey = "privacy" | "terms" | "safety" | "contact" | null;
+const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? "ALPHAv0.0.1-alpha.2";
 
-const FOOTER_MODAL_CONTENT: Record<
-  Exclude<FooterModalKey, null>,
-  {
-    title: string;
-    body: string[];
-  }
-> = {
-  privacy: {
-    title: "Privacy Policy",
-    body: [
-      "DeltaPets is currently in a public alpha. We may collect basic account details, sign-in activity, gameplay progress, and technical information needed to keep the game stable and improve the experience.",
-      "This information may be used for account access, save data, bug fixing, moderation, security, testing, and general service improvement. We do not sell your personal information.",
-      "Because DeltaPets is still in active development, features, systems, and stored data may change over time as the game evolves.",
-      "If you have questions about account or privacy matters, use the Contact section.",
-    ],
-  },
-  terms: {
-    title: "Terms of Service",
-    body: [
-      "DeltaPets is a public alpha and is provided as-is while systems, balance, content, and online features are still being tested.",
-      "By using DeltaPets, you agree not to exploit bugs, abuse services, impersonate others, interfere with the site, attempt unauthorized access, or harass other users.",
-      "Game branding, artwork, writing, systems, and related DeltaPets content remain the property of DeltaPets and Jayden unless otherwise stated.",
-      "Access may be limited, reset, suspended, or removed when necessary for moderation, safety, security, or service integrity.",
-    ],
-  },
-  safety: {
-    title: "Safety",
-    body: [
-      "DeltaPets is intended to be a safer community space. Harassment, threats, hate, stalking, doxxing, sexual exploitation, cheating, and targeted abuse are not allowed.",
-      "Unsafe behavior or content may be removed, and accounts may be restricted or suspended to protect the community and the platform.",
-      "If social or interactive features are present now or later, users are expected to behave respectfully and keep names, chat, and shared content appropriate for the game.",
-      "If you see something unsafe, report it through Contact.",
-    ],
-  },
-  contact: {
-    title: "Contact",
-    body: [
-      "For support, bug reports, account questions, safety concerns, or business contact, email: maxwellpearl90@gmail.com",
-      "When reporting a bug, include what page you were on, what happened, what you clicked, and roughly when it happened.",
-      "For safety issues, include usernames, screenshots, and a short summary so the problem can be reviewed faster.",
-    ],
-  },
+type MenuSectionKey = "pets" | "battle" | "cities";
+
+type MenuLink = {
+  label: string;
+  to: string;
 };
 
+const PET_LINKS: MenuLink[] = [
+  { label: "Pets", to: "/pet" },
+  { label: "Hatchery", to: "/hatchery" },
+  { label: "Gym", to: "/gym" },
+];
+
+const BATTLE_LINKS: MenuLink[] = [
+  { label: "Battle Arena", to: "/battle-arena" },
+  { label: "Battle Dungeons", to: "/battle-dungeons" },
+];
+
+const CITY_LINKS: MenuLink[] = [
+  { label: "Kithna", to: "/cities/kithna" },
+  { label: "Kath", to: "/cities/kath" },
+];
+
 export default function App() {
-  const auth = useAuth();
-  const isLoggedIn = Boolean(auth.user);
+  const navigate = useNavigate();
+  const location = useLocation();
   const { signal } = useAliuneSignal();
 
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<
+    Record<MenuSectionKey, boolean>
+  >({
+    pets: true,
+    battle: false,
+    cities: false,
+  });
 
-  const [activeFooterModal, setActiveFooterModal] =
-    useState<FooterModalKey>(null);
+  const exploreWrapperRef = useRef<HTMLDivElement | null>(null);
 
-  const forcedAuthView =
-    location.pathname === "/signup"
-      ? "signup"
-      : location.pathname === "/signin"
-        ? "login"
-        : "none";
+  const forcedAuthView = useMemo<"login" | "signup" | "none">(() => {
+    if (location.pathname === "/signin") return "login";
+    if (location.pathname === "/signup") return "signup";
+    return "none";
+  }, [location.pathname]);
 
-  const onlineNow = isLoggedIn ? 1 : 0;
+  const conditionText =
+    (signal as any)?.conditionLabel ?? (signal as any)?.condition ?? "Stable";
 
-  const handleBrandClick = () => {
-    if (isLoggedIn) {
-      navigate("/dashboard");
-      return;
-    }
+  const regionText =
+    (signal as any)?.regionLabel ??
+    (signal as any)?.region ??
+    "All Regions Stable";
 
-    navigate("/");
-  };
+  const corruptionText =
+    (signal as any)?.corruptionLabel ?? (signal as any)?.corruption ?? "None";
 
-  const activeFooterModalContent = useMemo(() => {
-    if (!activeFooterModal) return null;
-    return FOOTER_MODAL_CONTENT[activeFooterModal];
-  }, [activeFooterModal]);
+  useEffect(() => {
+    if (!menuOpen) return;
 
-  const openFooterModal = (modal: Exclude<FooterModalKey, null>) => {
-    setActiveFooterModal(modal);
-  };
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (
+        exploreWrapperRef.current &&
+        target &&
+        !exploreWrapperRef.current.contains(target)
+      ) {
+        setMenuOpen(false);
+      }
+    };
 
-  const closeFooterModal = () => {
-    setActiveFooterModal(null);
-  };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  function toggleSection(section: MenuSectionKey) {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  }
+
+  function handleNavigate(to: string) {
+    setMenuOpen(false);
+    navigate(to);
+  }
+
+  function renderMenuLinks(links: MenuLink[]) {
+    return (
+      <div className="hamburgerMenuSectionBody">
+        {links.map((link) => (
+          <button
+            key={link.to}
+            type="button"
+            className="hamburgerMenuItem"
+            onClick={() => handleNavigate(link.to)}
+          >
+            {link.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <UIProvider>
-      <div className="dp-viewport">
-        <div className="dp-stage">
-          <header className="dp-stageHeader dp-stageHeader--appFix">
-            <div className="dp-headerBrandFloating">
-              <button
-                type="button"
-                className="dp-headerBrandButton"
-                onClick={handleBrandClick}
-                aria-label="Go to DeltaPets home"
-              >
-                <div className="dp-headerBrand">
-                  <span className="dp-headerBrandStack">
-                    <span className="dp-headerBrandTitle">DeltaPets</span>
-                    <span className="dp-headerBrandTriangle">△</span>
-                  </span>
-                </div>
-              </button>
-            </div>
+    <div className="appRoot">
+      <header className="appHeader">
+        <div className="appShell appHeaderInner">
+          <div className="logoBlock">
+            <div className="logoText">DeltaPets</div>
+            <div className="logoTriangle">△</div>
+          </div>
 
-            <div className="dp-headerCenterTagline dp-headerCenterTagline--appFix">
-              <div className="dp-signalShell" aria-label="Aliune Signal">
-                <div className="dp-signalRow">
-                  <div className="dp-signalHeaderBlock">
-                    <div className="dp-signalBannerTitle">ALIUNE SIGNAL</div>
+          <div className="headerStack">
+            <div className="aliuneSignal">
+              <div className="signalTitle">ALIUNE SIGNAL</div>
 
-                    <div className="dp-signalOnlineNow">
-                      Online Now:{" "}
-                      <strong className="dp-signalOnlineNowValue">
-                        {onlineNow}
-                      </strong>
-                    </div>
-                  </div>
+              <div className="signalRow">
+                Condition: <strong>{conditionText}</strong>
+              </div>
 
-                  <section className="hp-signalBanner">
-                    <div className="hp-signalBannerStats">
-                      <div className="hp-signalBannerStat">
-                        <span className="hp-signalBannerKey">Condition</span>
-                        <strong className="hp-signalBannerValue">
-                          {signal.conditionLabel}
-                        </strong>
-                      </div>
+              <div className="signalRow">
+                Region: <strong>{regionText}</strong>
+              </div>
 
-                      <div className="hp-signalBannerStat">
-                        <span className="hp-signalBannerKey">Region</span>
-                        <strong className="hp-signalBannerValue">
-                          {signal.regionLabel}
-                        </strong>
-                      </div>
-
-                      <div className="hp-signalBannerStat">
-                        <span className="hp-signalBannerKey">Corruption</span>
-                        <strong className="hp-signalBannerValue">
-                          {signal.corruptionLabel}
-                        </strong>
-                      </div>
-                    </div>
-
-                    <p className="hp-signalBannerReport">{signal.reportText}</p>
-                  </section>
-                </div>
+              <div className="signalRow">
+                Corruption: <strong>{corruptionText}</strong>
               </div>
             </div>
 
-            <div className="dp-headerRight dp-headerRight--auth">
-              <div className="dp-headerRightStack">
-                <div className="dp-alphaBadge">ALPHA v{__APP_VERSION__}</div>
+            <div className="headerCenter">
+              <div className="versionText">{APP_VERSION}</div>
 
-                <div className="dp-headerAuthRow">
-                  {isLoggedIn ? (
-                    <>
-                      <button
-                        className="btn btn-gold dp-headerNavButton"
-                        onClick={() => navigate("/pet")}
-                      >
-                        Pets
-                      </button>
-
-                      <button
-                        className="btn btn-gold dp-headerNavButton"
-                        onClick={() => navigate("/hatchery")}
-                      >
-                        Hatchery
-                      </button>
-
-                      <button
-                        className="btn btn-gold dp-headerNavButton"
-                        onClick={() => navigate("/gym")}
-                      >
-                        Gym
-                      </button>
-
-                      <LogoutButton />
-                    </>
-                  ) : (
-                    <LoginMenus forcedView={forcedAuthView} />
-                  )}
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <main className="dp-stageScroll">
-            <Outlet />
-          </main>
-
-          <footer className="dp-stageFooter">
-            <div className="dp-stageFooterInner dp-stageFooterInner--stacked">
-              <div className="dp-footerMeta">
-                <span className="dp-footerCopyright">DeltaPets · Jayden</span>
-
-                <span
-                  className="dp-footerStatus"
-                  aria-label="Public alpha status"
-                >
-                  <span className="dp-footerDot" aria-hidden="true" />
-                  <span className="dp-footerStatusText">Public Alpha</span>
-                </span>
-              </div>
-
-              <div className="dp-footerLinksRow">
+              <div className="headerCenterRow">
                 <button
                   type="button"
-                  className="dp-footerLink"
-                  onClick={() => openFooterModal("privacy")}
+                  className="exploreButton"
+                  onClick={() => navigate("/signup")}
                 >
-                  Privacy Policy
+                  SIGN UP
                 </button>
 
-                <button
-                  type="button"
-                  className="dp-footerLink"
-                  onClick={() => openFooterModal("terms")}
-                >
-                  Terms of Service
-                </button>
-
-                <button
-                  type="button"
-                  className="dp-footerLink"
-                  onClick={() => openFooterModal("safety")}
-                >
-                  Safety
-                </button>
-
-                <button
-                  type="button"
-                  className="dp-footerLink"
-                  onClick={() => openFooterModal("contact")}
-                >
-                  Contact
-                </button>
-              </div>
-            </div>
-          </footer>
-
-          {activeFooterModalContent ? (
-            <div
-              className="dp-footerModalOverlay"
-              onClick={closeFooterModal}
-              role="presentation"
-            >
-              <div
-                className="dp-footerModal"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="dp-footer-modal-title"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <div className="dp-footerModalHeader">
-                  <h3
-                    id="dp-footer-modal-title"
-                    className="dp-footerModalTitle"
-                  >
-                    {activeFooterModalContent.title}
-                  </h3>
-
+                <div className="exploreWrapper" ref={exploreWrapperRef}>
                   <button
                     type="button"
-                    className="dp-footerModalClose"
-                    onClick={closeFooterModal}
-                    aria-label={`Close ${activeFooterModalContent.title}`}
+                    className="exploreButton"
+                    aria-expanded={menuOpen}
+                    aria-haspopup="dialog"
+                    onClick={() => setMenuOpen((prev) => !prev)}
                   >
-                    Close
+                    EXPLORE ☰
                   </button>
+
+                  {menuOpen && (
+                    <div
+                      className="hamburgerMenuModal"
+                      role="dialog"
+                      aria-modal="false"
+                      aria-label="Explore menu"
+                    >
+                      <div className="hamburgerMenuGlow" aria-hidden="true" />
+
+                      <div className="hamburgerMenuHeader">
+                        <p className="hamburgerMenuIntro">
+                          Explore the world of{" "}
+                          <span className="hamburgerMenuAliune">Aliune</span>
+                        </p>
+
+                        <h3 className="hamburgerMenuTitle">
+                          <span className="hamburgerMenuDeltaPets">
+                            DeltaPets
+                          </span>{" "}
+                          Menu
+                        </h3>
+                      </div>
+
+                      <div className="hamburgerMenuSection hamburgerMenuSection--profile">
+                        <button
+                          type="button"
+                          className="hamburgerMenuSectionStatic"
+                          onClick={() => handleNavigate("/secretHaven")}
+                        >
+                          <span>Profile</span>
+                        </button>
+                      </div>
+
+                      <div className="hamburgerMenuSection">
+                        <button
+                          type="button"
+                          className="hamburgerMenuSectionToggle"
+                          onClick={() => toggleSection("pets")}
+                          aria-expanded={expandedSections.pets}
+                        >
+                          <span>Pets</span>
+                          <span className="hamburgerMenuCaret">
+                            {expandedSections.pets ? "−" : "+"}
+                          </span>
+                        </button>
+
+                        {expandedSections.pets
+                          ? renderMenuLinks(PET_LINKS)
+                          : null}
+                      </div>
+
+                      <div className="hamburgerMenuSection">
+                        <button
+                          type="button"
+                          className="hamburgerMenuSectionToggle"
+                          onClick={() => toggleSection("battle")}
+                          aria-expanded={expandedSections.battle}
+                        >
+                          <span>Battle</span>
+                          <span className="hamburgerMenuCaret">
+                            {expandedSections.battle ? "−" : "+"}
+                          </span>
+                        </button>
+
+                        {expandedSections.battle
+                          ? renderMenuLinks(BATTLE_LINKS)
+                          : null}
+                      </div>
+
+                      <div className="hamburgerMenuSection">
+                        <button
+                          type="button"
+                          className="hamburgerMenuSectionToggle"
+                          onClick={() => toggleSection("cities")}
+                          aria-expanded={expandedSections.cities}
+                        >
+                          <span>Cities</span>
+                          <span className="hamburgerMenuCaret">
+                            {expandedSections.cities ? "−" : "+"}
+                          </span>
+                        </button>
+
+                        {expandedSections.cities
+                          ? renderMenuLinks(CITY_LINKS)
+                          : null}
+                      </div>
+
+                      <div className="hamburgerMenuFooter">
+                        <LogoutButton />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="dp-footerModalBody">
-                  {activeFooterModalContent.body.map((paragraph) => (
-                    <p key={paragraph} className="dp-footerModalText">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  className="exploreButton"
+                  onClick={() => navigate("/signin")}
+                >
+                  SIGN IN
+                </button>
               </div>
             </div>
-          ) : null}
-        </div>
-      </div>
+          </div>
 
-      <InventoryOverlay />
-    </UIProvider>
+          <div className="headerRight">
+            <div className="clockWrapper">
+              <DeltaClock />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="appContent">
+        <Outlet />
+      </main>
+
+      <LoginMenus forcedView={forcedAuthView} showLaunchers={false} />
+    </div>
   );
 }

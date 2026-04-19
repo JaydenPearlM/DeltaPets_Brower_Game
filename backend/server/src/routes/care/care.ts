@@ -34,6 +34,7 @@ function normalizePetForClient<T extends Record<string, any>>(pet: T) {
     happiness: safeNum(pet.happiness ?? pet.happy),
     comfort: safeNum(pet.comfort),
     rest: safeNum(pet.rest),
+    neglect_hours: safeNum(pet.neglect_hours),
     ran_away: Boolean(pet.ran_away ?? pet.is_runaway),
     is_runaway: Boolean(pet.is_runaway ?? pet.ran_away),
     last_care_update:
@@ -62,6 +63,10 @@ async function updatePetCareStats(
     last_care_decay_at: string;
   },
 ) {
+  if (!petId?.trim()) {
+    throw new Error("Cannot update pet care stats without a valid pet id.");
+  }
+
   const patch = {
     hunger: updates.hunger,
     clean: updates.clean,
@@ -101,6 +106,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       ]);
 
     if (slotError) {
+      console.error("[care/current] failed to load party slots", slotError);
       return res.status(500).json({ error: slotError.message });
     }
 
@@ -113,8 +119,11 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       .slice(0, 4);
 
     const teamPetIds = normalizedSlots
-      .map((row: any) => row.pet_id)
-      .filter((value: unknown): value is string => typeof value === "string");
+      .map((row: any) => row?.pet_id)
+      .filter(
+        (value: unknown): value is string =>
+          typeof value === "string" && value.trim().length > 0,
+      );
 
     let team: any[] = [];
 
@@ -125,6 +134,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
         .in("id", teamPetIds);
 
       if (teamError) {
+        console.error("[care/current] failed to load team pets", teamError);
         return res.status(500).json({ error: teamError.message });
       }
 
@@ -149,6 +159,10 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
             .in("id", personalityIds);
 
         if (personalityError) {
+          console.error(
+            "[care/current] failed to load team personalities",
+            personalityError,
+          );
           return res.status(500).json({ error: personalityError.message });
         }
 
@@ -196,7 +210,8 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
           return {
             id: String(source.id),
             slotIndex: Number(slot.slot_index ?? 0),
-            species: source.name?.trim() || "Unknown Delta",
+            species:
+              source.species?.trim() || source.name?.trim() || "Unknown Delta",
             nickname:
               source.nickname?.trim() || source.name?.trim() || "Unnamed Delta",
             stage: titleCaseValue(source.stage, "Unknown"),
@@ -208,8 +223,8 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
               "Mysterious",
             ),
             element: titleCaseValue(
-              source.element ?? source.line ?? "Null",
-              "Null",
+              source.element ?? source.line ?? "Voidborne",
+              "Voidborne",
             ),
             elementKey: rawElement === "null_element" ? "null" : rawElement,
             level: Number(source.level ?? 1),
@@ -232,11 +247,19 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       !activePetResolved?.personality &&
       !activePetResolved?.personality_key
     ) {
-      const { data: personalityRow } = await supabaseAdmin
-        .from("personalities")
-        .select("name,key")
-        .eq("id", activePetResolved.personality_id)
-        .maybeSingle();
+      const { data: personalityRow, error: personalityLookupError } =
+        await supabaseAdmin
+          .from("personalities")
+          .select("name,key")
+          .eq("id", activePetResolved.personality_id)
+          .maybeSingle();
+
+      if (personalityLookupError) {
+        console.error(
+          "[care/current] failed to hydrate active pet personality",
+          personalityLookupError,
+        );
+      }
 
       if (personalityRow) {
         activePetResolved = {
@@ -246,7 +269,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       }
     }
 
-    if (!activePetResolved) {
+    if (!activePetResolved?.id) {
       return res.json({
         pet: null,
         stats: null,
@@ -259,36 +282,59 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
 
     activePetResolved = normalizePetForClient(activePetResolved);
 
-    const hydratedPet = normalizePetForClient(
-      applyCareDecay(activePetResolved),
-    );
+    let hydratedPet = activePetResolved;
+
+    try {
+      hydratedPet = normalizePetForClient(applyCareDecay(activePetResolved));
+    } catch (decayError) {
+      console.error("[care/current] applyCareDecay failed", decayError);
+      hydratedPet = activePetResolved;
+    }
 
     const careChanged =
-      hydratedPet.hunger !== activePetResolved.hunger ||
-      hydratedPet.clean !== activePetResolved.clean ||
-      hydratedPet.happy !== activePetResolved.happy ||
-      hydratedPet.comfort !== activePetResolved.comfort ||
-      hydratedPet.rest !== activePetResolved.rest ||
-      hydratedPet.neglect_hours !== activePetResolved.neglect_hours ||
-      hydratedPet.ran_away !== activePetResolved.ran_away ||
-      hydratedPet.runaway_at !== activePetResolved.runaway_at ||
-      hydratedPet.last_care_decay_at !== activePetResolved.last_care_decay_at;
+      safeNum(hydratedPet.hunger) !== safeNum(activePetResolved.hunger) ||
+      safeNum(hydratedPet.clean) !== safeNum(activePetResolved.clean) ||
+      safeNum(hydratedPet.happy) !== safeNum(activePetResolved.happy) ||
+      safeNum(hydratedPet.comfort) !== safeNum(activePetResolved.comfort) ||
+      safeNum(hydratedPet.rest) !== safeNum(activePetResolved.rest) ||
+      safeNum(hydratedPet.neglect_hours) !==
+        safeNum(activePetResolved.neglect_hours) ||
+      Boolean(hydratedPet.ran_away) !== Boolean(activePetResolved.ran_away) ||
+      (hydratedPet.runaway_at ?? null) !==
+        (activePetResolved.runaway_at ?? null) ||
+      String(hydratedPet.last_care_decay_at ?? "") !==
+        String(activePetResolved.last_care_decay_at ?? "");
 
-    if (careChanged) {
+    if (careChanged && hydratedPet?.id) {
       await updatePetCareStats(hydratedPet.id, {
-        hunger: hydratedPet.hunger,
-        clean: hydratedPet.clean,
-        happy: hydratedPet.happy,
-        comfort: hydratedPet.comfort,
-        rest: hydratedPet.rest,
-        neglect_hours: hydratedPet.neglect_hours,
-        ran_away: hydratedPet.ran_away,
+        hunger: safeNum(hydratedPet.hunger),
+        clean: safeNum(hydratedPet.clean),
+        happy: safeNum(hydratedPet.happy),
+        comfort: safeNum(hydratedPet.comfort),
+        rest: safeNum(hydratedPet.rest),
+        neglect_hours: safeNum(hydratedPet.neglect_hours),
+        ran_away: Boolean(hydratedPet.ran_away),
         runaway_at: hydratedPet.runaway_at ?? null,
-        last_care_update: hydratedPet.last_care_update,
-        last_care_decay_at: hydratedPet.last_care_decay_at,
+        last_care_update:
+          hydratedPet.last_care_update ?? new Date().toISOString(),
+        last_care_decay_at:
+          hydratedPet.last_care_decay_at ?? new Date().toISOString(),
       });
 
       activePetResolved = hydratedPet;
+    } else {
+      activePetResolved = hydratedPet;
+    }
+
+    if (!activePetResolved?.id) {
+      return res.json({
+        pet: null,
+        stats: null,
+        total_points: null,
+        hp_display: null,
+        elements: null,
+        team,
+      });
     }
 
     let stats: any = null;
@@ -296,7 +342,10 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     let hp_display: number | null = null;
 
     const [pointsResult, elementsResult] = await Promise.all([
-      fetchTotalPoints(activePetResolved.id).catch(() => null),
+      fetchTotalPoints(activePetResolved.id).catch((pointsError) => {
+        console.error("[care/current] fetchTotalPoints failed", pointsError);
+        return null;
+      }),
       supabaseAdmin
         .from("pet_elements")
         .select("*")
@@ -311,6 +360,10 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     }
 
     if (elementsResult.error) {
+      console.error(
+        "[care/current] failed to load pet elements",
+        elementsResult.error,
+      );
       return res.json({
         pet: {
           ...activePetResolved,
@@ -364,6 +417,8 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       team,
     });
   } catch (error) {
+    console.error("[care/current] failed", error);
+
     return res.status(500).json({
       error:
         error instanceof Error ? error.message : "Failed to load pet page.",
@@ -378,7 +433,7 @@ careRouter.post("/feed", requireUser, async (req: AuthedRequest, res) => {
 
     const { pet } = await fetchActivePet(userId);
 
-    if (!pet) {
+    if (!pet?.id) {
       return res.status(404).json({ error: "No active pet found" });
     }
 
@@ -390,12 +445,12 @@ careRouter.post("/feed", requireUser, async (req: AuthedRequest, res) => {
 
     await updatePetCareStats(current.id, {
       hunger,
-      clean: current.clean,
-      happy: current.happy,
-      comfort: current.comfort,
-      rest: current.rest,
-      neglect_hours: current.neglect_hours ?? 0,
-      ran_away: current.ran_away ?? false,
+      clean: safeNum(current.clean),
+      happy: safeNum(current.happy),
+      comfort: safeNum(current.comfort),
+      rest: safeNum(current.rest),
+      neglect_hours: safeNum(current.neglect_hours),
+      ran_away: Boolean(current.ran_away),
       runaway_at: current.runaway_at ?? null,
       last_care_update: new Date().toISOString(),
       last_care_decay_at: new Date().toISOString(),
@@ -416,7 +471,7 @@ careRouter.post("/clean", requireUser, async (req: AuthedRequest, res) => {
 
     const { pet } = await fetchActivePet(userId);
 
-    if (!pet) {
+    if (!pet?.id) {
       return res.status(404).json({ error: "No active pet found" });
     }
 
@@ -427,13 +482,13 @@ careRouter.post("/clean", requireUser, async (req: AuthedRequest, res) => {
     const clean = Math.min(100, safeNum(current.clean) + amount);
 
     await updatePetCareStats(current.id, {
-      hunger: current.hunger,
+      hunger: safeNum(current.hunger),
       clean,
-      happy: current.happy,
-      comfort: current.comfort,
-      rest: current.rest,
-      neglect_hours: current.neglect_hours ?? 0,
-      ran_away: current.ran_away ?? false,
+      happy: safeNum(current.happy),
+      comfort: safeNum(current.comfort),
+      rest: safeNum(current.rest),
+      neglect_hours: safeNum(current.neglect_hours),
+      ran_away: Boolean(current.ran_away),
       runaway_at: current.runaway_at ?? null,
       last_care_update: new Date().toISOString(),
       last_care_decay_at: new Date().toISOString(),
@@ -454,7 +509,7 @@ careRouter.post("/play", requireUser, async (req: AuthedRequest, res) => {
 
     const { pet } = await fetchActivePet(userId);
 
-    if (!pet) {
+    if (!pet?.id) {
       return res.status(404).json({ error: "No active pet found" });
     }
 
@@ -465,13 +520,13 @@ careRouter.post("/play", requireUser, async (req: AuthedRequest, res) => {
     const happy = Math.min(100, safeNum(current.happy) + amount);
 
     await updatePetCareStats(current.id, {
-      hunger: current.hunger,
-      clean: current.clean,
+      hunger: safeNum(current.hunger),
+      clean: safeNum(current.clean),
       happy,
-      comfort: current.comfort,
-      rest: current.rest,
-      neglect_hours: current.neglect_hours ?? 0,
-      ran_away: current.ran_away ?? false,
+      comfort: safeNum(current.comfort),
+      rest: safeNum(current.rest),
+      neglect_hours: safeNum(current.neglect_hours),
+      ran_away: Boolean(current.ran_away),
       runaway_at: current.runaway_at ?? null,
       last_care_update: new Date().toISOString(),
       last_care_decay_at: new Date().toISOString(),
@@ -500,7 +555,7 @@ careRouter.post("/pet", requireUser, async (req: AuthedRequest, res) => {
 
     const { pet } = await fetchActivePet(userId);
 
-    if (!pet) {
+    if (!pet?.id) {
       return res.status(404).json({ error: "No active pet found" });
     }
 
@@ -512,13 +567,13 @@ careRouter.post("/pet", requireUser, async (req: AuthedRequest, res) => {
     const happy = Math.min(100, safeNum(current.happy) + moodBoost);
 
     await updatePetCareStats(current.id, {
-      hunger: current.hunger,
-      clean: current.clean,
+      hunger: safeNum(current.hunger),
+      clean: safeNum(current.clean),
       happy,
       comfort,
-      rest: current.rest,
-      neglect_hours: current.neglect_hours ?? 0,
-      ran_away: current.ran_away ?? false,
+      rest: safeNum(current.rest),
+      neglect_hours: safeNum(current.neglect_hours),
+      ran_away: Boolean(current.ran_away),
       runaway_at: current.runaway_at ?? null,
       last_care_update: new Date().toISOString(),
       last_care_decay_at: new Date().toISOString(),

@@ -4,17 +4,19 @@
   margin: 0 auto;
   padding: 0 var(--space-4) var(--space-8);
   animation: dpFadeIn 0.2s ease both;
+  overflow: visible;
 }
-
 .hp-banner {
-  width: 100%;
-  margin: 0 0 16px;
+  display: block;
+  width: calc(100% + 160px);
+  max-width: none;
+  margin: 0 -160px 140px 0;
   border-radius: 16px;
-  border: 2px solid rgba(78, 105, 148, 0.28);
+  border: 2px solid rgba(78, 105, 148, 0.48);
   overflow: hidden;
   box-shadow:
     0 8px 20px rgba(53, 73, 107, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
 }
 
 .hp-bannerContent {
@@ -31,7 +33,7 @@
   flex: 1 1 auto;
   overflow: hidden;
   min-width: 0;
-  margin-inline: -100px;
+  margin-inline: 0;
 }
 
 .hp-bannerTickerTrack {
@@ -304,15 +306,27 @@
   font-size: 1.02rem;
   font-weight: 900;
   letter-spacing: 0.02em;
-  background: linear-gradient(180deg, #f4d76a 0%, #e2b93a 100%);
-  border: 1px solid rgba(255, 214, 96, 0.65);
+  background: linear-gradient(180deg, #ffd84c 0%, #f2c21c 55%, #dca400 100%);
+  border: 1px solid rgba(214, 152, 35, 0.75);
   box-shadow:
-    inset 0 2px 0 rgba(255, 245, 200, 0.42),
-    0 6px 14px rgba(90, 64, 15, 0.14);
+    inset 0 2px 0 rgba(255, 245, 200, 0.55),
+    0 6px 14px rgba(90, 64, 15, 0.18);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
     filter 0.18s ease;
+}
+
+.hp-primaryBtn--journey::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 18px;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 rgba(255, 210, 78, 0),
+    0 0 0 rgba(255, 210, 78, 0);
+  animation: hpJourneyGlowPulse 3s ease-in-out infinite;
 }
 
 .hp-primaryBtn:hover {

@@ -14,7 +14,7 @@ export type EggType = {
 export const MYSTERY_EGG: EggType = {
   id: "mystery_egg",
   name: "Prismatic Unknown",
-  element: "null_element",
+  element: "Unknown",
   description: "Unstable. Shifting. No known origin.",
   sprite: goldEgg,
 };
