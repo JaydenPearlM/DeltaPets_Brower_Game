@@ -103,54 +103,35 @@ async function updatePetCareStats(
 
 // ---------------------------------------------------------------
 // Personality roll
-// IMPORTANT:
-// These keys MUST match the real keys in public.personalities.
+// Pull the real keys directly from public.personalities
+// so backend logic always matches Supabase.
 // ---------------------------------------------------------------
-const PERSONALITY_KEYS = [
-  "gremlin",
-  "sprinter",
-  "loyalist",
-  "scholar",
-  "radiant",
-  "guardian",
-  "anxious",
-  "wildheart",
-  "brightspark",
-  "prankster",
-  "shadowed",
-  "drifter",
-  "glutton",
-  "dreamer",
-  "stoic",
-  "tinker",
-  "feral",
-  "blazeborn",
-  "gentle",
-  "royal",
-] as const;
+type PersonalityRow = {
+  id: string;
+  key: string;
+};
 
-type PersonalityKey = (typeof PERSONALITY_KEYS)[number];
-
-function rollPersonality(): PersonalityKey {
-  return PERSONALITY_KEYS[Math.floor(Math.random() * PERSONALITY_KEYS.length)];
-}
-
-async function resolvePersonalityId(key: PersonalityKey): Promise<string> {
+async function getAllPersonalities(): Promise<PersonalityRow[]> {
   const { data, error } = await supabaseAdmin
     .from("personalities")
-    .select("id")
-    .eq("key", key)
-    .maybeSingle();
+    .select("id, key")
+    .order("key", { ascending: true });
 
   if (error) {
-    throw new Error(`Failed to resolve personality "${key}": ${error.message}`);
+    throw new Error(`Failed to load personalities: ${error.message}`);
   }
 
-  if (!data?.id) {
-    throw new Error(`No personality found for key "${key}"`);
+  if (!data || data.length === 0) {
+    throw new Error("No personalities found in public.personalities");
   }
 
-  return data.id;
+  return data;
+}
+
+async function rollPersonality(): Promise<PersonalityRow> {
+  const personalities = await getAllPersonalities();
+  const randomIndex = Math.floor(Math.random() * personalities.length);
+  return personalities[randomIndex];
 }
 
 // ---------------------------------------------------------------
@@ -827,6 +808,7 @@ petsRouter.post(
         is_active: false,
         location: "storage",
         gender,
+
         atk: totalAtk,
         def: totalDef,
         spd: totalSpd,
@@ -834,6 +816,24 @@ petsRouter.post(
         mana: totalMana,
         hp_max: hpMax,
         hp_cur: hpMax,
+
+        // full care on hatch
+        hunger: 50,
+        clean: 50,
+        cleanliness: 50,
+        happy: 50,
+        happiness: 50,
+        comfort: 50,
+        rest: 50,
+        energy: 50,
+        bond: 0,
+        neglect_hours: 0,
+        ran_away: false,
+        is_runaway: false,
+        runaway_at: null,
+        last_care_update: nowIso,
+        last_care_decay_at: nowIso,
+
         description,
         hatch_time_alignment: hatchTimeAlignment,
         growth_strong_stats: strengths,

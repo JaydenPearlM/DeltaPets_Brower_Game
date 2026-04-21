@@ -4,6 +4,7 @@ import { LogoutButton } from "../components/Authentication/LogoutButton";
 import { LoginMenus } from "../components/Authentication/LoginMenus";
 import { useAliuneSignal } from "../pages/Homepage/useAliuneSignal";
 import { DeltaClock } from "../lib/timers/deltaClock";
+import { useAuth } from "./providers/useAuth";
 import "./App.css";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? "ALPHAv0.0.1-alpha.2";
@@ -35,12 +36,14 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signal } = useAliuneSignal();
+  const { user, loading } = useAuth();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [exploreHintOpen, setExploreHintOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<
     Record<MenuSectionKey, boolean>
   >({
-    pets: true,
+    pets: false,
     battle: false,
     cities: false,
   });
@@ -65,22 +68,25 @@ export default function App() {
     (signal as any)?.corruptionLabel ?? (signal as any)?.corruption ?? "None";
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen && !exploreHintOpen) return;
 
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target as Node | null;
+
       if (
         exploreWrapperRef.current &&
         target &&
         !exploreWrapperRef.current.contains(target)
       ) {
         setMenuOpen(false);
+        setExploreHintOpen(false);
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setMenuOpen(false);
+        setExploreHintOpen(false);
       }
     };
 
@@ -91,10 +97,11 @@ export default function App() {
       document.removeEventListener("mousedown", handlePointerDown);
       window.removeEventListener("keydown", handleEscape);
     };
-  }, [menuOpen]);
+  }, [menuOpen, exploreHintOpen]);
 
   useEffect(() => {
     setMenuOpen(false);
+    setExploreHintOpen(false);
   }, [location.pathname]);
 
   function toggleSection(section: MenuSectionKey) {
@@ -106,7 +113,21 @@ export default function App() {
 
   function handleNavigate(to: string) {
     setMenuOpen(false);
+    setExploreHintOpen(false);
     navigate(to);
+  }
+
+  function handleExploreClick() {
+    if (loading) return;
+
+    if (!user) {
+      setMenuOpen(false);
+      setExploreHintOpen((prev) => !prev);
+      return;
+    }
+
+    setExploreHintOpen(false);
+    setMenuOpen((prev) => !prev);
   }
 
   function renderMenuLinks(links: MenuLink[]) {
@@ -168,14 +189,33 @@ export default function App() {
                   <button
                     type="button"
                     className="exploreButton"
-                    aria-expanded={menuOpen}
+                    aria-expanded={menuOpen || exploreHintOpen}
                     aria-haspopup="dialog"
-                    onClick={() => setMenuOpen((prev) => !prev)}
+                    onClick={handleExploreClick}
                   >
                     EXPLORE ☰
                   </button>
 
-                  {menuOpen && (
+                  {exploreHintOpen && !user && (
+                    <div
+                      className="exploreThoughtBubble"
+                      role="dialog"
+                      aria-modal="false"
+                      aria-label="Explore sign-in notice"
+                    >
+                      <div
+                        className="exploreThoughtBubbleTail"
+                        aria-hidden="true"
+                      />
+                      <p className="exploreThoughtBubbleText">
+                        The map is fogged out until you sign in. Make an account
+                        and step into DeltaPets! Your future Delta is probably
+                        already judging your lateness.
+                      </p>
+                    </div>
+                  )}
+
+                  {menuOpen && user && (
                     <div
                       className="hamburgerMenuModal"
                       role="dialog"

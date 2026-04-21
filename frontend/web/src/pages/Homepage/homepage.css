@@ -1559,14 +1559,12 @@
   position: relative;
   min-width: 0;
   margin-inline: 0;
-  mask-image: none;
-  -webkit-mask-image: none;
 }
 
 .hp-bannerTickerTrack {
   display: flex;
   gap: 48px;
-  white-space: nowrap;
+
   width: max-content;
   animation: hp-scroll 70s linear infinite !important;
 }

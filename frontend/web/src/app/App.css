@@ -66,11 +66,21 @@
   justify-content: center;
   gap: 6px;
   pointer-events: none;
-  z-index: 1;
+  position: relative;
+  z-index: 20;
 }
 
 .headerStack > * {
   pointer-events: auto;
+}
+.headerRight {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  transform: translateX(31px);
+  z-index: 3;
 }
 
 /* ===== CENTER TOP: ALIUNE SIGNAL ===== */
@@ -130,6 +140,7 @@
 .exploreWrapper {
   position: relative;
   flex: 0 0 auto;
+  z-index: 30;
 }
 
 .exploreButton {
@@ -159,6 +170,47 @@
     inset 0 1px 0 rgba(255, 244, 187, 0.85),
     0 10px 18px rgba(104, 70, 8, 0.28);
   filter: brightness(1.04);
+}
+
+/* ===== SIGNED-OUT THOUGHT BUBBLE UNDER EXPLORE ===== */
+.exploreThoughtBubble {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 45;
+  width: 360px;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 16px 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(58, 85, 132, 0.22);
+  background: linear-gradient(180deg, #ffffff 0%, #f5f8ff 100%);
+  box-shadow:
+    0 14px 30px rgba(24, 45, 84, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.exploreThoughtBubbleTail {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-top: 1px solid rgba(58, 85, 132, 0.22);
+  border-left: 1px solid rgba(58, 85, 132, 0.22);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.exploreThoughtBubbleText {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: #060b13;
+  text-align: center;
+  font-weight: 55540;
 }
 
 /* ===== RIGHT: CLOCK ===== */
@@ -389,6 +441,7 @@
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
     row-gap: 12px;
+    padding-bottom: 20px;
   }
 
   .logoBlock,
@@ -408,6 +461,10 @@
     flex-wrap: wrap;
     justify-content: center;
   }
+
+  .exploreThoughtBubble {
+    width: min(360px, calc(100vw - 24px));
+  }
 }
 
 @media (max-width: 640px) {
@@ -419,6 +476,15 @@
   .exploreButton {
     font-size: 16px;
     padding: 11px 16px;
+  }
+
+  .exploreThoughtBubble {
+    width: min(320px, calc(100vw - 24px));
+    padding: 14px 16px;
+  }
+
+  .exploreThoughtBubbleText {
+    font-size: 12px;
   }
 
   .hamburgerMenuModal {
