@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { safeNum, titleCase } from "@/lib/petUtils";
 import "./PetDetailsPanel.css";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type PetRecord = {
   id?: string;
@@ -30,6 +33,14 @@ type PetRecord = {
 
 type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
 
+type StarterMerchantState = {
+  show: boolean;
+  href: string;
+  title: string;
+  body: string;
+  ctaLabel: string;
+};
+
 const CARE_MAX = 50;
 
 type PetDetailsPanelProps = {
@@ -55,26 +66,14 @@ type PetDetailsPanelProps = {
     bed: number;
   };
   actionMsg: string | null;
+  starterMerchant?: StarterMerchantState | null;
   setNicknameDraft: (value: string) => void;
   setShowNicknameEditor: (value: boolean) => void;
   saveNickname: () => Promise<void>;
   runCareAction: (action: "feed" | "clean" | "play" | "pet") => Promise<void>;
 };
 
-function titleCase(value: string | null | undefined) {
-  if (!value) return "";
-  return String(value)
-    .replace(/_/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function safeNum(value: unknown, fallback = 0) {
-  const n = Number(value ?? fallback);
-  return Number.isFinite(n) ? n : fallback;
-}
+// ─── Pure helpers ─────────────────────────────────────────────────────────────
 
 function getPetLabel(pet: PetRecord | null) {
   return pet?.nickname?.trim() || pet?.name?.trim() || "Your Delta";
@@ -254,6 +253,8 @@ function randomNickname(seedName: string) {
   return `${first}${second}`;
 }
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
 function InfoRow({
   label,
   value,
@@ -371,6 +372,8 @@ function SectionPill({
   );
 }
 
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function PetDetailsPanel({
   pet,
   personalityName,
@@ -389,6 +392,7 @@ export default function PetDetailsPanel({
   bond,
   inventoryCounts,
   actionMsg,
+  starterMerchant,
   setNicknameDraft,
   setShowNicknameEditor,
   saveNickname,
@@ -658,6 +662,25 @@ export default function PetDetailsPanel({
             <MeterRow label="Comfort" value={comfortLevel} tone="gold" />
           </div>
         </section>
+
+        {starterMerchant?.show ? (
+          <div className="petRepoRunawayBanner" role="alert">
+            <div className="petRepoRunawayBanner__eyebrow">
+              Emergency Access
+            </div>
+            <h3 className="petRepoRunawayBanner__title">
+              {starterMerchant.title || "Pet Ran Away"}
+            </h3>
+            <p className="petRepoRunawayBanner__body">{starterMerchant.body}</p>
+
+            <a
+              className="petRepoRunawayBanner__cta"
+              href={starterMerchant.href}
+            >
+              {starterMerchant.ctaLabel || "Visit the Kithna Merchant"}
+            </a>
+          </div>
+        ) : null}
 
         <div className="petRepoActionGrid">
           <button

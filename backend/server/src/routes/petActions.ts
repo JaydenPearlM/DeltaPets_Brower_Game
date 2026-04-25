@@ -8,6 +8,7 @@ import {
   colNameForKey,
   cooldownsFromPetRow,
 } from "../pets/cooldowns";
+import { fetchActivePet } from "./routePets/petsRepo";
 
 export const petActionsRouter = Router();
 
@@ -17,6 +18,11 @@ type Body = {
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
+}
+
+function safeNum(value: unknown, fallback = 0) {
+  const n = Number(value ?? fallback);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 petActionsRouter.post(
@@ -37,20 +43,18 @@ petActionsRouter.post(
       return res.status(400).json({ error: "Invalid action" });
     }
 
-    // Load current pet
-    const { data: pet, error } = await supabaseAdmin
-      .from("pets")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
+    // Always load the ACTIVE pet, not just some random pet owned by the user.
+    const { pet, used } = await fetchActivePet(userId);
 
-    if (error) return res.status(500).json({ error: error.message });
-    if (!pet) return res.status(404).json({ error: "No pet found" });
+    if (!pet) {
+      return res.status(404).json({ error: "No pet found" });
+    }
 
-    if (pet.is_runaway) {
+    if (pet.is_runaway || pet.ran_away) {
       return res.status(409).json({
         error: "Your pet ran away.",
         server_now: nowIso,
+        pet_source: used,
         pet,
       });
     }
@@ -66,14 +70,15 @@ petActionsRouter.post(
         cooldown_key: e?.cooldown_key ?? action,
         cooldown_ends_at: e?.cooldown_ends_at ?? null,
         cooldown_remaining_ms: e?.cooldown_remaining_ms ?? null,
+        pet_source: used,
       });
     }
 
-    // --- Apply action effects + cooldown ---
-    const hunger = Number(pet.hunger ?? 0);
-    const cleanliness = Number(pet.cleanliness ?? 0);
-    const happiness = Number(pet.happiness ?? 0);
-    const bond = Number(pet.bond ?? 0);
+    // Your care system is 0–50, so keep these aligned with that scale.
+    const hunger = safeNum(pet.hunger, 0);
+    const clean = safeNum(pet.clean ?? pet.cleanliness, 0);
+    const happy = safeNum(pet.happy ?? pet.happiness, 0);
+    const bond = safeNum((pet as any).bond, 0);
 
     const patch: Record<string, any> = {};
 
@@ -82,24 +87,41 @@ petActionsRouter.post(
     patch[col] = calcNewCooldownEndsAtIso(nowMs, action);
 
     if (action === "feed") {
-      patch.hunger = clamp(hunger + 30, 0, 100);
-      patch.happiness = clamp(happiness + 5, 0, 100);
-      patch.last_fed_at = nowIso; //runaway timer anchor
+      const nextHunger = clamp(hunger + 15, 0, 50);
+      const nextHappy = clamp(happy + 3, 0, 50);
+
+      patch.hunger = nextHunger;
+      patch.happy = nextHappy;
+      patch.happiness = nextHappy;
+      patch.last_fed_at = nowIso;
     }
 
     if (action === "clean") {
-      patch.cleanliness = clamp(cleanliness + 35, 0, 100);
-      patch.happiness = clamp(happiness + 3, 0, 100);
+      const nextClean = clamp(clean + 15, 0, 50);
+      const nextHappy = clamp(happy + 2, 0, 50);
+
+      patch.clean = nextClean;
+      patch.cleanliness = nextClean;
+      patch.happy = nextHappy;
+      patch.happiness = nextHappy;
     }
 
     if (action === "bond") {
       patch.bond = clamp(bond + 8, 0, 100);
-      patch.happiness = clamp(happiness + 10, 0, 100);
+
+      const nextHappy = clamp(happy + 5, 0, 50);
+      patch.happy = nextHappy;
+      patch.happiness = nextHappy;
     }
 
     if (action === "play") {
-      patch.happiness = clamp(happiness + 15, 0, 100);
-      // later: patch.energy = clamp(Number(pet.energy ?? 0) - 5, 0, 100);
+      const nextHappy = clamp(happy + 8, 0, 50);
+      patch.happy = nextHappy;
+      patch.happiness = nextHappy;
+
+      if ("energy" in pet) {
+        patch.energy = clamp(safeNum((pet as any).energy, 0) - 3, 0, 50);
+      }
     }
 
     const { data: updated, error: upErr } = await supabaseAdmin
@@ -109,13 +131,17 @@ petActionsRouter.post(
       .select("*")
       .single();
 
-    if (upErr) return res.status(500).json({ error: upErr.message });
+    if (upErr) {
+      return res.status(500).json({ error: upErr.message });
+    }
 
     return res.json({
       server_now: nowIso,
+      pet_source: used,
       pet: updated,
       cooldowns: cooldownsFromPetRow(updated, nowMs),
     });
   },
 );
+
 export default petActionsRouter;

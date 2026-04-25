@@ -1,9 +1,12 @@
-// frontend/web/src/Pets_Design/auth/pets/StatsModal.tsx
+// frontend/web/src/Pets_Creation/registry/Stats/mainStats/StatsModal.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
+import { titleCase } from "@/lib/utils/petUtils";
 import "./stats.css";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 /**
- *  Match your database columns (pet_elements has null_element)
+ * Match your database columns (pet_elements has null_element)
  */
 export type ElementalLine =
   | "null_element"
@@ -17,7 +20,7 @@ export type ElementalLine =
   | "shadow";
 
 /**
- *  UI stats keys (what this modal displays/edits)
+ * UI stats keys (what this modal displays/edits)
  */
 export type PetStats = {
   hp: number;
@@ -39,43 +42,27 @@ const STAT_KEYS: Array<keyof FullStats> = [
   "mana",
 ];
 
-function prettyStatKey(k: keyof FullStats) {
-  if (k === "hp") return "HP";
-  if (k === "atk") return "ATK";
-  if (k === "magi") return "MAGI";
-  if (k === "def") return "DEF";
-  if (k == "mana") return "mana";
-  return "SPD";
-}
-
-function titleCase(s: string) {
-  return s.length ? s[0].toUpperCase() + s.slice(1) : s;
-}
-
 /**
- *  DB/API-friendly stat shape:
+ * DB/API-friendly stat shape:
  * Your responses/rows might include extra keys (mana, base_total, pet_id, base_hp, etc.)
- * We only care about the 5 UI keys.
+ * We only care about the 6 UI keys.
  */
 type StatsLike =
-  | Partial<PetStats> // simple UI usage
+  | Partial<PetStats>
   | {
-      // common API/DB patterns
       hp?: number;
       atk?: number;
       magi?: number;
       def?: number;
       spd?: number;
       mana?: number;
-
-      // allow extras without TypeScript screaming
       [k: string]: unknown;
     }
   | null
   | undefined;
 
 /**
- *  DB row shape for pet_elements (from your schema image)
+ * DB row shape for pet_elements (from your schema)
  */
 type ElementsRowLike =
   | Partial<Record<ElementalLine, number>>
@@ -89,12 +76,21 @@ type ElementsRowLike =
       storm?: number;
       light?: number;
       shadow?: number;
-
-      // allow extras like pet_id
       [k: string]: unknown;
     }
   | null
   | undefined;
+
+// ─── Pure helpers ─────────────────────────────────────────────────────────────
+
+function prettyStatKey(k: keyof FullStats) {
+  if (k === "hp") return "HP";
+  if (k === "atk") return "ATK";
+  if (k === "magi") return "MAGI";
+  if (k === "def") return "DEF";
+  if (k === "mana") return "MANA";
+  return "SPD";
+}
 
 function normalizeStats(stats: StatsLike): FullStats {
   return {
@@ -112,6 +108,8 @@ function getElementValue(elements: ElementsRowLike, el: ElementalLine) {
   return Number(v ?? 0);
 }
 
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export function StatsModal(props: {
   open: boolean;
   onClose: () => void;
@@ -120,7 +118,7 @@ export function StatsModal(props: {
   petName?: string | null;
 
   /**
-   *  Pass DB/API stats directly:
+   * Pass DB/API stats directly:
    * - ActivePetResponse.stats (if it has hp/atk/magi/def/spd)
    * - or your UI PetStats
    */
@@ -130,7 +128,7 @@ export function StatsModal(props: {
   level?: number;
 
   /**
-   *  Pass DB/API elements directly:
+   * Pass DB/API elements directly:
    * - ActivePetResponse.elements (pet_elements row)
    * - or Partial<Record<ElementalLine, number>>
    */
@@ -141,15 +139,14 @@ export function StatsModal(props: {
    * If level === 1 and level1 is provided, the modal becomes an editor.
    */
   level1?: {
-    totalPoints: number; // e.g. 7
-    capPerStat: number; // e.g. 10
-    unspentPoints: number; // server truth
+    totalPoints: number;
+    capPerStat: number;
+    unspentPoints: number;
     onSave: (next: { stats: FullStats; spentPoints: number }) => void;
   };
 }) {
   const { open, onClose, petName, stats, level, elements, level1 } = props;
 
-  // Escape closes modal
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -167,13 +164,11 @@ export function StatsModal(props: {
   const [draft, setDraft] = useState<FullStats>(base);
   const [spentHere, setSpentHere] = useState(0);
 
-  // refs to avoid stale closure bugs inside setDraft updater
   const spentHereRef = useRef(0);
   useEffect(() => {
     spentHereRef.current = spentHere;
   }, [spentHere]);
 
-  // Reset draft whenever modal opens or stats change.
   useEffect(() => {
     if (!open) return;
     setDraft(base);
@@ -216,8 +211,6 @@ export function StatsModal(props: {
         return next;
       }
 
-      // delta === -1
-      // Only allow undoing what was spent in THIS modal session.
       if (spentHereRef.current <= 0) return prev;
       if (cur <= 0) return prev;
 
@@ -243,7 +236,7 @@ export function StatsModal(props: {
       >
         <div className="statsModal__header">
           <div className="statsModal__headerLeft">
-            <h2 className="statsModal__title">{nameForTitle} " " Stats</h2>
+            <h2 className="statsModal__title">{nameForTitle} Stats</h2>
             {typeof level === "number" ? (
               <div className="statsModal__subtitle">Level {level}</div>
             ) : null}
@@ -297,6 +290,7 @@ export function StatsModal(props: {
             <div className="statsModal__elements">
               {elementsOrdered.map((el) => (
                 <div key={el} className="elementCell">
+                  {/* titleCase from petUtils correctly renders null_element → Null Element */}
                   <div className="elementCell__label">{titleCase(el)}</div>
                   <div className="elementCell__value">
                     {getElementValue(elements, el)}
@@ -324,6 +318,8 @@ export function StatsModal(props: {
     </div>
   );
 }
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function Stat(props: {
   label: string;

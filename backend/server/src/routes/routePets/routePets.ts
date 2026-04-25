@@ -19,7 +19,6 @@ import {
 
 import { fetchTotalPoints, insertBaseStats } from "./petsStats";
 
-// STARTERS needed for hatch fallback lookup + starter selection at egg creation
 import {
   findStarterByName,
   STARTERS,
@@ -40,66 +39,12 @@ import {
   sumBase5,
 } from "./petsUtils";
 
+import {
+  normalizePetForClient,
+  updatePetCareStats,
+} from "../../lib/petCareHelpers";
+
 export const petsRouter = Router();
-
-function normalizeCarePet<T extends Record<string, any>>(pet: T): T {
-  return {
-    ...pet,
-    clean: Number(pet.clean ?? pet.cleanliness ?? 0),
-    cleanliness: Number(pet.cleanliness ?? pet.clean ?? 0),
-    happy: Number(pet.happy ?? pet.happiness ?? 0),
-    happiness: Number(pet.happiness ?? pet.happy ?? 0),
-    comfort: Number(pet.comfort ?? 0),
-    rest: Number(pet.rest ?? 0),
-    ran_away: Boolean(pet.ran_away ?? pet.is_runaway),
-    is_runaway: Boolean(pet.is_runaway ?? pet.ran_away),
-    last_care_update:
-      pet.last_care_update ??
-      pet.last_care_decay_at ??
-      new Date().toISOString(),
-    last_care_decay_at:
-      pet.last_care_decay_at ??
-      pet.last_care_update ??
-      new Date().toISOString(),
-  };
-}
-
-async function updatePetCareStats(
-  petId: string,
-  updates: {
-    hunger: number;
-    clean: number;
-    happy: number;
-    comfort: number;
-    rest: number;
-    neglect_hours: number;
-    ran_away: boolean;
-    runaway_at: string | null;
-    last_care_update: string;
-    last_care_decay_at: string;
-  },
-) {
-  const { error } = await supabaseAdmin
-    .from("pets")
-    .update({
-      hunger: updates.hunger,
-      clean: updates.clean,
-      cleanliness: updates.clean,
-      happy: updates.happy,
-      happiness: updates.happy,
-      comfort: updates.comfort,
-      rest: updates.rest,
-      neglect_hours: updates.neglect_hours,
-      ran_away: updates.ran_away,
-      is_runaway: updates.ran_away,
-      runaway_at: updates.runaway_at,
-      last_care_update: updates.last_care_update,
-      last_care_decay_at: updates.last_care_decay_at,
-    })
-    .eq("id", petId);
-
-  if (error) throw error;
-}
 
 // ---------------------------------------------------------------
 // Personality roll
@@ -285,8 +230,8 @@ petsRouter.get(
         });
       }
 
-      const normalizedPet = normalizeCarePet(pet);
-      const hydratedPet = normalizeCarePet(applyCareDecay(normalizedPet));
+      const normalizedPet = normalizePetForClient(pet);
+      const hydratedPet = normalizePetForClient(applyCareDecay(normalizedPet));
 
       const careChanged =
         hydratedPet.hunger !== normalizedPet.hunger ||
@@ -345,9 +290,10 @@ petsRouter.post(
   "/ensure-egg",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
+    const requestedLine = req.body?.line ?? null;
+
     try {
       const userId = req.user!.id;
-      const requestedLine = req.body?.line ?? null;
       const worldTime = req.body?.worldTime ?? null;
       const personalityKey = req.body?.personalityKey ?? null;
 
@@ -356,11 +302,14 @@ petsRouter.post(
       const existingPet = await fetchStarterPetAnyStage(userId);
 
       if (existingPet) {
+        const existingResolvedLine =
+          existingPet.line ?? requestedLine ?? "water";
+
         return res.status(200).json({
           success: true,
           existing: true,
           requested_line: requestedLine,
-          resolved_line: existingPet.line ?? existingPet.element ?? null,
+          resolved_line: existingResolvedLine,
           pet: existingPet,
         });
       }
@@ -388,36 +337,97 @@ petsRouter.post(
         weakStat,
       });
 
-      const { data: insertedPet, error: insertError } = await supabaseAdmin
+      const fullInsertPayload = {
+        user_id: userId,
+        name: starter.eggName,
+        species: starter.speciesId,
+        line: resolvedLine,
+        stage: "egg",
+        hatch_ends_at: hatchEndsAt,
+        is_active: false,
+        location: "hatchery",
+        personality_key: personalityKey ?? null,
+        hatch_time_alignment: worldTime ?? null,
+        growth_strong_stats: strongStats,
+        growth_weak_stat: weakStat,
+      } as any;
+
+      const fallbackInsertPayload = {
+        user_id: userId,
+        name: starter.eggName,
+        line: resolvedLine,
+        stage: "egg",
+        hatch_ends_at: hatchEndsAt,
+        is_active: false,
+        location: "hatchery",
+      } as any;
+
+      let insertedPet: any = null;
+
+      const fullInsertResult = await supabaseAdmin
         .from("pets")
-        .insert({
-          user_id: userId,
-          name: starter.eggName,
-          species: starter.speciesId,
-          line: resolvedLine,
-          stage: "egg",
-          hatch_ends_at: hatchEndsAt,
-          is_active: false,
-          location: "hatchery",
-          personality_key: personalityKey ?? null,
-          hatch_time_alignment: worldTime ?? null,
-          growth_strong_stats: strongStats,
-          growth_weak_stat: weakStat,
-        } as any)
+        .insert(fullInsertPayload)
         .select("*")
         .single();
 
-      if (insertError) {
-        console.error("[ensure-egg] pets insert failed:", insertError);
-        return res.status(500).json({ error: insertError.message });
+      if (fullInsertResult.error) {
+        console.error(
+          "[ensure-egg] full pets insert failed:",
+          fullInsertResult.error,
+        );
+
+        const fallbackInsertResult = await supabaseAdmin
+          .from("pets")
+          .insert(fallbackInsertPayload)
+          .select("*")
+          .single();
+
+        if (fallbackInsertResult.error) {
+          console.error(
+            "[ensure-egg] fallback pets insert failed:",
+            fallbackInsertResult.error,
+          );
+
+          return res.status(500).json({
+            success: false,
+            requested_line: requestedLine,
+            resolved_line: resolvedLine,
+            error: fallbackInsertResult.error.message,
+            full_insert_error: fullInsertResult.error.message,
+            fallback_insert_error: fallbackInsertResult.error.message,
+          });
+        }
+
+        insertedPet = fallbackInsertResult.data;
+      } else {
+        insertedPet = fullInsertResult.data;
+      }
+
+      if (!insertedPet?.id) {
+        return res.status(500).json({
+          success: false,
+          requested_line: requestedLine,
+          resolved_line: resolvedLine,
+          error: "Pet insert finished but no pet id was returned.",
+        });
       }
 
       try {
         await insertBaseStats(insertedPet.id, starter.baseStats);
       } catch (statsError: any) {
         console.error("[ensure-egg] insertBaseStats failed:", statsError);
+
         return res.status(500).json({
-          error: statsError?.message ?? "Failed to insert base stats",
+          success: false,
+          requested_line: requestedLine,
+          resolved_line: resolvedLine,
+          starter_species_id: starter.speciesId,
+          pet: insertedPet,
+          base_stats: starter.baseStats,
+          error:
+            statsError?.message ??
+            statsError?.details ??
+            "Failed to insert base stats",
         });
       }
 
@@ -431,8 +441,16 @@ petsRouter.post(
       });
     } catch (error: any) {
       console.error("[ensure-egg] failed:", error);
+
       return res.status(500).json({
-        error: error?.message ?? "Failed to ensure egg",
+        success: false,
+        requested_line: requestedLine,
+        resolved_line: null,
+        error:
+          error?.message ??
+          error?.details ??
+          error?.hint ??
+          "Failed to ensure egg",
       });
     }
   },
@@ -747,11 +765,6 @@ petsRouter.post(
         personalityId = await resolvePersonalityId(personalityKey);
       }
 
-      // -----------------------------
-      // preserve egg strengths / weakness
-      // egg is the source of truth
-      // fallback roll only for older eggs with missing saved traits
-      // -----------------------------
       const savedStrongStats = sanitizeGrowthStrongStats(
         (egg as any).growth_strong_stats,
       );
@@ -783,9 +796,6 @@ petsRouter.post(
         finalWeakness: weakness,
       });
 
-      // -----------------------------
-      // build description
-      // -----------------------------
       const description = generatePetDescription({
         species: starter.hatchlingName,
         name: starter.hatchlingName,
@@ -817,7 +827,6 @@ petsRouter.post(
         hp_max: hpMax,
         hp_cur: hpMax,
 
-        // full care on hatch
         hunger: 50,
         clean: 50,
         cleanliness: 50,

@@ -287,7 +287,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
-  align-items: start;
+  align-items: center;
   justify-items: center;
 }
 
@@ -371,6 +371,7 @@
   border-radius: 50%;
   overflow: hidden;
   margin: 0 auto;
+  transform: translateY(36px);
   background: radial-gradient(
     circle at 50% 34%,
     rgba(34, 72, 128, 0.98) 0%,
@@ -887,8 +888,8 @@
 .petRepoPanel--element-storm .petRepoInfoRow--element-storm {
   background: linear-gradient(
     180deg,
-    rgba(124, 101, 212, 0.34),
-    rgba(58, 44, 112, 0.4)
+    rgba(255, 224, 103, 0.34),
+    rgba(163, 118, 18, 0.4)
   );
 }
 
@@ -1102,16 +1103,16 @@
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-storm {
-  border: 1px solid rgba(157, 136, 255, 0.92);
+  border: 1px solid rgba(255, 232, 132, 0.94);
   background: linear-gradient(
     180deg,
-    rgba(124, 101, 212, 0.28),
-    rgba(58, 44, 112, 0.3)
+    rgba(255, 224, 103, 0.28),
+    rgba(163, 118, 18, 0.3)
   );
   box-shadow:
-    0 0 0 1px rgba(157, 136, 255, 0.16),
-    0 0 16px rgba(157, 136, 255, 0.16),
-    inset 0 0 14px rgba(157, 136, 255, 0.08);
+    0 0 0 1px rgba(255, 232, 132, 0.16),
+    0 0 16px rgba(255, 232, 132, 0.16),
+    inset 0 0 14px rgba(255, 232, 132, 0.08);
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-light {
@@ -1172,4 +1173,95 @@
   font-size: 1rem;
   line-height: 1.75;
   letter-spacing: 0.15em;
+}
+.petRepoRunawayModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(92, 255, 177, 0.12),
+      transparent 34%
+    ),
+    rgba(2, 8, 18, 0.76);
+  backdrop-filter: blur(7px);
+}
+
+.petRepoRunawayModalWindow {
+  width: min(520px, calc(100vw - 32px));
+  border-radius: 24px;
+  border: 2px solid rgba(98, 238, 152, 0.92);
+  background: linear-gradient(
+    180deg,
+    rgba(12, 32, 61, 0.98),
+    rgba(5, 18, 38, 0.98)
+  );
+  box-shadow:
+    0 0 0 1px rgba(214, 255, 231, 0.16) inset,
+    0 0 28px rgba(98, 238, 152, 0.42),
+    0 24px 70px rgba(0, 0, 0, 0.46);
+  padding: 28px;
+  color: #f3fff8;
+  text-align: center;
+}
+
+.petRepoRunawayModalEyebrow {
+  margin: 0 0 8px;
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7dffb6;
+}
+
+.petRepoRunawayModalTitle {
+  margin: 0 0 12px;
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: #ffd94d;
+  text-shadow:
+    2px 2px 0 #ab432f,
+    0 0 18px rgba(255, 219, 93, 0.28);
+}
+
+.petRepoRunawayModalCopy {
+  margin: 0 auto;
+  max-width: 42rem;
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.55;
+  color: rgba(244, 255, 249, 0.9);
+}
+
+.petRepoRunawayModalActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+.petRepoRunawayModalPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 226, 99, 0.9);
+  background: linear-gradient(180deg, #ffd84f, #f59c1a);
+  color: #10213c;
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow:
+    0 0 18px rgba(98, 238, 152, 0.26),
+    0 8px 0 rgba(113, 55, 12, 0.34);
 }

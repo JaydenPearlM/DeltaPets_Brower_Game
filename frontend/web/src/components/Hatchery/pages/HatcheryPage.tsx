@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/useAuth";
-import { supabase } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api/baseClient";
 
 import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";
@@ -11,11 +11,18 @@ import goldEggPng from "../../../Pets_Creation/assets/eggs/goldEgg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
 import "./HatcheryPage.css";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const MYSTERY_EGG = {
   id: "mystery_egg",
   name: "Mystery Egg",
   sprite: goldEggPng,
 };
+
+// How often to poll when the tab is visible (ms)
+const POLL_INTERVAL_MS = 30_000;
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type PetStatsRow = {
   pet_id: string;
@@ -148,6 +155,8 @@ type EggGrowthTraits = {
   flavorText: string;
 };
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const EMPTY_STATS: PetStatsRow = {
   pet_id: "",
   hp: 0,
@@ -169,6 +178,8 @@ const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
   spd: "speed",
   mana: "arcane flow",
 };
+
+// ─── Pure helpers ─────────────────────────────────────────────────────────────
 
 function formatTraitList(words: string[]) {
   if (words.length === 0) return "";
@@ -236,50 +247,18 @@ function getEggGrowthTraits(egg: HatchEgg | null): EggGrowthTraits {
   };
 }
 
-async function getAccessToken(): Promise<string> {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throw new Error(error.message);
-
-  const token = data.session?.access_token;
-  if (!token) throw new Error("Missing access token. Are you logged in?");
-
-  return token;
-}
-
-async function fetchJsonAuthed<T>(
-  url: string,
-  token: string,
-  init?: RequestInit,
-): Promise<T> {
-  const res = await fetch(url, {
-    ...init,
-    headers: {
-      ...(init?.headers ?? {}),
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: "include",
-  });
-
-  const data = (await res.json().catch(() => ({}))) as { error?: string };
-
-  if (!res.ok) {
-    throw new Error(data?.error ?? `Request failed (${res.status})`);
-  }
-
-  return data as T;
-}
+// ─── API calls — now use apiFetch from baseClient ─────────────────────────────
+// getAccessToken + fetchJsonAuthed removed. apiFetch handles auth automatically.
 
 async function fetchHatchery(): Promise<HatcheryResponse> {
-  const token = await getAccessToken();
-  return fetchJsonAuthed<HatcheryResponse>("/api/pets/hatchery", token);
+  return apiFetch<HatcheryResponse>("/api/pets/hatchery");
 }
 
 async function hatchEgg(): Promise<HatchActionResponse> {
-  const token = await getAccessToken();
-  return fetchJsonAuthed<HatchActionResponse>("/api/pets/hatch", token, {
-    method: "POST",
-  });
+  return apiFetch<HatchActionResponse>("/api/pets/hatch", { method: "POST" });
 }
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function EggSlotButton(props: {
   slot: HatchSlot;
@@ -378,6 +357,8 @@ function ItemSlotButton(props: { slot: ShelfSlot }) {
   );
 }
 
+// ─── Page component ───────────────────────────────────────────────────────────
+
 export default function HatcheryPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -389,6 +370,8 @@ export default function HatcheryPage() {
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
   const localNowMs = useNow(1000);
+
+  // ─── Server clock sync ─────────────────────────────────────────────────────
 
   const serverNowIso = useMemo(() => {
     if (serverNowBaseMs == null || fetchedAtLocalMs == null) {
@@ -412,19 +395,34 @@ export default function HatcheryPage() {
     setFetchedAtLocalMs(Date.now());
   }
 
+  // ─── Auth guard ────────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/", { replace: true });
     }
   }, [authLoading, user, navigate]);
 
+  // ─── Data loading + visibility-aware polling ───────────────────────────────
+  //
+  // BEFORE: setInterval fired every 30s unconditionally. The visibility check
+  // was INSIDE load(), so the timer still ticked on hidden tabs and wasted
+  // a closure execution every 30s even when doing nothing.
+  //
+  // AFTER:
+  // - Interval only calls load() when the tab IS visible
+  // - Switching back to the tab triggers an immediate refresh
+  // - alive flag prevents state updates after unmount
+  // - intervalId is tracked so cleanup is guaranteed even if auth changes
+
   useEffect(() => {
     if (authLoading || !user) return;
 
     let alive = true;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     async function load() {
-      if (document.visibilityState !== "visible") return;
+      if (!alive) return;
 
       setLoadErr(null);
 
@@ -440,14 +438,39 @@ export default function HatcheryPage() {
       }
     }
 
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        // Tab came back into focus — refresh immediately so
+        // countdown timers and egg states are never stale
+        void load();
+      }
+    }
+
+    // Initial load
     void load();
-    const id = window.setInterval(load, 30_000);
+
+    // Poll only while tab is visible
+    intervalId = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void load();
+      }
+    }, POLL_INTERVAL_MS);
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       alive = false;
-      window.clearInterval(id);
+
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [authLoading, user]);
+
+  // ─── Derived slot state ────────────────────────────────────────────────────
 
   const slots: HatchSlot[] = useMemo(() => {
     if (data?.slots && data.slots.length > 0) {
@@ -551,6 +574,8 @@ export default function HatcheryPage() {
     return getEggGrowthTraits(selectedEgg);
   }, [selectedEgg]);
 
+  // ─── Hatch flow ────────────────────────────────────────────────────────────
+
   async function refreshAfterHatch() {
     const next = await fetchHatchery();
     setData(next);
@@ -589,6 +614,8 @@ export default function HatcheryPage() {
       setIsHatching(false);
     }
   }
+
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   if (authLoading) return null;
 

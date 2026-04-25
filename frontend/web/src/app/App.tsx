@@ -48,6 +48,14 @@ export default function App() {
     cities: false,
   });
 
+  function getCollapsedSections(): Record<MenuSectionKey, boolean> {
+    return {
+      pets: false,
+      battle: false,
+      cities: false,
+    };
+  }
+
   const exploreWrapperRef = useRef<HTMLDivElement | null>(null);
 
   const forcedAuthView = useMemo<"login" | "signup" | "none">(() => {
@@ -87,6 +95,7 @@ export default function App() {
       if (event.key === "Escape") {
         setMenuOpen(false);
         setExploreHintOpen(false);
+        setExpandedSections(getCollapsedSections());
       }
     };
 
@@ -102,6 +111,7 @@ export default function App() {
   useEffect(() => {
     setMenuOpen(false);
     setExploreHintOpen(false);
+    setExpandedSections(getCollapsedSections());
   }, [location.pathname]);
 
   function toggleSection(section: MenuSectionKey) {
@@ -114,6 +124,7 @@ export default function App() {
   function handleNavigate(to: string) {
     setMenuOpen(false);
     setExploreHintOpen(false);
+    setExpandedSections(getCollapsedSections());
     navigate(to);
   }
 
@@ -122,14 +133,15 @@ export default function App() {
 
     if (!user) {
       setMenuOpen(false);
+      setExpandedSections(getCollapsedSections());
       setExploreHintOpen((prev) => !prev);
       return;
     }
 
     setExploreHintOpen(false);
+    setExpandedSections(getCollapsedSections());
     setMenuOpen((prev) => !prev);
   }
-
   function renderMenuLinks(links: MenuLink[]) {
     return (
       <div className="hamburgerMenuSectionBody">

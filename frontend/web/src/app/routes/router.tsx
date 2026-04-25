@@ -7,7 +7,6 @@ import InventoryPage from "../../components/inventory/inventory";
 import PetPage from "../../pages/petsPage/PetPage";
 import AuthCallback from "./AuthCallback";
 import HatcheryPage from "../../components/Hatchery/pages/HatcheryPage";
-import PetBondHome from "../../pages/PetHome_SecretHaven/petBondComponents/petBondHome";
 
 function NotFound() {
   return <div style={{ padding: 16 }}>404 " " Page not found</div>;
@@ -100,9 +99,6 @@ export const router = createBrowserRouter([
       { path: "pet", element: <PetPage /> },
 
       { path: "hatchery", element: <HatcheryPage /> },
-
-      { path: "secretHaven", element: <PetBondHome /> },
-      { path: "petHome", element: <Navigate to="/secretHaven" replace /> },
 
       { path: "gym", element: <Gym /> },
       { path: "inventory", element: <InventoryPage /> },
