@@ -1,0 +1,221 @@
+/*
+ * PetSkillsInventory.css
+ */
+
+/* Modal panel */
+.skillPopupBackdrop .skillInventoryModal,
+.skillInventoryModal {
+  position: relative;
+  width: min(640px, 96vw);
+  max-height: 82vh;
+  overflow-y: auto;
+  padding: 30px 24px 24px;
+  border-radius: 20px;
+
+  border: 2px solid #77ffab !important;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 255, 255, 0.18),
+      transparent 36%
+    ),
+    linear-gradient(180deg, #4f71a4 0%, #3b68a0 46%, #315f94 100%) !important;
+
+  box-shadow:
+    0 0 6px rgba(119, 255, 171, 0.55),
+    0 0 14px rgba(119, 255, 171, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 24px 60px rgba(0, 0, 0, 0.48);
+
+  color: #eef8ff;
+}
+
+/* Inline variant */
+.skillInventoryModal--inline {
+  width: 100%;
+  max-height: none;
+  border: none !important;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0;
+}
+
+/* Close button */
+.skillInventoryModal .skillPopupClose {
+  border: 1px solid rgba(255, 205, 205, 0.42) !important;
+  background: linear-gradient(
+    180deg,
+    #e84d43 0%,
+    #b52d26 48%,
+    #7f1715 100%
+  ) !important;
+  color: #ffffff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 0 14px rgba(216, 74, 63, 0.45) !important;
+}
+
+.skillInventoryModal .skillPopupClose:hover {
+  background: linear-gradient(
+    180deg,
+    #ff5b4f 0%,
+    #c9342c 52%,
+    #8d1c18 100%
+  ) !important;
+}
+
+/* Title */
+.skillInventoryTitle {
+  margin: 0 0 8px;
+  color: #ffd84c;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  -webkit-text-stroke: 1.5px #c23a2b;
+  paint-order: stroke fill;
+}
+
+/* Description */
+.skillInventoryModal .skillPopupDescription {
+  margin: 0 0 18px;
+  color: rgba(238, 248, 255, 0.82);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+/* Slot count + divider */
+.skillInventorySlotCount {
+  margin: 0 0 18px;
+  padding-bottom: 14px;
+  text-align: left;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: rgba(238, 248, 255, 0.72);
+  letter-spacing: 0.02em;
+
+  border-bottom: 2px solid #14355f !important;
+  box-shadow: 0 1px 0 rgba(14, 37, 70, 0.9);
+}
+
+.skillInventorySlotWarning {
+  margin: 0 0 22px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 152, 0, 0.4);
+  background: rgba(255, 120, 0, 0.1);
+  text-align: center;
+  font-size: 0.88rem;
+  color: #ffb347;
+}
+
+/* Grid */
+.skillInventoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Cards */
+.skillInventoryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(89, 188, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.skillInventoryCard:hover {
+  border-color: rgba(89, 188, 255, 0.42);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.skillInventoryCardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skillInventoryCardName {
+  margin: 0;
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: #eef8ff;
+  line-height: 1.25;
+}
+
+.skillInventoryCardDesc {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(238, 248, 255, 0.65);
+  line-height: 1.45;
+}
+
+.skillInventoryCardFormula {
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(238, 248, 255, 0.42);
+  font-family: var(--font-heading, "Space Mono", monospace);
+  line-height: 1.4;
+}
+
+/* Actions */
+.skillInventoryActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.skillInventoryEquipBtn,
+.skillInventorySellBtn {
+  appearance: none;
+  flex: 1;
+  min-height: 36px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 0.83rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.skillInventoryEquipBtn {
+  border: 1px solid rgba(174, 128, 15, 0.6);
+  background: linear-gradient(180deg, #fff880 0%, #ffd84c 48%, #efb218 100%);
+  color: #5f3908;
+}
+
+.skillInventoryEquipBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.skillInventoryEquipBtn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.skillInventorySellBtn {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(238, 248, 255, 0.4);
+  cursor: not-allowed;
+}
+
+/* Empty state */
+.skillInventoryEmpty {
+  margin: 18px 0 8px;
+  text-align: center;
+  color: #77ffab !important;
+  font-size: 0.92rem;
+  font-style: bold;
+  font-weight: 900;
+}

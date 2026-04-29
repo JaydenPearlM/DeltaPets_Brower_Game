@@ -5,6 +5,7 @@ import {
   type PetSkill,
   type SkillId,
 } from "./skillsRegistry";
+import PetSkillsInventory from "./PetSkillsInventory";
 import "./PetSkillsPanel.css";
 
 type PetSkillsPanelProps = {
@@ -21,6 +22,10 @@ type DisplaySkill = PetSkill & {
 };
 
 type SkillLane = "left" | "center" | "right";
+
+const ACTIVE_SKILL_SLOT_COUNT = 10;
+
+const CORE_BACKUP_SKILL_IDS: SkillId[] = ["basic-strike", "guard", "mend"];
 
 const STAGE_ORDER = [
   "egg",
@@ -55,27 +60,6 @@ const PROGRESSION_UNLOCKS: Partial<
     lockText: "Unlocks at Mythical Legendary.",
   },
 };
-
-const SKILL_LADDER_ROWS: Array<Partial<Record<SkillLane, SkillId>>> = [
-  {
-    left: "basic-strike",
-    right: "weak-element-strike",
-  },
-  {
-    left: "guard",
-    right: "lowform-skill",
-  },
-  {
-    left: "mend",
-    right: "highform-skill",
-  },
-  {
-    center: "legion-skill",
-  },
-  {
-    center: "mythic-legendary-skill",
-  },
-];
 
 const SKILL_TREE_PREVIEW = [
   {
@@ -146,6 +130,10 @@ function getElementLabel(pet?: Record<string, any> | null) {
   return rawElement.charAt(0).toUpperCase() + rawElement.slice(1);
 }
 
+function isCoreBackupSkill(skillId: SkillId) {
+  return CORE_BACKUP_SKILL_IDS.includes(skillId);
+}
+
 function getProgressionUnlocked(
   skillId: SkillId,
   pet?: Record<string, any> | null,
@@ -173,19 +161,6 @@ function buildDisplaySkill(
   const attack = getStatValue(stats, ["attack", "atk"]);
   const defense = getStatValue(stats, ["defense", "def", "guard"]);
   const magi = getStatValue(stats, ["magi", "magic", "mend"]);
-
-  console.log("[skills/debug]", {
-    petId: pet?.id,
-    petName: pet?.name || pet?.nickname || pet?.species,
-    level,
-    stats,
-    attack,
-    defense,
-    magi,
-    basicStrikeTotal: level + attack,
-    guardTotal: level + defense,
-    mendTotal: level + magi,
-  });
 
   if (skill.id === "basic-strike") {
     const value = level + attack;
@@ -326,6 +301,11 @@ function SkillButton({
 export default function PetSkillsPanel({ pet, stats }: PetSkillsPanelProps) {
   const [activeSkill, setActiveSkill] = useState<DisplaySkill | null>(null);
   const [isSkillTreeOpen, setIsSkillTreeOpen] = useState(false);
+  const [isSkillInventoryOpen, setIsSkillInventoryOpen] = useState(false);
+
+  const [equippedSkillIds, setEquippedSkillIds] = useState<SkillId[]>([
+    "weak-element-strike",
+  ]);
 
   const skillsById = useMemo(() => {
     const allSkills = [...CORE_SKILLS, ...PROGRESSION_SKILLS];
@@ -339,67 +319,189 @@ export default function PetSkillsPanel({ pet, stats }: PetSkillsPanelProps) {
     );
   }, [pet, stats]);
 
+  const allUnlockedSkills = useMemo(() => {
+    return Object.values(skillsById).filter((skill): skill is DisplaySkill =>
+      Boolean(skill?.unlocked),
+    );
+  }, [skillsById]);
+
+  const equippedSkills = useMemo(() => {
+    return equippedSkillIds
+      .map((skillId) => skillsById[skillId])
+      .filter((skill): skill is DisplaySkill => Boolean(skill?.unlocked));
+  }, [equippedSkillIds, skillsById]);
+
+  const inventorySkills = useMemo(() => {
+    return allUnlockedSkills.filter((skill) => {
+      if (isCoreBackupSkill(skill.id)) return false;
+      return !equippedSkillIds.includes(skill.id);
+    });
+  }, [allUnlockedSkills, equippedSkillIds]);
+
+  function equipSkill(skillId: SkillId) {
+    if (isCoreBackupSkill(skillId)) return;
+
+    setEquippedSkillIds((currentIds) => {
+      if (currentIds.includes(skillId)) return currentIds;
+      if (currentIds.length >= ACTIVE_SKILL_SLOT_COUNT) return currentIds;
+
+      return [...currentIds, skillId];
+    });
+  }
+
+  function unequipSkill(skillId: SkillId) {
+    if (isCoreBackupSkill(skillId)) return;
+
+    setEquippedSkillIds((currentIds) =>
+      currentIds.filter((currentSkillId) => currentSkillId !== skillId),
+    );
+  }
+
   return (
     <section className="skillsPanel">
       <header className="skillsPanelHeader">
-        <div className="skillsPanelHeaderCopy">
+        <div className="skillsHeaderTopRow">
           <h2 className="skillsTitle">Skills Chamber</h2>
-          <p className="skillsSubtitle">
-            Skill growth follows level, stats, element, and evolution stage.
-          </p>
+
+          <div className="skillCenterActionRow">
+            <button
+              type="button"
+              className="skillChamberActionButton"
+              onClick={() => setIsSkillInventoryOpen(true)}
+            >
+              Skill Inventory
+            </button>
+
+            <button
+              type="button"
+              className="skillChamberActionButton"
+              onClick={() => setIsSkillTreeOpen(true)}
+            >
+              Skill Trees
+            </button>
+          </div>
         </div>
 
-        <button
-          type="button"
-          className="skillTreeOpenButton"
-          onClick={() => setIsSkillTreeOpen(true)}
-        >
-          Skill Trees
-        </button>
+        <p className="skillsSubtitle">
+          Skill growth follows level, stats, element, and evolution stage.
+        </p>
       </header>
 
-      <div className="skillsLadder">
-        {SKILL_LADDER_ROWS.map((row, rowIndex) => {
-          if (row.center) {
-            const skill = skillsById[row.center];
+      <section className="skillInventoryPanel" aria-label="Battle skills">
+        <div className="skillInventoryHeader">
+          <div>
+            <h3>Battle Skill</h3>
+          </div>
+        </div>
+
+        <div className="skillSlotGrid">
+          {Array.from({ length: ACTIVE_SKILL_SLOT_COUNT }).map((_, index) => {
+            const skill = equippedSkills[index];
 
             return (
-              <div className="skillsLadderRow" key={`skill-row-${rowIndex}`}>
+              <article
+                className={`skillSlotCard ${skill ? "is-filled" : "is-empty"}`}
+                key={`active-skill-slot-${index}`}
+              >
                 {skill ? (
-                  <SkillButton
-                    skill={skill}
-                    lane="center"
-                    onClick={() => setActiveSkill(skill)}
-                  />
-                ) : null}
-              </div>
-            );
-          }
+                  <>
+                    <span>Slot {index + 1}</span>
+                    <h4>{skill.displayName}</h4>
+                    <p>{skill.formula}</p>
 
-          return (
-            <div className="skillsLadderRow" key={`skill-row-${rowIndex}`}>
-              {(["left", "right"] as SkillLane[]).map((lane) => {
-                const skillId = row[lane];
-                const skill = skillId ? skillsById[skillId] : null;
-
-                return skill ? (
-                  <SkillButton
-                    key={`${rowIndex}-${lane}-${skill.id}`}
-                    skill={skill}
-                    lane={lane}
-                    onClick={() => setActiveSkill(skill)}
-                  />
+                    <button
+                      type="button"
+                      onClick={() => unequipSkill(skill.id)}
+                    >
+                      Move
+                    </button>
+                  </>
                 ) : (
-                  <span
-                    key={`${rowIndex}-${lane}-empty`}
-                    className={`skillEmptySlot skillEmptySlot--${lane}`}
-                    aria-hidden="true"
-                  />
-                );
-              })}
-            </div>
-          );
-        })}
+                  <>
+                    <h4>Slot {index + 1} Locked</h4>
+                  </>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="skillsLadder">
+        <div className="skillsLadderGrid">
+          <div className="skillsLadderColumn skillsLadderColumn--left">
+            {(["basic-strike", "guard", "mend"] as SkillId[]).map((skillId) => {
+              const skill = skillsById[skillId];
+
+              return skill ? (
+                <SkillButton
+                  key={skill.id}
+                  skill={skill}
+                  lane="left"
+                  onClick={() => setActiveSkill(skill)}
+                />
+              ) : null;
+            })}
+
+            <article className="skillInfoCard" aria-label="Skill system notes">
+              <h4 className="skillInfoTitle">
+                <span className="skillInfoAccent">How Skills Grow:</span>
+              </h4>
+
+              <p className="skillInfoText">
+                Every Kith has 10 Battle Skill slots.
+              </p>
+
+              <section className="skillInfoSection">
+                <p className="skillInfoHeader">
+                  <span className="skillInfoAccent">Basic:</span>
+                </p>
+
+                <p>Basic Strike, Guard, and Mend are unlocked from birth.</p>
+
+                <p>They scale with level plus the matching stat.</p>
+              </section>
+
+              <section className="skillInfoSection">
+                <p className="skillInfoHeader">
+                  <span className="skillInfoAccent">Evolution:</span>
+                </p>
+
+                <p>
+                  Weak Elemental, Lowform, Highform, Legion, and Mythical
+                  Legendary unlock as your Kith evolves.
+                </p>
+              </section>
+
+              <p className="skillInfoFooter">
+                <span className="skillInfoAccent">
+                  Bigger stages gain stronger skills.
+                </span>
+              </p>
+            </article>
+          </div>
+
+          <div className="skillsLadderColumn skillsLadderColumn--right">
+            {[
+              "weak-element-strike",
+              "lowform-skill",
+              "highform-skill",
+              "legion-skill",
+              "mythic-legendary-skill",
+            ].map((skillId) => {
+              const skill = skillsById[skillId as SkillId];
+
+              return skill ? (
+                <SkillButton
+                  key={skill.id}
+                  skill={skill}
+                  lane="right"
+                  onClick={() => setActiveSkill(skill)}
+                />
+              ) : null;
+            })}
+          </div>
+        </div>
       </div>
 
       {activeSkill ? (
@@ -435,6 +537,13 @@ export default function PetSkillsPanel({ pet, stats }: PetSkillsPanelProps) {
                 : activeSkill.lockText}
             </p>
 
+            {isCoreBackupSkill(activeSkill.id) ? (
+              <p className="coreSkillPopupNote">
+                This is a core backup skill. Every Kith keeps this skill
+                forever.
+              </p>
+            ) : null}
+
             <div className="skillFormulaBox">
               <span>Current Scaling</span>
               <strong>
@@ -445,6 +554,17 @@ export default function PetSkillsPanel({ pet, stats }: PetSkillsPanelProps) {
             </div>
           </section>
         </div>
+      ) : null}
+
+      {isSkillInventoryOpen ? (
+        <PetSkillsInventory
+          inventorySkills={inventorySkills}
+          equippedSkillIds={equippedSkillIds}
+          slotCap={ACTIVE_SKILL_SLOT_COUNT}
+          onEquip={equipSkill}
+          mode="modal"
+          onClose={() => setIsSkillInventoryOpen(false)}
+        />
       ) : null}
 
       {isSkillTreeOpen ? (

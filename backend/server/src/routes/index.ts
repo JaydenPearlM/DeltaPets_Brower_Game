@@ -13,6 +13,8 @@ import { rewardsRouter } from "./rewards/rewards";
 import { dailyCareRouter } from "./care/dailyCare";
 import { careRouter } from "./care/care";
 
+import { battleRouter } from "./battle";
+
 const apiRouter = Router();
 
 /* ===============================
@@ -29,6 +31,7 @@ apiRouter.use(authRouter);
 
 apiRouter.use("/pets", petsRouter);
 apiRouter.use("/pets/actions", petActionsRouter);
+apiRouter.use("/battle", battleRouter);
 
 /* ===============================
    CARE ROOM SYSTEM

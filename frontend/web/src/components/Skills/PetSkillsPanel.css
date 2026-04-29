@@ -1,181 +1,370 @@
 .skillsPanel {
+  position: relative;
   width: 100%;
-  margin-top: 18px;
-  border: 1px solid rgba(126, 181, 255, 0.34);
-  border-radius: 22px;
+  padding: 22px;
+  border: 1px solid rgba(89, 188, 255, 0.3);
+  border-radius: 24px;
   background:
-    radial-gradient(
-      circle at 18% 0%,
-      rgba(126, 181, 255, 0.16),
-      transparent 34%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(22, 40, 68, 0.96) 0%,
-      rgba(14, 25, 45, 0.98) 100%
-    );
+    radial-gradient(circle at top, rgba(89, 188, 255, 0.18), transparent 38%),
+    linear-gradient(180deg, rgba(18, 38, 58, 0.96), rgba(11, 23, 38, 0.98));
   box-shadow:
-    0 18px 34px rgba(0, 0, 0, 0.24),
-    0 0 26px rgba(126, 181, 255, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  padding: 20px;
-  color: rgba(241, 246, 255, 0.96);
+    inset 0 0 0 2px rgba(143, 208, 255, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -18px 32px rgba(0, 0, 0, 0.28),
+    0 18px 50px rgba(0, 0, 0, 0.28);
+  color: #eef8ff;
 }
 
 .skillsPanelHeader {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .skillsPanelHeaderCopy {
-  display: grid;
-  gap: 8px;
+  min-width: 0;
+}
+
+.skillsHeaderTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
 .skillsTitle {
   margin: 0;
-  font-family: var(--font-heading);
-  font-size: clamp(1.45rem, 2.4vw, 2rem);
-  font-weight: 950;
-  letter-spacing: 0.05em;
-  color: #ffd84a;
-  -webkit-text-stroke: 1px rgba(155, 25, 25, 0.95);
-  text-shadow:
-    2px 2px 0 rgba(112, 18, 18, 0.95),
-    0 0 14px rgba(255, 216, 74, 0.28),
-    0 0 20px rgba(255, 66, 66, 0.18);
+  color: #ffd84c;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  -webkit-text-stroke: 2px #c23a2b;
+  paint-order: stroke fill;
+  text-shadow: none;
+  white-space: nowrap;
 }
 
 .skillsSubtitle {
-  max-width: 700px;
+  width: 100%;
   margin: 0;
-  color: var(--accent-green-neon);
-  letter-spacing: 0.04em;
-  line-height: 1.45;
+  padding: 0 2px;
+  color: rgba(238, 248, 255, 0.78);
+  font-size: 0.92rem;
+  line-height: 1.55;
 }
 
-.skillTreeOpenButton {
-  position: relative;
+.skillCenterActionRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.skillChamberActionButton {
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 0 18px;
+  min-height: 50px;
+  min-width: 158px;
+  border: 1px solid rgba(174, 128, 15, 0.62);
   border-radius: 14px;
-  border: 1px solid rgba(214, 152, 35, 0.75);
-  background: linear-gradient(180deg, #ffd84c 0%, #f2c21c 55%, #dca400 100%);
-  box-shadow:
-    inset 0 2px 0 rgba(255, 245, 200, 0.55),
-    0 6px 14px rgba(90, 64, 15, 0.18),
-    0 0 0 rgba(88, 255, 154, 0);
-  color: #2f1907;
-  cursor: pointer;
-  font-family: var(--font-heading);
-  font-size: 0.86rem;
+  padding: 13px 18px;
+  background: linear-gradient(180deg, #fff880 0%, #ffd84c 48%, #efb218 100%);
+  color: #5f3908;
+  font-family: var(--font-body, Inter, system-ui, sans-serif);
+  font-size: 1rem;
   font-weight: 950;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    filter 0.18s ease;
-}
-
-.skillTreeOpenButton::after {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border-radius: 18px;
-  pointer-events: none;
-  animation: skillTreeButtonPulse 3s ease-in-out infinite;
-}
-
-.skillTreeOpenButton:hover {
-  transform: translateY(-2px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: pointer;
   box-shadow:
-    inset 0 2px 0 rgba(255, 245, 200, 0.5),
-    0 10px 20px rgba(90, 64, 15, 0.2);
-  filter: brightness(1.03);
+    inset 0 1px 0 rgba(255, 255, 255, 0.68),
+    inset 0 -3px 8px rgba(111, 69, 4, 0.22),
+    0 8px 16px rgba(203, 141, 18, 0.25);
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.skillChamberActionButton--gold {
+  border-color: rgba(174, 128, 15, 0.62);
+  background: linear-gradient(180deg, #fff880 0%, #ffd84c 48%, #efb218 100%);
+  color: #5f3908;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.68),
+    inset 0 -3px 8px rgba(111, 69, 4, 0.22),
+    0 8px 16px rgba(203, 141, 18, 0.25);
+}
+
+.skillChamberActionButton:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, #fff990 0%, #ffdf5b 48%, #f3ba22 100%);
+}
+
+.skillInventoryPanel {
+  margin: 0 0 24px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--ui-line, #567bad) 56%, white 10%);
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      circle at top left,
+      color-mix(in srgb, var(--ui-panel, #d8e4f2) 26%, transparent),
+      transparent 35%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--ui-panel, #d8e4f2) 88%, white 10%) 0%,
+      var(--ui-panel-2, #c7d7ea) 48%,
+      color-mix(in srgb, var(--ui-blue-900, #244f8f) 72%, black 28%) 100%
+    );
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.45),
+    inset 0 -14px 24px rgba(18, 42, 72, 0.24),
+    0 14px 28px rgba(0, 0, 0, 0.18);
+}
+
+.skillInventoryPanel[aria-label="Battle skills"] {
+  border: 1px solid rgba(119, 148, 174, 0.34);
+  background:
+    radial-gradient(
+      circle at 16% 0%,
+      rgba(130, 152, 171, 0.2),
+      transparent 34%
+    ),
+    radial-gradient(circle at 84% 100%, rgba(20, 65, 45, 0.2), transparent 36%),
+    linear-gradient(
+      145deg,
+      rgba(38, 47, 55, 0.98) 0%,
+      rgba(19, 25, 31, 0.99) 48%,
+      rgba(7, 12, 17, 0.99) 100%
+    );
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.045),
+    inset 0 2px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -18px 30px rgba(0, 0, 0, 0.42),
+    inset 0 0 30px rgba(89, 188, 255, 0.06),
+    0 16px 32px rgba(0, 0, 0, 0.24);
+}
+
+.skillInventoryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.skillInventoryHeader h3 {
+  margin: 0;
+  font-family: "Space Mono", monospace;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8fd0ff;
+}
+
+.skillInventoryPanel[aria-label="Battle skills"] .skillInventoryHeader h3 {
+  color: #66f29b;
+  font-size: 1.16rem;
+  text-shadow: 0 0 14px rgba(102, 242, 155, 0.22);
+}
+
+.skillSlotGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(112px, 1fr));
+  gap: 14px;
+  justify-items: center;
+}
+
+.skillSlotCard {
+  width: 132px;
+  height: 132px;
+  padding: 14px;
+  border: 1px solid rgba(89, 188, 255, 0.4);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 25%,
+      rgba(255, 255, 255, 0.18),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at center,
+      rgba(89, 188, 255, 0.22),
+      rgba(13, 31, 50, 0.98)
+    );
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.04),
+    0 0 22px rgba(89, 188, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.skillSlotCard.is-filled {
+  border-color: rgba(255, 214, 90, 0.58);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.045),
+    0 0 24px rgba(255, 214, 90, 0.18);
+}
+
+.skillSlotCard.is-empty {
+  border-style: solid;
+  opacity: 0.82;
+}
+
+.skillSlotCard span {
+  display: block;
+  margin-bottom: 4px;
+  color: #cbeeff;
+  font-family: "Space Mono", monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.skillSlotCard h4 {
+  margin: 0;
+  color: #ffe69b;
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
+.skillSlotCard p {
+  margin: 6px 0 8px;
+  color: rgba(238, 248, 255, 0.68);
+  font-size: 0.62rem;
+  line-height: 1.25;
+}
+
+.skillSlotCard button,
+.skillInventoryActions button {
+  border: 1px solid rgba(89, 188, 255, 0.34);
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: rgba(89, 188, 255, 0.12);
+  color: #eef8ff;
+  font-family: "Space Mono", monospace;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.skillSlotCard button:hover,
+.skillInventoryActions button:hover:not(:disabled) {
+  border-color: rgba(143, 208, 255, 0.72);
+  background: rgba(89, 188, 255, 0.2);
 }
 
 .skillsLadder {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   margin-top: 18px;
+  padding: 22px 18px;
+  border: 1px solid rgba(185, 204, 228, 0.28);
+  border-radius: 24px;
+  background:
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(255, 255, 255, 0.1),
+      transparent 32%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(52, 61, 69, 0.96) 0%,
+      rgba(25, 30, 36, 0.98) 44%,
+      rgba(7, 12, 18, 0.98) 100%
+    );
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -18px 30px rgba(0, 0, 0, 0.28),
+    0 18px 34px rgba(0, 0, 0, 0.22);
 }
 
 .skillsLadderRow {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: center;
+}
+
+.skillsLadderRow:has(.skillTrapezoid--lane-center) {
+  grid-template-columns: 1fr;
+  justify-items: center;
 }
 
 .skillEmptySlot {
-  min-height: 112px;
+  min-height: 120px;
+}
+
+.skillExplanationBox {
+  width: min(100%, 460px);
+  min-height: 122px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 22px;
+  border: 1px solid rgba(143, 208, 255, 0.28);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(102, 242, 155, 0.12),
+      transparent 35%
+    ),
+    rgba(9, 24, 39, 0.78);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.045),
+    0 12px 22px rgba(0, 0, 0, 0.18);
+}
+
+.skillExplanationBox p {
+  margin: 0;
+  color: rgba(238, 248, 255, 0.78);
+  font-size: 0.82rem;
+  line-height: 1.55;
 }
 
 .skillTrapezoid {
-  --skill-border: rgba(126, 181, 255, 0.42);
-  --skill-glow: rgba(126, 181, 255, 0.14);
-
   position: relative;
-  isolation: isolate;
-  appearance: none;
-  width: 100%;
-  height: 112px;
-  min-height: 112px;
+  width: min(100%, 460px);
+  min-height: 122px;
+  padding: 18px 24px;
   border: 0;
-  background: transparent;
-  color: rgba(241, 246, 255, 0.96);
-  cursor: pointer;
-  padding: 3px 24px 16px;
-  display: grid;
-  place-items: center;
-  gap: 4px;
-  text-align: center;
-  clip-path: polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%);
-  transition:
-    transform 180ms ease,
-    filter 180ms ease;
-}
-
-.skillTrapezoid--lane-left {
-  grid-column: 1;
-}
-
-.skillTrapezoid--lane-right {
-  grid-column: 2;
-}
-
-.skillTrapezoid--lane-center {
-  grid-column: 1 / -1;
-  width: calc(50% - 7px);
-  justify-self: center;
-}
-
-.skillTrapezoid::before,
-.skillTrapezoidBorder {
-  position: absolute;
-  inset: 0;
-  content: "";
-  clip-path: polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%);
-  pointer-events: none;
-}
-
-.skillTrapezoid::before {
-  z-index: -2;
-  background: var(--skill-border);
-}
-
-.skillTrapezoidBorder {
-  z-index: -1;
-  inset: 2px;
+  clip-path: polygon(9% 0, 91% 0, 100% 50%, 91% 100%, 9% 100%, 0 50%);
   background:
-    radial-gradient(circle at 50% 0%, var(--skill-glow), transparent 46%),
-    linear-gradient(180deg, rgba(8, 22, 42, 0.96), rgba(5, 14, 28, 0.98));
+    radial-gradient(
+      circle at top left,
+      rgba(89, 188, 255, 0.18),
+      transparent 34%
+    ),
+    linear-gradient(135deg, rgba(29, 62, 90, 0.98), rgba(12, 25, 42, 0.98));
+  color: #eef8ff;
+  text-align: center;
+  cursor: pointer;
+  box-shadow:
+    0 14px 26px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.045);
+  transition:
+    transform 160ms ease,
+    filter 160ms ease;
 }
 
 .skillTrapezoid:hover {
@@ -183,108 +372,66 @@
   filter: brightness(1.08);
 }
 
-.skillName {
-  font-family: var(--font-heading);
-  font-size: clamp(0.9rem, 1.35vw, 1.12rem);
-  font-weight: 950;
-  letter-spacing: 0.06em;
-  line-height: 1.1;
-}
-
-.skillValue {
-  font-family: var(--font-heading);
-  font-size: clamp(1.2rem, 1.8vw, 1.55rem);
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.96);
-  text-shadow: 0 0 12px var(--skill-glow);
-}
-
-.skillDescription {
-  max-width: 420px;
-  color: rgba(225, 236, 250, 0.76);
-  font-size: 0.84rem;
-  line-height: 1.35;
-}
-
-.skillTrapezoid--basic-strike {
-  --skill-border: rgba(255, 74, 74, 0.9);
-  --skill-glow: rgba(255, 74, 74, 0.24);
-}
-
-.skillTrapezoid--basic-strike .skillName {
-  color: rgba(255, 124, 112, 0.98);
-}
-
-.skillTrapezoid--guard {
-  --skill-border: rgba(205, 128, 62, 0.9);
-  --skill-glow: rgba(205, 128, 62, 0.24);
-}
-
-.skillTrapezoid--guard .skillName {
-  color: rgba(231, 162, 93, 0.98);
-}
-
-.skillTrapezoid--mend {
-  --skill-border: rgba(127, 238, 164, 0.85);
-  --skill-glow: rgba(127, 238, 164, 0.22);
-}
-
-.skillTrapezoid--mend .skillName {
-  color: rgba(162, 255, 193, 0.98);
-}
-
-.skillTrapezoid--weak-element-strike {
-  --skill-border: rgba(126, 181, 255, 0.9);
-  --skill-glow: rgba(126, 181, 255, 0.22);
-}
-
-.skillTrapezoid--weak-element-strike .skillName {
-  color: rgba(160, 204, 255, 0.98);
-}
-
-.skillTrapezoid--lowform-skill {
-  --skill-border: rgba(183, 132, 255, 0.88);
-  --skill-glow: rgba(183, 132, 255, 0.2);
-}
-
-.skillTrapezoid--lowform-skill .skillName {
-  color: rgba(202, 171, 255, 0.98);
-}
-
-.skillTrapezoid--highform-skill {
-  --skill-border: rgba(255, 185, 88, 0.88);
-  --skill-glow: rgba(255, 185, 88, 0.2);
-}
-
-.skillTrapezoid--highform-skill .skillName {
-  color: rgba(255, 205, 126, 0.98);
-}
-
-.skillTrapezoid--legion-skill {
-  --skill-border: rgba(255, 96, 174, 0.88);
-  --skill-glow: rgba(255, 96, 174, 0.2);
-}
-
-.skillTrapezoid--legion-skill .skillName {
-  color: rgba(255, 151, 204, 0.98);
-}
-
-.skillTrapezoid--mythic-legendary-skill {
-  --skill-border: rgba(255, 216, 74, 0.9);
-  --skill-glow: rgba(255, 216, 74, 0.22);
-}
-
-.skillTrapezoid--mythic-legendary-skill .skillName {
-  color: rgba(255, 226, 103, 0.98);
+.skillTrapezoid--lane-left,
+.skillTrapezoid--lane-right,
+.skillTrapezoid--lane-center {
+  width: min(100%, 460px);
+  text-align: center;
+  clip-path: polygon(9% 0, 91% 0, 100% 50%, 91% 100%, 9% 100%, 0 50%);
 }
 
 .skillTrapezoid.is-locked {
-  opacity: 0.64;
-  filter: saturate(0.55);
+  cursor: pointer;
+  filter: grayscale(0.6);
+  opacity: 0.66;
 }
 
-.skillTrapezoid.is-locked:hover {
-  opacity: 0.76;
+.skillTrapezoidBorder {
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(143, 208, 255, 0.28);
+  clip-path: polygon(9% 0, 91% 0, 100% 50%, 91% 100%, 9% 100%, 0 50%);
+  pointer-events: none;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.36),
+    inset 0 0 14px rgba(255, 255, 255, 0.08);
+}
+
+.skillName {
+  display: block;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 7px;
+  color: #8fd0ff;
+  font-family: "Space Mono", monospace;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.skillValue {
+  display: block;
+  position: relative;
+  z-index: 1;
+  color: #ffd65a;
+  font-family: "Space Mono", monospace;
+  font-size: 1.55rem;
+  line-height: 1.1;
+  text-shadow: 0 0 14px rgba(255, 214, 90, 0.25);
+}
+
+.skillDescription {
+  display: block;
+  position: relative;
+  z-index: 1;
+  margin-top: 8px;
+  color: rgba(238, 248, 255, 0.72);
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .skillPopupBackdrop {
@@ -293,159 +440,198 @@
   z-index: 80;
   display: grid;
   place-items: center;
-  padding: 20px;
-  background: rgba(7, 14, 27, 0.68);
-  backdrop-filter: blur(6px);
+  padding: 22px;
+  background: rgba(2, 8, 15, 0.76);
+  backdrop-filter: blur(8px);
 }
 
 .skillPopup,
-.skillTreeModal {
+.skillTreeModal,
+.skillInventoryModal {
   position: relative;
-  width: min(440px, 100%);
-  border: 1px solid rgba(126, 181, 255, 0.34);
-  border-radius: 22px;
+  width: min(620px, 100%);
+  padding: 26px;
+  border: 1px solid rgba(89, 188, 255, 0.34);
+  border-radius: 24px;
   background:
-    radial-gradient(
-      circle at 18% 0%,
-      rgba(126, 181, 255, 0.18),
-      transparent 38%
-    ),
-    linear-gradient(180deg, rgba(22, 40, 68, 0.98), rgba(10, 20, 38, 0.98));
+    radial-gradient(circle at top, rgba(89, 188, 255, 0.17), transparent 42%),
+    linear-gradient(180deg, rgba(23, 50, 76, 0.98), rgba(8, 18, 32, 0.98));
   box-shadow:
-    0 24px 80px rgba(0, 0, 0, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  padding: 22px;
+    0 30px 90px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  color: #eef8ff;
 }
 
-.skillTreeModal {
-  width: min(760px, 100%);
+.skillTreeModal,
+.skillInventoryModal {
+  width: min(820px, 100%);
 }
 
 .skillPopupClose {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  appearance: none;
-  border: 1px solid rgba(126, 181, 255, 0.3);
+  top: 16px;
+  right: 16px;
+  border: 1px solid rgba(143, 208, 255, 0.22);
   border-radius: 999px;
-  background: rgba(8, 18, 34, 0.72);
-  color: rgba(230, 240, 255, 0.86);
+  padding: 8px 12px;
+  background: rgba(89, 188, 255, 0.1);
+  color: rgba(238, 248, 255, 0.9);
+  font-family: "Space Mono", monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
-  font-family: var(--font-heading);
-  font-size: 0.72rem;
-  font-weight: 900;
-  padding: 7px 10px;
 }
 
 .skillPopupEyebrow {
-  margin: 0;
-  font-family: var(--font-heading);
+  margin: 0 0 8px;
+  color: #8fd0ff;
+  font-family: "Space Mono", monospace;
   font-size: 0.72rem;
   font-weight: 900;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--accent-green-neon);
 }
 
 .skillPopup h3,
-.skillTreeModal h3 {
-  margin: 8px 70px 0 0;
-  font-family: var(--font-heading);
-  font-size: 1.35rem;
-  color: rgba(241, 246, 255, 0.96);
+.skillTreeModal h3,
+.skillInventoryModal h3 {
+  margin: 0;
+  max-width: 520px;
+  color: #ffd65a;
+  font-family: "Space Mono", monospace;
+  font-size: 1.55rem;
+  line-height: 1.2;
 }
 
 .skillPopupDescription {
-  margin: 10px 0 0;
-  color: rgba(213, 229, 255, 0.78);
+  margin: 14px 0 0;
+  color: rgba(238, 248, 255, 0.75);
+  line-height: 1.6;
+}
+
+.coreSkillPopupNote {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 214, 90, 0.2);
+  border-radius: 14px;
+  background: rgba(255, 214, 90, 0.08);
+  color: rgba(238, 248, 255, 0.76);
+  font-size: 0.84rem;
   line-height: 1.5;
 }
 
 .skillFormulaBox {
-  margin-top: 16px;
-  border: 1px solid rgba(126, 181, 255, 0.24);
-  border-radius: 16px;
-  background: rgba(5, 14, 28, 0.54);
-  padding: 14px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid rgba(89, 188, 255, 0.24);
+  border-radius: 18px;
+  background: rgba(89, 188, 255, 0.09);
 }
 
 .skillFormulaBox span {
   display: block;
   margin-bottom: 6px;
-  font-family: var(--font-heading);
-  font-size: 0.68rem;
-  font-weight: 900;
+  color: rgba(143, 208, 255, 0.9);
+  font-family: "Space Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: rgba(213, 229, 255, 0.68);
 }
 
 .skillFormulaBox strong {
-  display: block;
-  color: rgba(241, 246, 255, 0.96);
-  line-height: 1.4;
+  color: #eef8ff;
+  line-height: 1.5;
 }
 
-.skillTreePreviewGrid {
+.skillInventoryGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-top: 18px;
 }
 
+.skillInventoryCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 14px;
+  border: 1px solid rgba(143, 208, 255, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.skillInventoryCard h4 {
+  margin: 0;
+  color: #ffe69b;
+  font-size: 0.92rem;
+}
+
+.skillInventoryCard p,
+.skillInventoryEmpty {
+  margin: 6px 0 0;
+  color: rgba(238, 248, 255, 0.68);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.skillInventoryActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.skillInventoryActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.skillTreePreviewGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
 .skillTreePreviewCard {
-  border: 1px solid rgba(126, 181, 255, 0.24);
-  border-radius: 16px;
-  background:
-    radial-gradient(
-      circle at 20% 0%,
-      rgba(127, 238, 164, 0.14),
-      transparent 44%
-    ),
-    rgba(5, 14, 28, 0.54);
-  padding: 14px;
+  padding: 16px;
+  border: 1px solid rgba(143, 208, 255, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .skillTreePreviewCard h4 {
   margin: 0;
-  font-family: var(--font-heading);
-  font-size: 0.92rem;
-  font-weight: 950;
-  letter-spacing: 0.06em;
-  color: #ffd84a;
+  color: #8fd0ff;
+  font-family: "Space Mono", monospace;
+  font-size: 0.86rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .skillTreePreviewCard p {
-  margin: 8px 0 0;
-  color: rgba(225, 236, 250, 0.76);
-  font-size: 0.88rem;
-  line-height: 1.45;
+  margin: 9px 0 0;
+  color: rgba(238, 248, 255, 0.68);
+  font-size: 0.84rem;
+  line-height: 1.5;
 }
 
-@keyframes skillTreeButtonPulse {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 rgba(88, 255, 154, 0),
-      0 0 0 rgba(255, 210, 78, 0);
+@media (max-width: 920px) {
+  .skillsHeaderTopRow {
+    flex-wrap: wrap;
   }
 
-  50% {
-    box-shadow:
-      0 0 18px rgba(88, 255, 154, 0.24),
-      0 0 28px rgba(255, 210, 78, 0.16);
-  }
-}
-
-@media (max-width: 760px) {
-  .skillsPanelHeader {
-    grid-template-columns: 1fr;
+  .skillCenterActionRow {
+    justify-content: flex-start;
   }
 
-  .skillTreeOpenButton {
-    justify-self: stretch;
+  .skillSlotGrid {
+    grid-template-columns: repeat(2, minmax(132px, 1fr));
   }
 
+  .skillInventoryGrid,
   .skillsLadderRow {
     grid-template-columns: 1fr;
   }
@@ -458,23 +644,274 @@
   .skillTrapezoid--lane-left,
   .skillTrapezoid--lane-right,
   .skillTrapezoid--lane-center {
-    grid-column: 1;
     width: 100%;
+    clip-path: polygon(9% 0, 91% 0, 100% 50%, 91% 100%, 9% 100%, 0 50%);
+  }
+}
+
+@media (max-width: 640px) {
+  .skillsPanel {
+    padding: 16px;
   }
 
-  .skillTrapezoid {
-    height: 112px;
-    min-height: 112px;
-    clip-path: polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%);
-    padding-inline: 18px;
+  .skillCenterActionRow,
+  .skillInventoryHeader,
+  .skillInventoryCard,
+  .skillInventoryActions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .skillTrapezoid::before,
-  .skillTrapezoidBorder {
-    clip-path: polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%);
-  }
-
+  .skillSlotGrid,
   .skillTreePreviewGrid {
     grid-template-columns: 1fr;
+  }
+
+  .skillSlotCard {
+    width: 148px;
+    height: 148px;
+  }
+
+  .skillsHeaderTopRow {
+    align-items: stretch;
+  }
+
+  .skillsTitle {
+    white-space: normal;
+  }
+
+  .skillChamberActionButton {
+    width: 100%;
+    min-height: 50px;
+  }
+}
+
+/* Skill badge colors stay the same. These rules only add metallic inset depth and the green comet. */
+.skillTrapezoid--basic-strike {
+  background: linear-gradient(135deg, #d51d1d 0%, #9f1010 58%, #5d0707 100%);
+}
+
+.skillTrapezoid--guard {
+  background: linear-gradient(135deg, #ffd92f 0%, #d8a90c 58%, #755400 100%);
+}
+
+.skillTrapezoid--mend {
+  background: linear-gradient(135deg, #22b846 0%, #148331 58%, #06491c 100%);
+}
+
+.skillTrapezoid--basic-strike,
+.skillTrapezoid--guard,
+.skillTrapezoid--mend,
+.skillTrapezoid--weak-element-strike,
+.skillTrapezoid--lowform-skill,
+.skillTrapezoid--highform-skill,
+.skillTrapezoid--legion-skill,
+.skillTrapezoid--mythic-legendary-skill {
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -12px 20px rgba(0, 0, 0, 0.26),
+    0 14px 26px rgba(0, 0, 0, 0.24);
+}
+
+.skillTrapezoid--basic-strike .skillTrapezoidBorder {
+  border-color: rgba(255, 74, 62, 0.98);
+}
+
+.skillTrapezoid--guard .skillTrapezoidBorder {
+  border-color: rgba(255, 238, 103, 0.98);
+}
+
+.skillTrapezoid--mend .skillTrapezoidBorder {
+  border-color: rgba(75, 255, 105, 0.98);
+}
+
+.skillTrapezoid--weak-element-strike .skillTrapezoidBorder,
+.skillTrapezoid--lowform-skill .skillTrapezoidBorder,
+.skillTrapezoid--highform-skill .skillTrapezoidBorder,
+.skillTrapezoid--legion-skill .skillTrapezoidBorder,
+.skillTrapezoid--mythic-legendary-skill .skillTrapezoidBorder {
+  border-color: rgba(248, 255, 250, 0.86);
+}
+
+.skillTrapezoid--basic-strike .skillName {
+  color: #ffe1db;
+}
+
+.skillTrapezoid--guard .skillName,
+.skillTrapezoid--guard .skillDescription {
+  color: #3c2a00;
+}
+
+.skillTrapezoid--guard .skillValue {
+  color: #fff7ad;
+  text-shadow: 0 1px 0 rgba(70, 45, 0, 0.58);
+}
+
+.skillTrapezoid--mend .skillName {
+  color: #d9ffdd;
+}
+
+.skillTrapezoid--basic-strike .skillTrapezoidBorder::after,
+.skillTrapezoid--guard .skillTrapezoidBorder::after,
+.skillTrapezoid--mend .skillTrapezoidBorder::after,
+.skillTrapezoid--weak-element-strike .skillTrapezoidBorder::after,
+.skillTrapezoid--lowform-skill .skillTrapezoidBorder::after,
+.skillTrapezoid--highform-skill .skillTrapezoidBorder::after,
+.skillTrapezoid--legion-skill .skillTrapezoidBorder::after,
+.skillTrapezoid--mythic-legendary-skill .skillTrapezoidBorder::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  width: 28px;
+  height: 8px;
+  left: 9%;
+  top: 0%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(72, 255, 128, 0),
+    rgba(72, 255, 128, 0.48) 30%,
+    rgba(151, 255, 184, 0.9) 70%,
+    rgba(242, 255, 246, 1) 100%
+  );
+  box-shadow:
+    0 0 8px rgba(72, 255, 128, 0.95),
+    0 0 18px rgba(72, 255, 128, 0.82),
+    0 0 30px rgba(72, 255, 128, 0.46),
+    -18px 0 18px rgba(72, 255, 128, 0.3);
+  transform: translate(-50%, -50%) rotate(0deg);
+  animation: skillBorderComet 7.2s linear infinite;
+}
+
+@keyframes skillBorderComet {
+  0% {
+    left: 9%;
+    top: 0%;
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  35.9% {
+    left: 91%;
+    top: 0%;
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  42.9% {
+    left: 100%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(56deg);
+  }
+
+  49.9% {
+    left: 91%;
+    top: 100%;
+    transform: translate(-50%, -50%) rotate(124deg);
+  }
+
+  85.8% {
+    left: 9%;
+    top: 100%;
+    transform: translate(-50%, -50%) rotate(180deg);
+  }
+
+  92.9% {
+    left: 0%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(236deg);
+  }
+
+  100% {
+    left: 9%;
+    top: 0%;
+    transform: translate(-50%, -50%) rotate(304deg);
+  }
+}
+
+.skillSlotCard.is-locked {
+  background:
+    radial-gradient(
+      circle at 35% 25%,
+      rgba(255, 255, 255, 0.2),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at center,
+      rgba(31, 74, 104, 0.94),
+      rgba(8, 18, 30, 0.98)
+    );
+}
+
+/* ================================
+   Skill notes box under Mend
+   Only layout + box styling. Skill badge colors are untouched.
+   ================================ */
+
+.skillsLadderGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.skillsLadderColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.skillInfoCard {
+  width: min(100%, 460px);
+  min-height: 260px;
+  padding: 14px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 2px 8px rgba(255, 255, 255, 0.06),
+    inset 0 -12px 22px rgba(0, 0, 0, 0.32);
+}
+
+.skillInfoCardEyebrow,
+.skillInfoCard h4 {
+  display: block;
+  margin: 0;
+  color: inherit;
+  font-family: "Space Mono", monospace;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: 0.05em;
+}
+
+.skillInfoAccent {
+  color: var(--ui-green, #66f29b);
+  font-weight: 900;
+  font-family: "Space Mono", monospace;
+  letter-spacing: 0.04em;
+}
+.skillInfoCard h4 {
+  margin-top: 3px;
+}
+
+.skillInfoCard p {
+  margin: 7px 0 0;
+  max-width: 36ch;
+  color: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.24;
+}
+
+@media (max-width: 920px) {
+  .skillsLadderGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .skillInfoCard {
+    width: 100%;
+    min-height: auto;
   }
 }
