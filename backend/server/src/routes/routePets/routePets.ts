@@ -16,6 +16,13 @@ import {
   fetchHatcherySlots,
   fetchStarterPetAnyStage,
 } from "./petsRepo";
+import {
+  rollGrowthTraits,
+  sanitizeGrowthStrongStats,
+  sanitizeGrowthWeakStat,
+} from "../../pets/growthTraits";
+import { rollPersonality, getAllPersonalities } from "../../pets/personalities";
+import { assignPetToMainParty } from "../../pets/partySlots";
 
 import { fetchTotalPoints, insertBaseStats } from "./petsStats";
 
@@ -45,165 +52,6 @@ import {
 } from "../../lib/petCareHelpers";
 
 export const petsRouter = Router();
-
-// ---------------------------------------------------------------
-// Personality roll
-// Pull the real keys directly from public.personalities
-// so backend logic always matches Supabase.
-// ---------------------------------------------------------------
-type PersonalityRow = {
-  id: string;
-  key: string;
-};
-
-async function getAllPersonalities(): Promise<PersonalityRow[]> {
-  const { data, error } = await supabaseAdmin
-    .from("personalities")
-    .select("id, key")
-    .order("key", { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to load personalities: ${error.message}`);
-  }
-
-  if (!data || data.length === 0) {
-    throw new Error("No personalities found in public.personalities");
-  }
-
-  return data;
-}
-
-async function rollPersonality(): Promise<PersonalityRow> {
-  const personalities = await getAllPersonalities();
-  const randomIndex = Math.floor(Math.random() * personalities.length);
-  return personalities[randomIndex];
-}
-
-// ---------------------------------------------------------------
-// Strength / weakness
-// Egg rolls these ONCE and they stay with the pet forever.
-// ---------------------------------------------------------------
-type GrowthStatKey = "hp" | "atk" | "def" | "spd" | "magi" | "mana";
-
-const GROWTH_STAT_KEYS: GrowthStatKey[] = [
-  "hp",
-  "atk",
-  "def",
-  "spd",
-  "magi",
-  "mana",
-];
-
-function shuffleArray<T>(items: T[]) {
-  const copy = [...items];
-
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-
-  return copy;
-}
-
-function rollGrowthTraits(): {
-  strongStats: GrowthStatKey[];
-  weakStat: GrowthStatKey | null;
-} {
-  const patternRoll = Math.random();
-
-  let strongCount = 0;
-  let hasWeak = false;
-
-  if (patternRoll < 0.2) {
-    strongCount = 2;
-    hasWeak = true;
-  } else if (patternRoll < 0.45) {
-    strongCount = 2;
-    hasWeak = false;
-  } else if (patternRoll < 0.7) {
-    strongCount = 1;
-    hasWeak = true;
-  } else if (patternRoll < 0.88) {
-    strongCount = 1;
-    hasWeak = false;
-  } else if (patternRoll < 0.96) {
-    strongCount = 0;
-    hasWeak = true;
-  } else {
-    strongCount = 0;
-    hasWeak = false;
-  }
-
-  const shuffledStats = shuffleArray(GROWTH_STAT_KEYS);
-  const strongStats = shuffledStats.slice(0, strongCount);
-
-  let weakStat: GrowthStatKey | null = null;
-
-  if (hasWeak) {
-    const weakPool = GROWTH_STAT_KEYS.filter(
-      (stat) => !strongStats.includes(stat),
-    );
-    weakStat = weakPool[Math.floor(Math.random() * weakPool.length)] ?? null;
-  }
-
-  return { strongStats, weakStat };
-}
-
-function sanitizeGrowthStrongStats(value: unknown): GrowthStatKey[] {
-  if (!Array.isArray(value)) return [];
-
-  return value
-    .map((entry) => String(entry).toLowerCase())
-    .filter((entry): entry is GrowthStatKey =>
-      GROWTH_STAT_KEYS.includes(entry as GrowthStatKey),
-    )
-    .slice(0, 2);
-}
-
-function sanitizeGrowthWeakStat(value: unknown): GrowthStatKey | null {
-  if (typeof value !== "string") return null;
-
-  const normalized = value.toLowerCase();
-  return GROWTH_STAT_KEYS.includes(normalized as GrowthStatKey)
-    ? (normalized as GrowthStatKey)
-    : null;
-}
-
-// ---------------------------------------------------------------
-// Party slot assignment
-// ---------------------------------------------------------------
-async function assignPetToMainParty(userId: string, petId: string) {
-  const { data: existingRows, error: slotsError } = await supabaseAdmin
-    .from("party_slots")
-    .select("id, slot_index, pet_id")
-    .eq("user_id", userId)
-    .order("slot_index", { ascending: true });
-
-  if (slotsError) throw slotsError;
-
-  const rows = existingRows ?? [];
-
-  const alreadyAssigned = rows.find((row: any) => row.pet_id === petId);
-  if (alreadyAssigned) return Number(alreadyAssigned.slot_index);
-
-  const usedSlots = new Set<number>(
-    rows.map((row: any) => Number(row.slot_index)).filter(Number.isFinite),
-  );
-
-  const targetSlot =
-    Array.from({ length: 4 }, (_, idx) => idx + 1).find(
-      (slot) => !usedSlots.has(slot),
-    ) ?? null;
-
-  if (!targetSlot) return null;
-
-  const { error: insertError } = await supabaseAdmin
-    .from("party_slots")
-    .insert({ user_id: userId, slot_index: targetSlot, pet_id: petId });
-
-  if (insertError) throw insertError;
-  return targetSlot;
-}
 
 // ============================================================
 // GET /api/pets/active
@@ -761,8 +609,9 @@ petsRouter.post(
           personalityKey = personalityRow.key;
         }
       } else {
-        personalityKey = rollPersonality();
-        personalityId = await resolvePersonalityId(personalityKey);
+        const rolled = await rollPersonality();
+        personalityKey = rolled.key;
+        personalityId = rolled.id;
       }
 
       const savedStrongStats = sanitizeGrowthStrongStats(

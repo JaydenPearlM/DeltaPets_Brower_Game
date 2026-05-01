@@ -1,6 +1,7 @@
 // backend/server/src/routes/care/care.ts
 
 import { Router } from "express";
+import type { NextFunction, Response } from "express";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
@@ -9,9 +10,18 @@ import { applyCareDecay } from "../../shared/pets/care/CareDecay";
 import {
   normalizePetForClient,
   updatePetCareStats,
+  applyCarePatch,
 } from "../../lib/petCareHelpers";
 
 export const careRouter = Router();
+
+// Blocks dev-only routes from running outside local development.
+function devOnly(_req: AuthedRequest, res: Response, next: NextFunction) {
+  if (process.env.NODE_ENV !== "development") {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  next();
+}
 
 const STARTER_MERCHANT_HREF = "/cities/kithna?merchant=starter-rescue";
 
@@ -471,38 +481,11 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
 
 careRouter.post("/feed", requireUser, async (req: AuthedRequest, res) => {
   try {
-    const userId = req.user!.id;
     const amount = Math.max(1, Math.min(50, safeNum(req.body?.amount, 20)));
-
-    const { pet } = await fetchActivePet(userId);
-
-    if (!pet?.id) {
-      return res.status(404).json({ error: "No active pet found" });
-    }
-
-    const current = normalizePetForClient(
-      applyCareDecay(normalizePetForClient(pet)),
-    );
-
-    const hunger = Math.min(50, safeNum(current.hunger) + amount);
-
-    await updatePetCareStats(current.id, {
-      hunger,
-      clean: safeNum(current.clean),
-      happy: safeNum(current.happy),
-      comfort: safeNum(current.comfort),
-      rest: safeNum(current.rest),
-      energy: safeNum(current.energy, 50),
-      neglect_hours: safeNum(current.neglect_hours),
-      ran_away: Boolean(current.ran_away),
-      runaway_at: current.runaway_at ?? null,
-      last_care_update: new Date().toISOString(),
-      last_care_decay_at: new Date().toISOString(),
-    });
-
-    return res.json({ success: true, hunger: wholeCare(hunger, 50) });
-  } catch (error) {
-    return res.status(500).json({
+    const result = await applyCarePatch(req.user!.id, { hunger: amount });
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    return res.status(error?.status ?? 500).json({
       error: error instanceof Error ? error.message : "Failed to feed pet.",
     });
   }
@@ -510,38 +493,11 @@ careRouter.post("/feed", requireUser, async (req: AuthedRequest, res) => {
 
 careRouter.post("/clean", requireUser, async (req: AuthedRequest, res) => {
   try {
-    const userId = req.user!.id;
     const amount = Math.max(1, Math.min(50, safeNum(req.body?.amount, 20)));
-
-    const { pet } = await fetchActivePet(userId);
-
-    if (!pet?.id) {
-      return res.status(404).json({ error: "No active pet found" });
-    }
-
-    const current = normalizePetForClient(
-      applyCareDecay(normalizePetForClient(pet)),
-    );
-
-    const clean = Math.min(50, safeNum(current.clean) + amount);
-
-    await updatePetCareStats(current.id, {
-      hunger: safeNum(current.hunger),
-      clean,
-      happy: safeNum(current.happy),
-      comfort: safeNum(current.comfort),
-      rest: safeNum(current.rest),
-      energy: safeNum(current.energy, 50),
-      neglect_hours: safeNum(current.neglect_hours),
-      ran_away: Boolean(current.ran_away),
-      runaway_at: current.runaway_at ?? null,
-      last_care_update: new Date().toISOString(),
-      last_care_decay_at: new Date().toISOString(),
-    });
-
-    return res.json({ success: true, clean: wholeCare(clean, 50) });
-  } catch (error) {
-    return res.status(500).json({
+    const result = await applyCarePatch(req.user!.id, { clean: amount });
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    return res.status(error?.status ?? 500).json({
       error: error instanceof Error ? error.message : "Failed to clean pet.",
     });
   }
@@ -549,38 +505,11 @@ careRouter.post("/clean", requireUser, async (req: AuthedRequest, res) => {
 
 careRouter.post("/play", requireUser, async (req: AuthedRequest, res) => {
   try {
-    const userId = req.user!.id;
     const amount = Math.max(1, Math.min(50, safeNum(req.body?.amount, 20)));
-
-    const { pet } = await fetchActivePet(userId);
-
-    if (!pet?.id) {
-      return res.status(404).json({ error: "No active pet found" });
-    }
-
-    const current = normalizePetForClient(
-      applyCareDecay(normalizePetForClient(pet)),
-    );
-
-    const happy = Math.min(50, safeNum(current.happy) + amount);
-
-    await updatePetCareStats(current.id, {
-      hunger: safeNum(current.hunger),
-      clean: safeNum(current.clean),
-      happy,
-      comfort: safeNum(current.comfort),
-      rest: safeNum(current.rest),
-      energy: safeNum(current.energy, 50),
-      neglect_hours: safeNum(current.neglect_hours),
-      ran_away: Boolean(current.ran_away),
-      runaway_at: current.runaway_at ?? null,
-      last_care_update: new Date().toISOString(),
-      last_care_decay_at: new Date().toISOString(),
-    });
-
-    return res.json({ success: true, happy: wholeCare(happy, 50) });
-  } catch (error) {
-    return res.status(500).json({
+    const result = await applyCarePatch(req.user!.id, { happy: amount });
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    return res.status(error?.status ?? 500).json({
       error:
         error instanceof Error ? error.message : "Failed to play with pet.",
     });
@@ -589,7 +518,6 @@ careRouter.post("/play", requireUser, async (req: AuthedRequest, res) => {
 
 careRouter.post("/pet", requireUser, async (req: AuthedRequest, res) => {
   try {
-    const userId = req.user!.id;
     const comfortBoost = Math.max(
       1,
       Math.min(50, safeNum(req.body?.comfortAmount, 10)),
@@ -598,41 +526,13 @@ careRouter.post("/pet", requireUser, async (req: AuthedRequest, res) => {
       1,
       Math.min(50, safeNum(req.body?.moodAmount, 5)),
     );
-
-    const { pet } = await fetchActivePet(userId);
-
-    if (!pet?.id) {
-      return res.status(404).json({ error: "No active pet found" });
-    }
-
-    const current = normalizePetForClient(
-      applyCareDecay(normalizePetForClient(pet)),
-    );
-
-    const comfort = Math.min(50, safeNum(current.comfort) + comfortBoost);
-    const happy = Math.min(50, safeNum(current.happy) + moodBoost);
-
-    await updatePetCareStats(current.id, {
-      hunger: safeNum(current.hunger),
-      clean: safeNum(current.clean),
-      happy,
-      comfort,
-      rest: safeNum(current.rest),
-      energy: safeNum(current.energy, 50),
-      neglect_hours: safeNum(current.neglect_hours),
-      ran_away: Boolean(current.ran_away),
-      runaway_at: current.runaway_at ?? null,
-      last_care_update: new Date().toISOString(),
-      last_care_decay_at: new Date().toISOString(),
+    const result = await applyCarePatch(req.user!.id, {
+      comfort: comfortBoost,
+      happy: moodBoost,
     });
-
-    return res.json({
-      success: true,
-      comfort: wholeCare(comfort, 50),
-      happy: wholeCare(happy, 50),
-    });
-  } catch (error) {
-    return res.status(500).json({
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    return res.status(error?.status ?? 500).json({
       error: error instanceof Error ? error.message : "Failed to pet Delta.",
     });
   }
@@ -640,6 +540,7 @@ careRouter.post("/pet", requireUser, async (req: AuthedRequest, res) => {
 
 careRouter.post(
   "/dev/runaway",
+  devOnly,
   requireUser,
   async (req: AuthedRequest, res) => {
     try {
@@ -692,55 +593,60 @@ careRouter.post(
   },
 );
 
-careRouter.post("/dev/reset", requireUser, async (req: AuthedRequest, res) => {
-  try {
-    const userId = req.user!.id;
-    const { pet } = await fetchActivePet(userId);
+careRouter.post(
+  "/dev/reset",
+  devOnly,
+  requireUser,
+  async (req: AuthedRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const { pet } = await fetchActivePet(userId);
 
-    if (!pet?.id) {
-      return res.status(404).json({ error: "No active pet found" });
+      if (!pet?.id) {
+        return res.status(404).json({ error: "No active pet found" });
+      }
+
+      const timestamp = new Date().toISOString();
+
+      await updatePetCareStats(pet.id, {
+        hunger: 50,
+        clean: 50,
+        happy: 50,
+        comfort: 50,
+        rest: 50,
+        energy: 50,
+        neglect_hours: 0,
+        ran_away: false,
+        runaway_at: null,
+        last_care_update: timestamp,
+        last_care_decay_at: timestamp,
+      });
+
+      const { data: updatedPet, error } = await supabaseAdmin
+        .from("pets")
+        .select("*")
+        .eq("id", pet.id)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      return res.json({
+        success: true,
+        message: "Active pet care was reset.",
+        pet: normalizePetForClient(updatedPet ?? pet),
+      });
+    } catch (error) {
+      console.error("[care/dev/reset] failed", error);
+
+      return res.status(500).json({
+        error:
+          error instanceof Error ? error.message : "Failed to reset pet care.",
+      });
     }
-
-    const timestamp = new Date().toISOString();
-
-    await updatePetCareStats(pet.id, {
-      hunger: 50,
-      clean: 50,
-      happy: 50,
-      comfort: 50,
-      rest: 50,
-      energy: 50,
-      neglect_hours: 0,
-      ran_away: false,
-      runaway_at: null,
-      last_care_update: timestamp,
-      last_care_decay_at: timestamp,
-    });
-
-    const { data: updatedPet, error } = await supabaseAdmin
-      .from("pets")
-      .select("*")
-      .eq("id", pet.id)
-      .maybeSingle();
-
-    if (error) {
-      throw error;
-    }
-
-    return res.json({
-      success: true,
-      message: "Active pet care was reset.",
-      pet: normalizePetForClient(updatedPet ?? pet),
-    });
-  } catch (error) {
-    console.error("[care/dev/reset] failed", error);
-
-    return res.status(500).json({
-      error:
-        error instanceof Error ? error.message : "Failed to reset pet care.",
-    });
-  }
-});
+  },
+);
 
 careRouter.post("/place", requireUser, async (req: AuthedRequest, res) => {
   try {

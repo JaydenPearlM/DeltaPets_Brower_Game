@@ -1,0 +1,2 @@
+-- Migration 17 was intentionally removed.
+-- This stub preserves the sequence for migration history integrity.

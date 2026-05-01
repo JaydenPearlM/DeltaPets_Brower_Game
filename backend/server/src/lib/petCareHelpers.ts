@@ -1,4 +1,6 @@
 import { supabaseAdmin } from "./supabaseAdmin";
+import { fetchActivePet } from "../routes/routePets/petsRepo";
+import { applyCareDecay } from "../shared/pets/care/CareDecay";
 
 export type PetCareStatsUpdate = {
   hunger: number;
@@ -81,4 +83,70 @@ export async function updatePetCareStats(
     .eq("id", petId);
 
   if (error) throw error;
+}
+/**
+ * Fetches the active pet, applies decay, updates one or more care stats,
+ * and writes the result back to the database.
+ *
+ * @param userId  - authenticated user id
+ * @param patch   - the stats to change, e.g. { hunger: 10 } adds 10 to hunger
+ * @returns the updated stat values clamped to [0, 50]
+ */
+export async function applyCarePatch(
+  userId: string,
+  patch: Partial<
+    Record<"hunger" | "clean" | "happy" | "comfort" | "rest", number>
+  >,
+): Promise<Record<string, number>> {
+  const { pet } = await fetchActivePet(userId);
+
+  if (!pet?.id) {
+    throw Object.assign(new Error("No active pet found"), { status: 404 });
+  }
+
+  const current = normalizePetForClient(
+    applyCareDecay(normalizePetForClient(pet)),
+  );
+
+  const CARE_MAX = 50;
+
+  const now = new Date().toISOString();
+
+  const next = {
+    hunger: Math.min(
+      CARE_MAX,
+      safeWhole(current.hunger, CARE_DEFAULT) + (patch.hunger ?? 0),
+    ),
+    clean: Math.min(
+      CARE_MAX,
+      safeWhole(current.clean, CARE_DEFAULT) + (patch.clean ?? 0),
+    ),
+    happy: Math.min(
+      CARE_MAX,
+      safeWhole(current.happy, CARE_DEFAULT) + (patch.happy ?? 0),
+    ),
+    comfort: Math.min(
+      CARE_MAX,
+      safeWhole(current.comfort, CARE_DEFAULT) + (patch.comfort ?? 0),
+    ),
+    rest: Math.min(
+      CARE_MAX,
+      safeWhole(current.rest, CARE_DEFAULT) + (patch.rest ?? 0),
+    ),
+  };
+
+  await updatePetCareStats(current.id, {
+    ...next,
+    energy: safeWhole(current.energy, CARE_DEFAULT),
+    neglect_hours: Math.max(0, Number(current.neglect_hours ?? 0)),
+    ran_away: Boolean(current.ran_away),
+    runaway_at: current.runaway_at ?? null,
+    last_care_update: now,
+    last_care_decay_at: now,
+  });
+
+  // Only return the keys that were in the patch so routes respond cleanly
+  return Object.fromEntries(
+    Object.keys(patch).map((key) => [key, next[key as keyof typeof next]]),
+  );
 }

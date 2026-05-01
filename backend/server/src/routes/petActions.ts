@@ -9,6 +9,7 @@ import {
   cooldownsFromPetRow,
 } from "../pets/cooldowns";
 import { fetchActivePet } from "./routePets/petsRepo";
+import { safeNum } from "../lib/utils";
 
 export const petActionsRouter = Router();
 
@@ -18,11 +19,6 @@ type Body = {
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
-}
-
-function safeNum(value: unknown, fallback = 0) {
-  const n = Number(value ?? fallback);
-  return Number.isFinite(n) ? n : fallback;
 }
 
 petActionsRouter.post(

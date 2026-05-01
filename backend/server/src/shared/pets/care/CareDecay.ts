@@ -1,3 +1,5 @@
+import { safeNum } from "../../../lib/utils";
+
 export type CarePet = {
   id: string;
   hunger?: number | null;
@@ -61,11 +63,6 @@ const clampCare = (value: number) =>
 
 const clampEnergy = (value: number) =>
   Math.max(MIN, Math.min(ENERGY_MAX, Math.round(value)));
-
-function safeNum(value: unknown, fallback: number): number {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
-}
 
 function safeBool(value: unknown): boolean {
   return value === true;
