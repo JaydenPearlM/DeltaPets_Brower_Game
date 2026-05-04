@@ -43,7 +43,7 @@ const lastCareLogAt = new Map<string, number>();
 
 function logCareDecayThrottled(
   petId: string,
-  kind: "input" | "skipped" | "no-tick" | "output",
+  kind: "skipped" | "output",
   payload: Record<string, unknown>,
 ) {
   const now = Date.now();
@@ -130,21 +130,6 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   const energyBase = clampEnergy(safeNum(pet.energy, ENERGY_MAX));
   const neglectBase = Math.max(0, safeNum(pet.neglect_hours, 0));
   const ranAwayBase = safeBool(pet.ran_away ?? pet.is_runaway);
-
-  logCareDecayThrottled(pet.id, "input", {
-    petId: pet.id,
-    hungerBase,
-    cleanBase,
-    happyBase,
-    comfortBase,
-    restBase,
-    energyBase,
-    neglectBase,
-    ranAwayBase,
-    last_care_update: pet.last_care_update,
-    last_care_decay_at: pet.last_care_decay_at,
-    nowIso: new Date(nowMs).toISOString(),
-  });
 
   if (!Number.isFinite(lastMs)) {
     const fallbackTimestamp = new Date(nowMs).toISOString();
@@ -241,21 +226,7 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
 
   const totalLoss = hungerLoss + cleanLoss + happyLoss + comfortLoss + restLoss;
 
-  if (totalLoss === 0) {
-    logCareDecayThrottled(pet.id, "no-tick", {
-      petId: pet.id,
-      elapsedMinutes,
-      losses: {
-        hungerLoss,
-        cleanLoss,
-        happyLoss,
-        comfortLoss,
-        restLoss,
-        energyLoss,
-      },
-      keepingTimestamp: new Date(lastMs).toISOString(),
-    });
-
+  if (totalLoss <= 0) {
     const runawayState = buildRunawayState({
       pet,
       hunger: hungerBase,

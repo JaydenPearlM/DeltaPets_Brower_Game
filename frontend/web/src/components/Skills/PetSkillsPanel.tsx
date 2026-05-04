@@ -6,6 +6,7 @@ import {
   type SkillId,
 } from "./skillsRegistry";
 import PetSkillsInventory from "./PetSkillsInventory";
+import SkillTree from "./skilltree";
 import "./PetSkillsPanel.css";
 
 type PetSkillsPanelProps = {
@@ -21,7 +22,7 @@ type DisplaySkill = PetSkill & {
   lockText?: string;
 };
 
-type SkillLane = "left" | "center" | "right";
+type SkillLane = "left" | "right";
 
 const ACTIVE_SKILL_SLOT_COUNT = 10;
 
@@ -61,25 +62,6 @@ const PROGRESSION_UNLOCKS: Partial<
   },
 };
 
-const SKILL_TREE_PREVIEW = [
-  {
-    title: "Combat Tree",
-    text: "Basic Strike, elemental pressure, counters, and heavier damage paths.",
-  },
-  {
-    title: "Defense Tree",
-    text: "Guard upgrades, shields, resilience, damage reduction, and survival tools.",
-  },
-  {
-    title: "Magic Tree",
-    text: "Mend upgrades, mana flow, elemental skills, barriers, and spell scaling.",
-  },
-  {
-    title: "Breeder Tree",
-    text: "Bond growth, care bonuses, hatch traits, training boosts, and support overlap.",
-  },
-];
-
 function toNumber(value: unknown, fallback = 0) {
   const numberValue = Number(value);
   return Number.isFinite(numberValue) ? numberValue : fallback;
@@ -97,16 +79,10 @@ function getStatValue(
 
   for (const key of keys) {
     const directValue = toNumber(stats[key], NaN);
+    if (Number.isFinite(directValue)) return Math.max(0, directValue);
 
-    if (Number.isFinite(directValue)) {
-      return Math.max(0, directValue);
-    }
-
-    const uppercaseValue = toNumber(stats[key.toUpperCase()], NaN);
-
-    if (Number.isFinite(uppercaseValue)) {
-      return Math.max(0, uppercaseValue);
-    }
+    const upperValue = toNumber(stats[key.toUpperCase()], NaN);
+    if (Number.isFinite(upperValue)) return Math.max(0, upperValue);
   }
 
   return 0;
@@ -344,7 +320,6 @@ export default function PetSkillsPanel({ pet, stats }: PetSkillsPanelProps) {
     setEquippedSkillIds((currentIds) => {
       if (currentIds.includes(skillId)) return currentIds;
       if (currentIds.length >= ACTIVE_SKILL_SLOT_COUNT) return currentIds;
-
       return [...currentIds, skillId];
     });
   }
@@ -417,9 +392,7 @@ export default function PetSkillsPanel({ pet, stats }: PetSkillsPanelProps) {
                     </button>
                   </>
                 ) : (
-                  <>
-                    <h4>Slot {index + 1} Locked</h4>
-                  </>
+                  <h4>Slot {index + 1} Locked</h4>
                 )}
               </article>
             );
@@ -573,39 +546,7 @@ export default function PetSkillsPanel({ pet, stats }: PetSkillsPanelProps) {
           role="presentation"
           onMouseDown={() => setIsSkillTreeOpen(false)}
         >
-          <section
-            className="skillTreeModal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Skill Trees"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="skillPopupClose"
-              onClick={() => setIsSkillTreeOpen(false)}
-            >
-              Close
-            </button>
-
-            <p className="skillPopupEyebrow">Future Skill Tree System</p>
-            <h3>Combat, Defense, Magic, and Breeder Trees</h3>
-
-            <p className="skillPopupDescription">
-              This will become the larger orb-style progression system. Some
-              nodes can overlap between trees, so a pet can grow in a custom way
-              without making the UI a spaghetti monster.
-            </p>
-
-            <div className="skillTreePreviewGrid">
-              {SKILL_TREE_PREVIEW.map((tree) => (
-                <article className="skillTreePreviewCard" key={tree.title}>
-                  <h4>{tree.title}</h4>
-                  <p>{tree.text}</p>
-                </article>
-              ))}
-            </div>
-          </section>
+          <SkillTree pet={pet} onClose={() => setIsSkillTreeOpen(false)} />
         </div>
       ) : null}
     </section>

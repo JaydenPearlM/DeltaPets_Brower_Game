@@ -1,0 +1,44 @@
+/* ========================================
+   Feral talent shape color patch
+   This only recolors existing talent shapes.
+======================================== */
+
+.feralPathPanel .talentNode--shape-square .talentNodeShape {
+  border-color: rgba(255, 151, 71, 0.82);
+  background:
+    radial-gradient(circle at top, rgba(255, 205, 139, 0.2), transparent 48%),
+    linear-gradient(145deg, #8f4718, #4c250d, #1d0d04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 219, 171, 0.18),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.2),
+    0 12px 24px rgba(0, 0, 0, 0.28),
+    0 0 12px rgba(255, 151, 71, 0.16);
+}
+
+.feralPathPanel .talentNode--shape-triangle .talentNodeShape::before {
+  border-color: rgba(192, 120, 255, 0.84);
+  background:
+    radial-gradient(
+      circle at 50% 26%,
+      rgba(232, 201, 255, 0.2),
+      transparent 48%
+    ),
+    linear-gradient(145deg, #59327d, #2f174d, #120821);
+  box-shadow:
+    inset 0 1px 0 rgba(241, 221, 255, 0.18),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.2),
+    0 12px 24px rgba(0, 0, 0, 0.28),
+    0 0 12px rgba(192, 120, 255, 0.18);
+}
+
+.feralPathPanel .talentNode--shape-circle .talentNodeShape {
+  border-color: rgba(82, 255, 176, 0.78);
+  background:
+    radial-gradient(circle at top, rgba(159, 255, 202, 0.18), transparent 48%),
+    linear-gradient(145deg, #167054, #0e3d34, #061a17);
+  box-shadow:
+    inset 0 1px 0 rgba(201, 255, 226, 0.16),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.2),
+    0 12px 24px rgba(0, 0, 0, 0.28),
+    0 0 12px rgba(82, 255, 176, 0.16);
+}

@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Homepage from "../../pages/Homepage/homepage";
 import CreatePage from "../../pages/cutscene/create";

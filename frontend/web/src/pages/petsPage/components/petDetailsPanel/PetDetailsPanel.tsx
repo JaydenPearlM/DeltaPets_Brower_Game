@@ -126,86 +126,38 @@ function getStablePreference(pet: PetRecord) {
   return "--";
 }
 
-function getBehaviorLine(
-  pet: PetRecord,
-  hunger: number,
-  clean: number,
-  happy: number,
-  bond: number,
-) {
-  const baseSeed = `${pet.id ?? ""}|${pet.name ?? ""}|${pet.element ?? ""}|${pet.stage ?? ""}|${pet.nickname ?? ""}`;
-  let total = 0;
-
-  for (let i = 0; i < baseSeed.length; i += 1) {
-    total += baseSeed.charCodeAt(i);
-  }
-
-  const lowNeed = Math.min(hunger, clean, happy);
-
-  if (lowNeed <= 20) {
-    const harsh = [
-      "Your pet looks upset and turns away from you.",
-      "Your pet gives a grumpy stare and seems uncomfortable.",
-      "Your pet looks irritated and clearly wants care.",
-      "Your pet seems frustrated and refuses to settle down.",
-    ];
-    return harsh[total % harsh.length];
-  }
-
-  if (hunger <= 35) {
-    const hungryLines = [
-      "Your pet looks hungry and keeps glancing around for food.",
-      "Your pet nudges the air like it wants something to eat.",
-      "Your pet seems distracted by its stomach growling.",
-    ];
-    return hungryLines[total % hungryLines.length];
-  }
-
-  if (clean <= 35) {
-    const dirtyLines = [
-      "Your pet looks messy and a little uncomfortable.",
-      "Your pet shakes itself off like it wants to be cleaned.",
-      "Your pet seems bothered and could use a quick cleanup.",
-    ];
-    return dirtyLines[total % dirtyLines.length];
-  }
-
-  if (happy <= 35) {
-    const moodyLines = [
-      "Your pet looks moody and keeps to itself.",
-      "Your pet seems restless and a little annoyed.",
-      "Your pet watches you carefully but does not look impressed.",
-    ];
-    return moodyLines[total % moodyLines.length];
-  }
-
-  if (bond >= 80) {
-    const warmLines = [
-      "Your pet stays close and looks happy to be with you.",
-      "Your pet seems relaxed and trustful around you.",
-      "Your pet watches you warmly and looks completely at ease.",
-      "Your pet leans in like it enjoys your company.",
-    ];
-    return warmLines[total % warmLines.length];
-  }
-
-  if (bond >= 55) {
-    const neutralNiceLines = [
-      "Your pet is watching quietly.",
-      "Your pet seems calm and alert.",
-      "Your pet looks comfortable being near you.",
-      "Your pet watches the room with quiet curiosity.",
-    ];
-    return neutralNiceLines[total % neutralNiceLines.length];
-  }
-
-  const distantLines = [
-    "Your pet is watching quietly from a short distance.",
-    "Your pet seems cautious, but not unfriendly.",
-    "Your pet keeps an eye on you and the room around it.",
-    "Your pet looks curious, though still a little guarded.",
+function getPetSpeech({
+  hunger,
+  clean,
+  happy,
+  comfort,
+  rest,
+  energy,
+}: {
+  hunger: number;
+  clean: number;
+  happy: number;
+  comfort: number;
+  rest: number;
+  energy: number;
+}) {
+  const needs = [
+    { value: hunger, text: "I'm hungry... can we get food?" },
+    { value: clean, text: "I feel gross... I need a clean." },
+    { value: happy, text: "I'm kinda bored... play with me?" },
+    { value: comfort, text: "I could use some comfort right now." },
+    { value: rest, text: "I'm tired... I need rest." },
+    { value: energy, text: "I'm low on energy... slow down." },
   ];
-  return distantLines[total % distantLines.length];
+
+  needs.sort((a, b) => a.value - b.value);
+  const lowest = needs[0];
+
+  if (lowest.value <= 15) return lowest.text;
+  if (lowest.value <= 30) return `Hey... ${lowest.text}`;
+  if (lowest.value <= 45) return `I'm okay, but ${lowest.text.toLowerCase()}`;
+
+  return "I'm doing okay right now.";
 }
 
 function randomNickname(seedName: string) {
@@ -420,15 +372,20 @@ export default function PetDetailsPanel({
     0,
     Math.min(CARE_MAX, safeNum(comfort, CARE_MAX)),
   );
+  const energyLevel = Math.max(
+    0,
+    Math.min(CARE_MAX, safeNum(energy, CARE_MAX)),
+  );
 
   const stablePreference = getStablePreference(pet);
-  const behaviorLine = getBehaviorLine(
-    pet,
-    hungerLevel,
-    cleanLevel,
-    moodLevel,
-    clampedBond,
-  );
+  const petSpeech = getPetSpeech({
+    hunger: hungerLevel,
+    clean: cleanLevel,
+    happy: moodLevel,
+    comfort: comfortLevel,
+    rest: restLevel,
+    energy: energyLevel,
+  });
 
   const safeInventory = inventoryCounts ?? {
     food: 0,
@@ -568,8 +525,6 @@ export default function PetDetailsPanel({
             className="petRepoVerticalCard"
             aria-label="Pet scene and details"
           >
-            <div className="petRepoBehaviorBanner">{behaviorLine}</div>
-
             <div
               className={`petRepoSceneOrb petRepoSceneOrb--${elementKey}`}
               style={
@@ -621,6 +576,10 @@ export default function PetDetailsPanel({
                   <div className="petRepoScenePlatformInner" />
                 </div>
               </div>
+            </div>
+
+            <div className="petRepoTalkBubble" aria-live="polite">
+              <p>{petSpeech}</p>
             </div>
 
             <div className="petRepoVerticalInfo">

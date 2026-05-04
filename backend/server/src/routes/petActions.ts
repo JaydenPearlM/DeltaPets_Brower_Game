@@ -10,6 +10,8 @@ import {
 } from "../pets/cooldowns";
 import { fetchActivePet } from "./routePets/petsRepo";
 import { safeNum } from "../lib/utils";
+import { validateBody } from "../middleware/validateRequest";
+import { petActionSchema } from "../lib/validation";
 
 export const petActionsRouter = Router();
 
@@ -24,6 +26,7 @@ function clamp(n: number, min: number, max: number) {
 petActionsRouter.post(
   "/do",
   requireUser,
+  validateBody(petActionSchema),
   async (req: AuthedRequest, res: Response) => {
     const userId = req.user!.id;
     const nowMs = Date.now();

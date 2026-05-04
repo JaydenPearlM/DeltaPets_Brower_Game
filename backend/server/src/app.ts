@@ -2,6 +2,8 @@ import express from "express";
 import apiRouter from "./routes";
 import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
 import type { Request, Response, NextFunction } from "express";
+import { AppError } from "./lib/AppError";
+import helmet from "helmet";
 
 export function createApp() {
   const app = express();
@@ -10,6 +12,12 @@ export function createApp() {
 
   // Important for correct req.ip behind proxies (Render/Cloudflare/etc)
   app.set("trust proxy", 1);
+
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: false,
+    }),
+  );
 
   // Basic request shaping (avoid huge payload spam)
   app.use(express.json({ limit: "100kb" }));
@@ -27,9 +35,23 @@ export function createApp() {
   });
 
   // Global error handler — must have 4 arguments to work in Express
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (err instanceof AppError) {
+      return res.status(err.statusCode).json({
+        ok: false,
+        code: err.code,
+        message: err.message,
+        details: err.details ?? null,
+      });
+    }
+
     console.error("[unhandled error]", err);
-    res.status(500).json({ error: "Internal server error" });
+
+    return res.status(500).json({
+      ok: false,
+      code: "INTERNAL_ERROR",
+      message: "Something went wrong.",
+    });
   });
 
   return app;

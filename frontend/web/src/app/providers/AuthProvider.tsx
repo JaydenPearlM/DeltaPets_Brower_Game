@@ -95,7 +95,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           if (!data?.email) {
-            return { error: { message: "Unknown username." } };
+            return {
+              error: { message: "Incorrect Username and/or password." },
+            };
           }
 
           emailToUse = String(data.email).trim().toLowerCase();

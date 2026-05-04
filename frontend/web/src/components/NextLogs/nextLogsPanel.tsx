@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { MarkdownBody } from "../../markdown/MarkdownBody";
 import "./nextLogsPanel.css";
 
 type Page = 0 | 1 | 2;
@@ -275,12 +276,9 @@ export function NextLogsPanel({ className = "" }: NextLogsPanelProps) {
               <p className="patchModalDesc">{activePatch.description}</p>
             ) : null}
 
-            <div
+            <MarkdownBody
               className="patchContent"
-              dangerouslySetInnerHTML={{
-                __html:
-                  activePatch.patch_html?.trim() || "<p>No patch body yet.</p>",
-              }}
+              content={activePatch.patch_html?.trim() || "No patch body yet."}
             />
           </div>
         </div>

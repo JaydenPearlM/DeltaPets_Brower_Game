@@ -99,6 +99,7 @@ petsRouter.get(
           happy: hydratedPet.happy,
           comfort: hydratedPet.comfort,
           rest: hydratedPet.rest,
+          energy: hydratedPet.energy,
           neglect_hours: hydratedPet.neglect_hours,
           ran_away: hydratedPet.ran_away,
           runaway_at: hydratedPet.runaway_at ?? null,
