@@ -18,11 +18,16 @@
 
 .skillTreeModal {
   width: min(1240px, calc(100vw - 28px));
-  max-height: calc(100vh - 32px);
-  overflow-y: auto;
+  height: calc(100vh - 90px);
+  overflow: hidden;
+
   padding: 22px;
-  border: 1px solid rgba(64, 144, 190, 0.55);
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(82, 255, 176, 0.6);
   border-radius: 22px;
+
   background:
     radial-gradient(
       circle at top left,
@@ -35,9 +40,13 @@
       var(--dp-skilltree-panel-mid) 46%,
       var(--dp-skilltree-panel-bottom) 100%
     );
+
   box-shadow:
-    0 0 24px rgba(43, 160, 220, 0.18),
+    0 0 24px rgba(82, 255, 176, 0.35),
+    0 0 60px rgba(82, 255, 176, 0.18),
     0 26px 80px rgba(0, 0, 0, 0.48);
+
+  transform: translateY(20px);
 }
 
 .skillTreeModal .skillPopupClose {
@@ -61,6 +70,8 @@
     inset 0 1px 0 rgba(255, 196, 196, 0.22),
     0 8px 18px rgba(34, 4, 7, 0.34);
   cursor: pointer;
+
+  margin-top: 50px; /* ← THIS moves it down */
 }
 
 .skillTreeModal .skillPopupClose:hover {
@@ -82,9 +93,9 @@
 }
 
 .talentTreeHeaderActions {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  grid-column: 3;
+  justify-self: center;
+  align-items: center;
 }
 
 .talentTreeHeader > .skillPopupClose {
@@ -125,6 +136,8 @@
   border-radius: 18px;
   background: rgba(8, 58, 49, 0.42);
   text-align: center;
+  position: relative;
+  left: -210px;
   box-shadow: 0 0 16px rgba(82, 255, 176, 0.12);
 }
 
@@ -208,8 +221,8 @@
   content: "";
   position: absolute;
   z-index: 4;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
   background: #baffd6;
   box-shadow:
@@ -221,43 +234,43 @@
 
 @keyframes talentBoardCometPath {
   0% {
-    top: -5px;
-    left: 24px;
+    top: -6px;
+    left: 18px;
   }
 
   25% {
-    top: -5px;
-    left: calc(100% - 24px);
+    top: -6px;
+    left: calc(100% - 18px);
   }
 
   26% {
-    top: 24px;
-    left: calc(100% - 5px);
+    top: 18px;
+    left: calc(100% - 6px);
   }
 
   50% {
-    top: calc(100% - 24px);
-    left: calc(100% - 5px);
+    top: calc(100% - 18px);
+    left: calc(100% - 6px);
   }
 
   51% {
-    top: calc(100% - 5px);
-    left: calc(100% - 24px);
+    top: calc(100% - 6px);
+    left: calc(100% - 18px);
   }
 
   75% {
-    top: calc(100% - 5px);
-    left: 24px;
+    top: calc(100% - 6px);
+    left: 18px;
   }
 
   76% {
-    top: calc(100% - 24px);
-    left: -5px;
+    top: calc(100% - 18px);
+    left: -6px;
   }
 
   100% {
-    top: 24px;
-    left: -5px;
+    top: 18px;
+    left: -6px;
   }
 }
 /* ================================

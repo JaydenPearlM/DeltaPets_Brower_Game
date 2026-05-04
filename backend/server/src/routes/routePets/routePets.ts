@@ -51,6 +51,73 @@ import {
   updatePetCareStats,
 } from "../../lib/petCareHelpers";
 
+type HatchBaseRow = {
+  pet_id: string;
+  base_hp: number;
+  base_atk: number;
+  base_magi: number;
+  base_def: number;
+  base_spd: number;
+  base_mana: number;
+  base_total: number;
+};
+
+type EggRow = {
+  id: string;
+  user_id: string;
+  name: string;
+  species?: string;
+  line?: ElementalLine | string | null;
+  stage: string;
+  hatch_ends_at?: string | null;
+  personality_id?: string | null;
+  personality_key?: string | null;
+  growth_strong_stats?: string[] | null;
+  growth_weak_stat?: string | null;
+  hatch_time_alignment?: string | null;
+  [key: string]: unknown;
+};
+
+type PetInsertPayload = {
+  user_id: string;
+  name: string;
+  species?: string;
+  line: ElementalLine;
+  stage: string;
+  hatch_ends_at: string;
+  is_active: boolean;
+  location: string;
+  personality_key?: string | null;
+  hatch_time_alignment?: string | null;
+  growth_strong_stats?: string[] | null;
+  growth_weak_stat?: string | null;
+};
+
+type MinimalPetInsertPayload = Omit<
+  PetInsertPayload,
+  | "species"
+  | "personality_key"
+  | "hatch_time_alignment"
+  | "growth_strong_stats"
+  | "growth_weak_stat"
+>;
+
+type HatchAllocationPayload = {
+  pet_id: string;
+  level: number;
+  hp: number;
+  atk: number;
+  def: number;
+  spd: number;
+  magi: number;
+  mana: number;
+};
+
+type PetLocationUpdatePayload = {
+  location: string;
+  is_active: boolean;
+};
+
 export const petsRouter = Router();
 
 // ============================================================
@@ -199,7 +266,7 @@ petsRouter.post(
         hatch_time_alignment: worldTime ?? null,
         growth_strong_stats: strongStats,
         growth_weak_stat: weakStat,
-      } as any;
+      } as PetInsertPayload;
 
       const fallbackInsertPayload = {
         user_id: userId,
@@ -209,9 +276,9 @@ petsRouter.post(
         hatch_ends_at: hatchEndsAt,
         is_active: false,
         location: "hatchery",
-      } as any;
+      } as MinimalPetInsertPayload;
 
-      let insertedPet: any = null;
+      let insertedPet: EggRow | null = null;
 
       const fullInsertResult = await supabaseAdmin
         .from("pets")
@@ -418,6 +485,8 @@ petsRouter.post(
         return res.status(404).json({ error: "No hatchery egg found" });
       }
 
+      const typedEgg = egg as unknown as EggRow;
+
       const remaining = msUntil(egg.hatch_ends_at, serverNowMs);
 
       if (remaining > 0) {
@@ -431,22 +500,22 @@ petsRouter.post(
 
       console.log(
         "[hatch] egg found -> line=%s, ready=%s",
-        (egg as any).line ?? "unknown",
+        typedEgg.line ?? "unknown",
         true,
       );
 
       const starter =
         STARTERS.find((s) => s.speciesId === egg.species) ??
         findStarterByName(egg.name) ??
-        STARTERS.find((s) => s.line === (egg as any).line) ??
+        STARTERS.find((s) => s.line === typedEgg.line) ??
         null;
 
       if (!starter) {
         console.error(
-          `[hatch] could not resolve starter for egg line: ${(egg as any).line ?? "unknown"}`,
+          `[hatch] could not resolve starter for egg line: ${typedEgg.line ?? "unknown"}`,
         );
         return res.status(500).json({
-          error: `Could not resolve starter for egg (line: ${(egg as any).line ?? "unknown"})`,
+          error: `Could not resolve starter for egg (line: ${typedEgg.line ?? "unknown"})`,
         });
       }
 
@@ -481,13 +550,15 @@ petsRouter.post(
           .json({ error: "Missing pet_stats row after ensure." });
       }
 
+      const typedBase = baseRaw as unknown as HatchBaseRow;
+
       const baseSum = sumBase5({
-        base_hp: (baseRaw as any).base_hp,
-        base_atk: (baseRaw as any).base_atk,
-        base_def: (baseRaw as any).base_def,
-        base_spd: (baseRaw as any).base_spd,
-        base_magi: (baseRaw as any).base_magi,
-        base_mana: (baseRaw as any).base_mana,
+        base_hp: typedBase.base_hp,
+        base_atk: typedBase.base_atk,
+        base_def: typedBase.base_def,
+        base_spd: typedBase.base_spd,
+        base_magi: typedBase.base_magi,
+        base_mana: typedBase.base_mana,
       });
 
       if (baseSum !== 10) {
@@ -503,7 +574,7 @@ petsRouter.post(
             base_magi: starter.baseStats.magi,
             base_mana: starter.baseStats.mana ?? 0,
             base_total: 10,
-          } as any)
+          } as Partial<HatchBaseRow>)
           .eq("pet_id", egg.id);
 
         if (fixErr) {
@@ -511,13 +582,13 @@ petsRouter.post(
           return res.status(500).json({ error: fixErr.message });
         }
 
-        (baseRaw as any).base_hp = starter.baseStats.hp;
-        (baseRaw as any).base_atk = starter.baseStats.atk;
-        (baseRaw as any).base_def = starter.baseStats.def;
-        (baseRaw as any).base_spd = starter.baseStats.spd;
-        (baseRaw as any).base_magi = starter.baseStats.magi;
-        (baseRaw as any).base_mana = starter.baseStats.mana ?? 0;
-        (baseRaw as any).base_total = 10;
+        typedBase.base_hp = starter.baseStats.hp;
+        typedBase.base_atk = starter.baseStats.atk;
+        typedBase.base_def = starter.baseStats.def;
+        typedBase.base_spd = starter.baseStats.spd;
+        typedBase.base_magi = starter.baseStats.magi;
+        typedBase.base_mana = starter.baseStats.mana ?? 0;
+        typedBase.base_total = 10;
       }
 
       console.log("[hatch] base stats loaded -> total=%s", 10);
@@ -541,7 +612,7 @@ petsRouter.post(
             spd: iv.spd,
             magi: iv.magi,
             mana: iv.mana,
-          } as any,
+          } as HatchAllocationPayload,
           { onConflict: "pet_id,level" },
         );
 
@@ -558,12 +629,12 @@ petsRouter.post(
       console.log("[hatch] hatch bonus rolled -> total=%s", ivTotal);
       console.log("[hatch] final level 1 stats -> total=%s", 10 + ivTotal);
 
-      const baseHp = Number((baseRaw as any).base_hp ?? 0);
-      const baseAtk = Number((baseRaw as any).base_atk ?? 0);
-      const baseDef = Number((baseRaw as any).base_def ?? 0);
-      const baseSpd = Number((baseRaw as any).base_spd ?? 0);
-      const baseMagi = Number((baseRaw as any).base_magi ?? 0);
-      const baseMana = Number((baseRaw as any).base_mana ?? 0);
+      const baseHp = Number(typedBase.base_hp ?? 0);
+      const baseAtk = Number(typedBase.base_atk ?? 0);
+      const baseDef = Number(typedBase.base_def ?? 0);
+      const baseSpd = Number(typedBase.base_spd ?? 0);
+      const baseMagi = Number(typedBase.base_magi ?? 0);
+      const baseMana = Number(typedBase.base_mana ?? 0);
 
       const totalHp = baseHp + iv.hp;
       const totalAtk = baseAtk + iv.atk;
@@ -616,12 +687,10 @@ petsRouter.post(
       }
 
       const savedStrongStats = sanitizeGrowthStrongStats(
-        (egg as any).growth_strong_stats,
+        typedEgg.growth_strong_stats,
       );
 
-      const savedWeakStat = sanitizeGrowthWeakStat(
-        (egg as any).growth_weak_stat,
-      );
+      const savedWeakStat = sanitizeGrowthWeakStat(typedEgg.growth_weak_stat);
 
       const fallbackTraits =
         savedStrongStats.length > 0 || savedWeakStat
@@ -637,8 +706,8 @@ petsRouter.post(
 
       console.log("[hatch] growth traits ->", {
         pet_id: egg.id,
-        egg_growth_strong_stats: (egg as any).growth_strong_stats ?? null,
-        egg_growth_weak_stat: (egg as any).growth_weak_stat ?? null,
+        egg_growth_strong_stats: typedEgg.growth_strong_stats ?? null,
+        egg_growth_weak_stat: typedEgg.growth_weak_stat ?? null,
         savedStrengths: savedStrongStats,
         savedWeakness: savedWeakStat,
         fallbackTraits,
@@ -651,15 +720,15 @@ petsRouter.post(
         name: starter.hatchlingName,
         nickname: null,
         stage: "hatchling",
-        element: (egg as any).line ?? starter.line ?? null,
+        element: typedEgg.line ?? starter.line ?? null,
         personality_name: personalityKey,
         strengths,
         weakness,
       });
 
-      const hatchTimeAlignment = (egg as any).hatch_time_alignment ?? null;
+      const hatchTimeAlignment = typedEgg.hatch_time_alignment ?? null;
 
-      const petUpdatePayload: Record<string, any> = {
+      const petUpdatePayload: Record<string, unknown> = {
         name: starter.hatchlingName,
         stage: "hatchling",
         hatched_at: nowIso,
@@ -740,7 +809,10 @@ petsRouter.post(
       if (assignedPartySlot) {
         const { error: activateErr } = await supabaseAdmin
           .from("pets")
-          .update({ location: "active", is_active: true } as any)
+          .update({
+            location: "active",
+            is_active: true,
+          } as PetLocationUpdatePayload)
           .eq("id", egg.id)
           .eq("user_id", userId);
 
@@ -756,7 +828,10 @@ petsRouter.post(
       } else {
         const { error: storeErr } = await supabaseAdmin
           .from("pets")
-          .update({ location: "storage", is_active: false } as any)
+          .update({
+            location: "storage",
+            is_active: false,
+          } as PetLocationUpdatePayload)
           .eq("id", egg.id)
           .eq("user_id", userId);
 

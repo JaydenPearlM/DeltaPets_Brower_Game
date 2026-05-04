@@ -28,6 +28,7 @@ const CLEAN_STEP_MINUTES = 120; // every 2 hours
 const HAPPY_STEP_MINUTES = 105; // mood drops a bit faster than clean
 const COMFORT_STEP_MINUTES = 150; // slower
 const REST_STEP_MINUTES = 180; // slowest care need
+const ENERGY_STEP_MINUTES = 240; // slowest -- every 4 hours
 
 const RUNAWAY_THRESHOLD_HOURS = 24;
 
@@ -222,11 +223,11 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   const comfortLoss = stepsFromMinutes(elapsedMinutes, COMFORT_STEP_MINUTES);
   const restLoss = stepsFromMinutes(elapsedMinutes, REST_STEP_MINUTES);
 
-  const energyLoss = 0;
+  const energyLoss = stepsFromMinutes(elapsedMinutes, ENERGY_STEP_MINUTES);
 
   const totalLoss = hungerLoss + cleanLoss + happyLoss + comfortLoss + restLoss;
 
-  if (totalLoss <= 0) {
+  if (totalLoss <= 0 && energyLoss <= 0) {
     const runawayState = buildRunawayState({
       pet,
       hunger: hungerBase,
@@ -264,7 +265,7 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   const happy = clampCare(happyBase - happyLoss);
   const comfort = clampCare(comfortBase - comfortLoss);
   const rest = clampCare(restBase - restLoss);
-  const energy = energyBase;
+  const energy = clampEnergy(energyBase - energyLoss);
 
   const runawayState = buildRunawayState({
     pet,

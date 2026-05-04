@@ -1,7 +1,32 @@
-// backend/server/src/routes/routePets/pets.stats.ts
+// backend/server/src/routes/routePets/petsStats.ts
 
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import type { BaseStatsTemplate } from "./petsType";
+
+/** Shape of a row from the pet_stats table */
+type PetStatsRow = {
+  pet_id: string;
+  base_hp: number;
+  base_atk: number;
+  base_magi: number;
+  base_def: number;
+  base_spd: number;
+  base_mana: number;
+  base_total: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+/** Shape of an allocation row */
+type AllocRow = {
+  level: number;
+  hp: number;
+  atk: number;
+  magi: number;
+  def: number;
+  spd: number;
+  mana: number;
+};
 
 /** MATCH YOUR DB columns */
 export async function fetchBaseStatsMapped(petId: string) {
@@ -14,20 +39,22 @@ export async function fetchBaseStatsMapped(petId: string) {
   if (error) throw error;
   if (!data) return null;
 
+  const row = data as PetStatsRow;
+
   return {
-    pet_id: (data as any).pet_id,
-    hp: (data as any).base_hp ?? 0,
-    atk: (data as any).base_atk ?? 0,
-    magi: (data as any).base_magi ?? 0,
-    def: (data as any).base_def ?? 0,
-    spd: (data as any).base_spd ?? 0,
-    mana: (data as any).base_mana ?? 0,
-    base_total: (data as any).base_total ?? 0, // should be 10 for eggs
+    pet_id: row.pet_id,
+    hp: row.base_hp ?? 0,
+    atk: row.base_atk ?? 0,
+    magi: row.base_magi ?? 0,
+    def: row.base_def ?? 0,
+    spd: row.base_spd ?? 0,
+    mana: row.base_mana ?? 0,
+    base_total: row.base_total ?? 0, // should be 10 for eggs
   };
 }
 
 export async function insertBaseStats(petId: string, s: BaseStatsTemplate) {
-  const { error } = await supabaseAdmin.from("pet_stats").insert({
+  const payload: Omit<PetStatsRow, "created_at" | "updated_at"> = {
     pet_id: petId,
     base_hp: s.hp,
     base_atk: s.atk,
@@ -36,7 +63,9 @@ export async function insertBaseStats(petId: string, s: BaseStatsTemplate) {
     base_spd: s.spd,
     base_mana: s.mana,
     base_total: s.base_total,
-  } as any);
+  };
+
+  const { error } = await supabaseAdmin.from("pet_stats").insert(payload);
 
   if (error) throw error;
 }
@@ -55,9 +84,9 @@ export async function fetchAllocTotals(petId: string) {
 
   if (error) throw error;
 
-  const rows = data ?? [];
+  const rows = (data ?? []) as AllocRow[];
   const totals = rows.reduce(
-    (acc, r: any) => {
+    (acc, r) => {
       acc.hp += r.hp ?? 0;
       acc.atk += r.atk ?? 0;
       acc.magi += r.magi ?? 0;

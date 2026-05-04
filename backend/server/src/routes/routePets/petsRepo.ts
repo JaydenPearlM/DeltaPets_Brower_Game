@@ -90,7 +90,9 @@ async function isHatcheryInitialized(userId: string): Promise<boolean> {
     .maybeSingle();
 
   if (error || !data) return false;
-  return (data as any).hatchery_initialized === true;
+  return (
+    (data as { hatchery_initialized?: boolean }).hatchery_initialized === true
+  );
 }
 
 /**
@@ -101,7 +103,7 @@ async function isHatcheryInitialized(userId: string): Promise<boolean> {
 function markHatcheryInitialized(userId: string): void {
   supabaseAdmin
     .from("profiles")
-    .update({ hatchery_initialized: true } as any)
+    .update({ hatchery_initialized: true } as { hatchery_initialized: boolean })
     .eq("user_id", userId)
     .then(({ error }) => {
       if (error) {
@@ -118,7 +120,7 @@ function markHatcheryInitialized(userId: string): void {
 // ---------------------------------------------------------------------------
 
 /**
- * Creates any missing hatchery slot rows (1–10) and wires the first egg
+ * Creates any missing hatchery slot rows (1â€“10) and wires the first egg
  * into slot 1 if it isn't already there.
  */
 async function runEnsureHatcherySlots(userId: string): Promise<void> {
@@ -173,7 +175,7 @@ async function runEnsureHatcherySlots(userId: string): Promise<void> {
 }
 
 /**
- * Creates any missing hatchery shelf slot rows (1–10).
+ * Creates any missing hatchery shelf slot rows (1â€“10).
  */
 async function runEnsureHatcheryShelfSlots(userId: string): Promise<void> {
   const { data: existingRows, error: existingError } = await supabaseAdmin
@@ -230,8 +232,8 @@ async function initializeHatcheryForUser(userId: string): Promise<void> {
 /**
  * Fetches all hatchery slots with their associated pet data.
  *
- * First visit:   flag=false → runs both ensure functions → flips flag → fetches data
- * Repeat visits: flag=true  → skips ensure entirely → fetches data
+ * First visit:   flag=false â†’ runs both ensure functions â†’ flips flag â†’ fetches data
+ * Repeat visits: flag=true  â†’ skips ensure entirely â†’ fetches data
  *
  * Old cost every load:    2 ensure SELECTs + up to 20 INSERTs
  * New cost after setup:   1 flag SELECT + 1 slots SELECT + 1 optional pets SELECT
