@@ -17,17 +17,33 @@
    ================================ */
 
 .skillTreeModal {
+  position: relative;
   width: min(1240px, calc(100vw - 28px));
-  height: calc(100vh - 90px);
-  overflow: hidden;
-
-  padding: 22px;
-
+  /* No fixed height, no scroll — backdrop scrolls if page needs it */
+  overflow: visible;
+  padding: 28px 28px 28px;
   box-sizing: border-box;
 
+  /* Kill the blue panel from PetSkillsPanel.css shared rule */
+  border: 0 !important;
+  border-radius: 22px;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  transform: translateY(20px);
+}
+
+/* Green glowing border panel */
+.skillTreeModal::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
   border: 1px solid rgba(82, 255, 176, 0.6);
   border-radius: 22px;
-
   background:
     radial-gradient(
       circle at top left,
@@ -40,14 +56,21 @@
       var(--dp-skilltree-panel-mid) 46%,
       var(--dp-skilltree-panel-bottom) 100%
     );
-
   box-shadow:
     0 0 24px rgba(82, 255, 176, 0.35),
     0 0 60px rgba(82, 255, 176, 0.18),
     0 26px 80px rgba(0, 0, 0, 0.48);
-
-  transform: translateY(20px);
+  pointer-events: none;
 }
+
+.skillTreeModal > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================
+   Close button inside skill tree
+   ================================ */
 
 .skillTreeModal .skillPopupClose {
   display: inline-flex;
@@ -70,8 +93,6 @@
     inset 0 1px 0 rgba(255, 196, 196, 0.22),
     0 8px 18px rgba(34, 4, 7, 0.34);
   cursor: pointer;
-
-  margin-top: 50px; /* ← THIS moves it down */
 }
 
 .skillTreeModal .skillPopupClose:hover {
@@ -79,28 +100,42 @@
   transform: translateY(-1px);
 }
 
+/* ================================
+   Header row: Title | Points | Close
+   ================================ */
+
 .talentTreeHeader {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  align-items: start;
-  gap: 18px;
-  margin-top: 8px;
+  align-items: end;
+  gap: 14px;
+  margin-top: 0;
+  padding-bottom: 14px;
 }
 
 .talentTreeHeaderCopy {
   min-width: 0;
-  max-width: 700px;
+  max-width: 600px;
+  padding-top: 6px;
 }
 
 .talentTreeHeaderActions {
-  grid-column: 3;
   justify-self: center;
-  align-items: center;
+  /* Shift left so points panel sits roughly above Majo Path tab */
+  transform: translateX(-202px);
 }
 
 .talentTreeHeader > .skillPopupClose {
   flex: 0 0 auto;
-  align-self: flex-start;
+  justify-self: end;
+  align-self: end;
+  margin-right: 40px;
+  margin-bottom: 2px;
+  transform: translateY(19px);
+}
+
+.talentTreeHeader > .skillPopupClose:hover {
+  transform: translateY(-1px);
 }
 
 .talentTreeHeader h3,
@@ -110,7 +145,7 @@
   -webkit-text-stroke: 2px #c23a2b;
   paint-order: stroke fill;
   font-family: var(--font-heading, "Space Mono", monospace);
-  font-size: clamp(2.35rem, 3vw, 2.35rem);
+  font-size: clamp(2rem, 3vw, 2.35rem);
   font-weight: 900;
   letter-spacing: 0.04em;
   line-height: 1.15;
@@ -119,32 +154,35 @@
     0 0 14px rgba(255, 207, 97, 0.2);
 }
 
-.talentTreeHeader p {
-  max-width: 660px;
-  margin: 10px 0 0;
+.talentTreeHeader p,
+.talentTreeSubtitle {
+  max-width: 600px;
+  margin: 8px 0 0;
   color: rgba(238, 248, 255, 0.74);
   font-weight: 700;
   line-height: 1.5;
+  font-size: 0.9rem;
 }
 
+/* ================================
+   Points panel
+   ================================ */
+
 .talentPointPanel {
-  min-width: 136px;
-  margin-top: 4px;
-  justify-self: center;
-  padding: 14px;
+  min-width: 130px;
+  padding: 8px 14px;
   border: 1px solid rgba(82, 255, 176, 0.34);
   border-radius: 18px;
   background: rgba(8, 58, 49, 0.42);
   text-align: center;
-  position: relative;
-  left: -210px;
+  margin-top: 20px;
   box-shadow: 0 0 16px rgba(82, 255, 176, 0.12);
 }
 
 .talentPointPanel span,
 .talentPointPanel small {
   display: block;
-  color: rgba(238, 248, 255, 0.72);
+  color: #52ffb0;
   font-family: "Space Mono", monospace;
   font-size: 0.7rem;
   font-weight: 900;
@@ -153,17 +191,21 @@
 
 .talentPointPanel strong {
   display: block;
-  color: #52ffb0;
+  color: #ffffff;
   font-family: "Space Mono", monospace;
-  font-size: 2rem;
+  font-size: 1.3rem;
   line-height: 1;
 }
+
+/* ================================
+   Path tab legend
+   ================================ */
 
 .talentTreeLegend {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .talentTreeLegend span,
@@ -201,8 +243,9 @@
 .talentTreeBoard {
   position: relative;
   height: 560px;
-  margin-top: 18px;
-  overflow: visible;
+  margin-top: 14px;
+  /* Clip nodes + comet inside the border — no more bleeding */
+  overflow: hidden;
   border: 1px solid rgba(82, 255, 176, 0.78);
   border-radius: 24px;
   box-shadow:
@@ -234,45 +277,39 @@
 
 @keyframes talentBoardCometPath {
   0% {
-    top: -6px;
+    top: 2px;
     left: 18px;
   }
-
   25% {
-    top: -6px;
+    top: 2px;
     left: calc(100% - 18px);
   }
-
   26% {
     top: 18px;
     left: calc(100% - 6px);
   }
-
   50% {
     top: calc(100% - 18px);
     left: calc(100% - 6px);
   }
-
   51% {
     top: calc(100% - 6px);
     left: calc(100% - 18px);
   }
-
   75% {
     top: calc(100% - 6px);
     left: 18px;
   }
-
   76% {
     top: calc(100% - 18px);
-    left: -6px;
+    left: 2px;
   }
-
   100% {
     top: 18px;
-    left: -6px;
+    left: 2px;
   }
 }
+
 /* ================================
    Base node
    ================================ */
@@ -294,15 +331,12 @@
   transition:
     transform 140ms ease,
     opacity 140ms ease;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
 }
-
-/* ── Shape container ── */
 
 .talentNodeShape {
   position: relative;
@@ -322,13 +356,11 @@
     0 12px 24px rgba(0, 0, 0, 0.28);
 }
 
-/* Circle shape */
 .talentNode--shape-circle .talentNodeShape,
 .talentNode--shape-circle .talentNodeInset {
   border-radius: 999px;
 }
 
-/* Triangle shape */
 .talentNode--shape-triangle .talentNodeShape {
   border: 0;
   border-radius: 0;
@@ -362,8 +394,6 @@
   border-radius: 0;
   clip-path: polygon(50% 0%, 100% 92%, 0% 92%);
 }
-
-/* ── Node text ── */
 
 .talentNode span {
   display: block;
@@ -412,8 +442,6 @@
   line-height: 1.1;
 }
 
-/* ── Hover ── */
-
 .talentNode:hover,
 .talentNode:focus-visible {
   z-index: 500;
@@ -423,8 +451,6 @@
   transform: translate(-50%, -50%) scale(1.035);
 }
 
-/* ── Can upgrade glow ── */
-
 .talentNode.can-upgrade .talentNodeShape {
   border-color: rgba(82, 255, 176, 0.72);
   box-shadow:
@@ -432,8 +458,6 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     inset 0 0 0 1px rgba(82, 255, 176, 0.16);
 }
-
-/* ── Ranked state ── */
 
 .talentNode.is-ranked .talentNodeShape {
   border-color: rgba(82, 255, 176, 0.72);
@@ -460,8 +484,6 @@
     linear-gradient(145deg, #1d496d, #12334f, #071827);
 }
 
-/* ── Row locked (not enough points spent) ── */
-
 .talentNode.is-row-locked {
   opacity: 1;
 }
@@ -472,8 +494,6 @@
 .talentNode.is-row-locked > span {
   opacity: 0.35;
 }
-
-/* ── Selected ── */
 
 .talentNode.is-selected {
   outline: 0;
@@ -491,7 +511,7 @@
 .talentTreeBoard--feral {
   height: 820px;
   min-height: 820px;
-  overflow: visible;
+  overflow: hidden;
   padding-top: 20px;
   border-color: rgba(82, 255, 176, 0.28);
   background:
@@ -522,13 +542,12 @@
   font-size: 0.66rem;
 }
 
-/* Vertical offset so nodes don't clip top */
 .talentTreeBoard--feral .talentNode {
-  transform: translate(-50%, calc(-50% + 42px));
+  transform: translate(-50%, -50%);
 }
 
 .talentTreeBoard--feral .talentNode:hover {
-  transform: translate(-50%, calc(-50% + 42px)) scale(1.035);
+  transform: translate(-50%, -50%) scale(1.035);
 }
 
 /* ================================
@@ -540,8 +559,8 @@
   align-items: stretch;
   justify-content: space-between;
   gap: 22px;
-  margin-top: 16px;
-  padding: 20px 24px;
+  margin-top: 5px;
+  padding: 18px 22px 22px;
   border: 1px solid rgba(112, 178, 220, 0.22);
   border-radius: 18px;
   background: linear-gradient(
@@ -613,11 +632,19 @@
   color: rgba(255, 214, 90, 0.7);
 }
 
+/* ================================
+   Action buttons beside Feral Instinct
+   ================================ */
+
 .talentTreeActions {
+  position: absolute;
+  right: 36px;
+  top: 188px;
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 16px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 20;
 }
 
 .talentTreeActions button {
@@ -643,7 +670,7 @@
    ================================ */
 
 .talentTreeEmptyState {
-  margin-top: 18px;
+  margin-top: 14px;
   padding: 34px;
   border: 1px solid rgba(112, 178, 220, 0.22);
   border-radius: 24px;
@@ -694,9 +721,7 @@
   opacity: 0;
   transform: translate(-50%, 0);
   pointer-events: none;
-  transition:
-    opacity 140ms ease,
-    transform 140ms ease;
+  transition: opacity 140ms ease;
 }
 
 .talentNode:hover::after,
@@ -724,6 +749,10 @@
   .talentTreeHeader {
     display: flex;
     flex-direction: column;
+  }
+
+  .talentTreeHeaderActions {
+    transform: none;
   }
 
   .talentNodeDetails {
@@ -765,123 +794,11 @@
     max-width: 104px;
     font-size: 0.54rem;
   }
-}
-/* ================================
-   Tree board
-   ================================ */
 
-.talentTreeBoard {
-  position: relative;
-  height: 560px;
-  margin-top: 18px;
-  overflow: visible;
-  border: 1px solid rgba(82, 255, 176, 0.6);
-  border-radius: 24px;
-  box-shadow: 0 0 12px rgba(82, 255, 176, 0.25);
-  background:
-    radial-gradient(
-      circle at 50% 42%,
-      rgba(82, 255, 176, 0.07),
-      transparent 34%
-    ),
-    linear-gradient(180deg, #102f4a 0%, #0c2439 48%, #061625 100%);
-}
-
-/* ================================
-   Available Points
-   ================================ */
-
-.talentPointPanel {
-  min-width: 136px;
-  margin-top: 4px;
-  justify-self: center;
-  transform: translateX(-10px);
-  padding: 14px;
-  border: 1px solid rgba(82, 255, 176, 0.34);
-  border-radius: 18px;
-  background: rgba(8, 58, 49, 0.42);
-  text-align: center;
-  box-shadow: 0 0 16px rgba(82, 255, 176, 0.12);
-}
-
-/* ================================
-   Rank Pill
-   ================================ */
-
-.talentNode strong,
-.talentNodeRank {
-  display: block;
-  width: fit-content;
-  margin: -9px auto 0;
-  padding: 4px 6px;
-  border-radius: 999px;
-  background: rgba(2, 8, 14, 0.72);
-  color: rgba(238, 248, 255, 0.96);
-  font-family: "Space Mono", monospace;
-  font-size: 0.66rem;
-  line-height: 1.1;
-}
-
-/* ================================
-   Locked Talents (FIXED)
-   ================================ */
-
-.talentNode.is-row-locked {
-  opacity: 1;
-}
-
-.talentNode.is-row-locked .talentNodeShape,
-.talentNode.is-row-locked .talentNodeName,
-.talentNode.is-row-locked .talentNodeRank,
-.talentNode.is-row-locked > span {
-  opacity: 0.35;
-}
-
-/* ================================
-   Tooltip (FINAL FIX)
-   ================================ */
-
-.talentNode:hover,
-.talentNode:focus-visible {
-  z-index: 500;
-}
-
-.talentNode::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: 50%;
-  top: calc(100% + 2px);
-  z-index: 9999;
-  width: 240px;
-  padding: 10px 12px;
-  border: 1px solid rgba(82, 255, 176, 0.72);
-  border-radius: 14px;
-  background: #02080e;
-  color: rgba(238, 248, 255, 0.96);
-  font-family: "Space Mono", monospace;
-  font-size: 0.66rem;
-  font-weight: 800;
-  line-height: 1.35;
-  text-align: center;
-  box-shadow:
-    0 0 14px rgba(82, 255, 176, 0.32),
-    0 12px 28px rgba(0, 0, 0, 0.38);
-  opacity: 0;
-  transform: translate(-50%, 0);
-  pointer-events: none;
-  transition: opacity 140ms ease;
-}
-
-.talentNode:hover::after,
-.talentNode:focus-visible::after {
-  opacity: 1;
-}
-
-/* ================================
-   Extinction Tooltip ABOVE
-   ================================ */
-
-.talentNode--branch-capstone::after {
-  top: auto;
-  bottom: calc(100% + 6px);
+  .talentTreeActions {
+    position: static;
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
 }

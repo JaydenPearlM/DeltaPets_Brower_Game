@@ -34,7 +34,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 1,
     requiredLevel: 1,
     requires: [],
-    position: { x: 50, y: 4 },
+    position: { x: 50, y: 11 },
     effects: [{ type: "attack_percent", value: 3 }],
   },
 
@@ -54,7 +54,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 1,
     requiredLevel: 2,
     requires: [],
-    position: { x: 20, y: 18 },
+    position: { x: 20, y: 25 },
     effects: [{ type: "bleed_chance", value: 5 }],
   },
   {
@@ -70,7 +70,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 1,
     requiredLevel: 2,
     requires: [],
-    position: { x: 50, y: 18 },
+    position: { x: 50, y: 25 },
     effects: [{ type: "attack_percent", value: 2 }],
   },
   {
@@ -86,7 +86,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 1,
     requiredLevel: 2,
     requires: [],
-    position: { x: 80, y: 18 },
+    position: { x: 80, y: 25 },
     effects: [{ type: "attack", value: 4 }],
   },
 
@@ -107,7 +107,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 1,
     requiredLevel: 3,
     requires: [],
-    position: { x: 10, y: 32 },
+    position: { x: 10, y: 39 },
     effects: [{ type: "bleed_power", value: 10 }],
   },
   {
@@ -122,7 +122,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 1,
     requiredLevel: 3,
     requires: [],
-    position: { x: 30, y: 32 },
+    position: { x: 30, y: 39 },
     effects: [{ type: "bleed_bonus_damage", value: 8 }],
   },
   // -- Frenzy --
@@ -138,7 +138,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 1,
     requiredLevel: 3,
     requires: [],
-    position: { x: 50, y: 32 },
+    position: { x: 50, y: 39 },
     effects: [{ type: "speed_percent", value: 4 }],
   },
   // -- Predator --
@@ -154,7 +154,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 1,
     requiredLevel: 3,
     requires: [],
-    position: { x: 70, y: 32 },
+    position: { x: 70, y: 39 },
     effects: [{ type: "dodge_chance", value: 3 }],
   },
   // -- DEFENSE (last-stand) --
@@ -170,7 +170,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 1,
     requiredLevel: 3,
     requires: [],
-    position: { x: 90, y: 32 },
+    position: { x: 90, y: 39 },
     effects: [{ type: "speed_percent", value: 10 }],
   },
 
@@ -190,7 +190,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 2,
     requiredLevel: 5,
     requires: [],
-    position: { x: 20, y: 46 },
+    position: { x: 20, y: 53 },
     effects: [{ type: "shred_storm_active", value: 1 }],
   },
   // -- Frenzy --
@@ -206,7 +206,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 2,
     requiredLevel: 5,
     requires: [],
-    position: { x: 50, y: 46 },
+    position: { x: 50, y: 53 },
     effects: [{ type: "double_attack_chance", value: 10 }],
   },
   // -- Predator --
@@ -222,7 +222,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 2,
     requiredLevel: 5,
     requires: [],
-    position: { x: 80, y: 46 },
+    position: { x: 80, y: 53 },
     effects: [{ type: "dodge_counter", value: 50 }],
   },
 
@@ -242,7 +242,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 2,
     requiredLevel: 7,
     requires: [],
-    position: { x: 15, y: 60 },
+    position: { x: 15, y: 65 },
     effects: [{ type: "damage_taken_attack_stack", value: 1 }],
   },
   // -- DEFENSE (last-stand) --
@@ -258,7 +258,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 3,
     requiredLevel: 7,
     requires: [],
-    position: { x: 40, y: 60 },
+    position: { x: 40, y: 65 },
     effects: [{ type: "deathwish_active", value: 1 }],
   },
   // -- Frenzy --
@@ -274,7 +274,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 2,
     requiredLevel: 7,
     requires: [],
-    position: { x: 60, y: 60 },
+    position: { x: 60, y: 65 },
     effects: [{ type: "defense_percent", value: 8 }],
   },
   // -- DEFENSE (last-stand) --
@@ -290,7 +290,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 3,
     requiredLevel: 7,
     requires: [],
-    position: { x: 85, y: 60 },
+    position: { x: 85, y: 65 },
     effects: [{ type: "death_save", value: 1 }],
   },
 
@@ -309,7 +309,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 3,
     requiredLevel: 9,
     requires: [],
-    position: { x: 35, y: 76 },
+    position: { x: 35, y: 79 },
     effects: [{ type: "defense_percent", value: -12 }],
   },
   {
@@ -324,7 +324,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 3,
     requiredLevel: 9,
     requires: [],
-    position: { x: 65, y: 76 },
+    position: { x: 65, y: 79 },
     effects: [{ type: "blood_debt_reflect", value: 15 }],
   },
   // -- CAPSTONE --
@@ -341,7 +341,7 @@ export const FERAL_NODES: TalentNode[] = [
     costPerRank: 4,
     requiredLevel: 10,
     requires: [],
-    position: { x: 50, y: 87 },
+    position: { x: 50, y: 90 },
     effects: [
       { type: "apex_scaling", value: 10 },
       { type: "bleed_bonus_damage", value: 5 },

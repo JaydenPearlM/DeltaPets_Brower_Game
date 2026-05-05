@@ -86,7 +86,7 @@ export type TalentNode = {
   effects: TalentEffect[];
 };
 
-export const TALENT_POINTS_PER_LEVEL = 4;
+export const TALENT_POINTS_PER_LEVEL = 3;
 
 export const TALENT_TREE_LABELS: Record<TalentTreeKey, string> = {
   feral: "Feral Path",

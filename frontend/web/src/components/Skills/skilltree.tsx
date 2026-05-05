@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   TALENT_NODES,
   TALENT_POINTS_PER_LEVEL,
@@ -17,17 +17,15 @@ type SkillTreeProps = {
 
 type TalentRanks = Partial<Record<TalentNodeId, number>>;
 
-// ─── ROW UNLOCK THRESHOLDS ─────────────────────────────────
-// WoW-style: rows unlock by total points spent in tree.
-// Row 1 (root) always available. Each subsequent row requires
-// a minimum total spend before any talent in that row lights up.
+const FERAL_PATH_TOTAL_POINTS = 53;
+
 const ROW_UNLOCK_THRESHOLDS: Record<number, number> = {
-  1: 0, // root
+  1: 0,
   2: 4,
   3: 8,
   4: 12,
   5: 16,
-  6: 22, // capstone row
+  6: 22,
 };
 
 function getRowForLevel(requiredLevel: number): number {
@@ -50,6 +48,58 @@ function getPetLevel(pet?: Record<string, any> | null) {
 
 function getNodeRank(ranks: TalentRanks, nodeId: TalentNodeId) {
   return ranks[nodeId] ?? 0;
+}
+
+function getPetTalentStorageKey(petId: unknown) {
+  return petId ? `deltapets:talents:${String(petId)}` : null;
+}
+
+function isTalentNodeId(value: string): value is TalentNodeId {
+  return TALENT_NODES.some((node) => node.id === value);
+}
+
+function normalizeTalentRanks(value: unknown): TalentRanks {
+  if (!value || typeof value !== "object") return {};
+
+  return Object.entries(value as Record<string, unknown>).reduce<TalentRanks>(
+    (nextRanks, [nodeId, rankValue]) => {
+      if (!isTalentNodeId(nodeId)) return nextRanks;
+
+      const rank = Math.max(0, Math.floor(toNumber(rankValue, 0)));
+      const node = TALENT_NODES.find((talentNode) => talentNode.id === nodeId);
+
+      if (!node || rank <= 0) return nextRanks;
+
+      nextRanks[nodeId] = Math.min(rank, node.maxRank);
+      return nextRanks;
+    },
+    {},
+  );
+}
+
+function readSavedTalentRanks(pet?: Record<string, any> | null): TalentRanks {
+  const petRanks =
+    pet?.talent_ranks ??
+    pet?.talentRanks ??
+    pet?.talents ??
+    pet?.skill_tree_ranks ??
+    pet?.skillTreeRanks;
+
+  const normalizedPetRanks = normalizeTalentRanks(petRanks);
+  if (Object.keys(normalizedPetRanks).length > 0) return normalizedPetRanks;
+
+  const storageKey = getPetTalentStorageKey(pet?.id);
+  if (!storageKey || typeof window === "undefined") return {};
+
+  try {
+    const storedBuild = window.localStorage.getItem(storageKey);
+    if (!storedBuild) return {};
+
+    const parsedBuild = JSON.parse(storedBuild) as { ranks?: unknown };
+    return normalizeTalentRanks(parsedBuild.ranks);
+  } catch {
+    return {};
+  }
 }
 
 function getSpentPoints(ranks: TalentRanks) {
@@ -95,8 +145,6 @@ function getNodeState({
   const hasLevel = petLevel >= node.requiredLevel;
   const hasPoints = availablePoints >= node.costPerRank;
 
-  // WoW-style row gating: check if enough total points have been
-  // spent to unlock this row
   const row = getRowForLevel(node.requiredLevel);
   const threshold = ROW_UNLOCK_THRESHOLDS[row] ?? 0;
   const rowUnlocked = spentPoints >= threshold;
@@ -115,13 +163,21 @@ function getNodeState({
 
 export default function SkillTree({ pet, onClose }: SkillTreeProps) {
   const petLevel = getPetLevel(pet);
-  const totalPoints = petLevel * TALENT_POINTS_PER_LEVEL;
+  const totalPoints = Math.max(0, petLevel - 1) * TALENT_POINTS_PER_LEVEL;
 
   const [activeTree, setActiveTree] = useState<TalentTreeKey | null>("feral");
-  const [ranks, setRanks] = useState<TalentRanks>({});
+  const [ranks, setRanks] = useState<TalentRanks>(() =>
+    readSavedTalentRanks(pet),
+  );
+  const [saveStatus, setSaveStatus] = useState<string>("");
   const [selectedNodeId, setSelectedNodeId] = useState<TalentNodeId | null>(
     "feral-root",
   );
+
+  useEffect(() => {
+    setRanks(readSavedTalentRanks(pet));
+    setSaveStatus("");
+  }, [pet?.id]);
 
   const spentPoints = useMemo(() => getSpentPoints(ranks), [ranks]);
   const availablePoints = Math.max(0, totalPoints - spentPoints);
@@ -161,6 +217,8 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
     if (!state.canUpgrade) return;
 
+    setSaveStatus("Unsaved talent changes");
+
     setRanks((currentRanks) => ({
       ...currentRanks,
       [node.id]: getNodeRank(currentRanks, node.id) + 1,
@@ -169,6 +227,8 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
   function removeNodeRank(node: TalentNode) {
     setSelectedNodeId(node.id);
+
+    setSaveStatus("Unsaved talent changes");
 
     setRanks((currentRanks) => {
       const currentRank = getNodeRank(currentRanks, node.id);
@@ -185,19 +245,35 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
   function resetLocalBuild() {
     setRanks({});
     setSelectedNodeId(activeTreeNodes[0]?.id ?? null);
+    setSaveStatus("Unsaved talent changes");
   }
 
   function saveLocalBuild() {
-    console.log("Talent tree build ready for Supabase:", {
+    const storageKey = getPetTalentStorageKey(pet?.id);
+
+    if (!storageKey || typeof window === "undefined") {
+      setSaveStatus("Choose an active pet before saving talents.");
+      return;
+    }
+
+    const talentBuild = {
       petId: pet?.id,
       activeTree,
       totalPoints,
       spentPoints,
+      availablePoints,
       ranks,
-    });
+      savedAt: new Date().toISOString(),
+    };
+
+    window.localStorage.setItem(storageKey, JSON.stringify(talentBuild));
+    window.dispatchEvent(
+      new CustomEvent("deltapets:talents-saved", { detail: talentBuild }),
+    );
+
+    setSaveStatus("Talents saved to this pet.");
   }
 
-  // Figure out which row the selected node is in for display
   const selectedRow = selectedNode
     ? getRowForLevel(selectedNode.requiredLevel)
     : null;
@@ -221,17 +297,16 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
           </h3>
 
           <p className="talentTreeSubtitle">
-            You have 4 points. Spend them wisely.
+            You have {availablePoints} points. Spend them wisely.
           </p>
         </div>
 
         <div className="talentTreeHeaderActions">
           <div className="talentPointPanel">
-            <span>Available</span>
-            <strong>{availablePoints}</strong>
-            <small>
-              {spentPoints} / {totalPoints} spent
-            </small>
+            <span>Points</span>
+            <strong>
+              {availablePoints} / {FERAL_PATH_TOTAL_POINTS}
+            </strong>
           </div>
         </div>
 
@@ -269,8 +344,6 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
       ) : (
         <>
           <div className="talentTreeBoard talentTreeBoard--feral">
-            {/* No SVG lines. WoW-style: nodes sit in a grid. */}
-
             {activeTreeNodes.map((node) => {
               const state = getNodeState({
                 node,
@@ -363,12 +436,16 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
           ) : null}
 
           <div className="talentTreeActions">
+            {saveStatus ? (
+              <p className="talentTreeSaveStatus">{saveStatus}</p>
+            ) : null}
+
             <button type="button" onClick={resetLocalBuild}>
               Reset Local Build
             </button>
 
             <button type="button" onClick={saveLocalBuild}>
-              Save Build Preview
+              Save Talents
             </button>
           </div>
         </>

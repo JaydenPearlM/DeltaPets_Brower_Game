@@ -23,12 +23,12 @@ const ENERGY_MAX = 50;
 const MIN = 0;
 
 // step-based decay intervals
-const HUNGER_STEP_MINUTES = 90; // noticeable, but not needy
-const CLEAN_STEP_MINUTES = 120; // every 2 hours
-const HAPPY_STEP_MINUTES = 105; // mood drops a bit faster than clean
-const COMFORT_STEP_MINUTES = 150; // slower
-const REST_STEP_MINUTES = 180; // slowest care need
-const ENERGY_STEP_MINUTES = 240; // slowest -- every 4 hours
+const HUNGER_STEP_MINUTES = 60; // every 1 hour
+const CLEAN_STEP_MINUTES = 90; // every 1.5 hours
+const HAPPY_STEP_MINUTES = 75; // mood drops between hunger and clean
+const COMFORT_STEP_MINUTES = 120; // every 2 hours
+const REST_STEP_MINUTES = 150; // every 2.5 hours
+const ENERGY_STEP_MINUTES = 180; // every 3 hours
 
 const RUNAWAY_THRESHOLD_HOURS = 24;
 

@@ -403,19 +403,6 @@ export default function PetSkillsPanel({ pet, stats }: PetSkillsPanelProps) {
       <div className="skillsLadder">
         <div className="skillsLadderGrid">
           <div className="skillsLadderColumn skillsLadderColumn--left">
-            {(["basic-strike", "guard", "mend"] as SkillId[]).map((skillId) => {
-              const skill = skillsById[skillId];
-
-              return skill ? (
-                <SkillButton
-                  key={skill.id}
-                  skill={skill}
-                  lane="left"
-                  onClick={() => setActiveSkill(skill)}
-                />
-              ) : null;
-            })}
-
             <article className="skillInfoCard" aria-label="Skill system notes">
               <h4 className="skillInfoTitle">
                 <span className="skillInfoAccent">How Skills Grow:</span>
@@ -452,6 +439,19 @@ export default function PetSkillsPanel({ pet, stats }: PetSkillsPanelProps) {
                 </span>
               </p>
             </article>
+
+            {(["basic-strike", "guard", "mend"] as SkillId[]).map((skillId) => {
+              const skill = skillsById[skillId];
+
+              return skill ? (
+                <SkillButton
+                  key={skill.id}
+                  skill={skill}
+                  lane="left"
+                  onClick={() => setActiveSkill(skill)}
+                />
+              ) : null;
+            })}
           </div>
 
           <div className="skillsLadderColumn skillsLadderColumn--right">
