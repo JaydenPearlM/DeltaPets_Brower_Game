@@ -135,25 +135,19 @@
 }
 
 .skillInventoryPanel[aria-label="Battle skills"] {
-  border: 1px solid rgba(119, 148, 174, 0.34);
+  border: 1px solid rgba(89, 188, 255, 0.24);
   background:
-    radial-gradient(
-      circle at 16% 0%,
-      rgba(130, 152, 171, 0.2),
-      transparent 34%
-    ),
-    radial-gradient(circle at 84% 100%, rgba(20, 65, 45, 0.2), transparent 36%),
+    radial-gradient(circle at 16% 0%, rgba(89, 188, 255, 0.1), transparent 34%),
     linear-gradient(
       145deg,
-      rgba(38, 47, 55, 0.98) 0%,
-      rgba(19, 25, 31, 0.99) 48%,
-      rgba(7, 12, 17, 0.99) 100%
+      rgba(11, 11, 39, 0.98) 0%,
+      rgba(7, 14, 22, 0.99) 48%,
+      rgba(3, 8, 14, 0.99) 100%
     );
   box-shadow:
-    inset 0 0 0 2px rgba(255, 255, 255, 0.045),
-    inset 0 2px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -18px 30px rgba(0, 0, 0, 0.42),
-    inset 0 0 30px rgba(89, 188, 255, 0.06),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.035),
+    inset 0 2px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -18px 30px rgba(0, 0, 0, 0.48),
     0 16px 32px rgba(0, 0, 0, 0.24);
 }
 
@@ -188,8 +182,8 @@
 }
 
 .skillSlotCard {
-  width: 132px;
-  height: 132px;
+  width: 110px;
+  height: 110px;
   padding: 14px;
   border: 1px solid rgba(89, 188, 255, 0.4);
   border-radius: 50%;
@@ -216,12 +210,11 @@
 }
 
 .skillSlotCard.is-filled {
-  border-color: rgba(255, 214, 90, 0.58);
+  border-color: rgba(255, 255, 255, 0.82);
   box-shadow:
-    inset 0 0 0 2px rgba(255, 255, 255, 0.045),
-    0 0 24px rgba(255, 214, 90, 0.18);
+    inset 0 0 0 2px rgba(255, 255, 255, 0.04),
+    0 0 18px rgba(255, 255, 255, 0.08);
 }
-
 .skillSlotCard.is-empty {
   border-style: solid;
   opacity: 0.82;
@@ -240,10 +233,10 @@
 .skillSlotCard h4 {
   margin: 0;
   color: #ffe69b;
-  font-size: 0.78rem;
+  font-size: 1rem;
   line-height: 1.15;
+  letter-spacing: 0.1rem;
 }
-
 .skillSlotCard p {
   margin: 6px 0 8px;
   color: rgba(238, 248, 255, 0.68);
@@ -745,6 +738,7 @@
   );
 }
 
+.skillTrapezoid--species-skill,
 .skillTrapezoid--weak-element-strike,
 .skillTrapezoid--lowform-skill,
 .skillTrapezoid--highform-skill,
@@ -778,6 +772,7 @@
 .skillTrapezoid--basic-strike,
 .skillTrapezoid--guard,
 .skillTrapezoid--mend,
+.skillTrapezoid--species-skill,
 .skillTrapezoid--weak-element-strike,
 .skillTrapezoid--lowform-skill,
 .skillTrapezoid--highform-skill,
@@ -807,6 +802,7 @@
 .skillTrapezoid--basic-strike::after,
 .skillTrapezoid--guard::after,
 .skillTrapezoid--mend::after,
+.skillTrapezoid--species-skill::after,
 .skillTrapezoid--weak-element-strike::after,
 .skillTrapezoid--lowform-skill::after,
 .skillTrapezoid--highform-skill::after,
@@ -873,18 +869,20 @@
   }
 }
 
-.skillSlotCard.is-locked {
-  background:
-    radial-gradient(
-      circle at 35% 25%,
-      rgba(255, 255, 255, 0.2),
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at center,
-      rgba(31, 74, 104, 0.94),
-      rgba(8, 18, 30, 0.98)
-    );
+/* FIX: Locked battle skill text should be grey-blue, not gold. */
+.skillSlotCard.is-empty h4 {
+  color: rgba(150, 175, 205, 0.72);
+}
+
+.skillSlot.locked,
+.skillCircle.locked,
+.lockedSkill {
+  border: 1px solid rgba(120, 155, 190, 0.28);
+  color: rgba(150, 175, 205, 0.72);
+  box-shadow:
+    inset 0 0 14px rgba(120, 150, 185, 0.08),
+    0 0 10px rgba(70, 110, 150, 0.14);
+  filter: saturate(0.72) brightness(0.88);
 }
 
 /* ================================

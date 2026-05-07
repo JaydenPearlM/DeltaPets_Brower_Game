@@ -30,8 +30,11 @@ export function normalizePetForClient<T extends Record<string, any>>(
   return {
     ...pet,
     hunger: safeWhole(pet.hunger, CARE_DEFAULT),
-    clean: safeWhole(pet.clean ?? pet.cleanliness, CARE_DEFAULT),
-    cleanliness: safeWhole(pet.cleanliness ?? pet.clean, CARE_DEFAULT),
+    // Now only uses ONE column
+    clean: safeWhole(pet.clean, CARE_DEFAULT),
+
+    // Now only writes to ONE column
+    clean: safeWhole(updates.clean, CARE_DEFAULT),
     happy: safeWhole(pet.happy ?? pet.happiness, CARE_DEFAULT),
     happiness: safeWhole(pet.happiness ?? pet.happy, CARE_DEFAULT),
     comfort: safeWhole(pet.comfort, CARE_DEFAULT),

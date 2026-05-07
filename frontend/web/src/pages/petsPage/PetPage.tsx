@@ -530,8 +530,8 @@ export default function PetPage() {
   }, [loadPetPage, nicknameDraft, pet?.id, pet?.nickname, user?.id]);
 
   const hunger = clampPercent(pet?.hunger);
-  const clean = clampPercent(pet?.cleanliness);
-  const happy = clampPercent(pet?.happiness);
+  const clean = clampPercent(pet?.clean);
+  const happy = clampPercent(pet?.happy);
   const comfort = Math.max(0, Math.min(50, safeNum(pet?.comfort, 50)));
   const rest = Math.max(0, Math.min(50, safeNum(pet?.rest, 50)));
   const energy = clampPercent(pet?.energy);

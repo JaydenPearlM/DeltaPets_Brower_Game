@@ -2,7 +2,7 @@ export type SkillId =
   | "basic-strike"
   | "guard"
   | "mend"
-  | "weak-element-strike"
+  | "species-skill"
   | "lowform-skill"
   | "highform-skill"
   | "legion-skill"
@@ -50,12 +50,14 @@ export const CORE_SKILLS: PetSkill[] = [
 
 export const PROGRESSION_SKILLS: PetSkill[] = [
   {
-    id: "weak-element-strike",
-    name: "Weak Element Strike",
-    tree: "element",
-    description: "A weak elemental attack awakened through early growth.",
+    id: "species-skill",
+    name: "Hatchling Skill",
+    tree: "evolution",
+    description:
+      "A hatchling species skill that improves ATK or SPD based on the Kith species.",
     sellable: true,
   },
+
   {
     id: "lowform-skill",
     name: "Lowform Skill",

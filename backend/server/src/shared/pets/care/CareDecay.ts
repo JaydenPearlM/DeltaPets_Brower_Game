@@ -4,17 +4,13 @@ export type CarePet = {
   id: string;
   hunger?: number | null;
   clean?: number | null;
-  cleanliness?: number | null;
   happy?: number | null;
-  happiness?: number | null;
   comfort?: number | null;
   rest?: number | null;
   energy?: number | null;
   neglect_hours?: number | null;
   ran_away?: boolean | null;
-  is_runaway?: boolean | null;
   runaway_at?: string | null;
-  last_care_update?: string | null;
   last_care_decay_at?: string | null;
 };
 

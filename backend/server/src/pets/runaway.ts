@@ -8,7 +8,7 @@ export type PetRowLike = {
   id: string;
 
   // runaway
-  is_runaway?: boolean | null;
+  ran_away?: boolean | null;
   runaway_at?: string | null;
 
   // feeding
@@ -45,7 +45,7 @@ export async function markRunawayIfNeeded(opts: {
   if (!pet) return pet;
 
   // Already runaway? Don't touch.
-  if (pet.is_runaway) return pet;
+  if (pet.ran_away) return pet;
 
   // Parse last_fed_at safely (ISO normalize -> ms)
   const lastFedIso = toIso(pet.last_fed_at);
@@ -63,7 +63,7 @@ export async function markRunawayIfNeeded(opts: {
   const { data: updatedPet, error } = await supabaseAdmin
     .from("pets")
     .update({
-      is_runaway: true,
+      ran_away: true,
       runaway_at: runawayIso,
     })
     .eq("id", pet.id)

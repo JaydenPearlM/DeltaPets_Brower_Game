@@ -43,7 +43,7 @@ const SKILL_ORDER: SkillId[] = [
   "basic-strike",
   "guard",
   "mend",
-  "weak-element-strike",
+  "species-skill",
   "lowform-skill",
   "highform-skill",
   "legion-skill",
@@ -54,7 +54,7 @@ const SKILL_LANES: Record<SkillId, SkillLane> = {
   "basic-strike": "left",
   guard: "left",
   mend: "left",
-  "weak-element-strike": "right",
+  "species-skill": "right",
   "lowform-skill": "right",
   "highform-skill": "right",
   "legion-skill": "right",
@@ -101,16 +101,18 @@ function getDisplayName(skillId: SkillId, pet?: Record<string, any> | null) {
   const elementLabel = getPetElementLabel(pet);
 
   switch (skillId) {
-    case "weak-element-strike":
+    case "basic-strike":
       return `${elementLabel} Strike`;
+    case "species-skill":
+      return "Hatchling Species Skill";
     case "lowform-skill":
-      return `${elementLabel} Lowform Skill`;
+      return "Lowform Species Skill";
     case "highform-skill":
-      return `${elementLabel} Highform Skill`;
+      return "Highform Species Skill";
     case "legion-skill":
-      return `${elementLabel} Legion Skill`;
+      return "Legion Species Skill";
     case "mythic-legendary-skill":
-      return `${elementLabel} Mythical Legendary Skill`;
+      return "Mythical Legendary Species Skill";
     default:
       return ALL_SKILLS.find((skill) => skill.id === skillId)?.name ?? skillId;
   }
@@ -125,8 +127,8 @@ function getSkillUnlock(skillId: SkillId, pet?: Record<string, any> | null) {
     case "guard":
     case "mend":
       return { unlocked: level >= 2, lockText: "Unlocks at Level 2" };
-    case "weak-element-strike":
-      return { unlocked: level >= 2, lockText: "Unlocks at Level 2" };
+    case "species-skill":
+      return { unlocked: level >= 5, lockText: "Unlocks at Level 5" };
     case "lowform-skill":
       return { unlocked: stageRank >= 2, lockText: "Unlocks at Lowform" };
     case "highform-skill":
@@ -171,7 +173,7 @@ function getSkillMath(
         value: level + magi,
         formula: `Level ${level} + MAGI ${magi}`,
       };
-    case "weak-element-strike":
+    case "species-skill":
       return {
         value: level + Math.ceil((atk + magi) / 2),
         formula: `Level ${level} + half ATK/MAGI`,
@@ -354,7 +356,7 @@ export default function PetSkillsPanel({
 
       <section className="skillInventoryPanel" aria-label="Battle skills">
         <div className="skillInventoryHeader">
-          <h3>Battle Skills</h3>
+          <h3>Battle Ready Skills</h3>
         </div>
 
         <div className="skillSlotGrid">
@@ -374,10 +376,11 @@ export default function PetSkillsPanel({
 
             return (
               <article className="skillSlotCard is-filled" key={skill.id}>
-                <h4>{skill.displayName}</h4>
-                <button type="button" onClick={() => setSelectedSkill(skill)}>
-                  Details
-                </button>
+                <h4>
+                  {skill.displayName === "Basic Strike"
+                    ? "Basic"
+                    : skill.displayName}
+                </h4>
               </article>
             );
           })}

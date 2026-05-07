@@ -76,8 +76,8 @@ export type FallbackActivePetModel = {
   level: number;
   xp: number;
   hunger: number;
-  cleanliness: number;
-  happiness: number;
+  clean: number;
+  happy: number;
   energy: number;
   bond: number;
   atk: number;

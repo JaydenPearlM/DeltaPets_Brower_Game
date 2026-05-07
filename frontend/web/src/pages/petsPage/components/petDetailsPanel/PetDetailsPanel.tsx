@@ -19,8 +19,8 @@ type PetRecord = {
   personality_name?: string | null;
   personality_key?: string | null;
   hunger?: number | null;
-  cleanliness?: number | null;
-  happiness?: number | null;
+  clean?: number | null;
+  happy?: number | null;
   energy?: number | null;
   bond?: number | null;
   description?: string | null;
