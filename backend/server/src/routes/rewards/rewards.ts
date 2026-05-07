@@ -238,14 +238,19 @@ async function giveTroughOnce(user_id: string, capacity: number) {
 }
 
 async function giveEgg(user_id: string, element: Element) {
-  const hatchReady = new Date(
+  const hatchEndsAt = new Date(
     Date.now() + EGG_HATCH_MINUTES * 60 * 1000,
   ).toISOString();
 
-  const { error } = await supabaseAdmin.from("eggs").insert({
+  const { error } = await supabaseAdmin.from("pets").insert({
     user_id,
-    starter_element: element,
-    hatch_ready_at: hatchReady,
+    name: `${element} reward egg`,
+    species: "reward_egg",
+    line: element,
+    stage: "egg",
+    hatch_ends_at: hatchEndsAt,
+    is_active: false,
+    location: "hatchery",
   });
 
   if (error) throw error;

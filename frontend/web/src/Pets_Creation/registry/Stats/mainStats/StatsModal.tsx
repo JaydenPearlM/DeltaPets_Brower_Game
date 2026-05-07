@@ -1,6 +1,6 @@
 // frontend/web/src/Pets_Creation/registry/Stats/mainStats/StatsModal.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { titleCase } from "@/lib/utils/petUtils";
+import { titleCase } from "@/lib/petUtils";
 import "./stats.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

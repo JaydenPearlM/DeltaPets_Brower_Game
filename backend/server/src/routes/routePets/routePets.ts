@@ -93,14 +93,15 @@ type PetInsertPayload = {
   growth_weak_stat?: string | null;
 };
 
-type MinimalPetInsertPayload = Omit<
-  PetInsertPayload,
-  | "species"
-  | "personality_key"
-  | "hatch_time_alignment"
-  | "growth_strong_stats"
-  | "growth_weak_stat"
->;
+type MinimalPetInsertPayload = {
+  user_id: string;
+  name: string;
+  line: ElementalLine;
+  stage: string;
+  hatch_ends_at: string;
+  is_active: boolean;
+  location: string;
+};
 
 type HatchAllocationPayload = {
   pet_id: string;
@@ -468,7 +469,7 @@ petsRouter.get(
 );
 
 // ============================================================
-// POST /api/pets/hatch
+// POST /api/pets/hatch - REFACTORED WITH ATOMIC TRANSACTION
 // ============================================================
 petsRouter.post(
   "/hatch",
@@ -477,219 +478,84 @@ petsRouter.post(
     try {
       const userId = req.user!.id;
       const serverNowMs = Date.now();
+      const nowIso = new Date(serverNowMs).toISOString();
 
+      // Step 1: Fetch the egg
       const { pet: egg } = await fetchHatcheryEgg(userId);
 
       if (!egg) {
-        console.error("[hatch] no hatchery egg found for user:", userId);
-        return res.status(404).json({ error: "No hatchery egg found" });
+        return res.status(404).json({ error: "No egg to hatch" });
       }
 
-      const typedEgg = egg as unknown as EggRow;
+      if (egg.stage !== "egg") {
+        return res.status(400).json({ error: "Pet is not an egg" });
+      }
 
-      const remaining = msUntil(egg.hatch_ends_at, serverNowMs);
+      const hatchEndsAt = egg.hatch_ends_at;
+      if (!hatchEndsAt) {
+        return res.status(400).json({ error: "Egg has no hatch timer" });
+      }
 
-      if (remaining > 0) {
-        console.warn("[hatch] egg is not ready yet");
+      // Step 2: Check if egg is ready
+      const readyMs = new Date(hatchEndsAt).getTime();
+      if (serverNowMs < readyMs) {
+        const remainingMs = readyMs - serverNowMs;
         return res.status(409).json({
-          error: "Egg is not ready yet",
-          server_now: new Date(serverNowMs).toISOString(),
-          hatch: hatchPayload(egg, serverNowMs),
+          error: "Egg is not ready to hatch",
+          server_now: nowIso,
+          hatch_ends_at: hatchEndsAt,
+          remaining_ms: remainingMs,
         });
       }
 
-      console.log(
-        "[hatch] egg found -> line=%s, ready=%s",
-        typedEgg.line ?? "unknown",
-        true,
-      );
-
-      const starter =
-        STARTERS.find((s) => s.speciesId === egg.species) ??
-        findStarterByName(egg.name) ??
-        STARTERS.find((s) => s.line === typedEgg.line) ??
-        null;
+      // Step 3: Resolve starter species
+      const typedEgg = egg as any;
+      const starter = typedEgg.species
+        ? (STARTERS.find((s) => s.speciesId === typedEgg.species) ?? null)
+        : (STARTERS.find((s) => s.line === typedEgg.line) ?? null);
 
       if (!starter) {
-        console.error(
-          `[hatch] could not resolve starter for egg line: ${typedEgg.line ?? "unknown"}`,
-        );
-        return res.status(500).json({
-          error: `Could not resolve starter for egg (line: ${typedEgg.line ?? "unknown"})`,
+        console.error("[hatch] no starter matched egg:", {
+          egg_id: egg.id,
+          egg_species: typedEgg.species,
+          egg_line: typedEgg.line,
         });
+        return res.status(500).json({ error: "Invalid egg species or line" });
       }
 
-      console.log("[hatch] starter resolved -> %s", starter.hatchlingName);
-
-      const existingPoints = await fetchTotalPoints(egg.id);
-
-      if (!existingPoints?.base) {
-        await insertBaseStats(egg.id, starter.baseStats);
-      }
-
-      const { data: baseRaw, error: baseRawErr } = await supabaseAdmin
-        .from("pet_stats")
-        .select(
-          "pet_id, base_hp, base_atk, base_magi, base_def, base_spd, base_mana, base_total",
-        )
-        .eq("pet_id", egg.id)
-        .maybeSingle();
-
-      if (baseRawErr) {
-        console.error("[hatch] pet_stats select failed:", baseRawErr);
-        return res.status(500).json({ error: baseRawErr.message });
-      }
-
-      if (!baseRaw) {
-        console.error(
-          "[hatch] missing pet_stats row after ensure for pet:",
-          egg.id,
-        );
-        return res
-          .status(500)
-          .json({ error: "Missing pet_stats row after ensure." });
-      }
-
-      const typedBase = baseRaw as unknown as HatchBaseRow;
-
-      const baseSum = sumBase5({
-        base_hp: typedBase.base_hp,
-        base_atk: typedBase.base_atk,
-        base_def: typedBase.base_def,
-        base_spd: typedBase.base_spd,
-        base_magi: typedBase.base_magi,
-        base_mana: typedBase.base_mana,
-      });
-
-      if (baseSum !== 10) {
-        console.warn("[hatch] baseSum was not 10, repairing base stats");
-
-        const { error: fixErr } = await supabaseAdmin
-          .from("pet_stats")
-          .update({
-            base_hp: starter.baseStats.hp,
-            base_atk: starter.baseStats.atk,
-            base_def: starter.baseStats.def,
-            base_spd: starter.baseStats.spd,
-            base_magi: starter.baseStats.magi,
-            base_mana: starter.baseStats.mana ?? 0,
-            base_total: 10,
-          } as Partial<HatchBaseRow>)
-          .eq("pet_id", egg.id);
-
-        if (fixErr) {
-          console.error("[hatch] pet_stats repair failed:", fixErr);
-          return res.status(500).json({ error: fixErr.message });
-        }
-
-        typedBase.base_hp = starter.baseStats.hp;
-        typedBase.base_atk = starter.baseStats.atk;
-        typedBase.base_def = starter.baseStats.def;
-        typedBase.base_spd = starter.baseStats.spd;
-        typedBase.base_magi = starter.baseStats.magi;
-        typedBase.base_mana = starter.baseStats.mana ?? 0;
-        typedBase.base_total = 10;
-      }
-
-      console.log("[hatch] base stats loaded -> total=%s", 10);
-
+      // Step 4: Roll IVs (hatch bonus)
       const iv = rollIV(HATCH_ALLOCATION_POINTS);
 
-      if (sumStats(iv) !== HATCH_ALLOCATION_POINTS) {
-        console.error("[hatch] IV generation failed integrity check:", iv);
-        throw new Error("IV generation failed integrity check");
-      }
-
-      const { error: ivUpsertErr } = await supabaseAdmin
-        .from("pet_stat_allocations")
-        .upsert(
-          {
-            pet_id: egg.id,
-            level: 1,
-            hp: iv.hp,
-            atk: iv.atk,
-            def: iv.def,
-            spd: iv.spd,
-            magi: iv.magi,
-            mana: iv.mana,
-          } as HatchAllocationPayload,
-          { onConflict: "pet_id,level" },
-        );
-
-      if (ivUpsertErr) {
-        console.error(
-          "[hatch] pet_stat_allocations upsert failed:",
-          ivUpsertErr,
-        );
-        return res.status(500).json({ error: ivUpsertErr.message });
-      }
-
-      const ivTotal = sumStats(iv);
-
-      console.log("[hatch] hatch bonus rolled -> total=%s", ivTotal);
-      console.log("[hatch] final level 1 stats -> total=%s", 10 + ivTotal);
-
-      const baseHp = Number(typedBase.base_hp ?? 0);
-      const baseAtk = Number(typedBase.base_atk ?? 0);
-      const baseDef = Number(typedBase.base_def ?? 0);
-      const baseSpd = Number(typedBase.base_spd ?? 0);
-      const baseMagi = Number(typedBase.base_magi ?? 0);
-      const baseMana = Number(typedBase.base_mana ?? 0);
-
-      const totalHp = baseHp + iv.hp;
-      const totalAtk = baseAtk + iv.atk;
-      const totalDef = baseDef + iv.def;
-      const totalSpd = baseSpd + iv.spd;
-      const totalMagi = baseMagi + iv.magi;
-      const totalMana = baseMana + iv.mana;
-      const hpMax = Math.max(1, totalHp * 2);
-
-      const nowIso = new Date(serverNowMs).toISOString();
-
+      // Step 5: Roll gender
       const gender = rollGender();
 
+      // Step 6: Get or roll personality
       let personalityId = egg.personality_id ?? null;
       let personalityKey = egg.personality_key ?? null;
 
-      if (personalityId) {
-        if (!personalityKey) {
-          const { data: personalityRow, error: personalityRowError } =
-            await supabaseAdmin
-              .from("personalities")
-              .select("id, key")
-              .eq("id", personalityId)
-              .maybeSingle();
+      if (personalityId && !personalityKey) {
+        // Backfill personality key
+        const { data: personalityRow } = await supabaseAdmin
+          .from("personalities")
+          .select("id, key")
+          .eq("id", personalityId)
+          .maybeSingle();
 
-          if (personalityRowError) {
-            console.error(
-              "[hatch] failed to backfill personality key from personality_id:",
-              personalityRowError,
-            );
-            return res.status(500).json({ error: personalityRowError.message });
-          }
-
-          if (!personalityRow?.key) {
-            console.error(
-              "[hatch] personality_id exists on egg but no matching personality row found:",
-              personalityId,
-            );
-            return res.status(500).json({
-              error: `Missing personalities row for id "${personalityId}"`,
-            });
-          }
-
+        if (personalityRow?.key) {
           personalityKey = personalityRow.key;
         }
-      } else {
+      }
+
+      if (!personalityId || !personalityKey) {
         const rolled = await rollPersonality();
         personalityKey = rolled.key;
         personalityId = rolled.id;
       }
 
+      // Step 7: Get or roll growth traits
       const savedStrongStats = sanitizeGrowthStrongStats(
         typedEgg.growth_strong_stats,
       );
-
       const savedWeakStat = sanitizeGrowthWeakStat(typedEgg.growth_weak_stat);
 
       const fallbackTraits =
@@ -704,17 +570,7 @@ petsRouter.post(
 
       const weakness = savedWeakStat ?? fallbackTraits?.weakStat ?? null;
 
-      console.log("[hatch] growth traits ->", {
-        pet_id: egg.id,
-        egg_growth_strong_stats: typedEgg.growth_strong_stats ?? null,
-        egg_growth_weak_stat: typedEgg.growth_weak_stat ?? null,
-        savedStrengths: savedStrongStats,
-        savedWeakness: savedWeakStat,
-        fallbackTraits,
-        finalStrengths: strengths,
-        finalWeakness: weakness,
-      });
-
+      // Step 8: Generate description
       const description = generatePetDescription({
         species: starter.hatchlingName,
         name: starter.hatchlingName,
@@ -728,78 +584,49 @@ petsRouter.post(
 
       const hatchTimeAlignment = typedEgg.hatch_time_alignment ?? null;
 
-      const petUpdatePayload: Record<string, unknown> = {
-        name: starter.hatchlingName,
-        stage: "hatchling",
-        hatched_at: nowIso,
-        hatch_ends_at: null,
-        unspent_points: 0,
-        is_active: false,
-        location: "storage",
-        gender,
-
-        atk: totalAtk,
-        def: totalDef,
-        spd: totalSpd,
-        magi: totalMagi,
-        mana: totalMana,
-        hp_max: hpMax,
-        hp_cur: hpMax,
-
-        hunger: 50,
-        clean: 50,
-        cleanliness: 50,
-        happy: 50,
-        happiness: 50,
-        comfort: 50,
-        rest: 50,
-        energy: 50,
-        bond: 0,
-        neglect_hours: 0,
-        ran_away: false,
-        is_runaway: false,
-        runaway_at: null,
-        last_care_update: nowIso,
-        last_care_decay_at: nowIso,
-
-        description,
-        hatch_time_alignment: hatchTimeAlignment,
-        growth_strong_stats: strengths,
-        growth_weak_stat: weakness,
-      };
-
-      if (!egg.personality_id && personalityId) {
-        petUpdatePayload.personality_id = personalityId;
-      }
-
-      if (
-        (!egg.personality_key || egg.personality_key !== personalityKey) &&
-        personalityKey
-      ) {
-        petUpdatePayload.personality_key = personalityKey;
-      }
-
-      const { data: hatched, error: hatchUpdateError } = await supabaseAdmin
-        .from("pets")
-        .update(petUpdatePayload)
-        .eq("id", egg.id)
-        .eq("user_id", userId)
-        .select("*")
-        .single();
-
-      if (hatchUpdateError) {
-        console.error("[hatch] pets update failed:", hatchUpdateError);
-        return res.status(500).json({ error: hatchUpdateError.message });
-      }
-
-      console.log("[hatch] pet updated -> stage=hatchling");
-
-      const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
-
-      console.log(
-        "[hatch] party slot assigned -> %s",
-        assignedPartySlot ?? "none",
+      // Step 9: Call the atomic hatch RPC function
+      // This executes ALL hatch logic in a single database transaction
+      const { data: hatchResult, error: hatchError } = await supabaseAdmin.rpc(
+        "hatch_pet",
+        {
+          p_user_id: userId,
+          p_egg_id: egg.id,
+          p_iv_hp: iv.hp,
+          p_iv_atk: iv.atk,
+          p_iv_def: iv.def,
+          p_iv_spd: iv.spd,
+          p_iv_magi: iv.magi,
+          p_iv_mana: iv.mana,
+          p_gender: gender,
+          p_personality_id: personalityId,
+          p_personality_key: personalityKey,
+          p_hatchling_name: starter.hatchlingName,
+          p_description: description,
+          p_growth_strong_stats: strengths,
+          p_growth_weak_stat: weakness,
+          p_hatch_time_alignment: hatchTimeAlignment,
+        },
       );
+
+      if (hatchError) {
+        console.error("[hatch] RPC failed:", hatchError);
+        return res.status(500).json({ error: "Failed to hatch pet" });
+      }
+
+      // RPC returns array with single row
+      const result = Array.isArray(hatchResult) ? hatchResult[0] : hatchResult;
+
+      if (!result?.success) {
+        console.error("[hatch] RPC returned failure:", result?.error_message);
+        return res.status(500).json({
+          error: result?.error_message || "Failed to hatch pet",
+        });
+      }
+
+      const hatched = result.pet_row;
+
+      // Step 10: Assign party slot (separate transaction - safe to fail)
+      const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
 
       let finalLocation: "active" | "storage" = "storage";
       let finalIsActive = false;
@@ -812,47 +639,23 @@ petsRouter.post(
           .update({
             location: "active",
             is_active: true,
-          } as PetLocationUpdatePayload)
+          })
           .eq("id", egg.id)
           .eq("user_id", userId);
 
         if (activateErr) {
           console.error("[hatch] activate pet failed:", activateErr);
-          return res.status(500).json({ error: activateErr.message });
+          // Non-fatal - pet is already hatched, just not activated
+        } else {
+          finalLocation = "active";
+          finalIsActive = true;
+          storageResult = "party";
+          postHatchDestination = "/pet";
         }
-
-        finalLocation = "active";
-        finalIsActive = true;
-        storageResult = "party";
-        postHatchDestination = "/pet";
-      } else {
-        const { error: storeErr } = await supabaseAdmin
-          .from("pets")
-          .update({
-            location: "storage",
-            is_active: false,
-          } as PetLocationUpdatePayload)
-          .eq("id", egg.id)
-          .eq("user_id", userId);
-
-        if (storeErr) {
-          console.error("[hatch] store pet failed:", storeErr);
-          return res.status(500).json({ error: storeErr.message });
-        }
-
-        finalLocation = "storage";
-        finalIsActive = false;
-        storageResult = "storage";
-        postHatchDestination = null;
       }
 
+      // Step 11: Fetch final stats
       const points = await fetchTotalPoints(egg.id);
-
-      console.log(
-        "[hatch] destination -> %s",
-        postHatchDestination ?? "storage",
-      );
-      console.log("[hatch] success");
 
       return res.json({
         server_now: nowIso,
@@ -878,7 +681,7 @@ petsRouter.post(
     } catch (e: any) {
       console.error("[POST /api/pets/hatch] crash:", e);
       return res.status(500).json({
-        error: e?.message ?? "Server error",
+        error: "Failed to hatch pet",
       });
     }
   },

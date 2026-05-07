@@ -34,17 +34,27 @@ type PetRecord = {
 type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
 
 type StarterMerchantState = {
-  show: boolean;
-  href: string;
-  title: string;
-  body: string;
-  ctaLabel: string;
+  show?: boolean;
+  href?: string;
+  title?: string;
+  body?: string;
+  ctaLabel?: string;
+};
+
+type PetPanelStats = {
+  hp: number;
+  atk: number;
+  def: number;
+  spd: number;
+  magi: number;
+  mana: number;
 };
 
 const CARE_MAX = 50;
 
 type PetDetailsPanelProps = {
   pet: PetRecord;
+  stats?: PetPanelStats;
   personalityName: string | null;
   nicknameDraft: string;
   nicknameSaving: boolean;
@@ -630,11 +640,14 @@ export default function PetDetailsPanel({
             <h3 className="petRepoRunawayBanner__title">
               {starterMerchant.title || "Pet Ran Away"}
             </h3>
-            <p className="petRepoRunawayBanner__body">{starterMerchant.body}</p>
+            <p className="petRepoRunawayBanner__body">
+              {starterMerchant.body ||
+                "All of your Kith are gone. A quiet merchant has opened inside Kithna’s tutorial market with lower-tier starter rescues so you can rebuild."}
+            </p>
 
             <a
               className="petRepoRunawayBanner__cta"
-              href={starterMerchant.href}
+              href={starterMerchant.href || "/hatchery"}
             >
               {starterMerchant.ctaLabel || "Visit the Kithna Merchant"}
             </a>

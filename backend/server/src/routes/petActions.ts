@@ -77,7 +77,7 @@ petActionsRouter.post(
     const hunger = safeNum(pet.hunger, 0);
     const clean = safeNum(pet.clean ?? pet.cleanliness, 0);
     const happy = safeNum(pet.happy ?? pet.happiness, 0);
-    const bond = safeNum((pet as any).bond, 0);
+    const bond = safeNum(pet.bond, 0); // NO MORE "as any"
 
     const patch: Record<string, any> = {};
 
@@ -118,9 +118,8 @@ petActionsRouter.post(
       patch.happy = nextHappy;
       patch.happiness = nextHappy;
 
-      if ("energy" in pet) {
-        patch.energy = clamp(safeNum((pet as any).energy, 0) - 3, 0, 50);
-      }
+      // NO MORE "as any"
+      patch.energy = clamp(safeNum(pet.energy, 0) - 3, 0, 50);
     }
 
     const { data: updated, error: upErr } = await supabaseAdmin
@@ -131,7 +130,7 @@ petActionsRouter.post(
       .single();
 
     if (upErr) {
-      return res.status(500).json({ error: upErr.message });
+      return res.status(500).json({ error: "Failed to update pet" });
     }
 
     return res.json({

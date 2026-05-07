@@ -1,3 +1,5 @@
+import "./sentry";
+
 import { createApp } from "./app";
 import { env } from "./env.server";
 

@@ -189,13 +189,15 @@ export default function App() {
               <div className="versionText">{APP_VERSION}</div>
 
               <div className="headerCenterRow">
-                <button
-                  type="button"
-                  className="exploreButton"
-                  onClick={() => navigate("/signup")}
-                >
-                  SIGN UP
-                </button>
+                {!user && (
+                  <button
+                    type="button"
+                    className="exploreButton"
+                    onClick={() => navigate("/signup")}
+                  >
+                    SIGN UP
+                  </button>
+                )}
 
                 <div className="exploreWrapper" ref={exploreWrapperRef}>
                   <button
@@ -321,13 +323,15 @@ export default function App() {
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  className="exploreButton"
-                  onClick={() => navigate("/signin")}
-                >
-                  SIGN IN
-                </button>
+                {!user && (
+                  <button
+                    type="button"
+                    className="exploreButton"
+                    onClick={() => navigate("/signin")}
+                  >
+                    SIGN IN
+                  </button>
+                )}
               </div>
             </div>
           </div>

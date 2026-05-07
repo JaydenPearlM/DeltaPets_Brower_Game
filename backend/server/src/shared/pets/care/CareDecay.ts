@@ -32,31 +32,25 @@ const ENERGY_STEP_MINUTES = 180; // every 3 hours
 
 const RUNAWAY_THRESHOLD_HOURS = 24;
 
-/**
- * Change this to:
- * 60 * 60 * 1000  = once per hour
- * 2 * 60 * 60 * 1000 = once every 2 hours
- */
-const CARE_LOG_INTERVAL_MS = 2 * 60 * 60 * 1000;
+// Development-only logging - controlled by NODE_ENV
+declare const process:
+  | {
+      env?: {
+        NODE_ENV?: string;
+      };
+    }
+  | undefined;
 
-// In-memory log throttle map for dev console spam control
-const lastCareLogAt = new Map<string, number>();
+const isDev =
+  typeof process !== "undefined" && process.env?.NODE_ENV !== "production";
 
-function logCareDecayThrottled(
-  petId: string,
+function logCareDecay(
   kind: "skipped" | "output",
   payload: Record<string, unknown>,
 ) {
-  const now = Date.now();
-  const key = `${petId}:${kind}`;
-  const last = lastCareLogAt.get(key) ?? 0;
-
-  if (now - last < CARE_LOG_INTERVAL_MS) {
-    return;
+  if (isDev) {
+    console.log(`[care/decay] ${kind}`, payload);
   }
-
-  lastCareLogAt.set(key, now);
-  console.log(`[care/decay] ${kind}`, payload);
 }
 
 const clampCare = (value: number) =>
@@ -135,7 +129,7 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   if (!Number.isFinite(lastMs)) {
     const fallbackTimestamp = new Date(nowMs).toISOString();
 
-    logCareDecayThrottled(pet.id, "skipped", {
+    logCareDecay("skipped", {
       petId: pet.id,
       reason: "invalid last timestamp",
       lastRaw,
@@ -174,7 +168,7 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   }
 
   if (nowMs <= lastMs) {
-    logCareDecayThrottled(pet.id, "skipped", {
+    logCareDecay("skipped", {
       petId: pet.id,
       reason: "now <= last",
       lastRaw,
@@ -281,7 +275,7 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
 
   const timestamp = new Date(nowMs).toISOString();
 
-  logCareDecayThrottled(pet.id, "output", {
+  logCareDecay("output", {
     petId: pet.id,
     elapsedMinutes,
     losses: {

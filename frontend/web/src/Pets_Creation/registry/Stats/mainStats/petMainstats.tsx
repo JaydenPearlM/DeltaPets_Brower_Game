@@ -254,7 +254,7 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
                     {ELEMENT_ORDER.map((k) => (
                       <div key={k} className="pet-mainstats__elementRow">
                         <span className="pet-mainstats__elementName">
-                          {k === "Voidborne"
+                          {k === "null_element"
                             ? "Null"
                             : k[0].toUpperCase() + k.slice(1)}
                         </span>

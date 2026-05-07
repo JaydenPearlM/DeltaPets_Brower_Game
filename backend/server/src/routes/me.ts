@@ -88,11 +88,10 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
       profile: profile ?? null,
       pet: pet ?? null,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("[GET /api/me] crash:", e);
     return res.status(500).json({
-      error: e?.message ?? "Server error",
-      details: String(e),
+      error: "Server error",
     });
   }
 });
@@ -148,11 +147,10 @@ meRouter.get(
         intro_seen,
         has_hatchery_egg,
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("[GET /api/me/intro] crash:", e);
       return res.status(500).json({
-        error: e?.message ?? "Server error",
-        details: String(e),
+        error: "Server error",
       });
     }
   },
@@ -200,11 +198,10 @@ meRouter.post(
         intro_seen:
           (data as { intro_seen?: boolean } | null)?.intro_seen ?? true,
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("[POST /api/me/intro/seen] crash:", e);
       return res.status(500).json({
-        error: e?.message ?? "Server error",
-        details: String(e),
+        error: "Server error",
       });
     }
   },

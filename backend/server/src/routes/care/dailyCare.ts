@@ -104,6 +104,21 @@ function isSameEasternDay(aIso: string, nowMs: number) {
   );
 }
 
+/**
+ * Extract the Eastern date from a timestamp for database constraint
+ */
+function getEasternDate(nowMs: number): string {
+  const easternNow = new Date(
+    new Date(nowMs).toLocaleString("en-US", { timeZone: "America/New_York" }),
+  );
+
+  const year = easternNow.getFullYear();
+  const month = String(easternNow.getMonth() + 1).padStart(2, "0");
+  const day = String(easternNow.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 dailyCareRouter.get(
   "/status",
   requireUser,
@@ -148,18 +163,25 @@ dailyCareRouter.post(
     const userId = req.user!.id;
     const nowMs = Date.now();
     const nowIso = new Date(nowMs).toISOString();
+    const easternDate = getEasternDate(nowMs);
 
     const resetMs = nextEastern8amMs(nowMs);
 
-    // Read existing
+    // Read existing to determine streak and ribbon status
     const { data: existing, error: readErr } = await supabaseAdmin
       .from("daily_care")
       .select("last_completed_at, streak, alpha_ribbon_awarded")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (readErr) return res.status(500).json({ error: readErr.message });
+    if (readErr) {
+      console.error("[dailyCare] failed to read existing:", readErr);
+      return res
+        .status(500)
+        .json({ error: "Failed to check daily care status" });
+    }
 
+    // Quick check before attempting upsert (performance optimization)
     const alreadyDoneToday = existing?.last_completed_at
       ? isSameEasternDay(existing.last_completed_at, nowMs)
       : false;
@@ -175,9 +197,11 @@ dailyCareRouter.post(
     }
 
     const alreadyAwarded = existing?.alpha_ribbon_awarded ?? false;
-    const shouldAward = !alreadyAwarded; // first completion ever
+    const shouldAward = !alreadyAwarded;
     const nextStreak = (existing?.streak ?? 0) + 1;
 
+    // Upsert with the computed Eastern date
+    // The unique constraint on (user_id, completed_date_eastern) will prevent duplicates
     const { data: saved, error: upErr } = await supabaseAdmin
       .from("daily_care")
       .upsert(
@@ -186,24 +210,46 @@ dailyCareRouter.post(
           last_completed_at: nowIso,
           streak: nextStreak,
           alpha_ribbon_awarded: alreadyAwarded || shouldAward,
+          completed_date_eastern: easternDate,
         },
         { onConflict: "user_id" },
       )
       .select("last_completed_at, streak, alpha_ribbon_awarded")
       .single();
 
-    if (upErr) return res.status(500).json({ error: upErr.message });
+    // Handle unique constraint violation (race condition caught by database)
+    if (upErr) {
+      // PostgreSQL unique violation error code is 23505
+      if (
+        upErr.code === "23505" ||
+        upErr.message.includes("daily_care_user_date_unique")
+      ) {
+        return res.status(409).json({
+          error: "Daily care already completed today.",
+          server_now: nowIso,
+          completed_today: true,
+          next_reset_at: new Date(resetMs).toISOString(),
+          remaining_ms: Math.max(0, resetMs - nowMs),
+        });
+      }
 
-    // Log the ribbon into the ribbons system.
-    // Keep daily care working even if awards fails (it shouldn't block gameplay).
+      // Other database errors
+      console.error("[dailyCare] upsert failed:", upErr);
+      return res.status(500).json({ error: "Failed to complete daily care" });
+    }
+
+    // Award ribbon only if this is the first completion ever
+    // The ribbon award is idempotent, so even if this runs twice it's safe
     if (shouldAward) {
       try {
         await awardAlphaTesterRibbon(userId, nowIso);
       } catch (e: any) {
         console.warn(
-          "[dailyCare] Failed to award Alpha Tester ribbon:", //For the Ribbons, making sure they upload correctly and showing me if there's an Issue.
+          "[dailyCare] Failed to award Alpha Tester ribbon:",
           e?.message ?? e,
         );
+        // Don't fail the request if ribbon award fails
+        // The daily care completion succeeded
       }
     }
 

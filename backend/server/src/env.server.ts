@@ -28,6 +28,11 @@ function optional(name: string, fallback?: string): string | undefined {
 export const env = {
   NODE_ENV: optional("NODE_ENV", "development")!,
   PORT: Number(optional("PORT", "4000")),
+  SENTRY_DSN: process.env.SENTRY_DSN,
+  ALLOWED_ORIGINS: optional(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:5173",
+  )!,
 
   // ---------------------------------------------------------------------------
   // Supabase

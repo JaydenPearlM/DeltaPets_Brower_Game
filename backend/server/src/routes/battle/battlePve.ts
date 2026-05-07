@@ -64,6 +64,7 @@ type PlayerActionBody = {
 };
 
 const battleStore = new Map<string, BattleState>();
+const MAX_BATTLE_LOG_ENTRIES = 50;
 
 export const battlePveRouter = Router();
 
@@ -196,6 +197,12 @@ function pickNextUnit(state: BattleState) {
       ready.turnMeter = 0;
       return ready;
     }
+  }
+}
+
+function trimBattleLog(state: BattleState) {
+  if (state.log.length > MAX_BATTLE_LOG_ENTRIES) {
+    state.log = state.log.slice(-MAX_BATTLE_LOG_ENTRIES);
   }
 }
 
@@ -484,8 +491,9 @@ battlePveRouter.post(
         updatedAt: now,
       };
 
-      battleStore.set(state.id, state);
       advanceBattle(state);
+      trimBattleLog(state);
+      battleStore.set(state.id, state);
 
       return res.status(201).json({ battle: state });
     } catch (err) {
@@ -546,6 +554,8 @@ battlePveRouter.patch(
     if (battle.autoMode) {
       advanceBattle(battle);
     }
+
+    trimBattleLog(battle);
 
     return res.json({ battle });
   },
@@ -639,6 +649,8 @@ battlePveRouter.post(
       if (battle.status === "active") {
         advanceBattle(battle);
       }
+
+      trimBattleLog(battle);
 
       return res.json({ battle });
     } catch (err) {
