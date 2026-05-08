@@ -51,4 +51,4 @@ apiRouter.use("/daily/care", dailyCareRouter);
 
 apiRouter.use("/rewards", rewardsRouter);
 
-export default apiRouter;
+export { apiRouter };

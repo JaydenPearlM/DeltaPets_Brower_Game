@@ -60,7 +60,7 @@ function safeBool(value: unknown): boolean {
 }
 
 function readLastCareTimestamp(pet: CarePet): string {
-  return String(pet.last_care_decay_at ?? pet.last_care_update ?? "").trim();
+  return String(pet.last_care_decay_at ?? "").trim();
 }
 
 function stepsFromMinutes(elapsedMinutes: number, stepMinutes: number): number {
@@ -114,13 +114,13 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   const lastMs = lastRaw ? new Date(lastRaw).getTime() : NaN;
 
   const hungerBase = clampCare(safeNum(pet.hunger, CARE_MAX));
-  const cleanBase = clampCare(safeNum(pet.clean ?? pet.cleanliness, CARE_MAX));
-  const happyBase = clampCare(safeNum(pet.happy ?? pet.happiness, CARE_MAX));
+  const cleanBase = clampCare(safeNum(pet.clean, CARE_MAX));
+  const happyBase = clampCare(safeNum(pet.happy, CARE_MAX));
   const comfortBase = clampCare(safeNum(pet.comfort, CARE_MAX));
   const restBase = clampCare(safeNum(pet.rest, CARE_MAX));
   const energyBase = clampEnergy(safeNum(pet.energy, ENERGY_MAX));
   const neglectBase = Math.max(0, safeNum(pet.neglect_hours, 0));
-  const ranAwayBase = safeBool(pet.ran_away ?? pet.is_runaway);
+  const ranAwayBase = safeBool(pet.ran_away);
 
   if (!Number.isFinite(lastMs)) {
     const fallbackTimestamp = new Date(nowMs).toISOString();
@@ -148,17 +148,13 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
       ...pet,
       hunger: hungerBase,
       clean: cleanBase,
-      cleanliness: cleanBase,
       happy: happyBase,
-      happiness: happyBase,
       comfort: comfortBase,
       rest: restBase,
       energy: energyBase,
       neglect_hours: runawayState.neglectHours,
       ran_away: runawayState.runaway,
-      is_runaway: runawayState.runaway,
       runaway_at: runawayState.runawayAt,
-      last_care_update: fallbackTimestamp,
       last_care_decay_at: fallbackTimestamp,
     };
   }
@@ -186,17 +182,13 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
       ...pet,
       hunger: hungerBase,
       clean: cleanBase,
-      cleanliness: cleanBase,
       happy: happyBase,
-      happiness: happyBase,
       comfort: comfortBase,
       rest: restBase,
       energy: energyBase,
       neglect_hours: runawayState.neglectHours,
       ran_away: runawayState.runaway,
-      is_runaway: runawayState.runaway,
       runaway_at: runawayState.runawayAt,
-      last_care_update: pet.last_care_update ?? lastRaw,
       last_care_decay_at: pet.last_care_decay_at ?? lastRaw,
     };
   }
@@ -234,17 +226,13 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
       ...pet,
       hunger: hungerBase,
       clean: cleanBase,
-      cleanliness: cleanBase,
       happy: happyBase,
-      happiness: happyBase,
       comfort: comfortBase,
       rest: restBase,
       energy: energyBase,
       neglect_hours: runawayState.neglectHours,
       ran_away: runawayState.runaway,
-      is_runaway: runawayState.runaway,
       runaway_at: runawayState.runawayAt,
-      last_care_update: pet.last_care_update ?? new Date(lastMs).toISOString(),
       last_care_decay_at:
         pet.last_care_decay_at ?? new Date(lastMs).toISOString(),
     };
@@ -310,17 +298,13 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
     ...pet,
     hunger,
     clean,
-    cleanliness: clean,
     happy,
-    happiness: happy,
     comfort,
     rest,
     energy,
     neglect_hours: runawayState.neglectHours,
     ran_away: runawayState.runaway,
-    is_runaway: runawayState.runaway,
     runaway_at: runawayState.runawayAt,
-    last_care_update: timestamp,
     last_care_decay_at: timestamp,
   };
 }

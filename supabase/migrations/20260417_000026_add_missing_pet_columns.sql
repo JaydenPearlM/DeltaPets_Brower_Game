@@ -1,31 +1,58 @@
--- Add unique constraint to prevent race conditions in daily care completion
--- This ensures a user can only complete daily care once per Eastern day
+-- Migration: Add missing pet columns
+-- Description: Adds care stat columns and other missing fields to pets table
+-- Date: 2026-04-17
+-- Migration number: 20260417_000026
 
--- First, add a computed column for the Eastern date
-ALTER TABLE daily_care 
-ADD COLUMN IF NOT EXISTS completed_date_eastern DATE;
+-- ============================================================================
+-- Add care stat columns
+-- ============================================================================
 
--- Create a function to extract the Eastern date from a timestamp
-CREATE OR REPLACE FUNCTION extract_eastern_date(ts TIMESTAMPTZ)
-RETURNS DATE AS $$
-BEGIN
-  RETURN (ts AT TIME ZONE 'America/New_York')::DATE;
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+-- Add clean column (replaces old cleanliness)
+ALTER TABLE public.pets 
+ADD COLUMN IF NOT EXISTS clean integer NOT NULL DEFAULT 50 
+CHECK (clean >= 0 AND clean <= 100);
 
--- Update existing rows to populate the date column
-UPDATE daily_care
-SET completed_date_eastern = extract_eastern_date(last_completed_at)
-WHERE last_completed_at IS NOT NULL;
+-- Add happy column (replaces old happiness)
+ALTER TABLE public.pets 
+ADD COLUMN IF NOT EXISTS happy integer NOT NULL DEFAULT 50 
+CHECK (happy >= 0 AND happy <= 100);
 
--- Create unique constraint
-ALTER TABLE daily_care
-ADD CONSTRAINT daily_care_user_date_unique 
-UNIQUE (user_id, completed_date_eastern);
+-- Add comfort column
+ALTER TABLE public.pets 
+ADD COLUMN IF NOT EXISTS comfort integer NOT NULL DEFAULT 50 
+CHECK (comfort >= 0 AND comfort <= 50);
 
--- Add index for performance
-CREATE INDEX IF NOT EXISTS idx_daily_care_user_date 
-ON daily_care(user_id, completed_date_eastern);
+-- Add rest column
+ALTER TABLE public.pets 
+ADD COLUMN IF NOT EXISTS rest integer NOT NULL DEFAULT 50 
+CHECK (rest >= 0 AND rest <= 50);
 
-COMMENT ON CONSTRAINT daily_care_user_date_unique ON daily_care IS 
-'Prevents race conditions by ensuring a user can only complete daily care once per Eastern calendar day';
+-- ============================================================================
+-- Add neglect tracking columns
+-- ============================================================================
+
+ALTER TABLE public.pets 
+ADD COLUMN IF NOT EXISTS neglect_hours integer NOT NULL DEFAULT 0 
+CHECK (neglect_hours >= 0);
+
+ALTER TABLE public.pets 
+ADD COLUMN IF NOT EXISTS ran_away boolean NOT NULL DEFAULT false;
+
+ALTER TABLE public.pets 
+ADD COLUMN IF NOT EXISTS runaway_at timestamp with time zone;
+
+-- ============================================================================
+-- Add last care decay timestamp
+-- ============================================================================
+
+ALTER TABLE public.pets 
+ADD COLUMN IF NOT EXISTS last_care_decay_at timestamp with time zone;
+
+-- ============================================================================
+-- Add comments
+-- ============================================================================
+
+COMMENT ON COLUMN public.pets.clean IS 'Cleanliness stat (0-50 scale for balanced decay)';
+COMMENT ON COLUMN public.pets.happy IS 'Happiness stat (0-50 scale for balanced decay)';
+COMMENT ON COLUMN public.pets.neglect_hours IS 'Total hours of neglect (used for runaway calculation)';
+COMMENT ON COLUMN public.pets.ran_away IS 'Whether the pet has permanently run away';

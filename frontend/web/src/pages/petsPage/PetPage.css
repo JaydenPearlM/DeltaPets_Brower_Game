@@ -785,30 +785,30 @@
 
 .petRepoInfoRow.is-strong-stat {
   border-radius: 14px;
-  border: 1px solid rgba(87, 227, 137, 0.92);
+  border: 1px solid var(--dp-stat-strong);
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.04),
+    var(--dp-stat-strong-bg),
     rgba(255, 255, 255, 0.02)
   );
   box-shadow:
-    0 0 0 1px rgba(87, 227, 137, 0.16),
-    0 0 16px rgba(87, 227, 137, 0.18),
-    inset 0 0 14px rgba(87, 227, 137, 0.08);
+    0 0 0 1px rgba(102, 255, 143, 0.16),
+    var(--dp-glow-green),
+    inset 0 0 14px rgba(102, 255, 143, 0.08);
 }
 
 .petRepoInfoRow.is-weak-stat {
   border-radius: 14px;
-  border: 1px solid rgba(255, 96, 96, 0.92);
+  border: 1px solid var(--dp-stat-weak);
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.04),
+    var(--dp-stat-weak-bg),
     rgba(255, 255, 255, 0.02)
   );
   box-shadow:
-    0 0 0 1px rgba(255, 96, 96, 0.16),
-    0 0 16px rgba(255, 96, 96, 0.16),
-    inset 0 0 14px rgba(255, 96, 96, 0.08);
+    0 0 0 1px rgba(255, 83, 83, 0.16),
+    var(--dp-glow-red),
+    inset 0 0 14px rgba(255, 83, 83, 0.08);
 }
 
 .petRepoInfoRow.is-strong-stat span,
@@ -840,72 +840,72 @@
 .petRepoPanel--element-null .petRepoInfoRow--element-null {
   background: linear-gradient(
     180deg,
-    rgba(176, 182, 196, 0.34),
-    rgba(92, 98, 112, 0.4)
+    var(--element-null-bg),
+    rgba(5, 20, 45, 0.24)
   );
 }
 
 .petRepoPanel--element-water .petRepoInfoRow--element-water {
   background: linear-gradient(
     180deg,
-    rgba(73, 166, 224, 0.34),
-    rgba(19, 80, 126, 0.4)
+    var(--element-water-bg),
+    rgba(5, 20, 45, 0.24)
   );
 }
 
 .petRepoPanel--element-fire .petRepoInfoRow--element-fire {
   background: linear-gradient(
     180deg,
-    rgba(223, 116, 56, 0.34),
-    rgba(123, 44, 19, 0.4)
+    var(--element-fire-bg),
+    rgba(5, 20, 45, 0.24)
   );
 }
 
 .petRepoPanel--element-earth .petRepoInfoRow--element-earth {
   background: linear-gradient(
     180deg,
-    rgba(161, 123, 66, 0.34),
-    rgba(88, 63, 27, 0.4)
+    var(--element-earth-bg),
+    rgba(5, 20, 45, 0.24)
   );
 }
 
 .petRepoPanel--element-air .petRepoInfoRow--element-air {
   background: linear-gradient(
     180deg,
-    rgba(145, 198, 234, 0.34),
-    rgba(72, 111, 145, 0.4)
+    var(--element-air-bg),
+    rgba(5, 20, 45, 0.24)
   );
 }
 
 .petRepoPanel--element-ice .petRepoInfoRow--element-ice {
   background: linear-gradient(
     180deg,
-    rgba(102, 207, 230, 0.34),
-    rgba(39, 112, 138, 0.4)
+    var(--element-ice-bg),
+    rgba(5, 20, 45, 0.24)
   );
 }
 
 .petRepoPanel--element-storm .petRepoInfoRow--element-storm {
   background: linear-gradient(
     180deg,
-    rgba(255, 224, 103, 0.34),
-    rgba(163, 118, 18, 0.4)
+    var(--element-storm-bg),
+    rgba(5, 20, 45, 0.24)
   );
 }
 
 .petRepoPanel--element-light .petRepoInfoRow--element-light {
   background: linear-gradient(
     180deg,
-    rgba(223, 190, 81, 0.34),
-    rgba(136, 112, 33, 0.4)
+    var(--element-light-bg),
+    rgba(5, 20, 45, 0.24)
   );
 }
 
 .petRepoPanel--element-shadow .petRepoInfoRow--element-shadow {
   background: linear-gradient(
     180deg,
-    rgba(104, 87, 139, 0.34),
-    rgba(45, 36, 67, 0.4)
+    var(--element-shadow-bg),
+    rgba(5, 20, 45, 0.24)
   );
 }
 
@@ -1025,120 +1025,120 @@
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-null {
-  border: 1px solid rgba(196, 202, 214, 0.88);
+  border: 1px solid var(--element-null);
   background: linear-gradient(
     180deg,
-    rgba(176, 182, 196, 0.28),
-    rgba(92, 98, 112, 0.3)
+    var(--element-null-bg),
+    rgba(5, 20, 45, 0.32)
   );
   box-shadow:
-    0 0 0 1px rgba(196, 202, 214, 0.14),
-    0 0 16px rgba(196, 202, 214, 0.12),
-    inset 0 0 14px rgba(196, 202, 214, 0.06);
+    0 0 0 1px color-mix(in srgb, var(--element-null) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--element-null) 32%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--element-null) 16%, transparent);
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-water {
-  border: 1px solid rgba(98, 194, 255, 0.9);
+  border: 1px solid var(--element-water);
   background: linear-gradient(
     180deg,
-    rgba(73, 166, 224, 0.28),
-    rgba(19, 80, 126, 0.3)
+    var(--element-water-bg),
+    rgba(5, 20, 45, 0.32)
   );
   box-shadow:
-    0 0 0 1px rgba(98, 194, 255, 0.16),
-    0 0 16px rgba(98, 194, 255, 0.16),
-    inset 0 0 14px rgba(98, 194, 255, 0.08);
+    0 0 0 1px color-mix(in srgb, var(--element-water) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--element-water) 32%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--element-water) 16%, transparent);
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-fire {
-  border: 1px solid rgba(255, 131, 76, 0.92);
+  border: 1px solid var(--element-fire);
   background: linear-gradient(
     180deg,
-    rgba(223, 116, 56, 0.28),
-    rgba(123, 44, 19, 0.3)
+    var(--element-fire-bg),
+    rgba(5, 20, 45, 0.32)
   );
   box-shadow:
-    0 0 0 1px rgba(255, 131, 76, 0.16),
-    0 0 16px rgba(255, 131, 76, 0.18),
-    inset 0 0 14px rgba(255, 131, 76, 0.08);
+    0 0 0 1px color-mix(in srgb, var(--element-fire) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--element-fire) 32%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--element-fire) 16%, transparent);
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-earth {
-  border: 1px solid rgba(187, 146, 87, 0.9);
+  border: 1px solid var(--element-earth);
   background: linear-gradient(
     180deg,
-    rgba(161, 123, 66, 0.28),
-    rgba(88, 63, 27, 0.3)
+    var(--element-earth-bg),
+    rgba(5, 20, 45, 0.32)
   );
   box-shadow:
-    0 0 0 1px rgba(187, 146, 87, 0.15),
-    0 0 16px rgba(187, 146, 87, 0.14),
-    inset 0 0 14px rgba(187, 146, 87, 0.07);
+    0 0 0 1px color-mix(in srgb, var(--element-earth) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--element-earth) 32%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--element-earth) 16%, transparent);
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-air {
-  border: 1px solid rgba(187, 225, 255, 0.9);
+  border: 1px solid var(--element-air);
   background: linear-gradient(
     180deg,
-    rgba(145, 198, 234, 0.24),
-    rgba(72, 111, 145, 0.28)
+    var(--element-air-bg),
+    rgba(5, 20, 45, 0.32)
   );
   box-shadow:
-    0 0 0 1px rgba(187, 225, 255, 0.15),
-    0 0 16px rgba(187, 225, 255, 0.14),
-    inset 0 0 14px rgba(187, 225, 255, 0.08);
+    0 0 0 1px color-mix(in srgb, var(--element-air) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--element-air) 32%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--element-air) 16%, transparent);
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-ice {
-  border: 1px solid rgba(134, 233, 255, 0.92);
+  border: 1px solid var(--element-ice);
   background: linear-gradient(
     180deg,
-    rgba(102, 207, 230, 0.26),
-    rgba(39, 112, 138, 0.3)
+    var(--element-ice-bg),
+    rgba(5, 20, 45, 0.32)
   );
   box-shadow:
-    0 0 0 1px rgba(134, 233, 255, 0.14),
-    0 0 16px rgba(134, 233, 255, 0.15),
-    inset 0 0 14px rgba(134, 233, 255, 0.08);
+    0 0 0 1px color-mix(in srgb, var(--element-ice) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--element-ice) 32%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--element-ice) 16%, transparent);
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-storm {
-  border: 1px solid rgba(255, 232, 132, 0.94);
+  border: 1px solid var(--element-storm);
   background: linear-gradient(
     180deg,
-    rgba(255, 224, 103, 0.28),
-    rgba(163, 118, 18, 0.3)
+    var(--element-storm-bg),
+    rgba(5, 20, 45, 0.32)
   );
   box-shadow:
-    0 0 0 1px rgba(255, 232, 132, 0.16),
-    0 0 16px rgba(255, 232, 132, 0.16),
-    inset 0 0 14px rgba(255, 232, 132, 0.08);
+    0 0 0 1px color-mix(in srgb, var(--element-storm) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--element-storm) 32%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--element-storm) 16%, transparent);
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-light {
-  border: 1px solid rgba(255, 225, 118, 0.94);
+  border: 1px solid var(--element-light);
   background: linear-gradient(
     180deg,
-    rgba(223, 190, 81, 0.28),
-    rgba(136, 112, 33, 0.3)
+    var(--element-light-bg),
+    rgba(5, 20, 45, 0.32)
   );
   box-shadow:
-    0 0 0 1px rgba(255, 225, 118, 0.16),
-    0 0 16px rgba(255, 225, 118, 0.18),
-    inset 0 0 14px rgba(255, 225, 118, 0.08);
+    0 0 0 1px color-mix(in srgb, var(--element-light) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--element-light) 32%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--element-light) 16%, transparent);
 }
 
 .petRepoInfoRow.is-active-element.petRepoInfoRow--element-shadow {
-  border: 1px solid rgba(154, 134, 214, 0.92);
+  border: 1px solid var(--element-shadow);
   background: linear-gradient(
     180deg,
-    rgba(104, 87, 139, 0.28),
-    rgba(45, 36, 67, 0.3)
+    var(--element-shadow-bg),
+    rgba(5, 20, 45, 0.32)
   );
   box-shadow:
-    0 0 0 1px rgba(154, 134, 214, 0.16),
-    0 0 16px rgba(154, 134, 214, 0.16),
-    inset 0 0 14px rgba(154, 134, 214, 0.08);
+    0 0 0 1px color-mix(in srgb, var(--element-shadow) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--element-shadow) 32%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--element-shadow) 16%, transparent);
 }
 
 @media (max-width: 960px) {

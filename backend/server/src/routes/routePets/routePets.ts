@@ -84,6 +84,7 @@ type PetInsertPayload = {
   species?: string;
   line: ElementalLine;
   stage: string;
+  energy: number; // ADD THIS LINE
   hatch_ends_at: string;
   is_active: boolean;
   location: string;
@@ -98,6 +99,7 @@ type MinimalPetInsertPayload = {
   name: string;
   line: ElementalLine;
   stage: string;
+  energy: number; // ADD THIS LINE
   hatch_ends_at: string;
   is_active: boolean;
   location: string;
@@ -260,6 +262,7 @@ petsRouter.post(
         species: starter.speciesId,
         line: resolvedLine,
         stage: "egg",
+        energy: 50, // ADD THIS LINE
         hatch_ends_at: hatchEndsAt,
         is_active: false,
         location: "hatchery",
@@ -274,6 +277,7 @@ petsRouter.post(
         name: starter.eggName,
         line: resolvedLine,
         stage: "egg",
+        energy: 50, // ADD THIS LINE
         hatch_ends_at: hatchEndsAt,
         is_active: false,
         location: "hatchery",

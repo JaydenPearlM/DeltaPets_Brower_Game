@@ -606,12 +606,34 @@ alter table public.pet_stats
 alter table public.pet_stat_allocations
   drop constraint if exists pet_alloc_one_point_per_level;
 
+-- Clean old/dev allocation rows before adding the constraint.
+-- The constraint below requires exactly 1 allocated point per row.
+-- Existing dirty rows from earlier testing can block db push.
+delete from public.pet_stat_allocations
+where coalesce(hp, 0)
+    + coalesce(atk, 0)
+    + coalesce(magi, 0)
+    + coalesce(def, 0)
+    + coalesce(spd, 0)
+    + coalesce(mana, 0) <> 1;
+
 alter table public.pet_stat_allocations
   add constraint pet_alloc_one_point_per_level check (
-    (hp + atk + magi + def + spd + mana) = 1
+    (
+      coalesce(hp, 0)
+      + coalesce(atk, 0)
+      + coalesce(magi, 0)
+      + coalesce(def, 0)
+      + coalesce(spd, 0)
+      + coalesce(mana, 0)
+    ) = 1
   );
 
 -- 6.4 View: total stats = birth + allocations
+-- Drop first because CREATE OR REPLACE VIEW cannot rename an existing column
+-- from magic to magi.
+drop view if exists public.v_pet_total_stats;
+
 create or replace view public.v_pet_total_stats as
 select
   s.pet_id,

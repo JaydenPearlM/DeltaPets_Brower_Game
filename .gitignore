@@ -90,3 +90,9 @@ desktop.ini
 # =============================================================================
 *.local
 *.lock.old
+
+# Database dumps and backups
+*dump*.txt
+*dump*.sql
+backup_*.sql
+*.backup
