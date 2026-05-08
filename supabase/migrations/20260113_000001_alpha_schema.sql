@@ -35,6 +35,11 @@ exception when duplicate_object then null;
 end $$;
 
 do $$ begin
+  create type public.age_stage as enum ('hatchling','lowform','highform','legion','mythical_legendary');
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
   create type public.item_type as enum ('care','battle_food','material','equipment','currency_pack');
 exception when duplicate_object then null;
 end $$;
@@ -289,7 +294,7 @@ create table if not exists public.pet_stat_allocations (
 create table if not exists public.pet_elements (
   pet_id uuid primary key references public.pets(id) on delete cascade,
 
-  null int not null default 0,
+  neutral int not null default 0,
   water int not null default 0,
   fire int not null default 0,
   earth int not null default 0,
@@ -300,7 +305,7 @@ create table if not exists public.pet_elements (
   shadow int not null default 0,
 
   check (
-    null >= 0 and water >= 0 and fire >= 0 and earth >= 0 and air >= 0 and
+    neutral >= 0 and water >= 0 and fire >= 0 and earth >= 0 and air >= 0 and
     ice >= 0 and storm >= 0 and light >= 0 and shadow >= 0
   )
 );

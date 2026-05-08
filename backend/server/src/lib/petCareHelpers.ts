@@ -12,8 +12,8 @@ export type PetCareStatsUpdate = {
   neglect_hours: number;
   ran_away: boolean;
   runaway_at: string | null;
-  last_care_update: string;
   last_care_decay_at: string;
+  last_care_update?: string;
 };
 
 const CARE_DEFAULT = 50;
@@ -27,30 +27,27 @@ function safeWhole(value: unknown, fallback: number, min = 0, max = 50) {
 export function normalizePetForClient<T extends Record<string, any>>(
   pet: T,
 ): T {
+  const clean = safeWhole(pet.clean ?? pet.cleanliness, CARE_DEFAULT);
+  const happy = safeWhole(pet.happy ?? pet.happiness, CARE_DEFAULT);
+  const ranAway = Boolean(pet.ran_away ?? pet.is_runaway);
+  const lastCareDecayAt =
+    pet.last_care_decay_at ?? pet.last_care_update ?? new Date().toISOString();
+
   return {
     ...pet,
     hunger: safeWhole(pet.hunger, CARE_DEFAULT),
-    // Now only uses ONE column
-    clean: safeWhole(pet.clean, CARE_DEFAULT),
-
-    // Now only writes to ONE column
-    clean: safeWhole(updates.clean, CARE_DEFAULT),
-    happy: safeWhole(pet.happy ?? pet.happiness, CARE_DEFAULT),
-    happiness: safeWhole(pet.happiness ?? pet.happy, CARE_DEFAULT),
+    clean,
+    cleanliness: clean,
+    happy,
+    happiness: happy,
     comfort: safeWhole(pet.comfort, CARE_DEFAULT),
     rest: safeWhole(pet.rest, CARE_DEFAULT),
     energy: safeWhole(pet.energy, CARE_DEFAULT),
     neglect_hours: Number(pet.neglect_hours ?? 0) || 0,
-    ran_away: Boolean(pet.ran_away ?? pet.is_runaway),
-    is_runaway: Boolean(pet.is_runaway ?? pet.ran_away),
-    last_care_update:
-      pet.last_care_update ??
-      pet.last_care_decay_at ??
-      new Date().toISOString(),
-    last_care_decay_at:
-      pet.last_care_decay_at ??
-      pet.last_care_update ??
-      new Date().toISOString(),
+    ran_away: ranAway,
+    is_runaway: ranAway,
+    last_care_update: lastCareDecayAt,
+    last_care_decay_at: lastCareDecayAt,
   };
 }
 
@@ -67,9 +64,7 @@ export async function updatePetCareStats(
     .update({
       hunger: safeWhole(updates.hunger, CARE_DEFAULT),
       clean: safeWhole(updates.clean, CARE_DEFAULT),
-      cleanliness: safeWhole(updates.clean, CARE_DEFAULT),
       happy: safeWhole(updates.happy, CARE_DEFAULT),
-      happiness: safeWhole(updates.happy, CARE_DEFAULT),
       comfort: safeWhole(updates.comfort, CARE_DEFAULT),
       rest: safeWhole(updates.rest, CARE_DEFAULT),
       energy: safeWhole(updates.energy, CARE_DEFAULT),
@@ -78,9 +73,7 @@ export async function updatePetCareStats(
         Math.round(Number(updates.neglect_hours ?? 0)),
       ),
       ran_away: updates.ran_away,
-      is_runaway: updates.ran_away,
       runaway_at: updates.runaway_at,
-      last_care_update: updates.last_care_update,
       last_care_decay_at: updates.last_care_decay_at,
     })
     .eq("id", petId);

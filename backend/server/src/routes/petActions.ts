@@ -49,7 +49,8 @@ petActionsRouter.post(
       return res.status(404).json({ error: "No pet found" });
     }
 
-    if (pet.is_runaway || pet.ran_away) {
+    // FIXED: Removed pet.is_runaway (doesn't exist in schema)
+    if (pet.ran_away) {
       return res.status(409).json({
         error: "Your pet ran away.",
         server_now: nowIso,
@@ -77,7 +78,7 @@ petActionsRouter.post(
     const hunger = safeNum(pet.hunger, 0);
     const clean = safeNum(pet.clean ?? pet.cleanliness, 0);
     const happy = safeNum(pet.happy ?? pet.happiness, 0);
-    const bond = safeNum(pet.bond, 0); // NO MORE "as any"
+    const bond = safeNum(pet.bond, 0);
 
     const patch: Record<string, any> = {};
 
@@ -91,8 +92,8 @@ petActionsRouter.post(
 
       patch.hunger = nextHunger;
       patch.happy = nextHappy;
-      patch.happiness = nextHappy;
-      patch.last_fed_at = nowIso;
+      // FIXED: Removed patch.happiness (doesn't exist)
+      // FIXED: Removed patch.last_fed_at (doesn't exist)
     }
 
     if (action === "clean") {
@@ -100,9 +101,9 @@ petActionsRouter.post(
       const nextHappy = clamp(happy + 2, 0, 50);
 
       patch.clean = nextClean;
-      patch.cleanliness = nextClean;
+      // FIXED: Removed patch.cleanliness (doesn't exist)
       patch.happy = nextHappy;
-      patch.happiness = nextHappy;
+      // FIXED: Removed patch.happiness (doesn't exist)
     }
 
     if (action === "bond") {
@@ -110,15 +111,14 @@ petActionsRouter.post(
 
       const nextHappy = clamp(happy + 5, 0, 50);
       patch.happy = nextHappy;
-      patch.happiness = nextHappy;
+      // FIXED: Removed patch.happiness (doesn't exist)
     }
 
     if (action === "play") {
       const nextHappy = clamp(happy + 8, 0, 50);
       patch.happy = nextHappy;
-      patch.happiness = nextHappy;
+      // FIXED: Removed patch.happiness (doesn't exist)
 
-      // NO MORE "as any"
       patch.energy = clamp(safeNum(pet.energy, 0) - 3, 0, 50);
     }
 
