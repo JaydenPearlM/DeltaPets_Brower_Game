@@ -5,8 +5,8 @@ begin;
 -- These keep frontend queries small and consistent.
 -- =========================================================
 
-drop view if exists public.homepage_alerts;
-create view public.homepage_alerts as
+drop view if exists public.homepage_alerts_live;
+create view public.homepage_alerts_live as
 select
   id,
   message,
@@ -101,7 +101,7 @@ order by
 -- select here keeps usage straightforward.
 -- =========================================================
 
-grant select on public.homepage_alerts to anon, authenticated;
+grant select on public.homepage_alerts_live to anon, authenticated;
 grant select on public.homepage_announcements_live to anon, authenticated;
 grant select on public.homepage_alpha_systems_live to anon, authenticated;
 grant select on public.homepage_patch_notes_live to anon, authenticated;

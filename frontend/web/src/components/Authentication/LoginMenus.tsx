@@ -394,29 +394,6 @@ export function LoginMenus({
       const hasSession = Boolean(signUpData.session);
 
       if (userId) {
-        const { error: profileError } = await supabase.from("profiles").upsert(
-          {
-            user_id: userId,
-            username: normalizedNickname,
-            display_name: normalizedNickname,
-            email: trimmedEmail,
-          },
-          { onConflict: "user_id" },
-        );
-
-        if (profileError) {
-          console.error("[signup] profile upsert failed", {
-            nickname: normalizedNickname,
-            userId,
-            error: profileError,
-          });
-
-          setMessage({
-            type: "error",
-            text: "Account created, but profile setup failed. Please contact support.",
-          });
-          return;
-        }
       }
 
       if (hasSession) {

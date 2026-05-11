@@ -2,7 +2,7 @@
 -- Atomic hatch function that executes all hatch logic in a single transaction
 -- This prevents broken pet states from partial hatch failures
 
-CREATE OR REPLACE FUNCTION hatch_pet(
+CREATE OR REPLACE FUNCTION public.hatch_pet(
   p_user_id uuid,
   p_egg_id uuid,
   p_iv_hp int,
@@ -158,7 +158,11 @@ END;
 $$;
 
 -- Grant execute permission
-GRANT EXECUTE ON FUNCTION hatch_pet TO authenticated;
+GRANT EXECUTE ON FUNCTION public.hatch_pet(
+  uuid, uuid, int, int, int, int, int, int, text, uuid, text, text, text, text[], text, text
+) TO authenticated;
 
-COMMENT ON FUNCTION hatch_pet IS 
+COMMENT ON FUNCTION public.hatch_pet(
+  uuid, uuid, int, int, int, int, int, int, text, uuid, text, text, text, text[], text, text
+) IS 
 'Atomically hatches an egg into a hatchling. All operations execute in a single transaction - if any step fails, the entire hatch is rolled back.';

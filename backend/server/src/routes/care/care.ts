@@ -38,7 +38,7 @@ async function getStarterMerchantState(
 ): Promise<StarterMerchantState | null> {
   const { data, error } = await supabaseAdmin
     .from("pets")
-    .select("id,ran_away,is_runaway")
+    .select("id,ran_away")
     .eq("user_id", userId);
 
   if (error) {
@@ -47,9 +47,7 @@ async function getStarterMerchantState(
 
   const pets = Array.isArray(data) ? data : [];
   const totalOwned = pets.length;
-  const healthyCount = pets.filter(
-    (row: any) => !(row?.ran_away || row?.is_runaway),
-  ).length;
+  const healthyCount = pets.filter((row: any) => !row?.ran_away).length;
 
   if (totalOwned > 0 && healthyCount === 0) {
     return {
@@ -378,7 +376,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     }
 
     if (
-      Boolean(activePetResolved.ran_away ?? activePetResolved.is_runaway) ||
+      Boolean(activePetResolved.ran_away) ||
       petNeedsRunawayLock(activePetResolved)
     ) {
       await markPetAsRunaway(activePetResolved);
@@ -659,7 +657,7 @@ careRouter.post("/place", requireUser, async (req: AuthedRequest, res) => {
 
     const { data: ownedPet, error: ownedPetError } = await supabaseAdmin
       .from("pets")
-      .select("id,user_id,ran_away,is_runaway")
+      .select("id,user_id,ran_away")
       .eq("id", petId)
       .eq("user_id", userId)
       .maybeSingle();
@@ -672,7 +670,7 @@ careRouter.post("/place", requireUser, async (req: AuthedRequest, res) => {
       return res.status(404).json({ error: "That Delta was not found." });
     }
 
-    if (ownedPet.ran_away || ownedPet.is_runaway) {
+    if (ownedPet.ran_away) {
       return res
         .status(400)
         .json({ error: "That Delta has already run away." });

@@ -6,6 +6,8 @@ alter table public.pets
 create index if not exists pets_last_care_decay_at_idx
   on public.pets (last_care_decay_at);
 
+drop function if exists public.apply_pet_care_decay(uuid);
+
 create or replace function public.apply_pet_care_decay(p_pet_id uuid)
 returns table (
   hunger int,

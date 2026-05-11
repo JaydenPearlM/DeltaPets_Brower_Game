@@ -41,26 +41,10 @@
   --ui-line: #567bad;
 
   /* accent / status */
-  --accent-red-900: #4a0d09;
-  --accent-red-700: #6f140d;
-  --accent-red-500: #b72c1e;
-  --accent-red-300: #ff8d70;
   --accent-green-neon: #8cff72;
   --accent-green-2: #56d64f;
-  --accent-lime: #c9f35b;
-  --accent-yellow: #ffd84d;
-  --accent-purple: #b16cff;
-  --accent-cyan: #6fd9ff;
-  --accent-mint: #67f0d0;
 
   /* shared project colors promoted from repeated component CSS */
-  --ui-panel-blue-top: #1b315d;
-  --ui-panel-blue-mid: #24457a;
-  --ui-panel-blue-bottom: #2f5e99;
-  --title-gold: #f3d63f;
-  --title-red: #b23a24;
-  --title-red-stroke: #c23a2b;
-  --brand-red-stroke: #cf4f2f;
   --btn-gold-1: #fff880;
   --btn-gold-2: #ffd84c;
   --btn-gold-3: #efb218;
@@ -68,29 +52,10 @@
   --btn-gold-2-hover: #ffdf5b;
   --btn-gold-3-hover: #f3ba22;
   --btn-gold-text: #5f3908;
-  --text-on-blue: #f8fbff;
-  --text-on-blue-cool: #eef8ff;
-  --text-warm-white: #f7f6f2;
-  --pill-tan-1: #f4d76a;
-  --pill-tan-2: #e2b93a;
-  --pill-tan-text: #2f1907;
-  --accent-gold-soft: #ffd966;
-  --gold-pale: #ffe69b;
-  --gold-warm: #ffd65a;
 
-  --text-strong: #203b64;
   --text-main: #32537f;
-  --text-soft: #5d779d;
   --text-invert: #fff9ea;
   --text-darkWarm: #5b3414;
-
-  --color-border: rgba(73, 113, 166, 0.3);
-  --color-border-strong: rgba(55, 94, 145, 0.55);
-  --color-shadow: rgba(40, 66, 108, 0.22);
-
-  --color-live: var(--accent-green-2);
-  --color-building: #e7ba45;
-  --color-soon: #8ea2bb;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -136,8 +101,9 @@
   --dp-brand-red: #f04a38;
   --dp-brand-red-dark: #8f1720;
   --dp-brand-red-stroke: #cf4f2f;
-  --dp-skill-purple: #9d5cff;
-  --dp-skill-purple-soft: rgba(157, 92, 255, 0.28);
+  --dp-skill-purple: #a969ff;
+  --dp-skill-purple-soft: rgba(169, 105, 255, 0.28);
+  --dp-skill-lavender-stroke: #d8b7ff;
 
   /* Shared surfaces */
   --dp-surface-deep: rgba(3, 12, 28, 0.94);
@@ -151,6 +117,67 @@
   --dp-border-gold: rgba(255, 217, 77, 0.78);
   --dp-border-green: rgba(102, 255, 143, 0.9);
   --dp-border-red: rgba(255, 83, 83, 0.88);
+
+  /* Panel base solid colors (deep navy reference palette) */
+  --dp-panel-bg-top: #061f42;
+  --dp-panel-bg-mid: #052b5e;
+  --dp-panel-bg-bottom: #031426;
+
+  --dp-panel-border: #35b8ff;
+  --dp-panel-border-soft-cyan: rgba(95, 205, 255, 0.55);
+  --dp-panel-glow: rgba(0, 174, 255, 0.45);
+  --dp-panel-inner-border: rgba(123, 216, 255, 0.25);
+
+  --dp-panel-text: #eef8ff;
+  --dp-panel-muted: #a8c8df;
+
+  --dp-panel-purple-border: #a969ff;
+  --dp-panel-purple-glow: rgba(169, 105, 255, 0.55);
+
+  /* Panel gradient system - matches reference design */
+  --dp-panel-gradient-top: rgba(34, 54, 102, 0.985);
+  --dp-panel-gradient-mid: rgba(21, 34, 73, 0.992);
+  --dp-panel-gradient-bottom: rgba(10, 18, 40, 0.996);
+  --dp-panel-lighter-top: rgba(18, 38, 58, 0.96);
+  --dp-panel-lighter-mid: rgba(11, 23, 38, 0.98);
+  --dp-panel-deep-top: rgba(15, 25, 52, 0.88);
+  --dp-panel-deep-mid: rgba(8, 16, 38, 0.94);
+  --dp-panel-deep-bottom: rgba(6, 16, 39, 0.98);
+
+  /* Panel borders and glows */
+  --dp-panel-border-cyan: rgba(89, 188, 255, 0.3);
+  --dp-panel-border-cyan-bright: rgba(89, 188, 255, 0.56);
+  --dp-panel-border-cyan-soft: rgba(89, 188, 255, 0.18);
+  --dp-panel-border-blue: rgba(124, 156, 255, 0.16);
+  --dp-panel-border-blue-bright: rgba(116, 145, 255, 0.18);
+  --dp-panel-border-soft: rgba(143, 208, 255, 0.2);
+
+  /* Panel inner effects */
+  --dp-panel-inner-highlight: rgba(255, 255, 255, 0.08);
+  --dp-panel-inner-highlight-subtle: rgba(255, 255, 255, 0.04);
+  --dp-panel-inner-shadow: rgba(0, 0, 0, 0.28);
+  --dp-panel-inner-shadow-deep: rgba(0, 0, 0, 0.48);
+  --dp-panel-glow-top: rgba(89, 188, 255, 0.18);
+  --dp-panel-glow-cyan: rgba(73, 130, 255, 0.14);
+  --dp-panel-glow-purple: rgba(169, 105, 255, 0.18);
+  --dp-panel-glow-pink: rgba(255, 84, 112, 0.12);
+
+  /* Stars and sparkle decorations */
+  --dp-star-white: rgba(255, 255, 255, 0.22);
+  --dp-star-white-soft: rgba(255, 255, 255, 0.16);
+  --dp-star-white-subtle: rgba(255, 255, 255, 0.14);
+  --dp-star-white-faint: rgba(255, 255, 255, 0.1);
+  --dp-star-cyan: rgba(173, 216, 255, 0.14);
+  --dp-star-purple: rgba(169, 105, 255, 0.16);
+
+  /* Card and container surfaces */
+  --dp-surface-card-dark: rgba(12, 22, 43, 0.3);
+  --dp-surface-deep-blue: rgba(11, 11, 39, 0.98);
+  --dp-surface-deep-mid: rgba(7, 14, 22, 0.99);
+  --dp-surface-deep-bottom: rgba(3, 8, 14, 0.99);
+
+  /* Info rows and dividers */
+  --dp-info-row-border: rgba(209, 224, 255, 0.06);
 
   /* Shared text */
   --dp-text-primary: #f4f8ff;
@@ -235,6 +262,102 @@
   --element-shadow-bg: rgba(141, 108, 255, 0.2);
   --element-voidborne: #b16cff;
   --element-voidborne-bg: rgba(177, 108, 255, 0.18);
+}
+
+/* ==========================================
+   SHARED GLOBAL PANEL CLASSES
+   Reusable navy/cyan sci-fi panels across the project
+   ========================================== */
+.dp-panel,
+.dp-surface,
+.dp-softPanel {
+  position: relative;
+  border: 1px solid var(--dp-panel-border);
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(24, 104, 186, 0.28) 0%,
+    rgba(5, 43, 94, 0.92) 38%,
+    rgba(3, 20, 38, 0.96) 100%
+  );
+  box-shadow:
+    0 0 0 1px var(--dp-panel-inner-border) inset,
+    0 0 18px var(--dp-panel-glow),
+    0 0 42px rgba(0, 92, 180, 0.22);
+  color: var(--dp-panel-text);
+  overflow: hidden;
+}
+
+.dp-panel::before,
+.dp-surface::before,
+.dp-softPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 22% 18%,
+      rgba(73, 207, 255, 0.28),
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 78% 8%,
+      rgba(132, 224, 255, 0.16),
+      transparent 14%
+    ),
+    linear-gradient(180deg, rgba(120, 220, 255, 0.13), transparent 32%);
+  opacity: 0.9;
+}
+
+.dp-panel::after,
+.dp-surface::after,
+.dp-softPanel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(180, 240, 255, 0.9) 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(80, 190, 255, 0.75) 1px, transparent 1.5px);
+  background-size:
+    42px 42px,
+    67px 67px;
+  background-position:
+    8px 12px,
+    24px 30px;
+  opacity: 0.28;
+}
+
+.dp-panel > *,
+.dp-surface > *,
+.dp-softPanel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dp-panel-header,
+.dp-panelTitle,
+.hp-panelTitle {
+  border: 1px solid rgba(105, 200, 255, 0.55);
+  border-radius: 12px;
+  background: linear-gradient(
+    180deg,
+    rgba(3, 30, 68, 0.95),
+    rgba(2, 12, 30, 0.95)
+  );
+  box-shadow:
+    0 0 12px rgba(0, 174, 255, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  color: var(--dp-panel-text);
+}
+
+.dp-panel-purple {
+  border-color: var(--dp-panel-purple-border);
+  box-shadow:
+    0 0 0 1px rgba(224, 186, 255, 0.18) inset,
+    0 0 18px var(--dp-panel-purple-glow),
+    0 0 42px rgba(104, 54, 210, 0.24);
 }
 
 /* headers using Space Mono */

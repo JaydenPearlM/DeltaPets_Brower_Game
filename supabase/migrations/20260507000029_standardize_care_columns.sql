@@ -9,14 +9,18 @@ ALTER TABLE public.pets
   ADD COLUMN IF NOT EXISTS neglect_hours int,
   ADD COLUMN IF NOT EXISTS ran_away boolean;
 
--- Step 2: Migrate data from old columns to new columns
--- This ensures no data loss even if columns exist
+-- Step 2: Fill missing values safely
+-- Do not reference old duplicate columns directly because they may already be gone.
 UPDATE public.pets
 SET 
-  clean = COALESCE(clean, cleanliness, 50),
-  happy = COALESCE(happy, happiness, 50),
-  ran_away = COALESCE(ran_away, is_runaway, false)
-WHERE clean IS NULL OR happy IS NULL OR ran_away IS NULL;
+  clean = COALESCE(clean, 50),
+  happy = COALESCE(happy, 50),
+  neglect_hours = COALESCE(neglect_hours, 0),
+  ran_away = COALESCE(ran_away, false)
+WHERE clean IS NULL 
+   OR happy IS NULL 
+   OR neglect_hours IS NULL
+   OR ran_away IS NULL;
 
 -- Step 3: Make the columns NOT NULL with proper defaults
 ALTER TABLE public.pets

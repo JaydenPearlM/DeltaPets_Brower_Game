@@ -7,28 +7,26 @@
   gap: 0;
   background: linear-gradient(
     180deg,
-    rgba(228, 236, 247, 0.96) 0%,
-    rgba(210, 221, 238, 0.94) 100%
+    var(--dp-panel-bg-top) 0%,
+    var(--dp-panel-bg-mid) 52%,
+    var(--dp-panel-bg-bottom) 100%
   );
+  border: 2px solid var(--dp-panel-border);
+
   box-shadow:
-    0 8px 0 rgba(41, 58, 88, 0.18),
-    0 20px 32px rgba(26, 40, 68, 0.22),
-    0 34px 44px rgba(18, 28, 49, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72),
-    inset 0 -1px 0 rgba(46, 72, 113, 0.1);
+    0 0 18px var(--dp-panel-glow),
+    0 0 42px var(--dp-cyber-blue-soft),
+    0 20px 32px rgba(26, 40, 68, 0.22);
 }
 
 .alpha-panel::before {
   content: "";
   position: absolute;
-  inset: 5px;
+  inset: 6px;
   border-radius: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.92);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.52),
-    0 0 0 1px rgba(255, 255, 255, 0.18);
+  border: 3px solid #7fdcff;
   pointer-events: none;
-  z-index: 0;
+  z-index: 2;
 }
 
 .alpha-panel > * {
@@ -46,24 +44,28 @@
   padding: 0.9rem 1rem;
   background: linear-gradient(
     180deg,
-    rgba(82, 122, 186, 0.98) 0%,
-    rgba(66, 104, 164, 0.98) 100%
+    var(--dp-panel-bg-mid) 0%,
+    var(--dp-panel-bg-top) 100%
   );
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -1px 0 rgba(21, 38, 69, 0.12);
+    inset 0 1px 0 var(--dp-panel-inner-border),
+    inset 0 -1px 0 var(--dp-panel-inner-shadow);
 }
 
 .alpha-title {
   margin: 0;
-  color: #8df0b8;
-  font-size: 1.35rem;
-  font-weight: 700;
-  line-height: 1.1;
-  text-shadow:
-    0 0 1px rgba(255, 255, 255, 0.18),
-    0 1px 0 rgba(16, 56, 38, 0.32);
+  color: var(--dp-spotlight-purple, #b46cff);
+  -webkit-text-fill-color: var(--dp-spotlight-purple, #b46cff);
+  -webkit-text-stroke: 0.5px var(--dp-spotlight-lavender-stroke, #e3c7ff);
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.025em;
+  text-shadow: none;
+  filter: none;
+  opacity: 1;
 }
 
 /* BODY */
@@ -71,7 +73,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  color: #355381;
+  color: var(--dp-panel-text);
 }
 
 /* STATUS TEXT */
@@ -90,17 +92,18 @@
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #4d6a96;
-  background: rgba(205, 216, 233, 0.94);
-  border-bottom: 1px solid rgba(145, 168, 204, 0.45);
+  color: var(--dp-panel-muted);
+  background: var(--dp-surface-raised);
+  border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
 }
 
 .alpha-tableHeader span {
   padding: 0.7rem 0.85rem;
+  color: var(--dp-panel-muted);
 }
 
 .alpha-tableHeader span:not(:last-child) {
-  border-right: 1px solid rgba(145, 168, 204, 0.28);
+  border-right: none;
 }
 
 /* TABLE */
@@ -114,8 +117,8 @@
   grid-template-columns: 1fr 1.6fr 110px;
   gap: 0;
   align-items: stretch;
-  border-bottom: 1px solid rgba(145, 168, 204, 0.35);
-  background: rgba(217, 225, 239, 0.92);
+  border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
+  background: var(--dp-panel-bg-mid);
   transition:
     background 160ms ease,
     transform 160ms ease;
@@ -126,7 +129,7 @@
 }
 
 .alpha-row:hover {
-  background: rgba(207, 217, 235, 0.98);
+  background: var(--dp-panel-bg-top);
 }
 
 .alpha-row > span {
@@ -137,23 +140,23 @@
 }
 
 .alpha-row > span:not(:last-child) {
-  border-right: 1px solid rgba(145, 168, 204, 0.22);
+  border-right: 1px solid var(--dp-panel-border-soft-cyan);
 }
 
 /* TEXT */
 .alpha-name {
   font-weight: 700;
-  color: #355381;
+  color: var(--dp-panel-text);
 }
 
 .alpha-desc {
-  color: #48658f;
+  color: var(--dp-panel-text);
   line-height: 1.35;
 }
 
 .alpha-date {
   font-size: 0.82rem;
-  color: #5f7aa3;
+  color: var(--dp-panel-muted);
   justify-content: center;
   text-align: center;
 }
@@ -164,8 +167,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(217, 225, 239, 0.92);
-  border-top: 1px solid rgba(145, 168, 204, 0.28);
+  background: var(--dp-panel-bg-mid);
+  border-top: 1px solid var(--dp-panel-border-soft-cyan);
 }
 
 /* BUTTON */
@@ -199,149 +202,4 @@
     inset 0 2px 0 rgba(255, 245, 200, 0.5),
     0 10px 20px rgba(90, 64, 15, 0.2);
   filter: brightness(1.03);
-}
-
-/* PATCH VIEW */
-.alpha-patchView {
-  display: flex;
-  flex-direction: column;
-}
-
-.alpha-patchMeta {
-  padding: 1rem;
-  border-bottom: 1px solid rgba(145, 168, 204, 0.28);
-  background: rgba(223, 230, 242, 0.78);
-}
-
-.alpha-patchMetaTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.45rem;
-}
-
-.alpha-patchVersion {
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #4d6a96;
-}
-
-.alpha-patchReleased {
-  font-size: 0.8rem;
-  color: #5f7aa3;
-}
-
-.alpha-patchTitle {
-  margin: 0;
-  font-size: 1.05rem;
-  color: #355381;
-}
-
-.alpha-patchSummary {
-  margin: 0.45rem 0 0;
-  color: #48658f;
-  line-height: 1.45;
-}
-
-.alpha-patchTable {
-  display: flex;
-  flex-direction: column;
-}
-
-.alpha-patchTableHeader {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  background: rgba(205, 216, 233, 0.94);
-  border-bottom: 1px solid rgba(145, 168, 204, 0.45);
-}
-
-.alpha-patchTableHeader span {
-  padding: 0.7rem 0.85rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #4d6a96;
-}
-
-.alpha-patchTableHeader span:not(:last-child) {
-  border-right: 1px solid rgba(145, 168, 204, 0.28);
-}
-
-.alpha-patchTableRow {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.alpha-patchTableCell {
-  padding: 0.9rem 0.85rem 1rem;
-  border-right: 1px solid rgba(145, 168, 204, 0.22);
-  min-height: 190px;
-  background: rgba(217, 225, 239, 0.92);
-}
-
-.alpha-patchTableCell:last-child {
-  border-right: none;
-}
-
-.alpha-patchList {
-  margin: 0;
-  padding-left: 1rem;
-  color: #48658f;
-  line-height: 1.45;
-}
-
-.alpha-patchList li + li {
-  margin-top: 0.45rem;
-}
-
-.alpha-patchEmpty {
-  margin: 0;
-  color: #7f93b2;
-}
-
-.alpha-patchPlaceholder {
-  text-align: center;
-  opacity: 0.9;
-  padding: 1rem;
-  color: #355381;
-}
-
-@media (max-width: 980px) {
-  .alpha-patchTableHeader,
-  .alpha-patchTableRow {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .alpha-patchTableCell:nth-child(2) {
-    border-right: none;
-  }
-
-  .alpha-patchTableHeader span:nth-child(2) {
-    border-right: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .alpha-patchMetaTop {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .alpha-patchTableHeader,
-  .alpha-patchTableRow {
-    grid-template-columns: 1fr;
-  }
-
-  .alpha-patchTableHeader span,
-  .alpha-patchTableCell {
-    border-right: none;
-  }
-
-  .alpha-patchTableCell {
-    min-height: auto;
-    border-bottom: 1px solid rgba(145, 168, 204, 0.22);
-  }
 }

@@ -54,11 +54,17 @@ before update on public.hatchery_shelf_slots
 for each row
 execute function public.set_updated_at();
 
-drop trigger if exists set_incubation_shelves_updated_at on public.incubation_shelves;
-create trigger set_incubation_shelves_updated_at
-before update on public.incubation_shelves
-for each row
-execute function public.set_updated_at();
+do $$
+begin
+  if to_regclass('public.incubation_shelves') is not null then
+    drop trigger if exists set_incubation_shelves_updated_at on public.incubation_shelves;
+
+    create trigger set_incubation_shelves_updated_at
+    before update on public.incubation_shelves
+    for each row
+    execute function public.set_updated_at();
+  end if;
+end $$;
 
 drop trigger if exists set_home_objects_updated_at on public.home_objects;
 create trigger set_home_objects_updated_at

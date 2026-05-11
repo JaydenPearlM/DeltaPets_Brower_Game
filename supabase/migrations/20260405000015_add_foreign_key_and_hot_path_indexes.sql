@@ -49,8 +49,13 @@ create index if not exists idx_hatchery_slots_user_id
 create index if not exists idx_hatchery_shelf_slots_user_id
   on public.hatchery_shelf_slots (user_id);
 
-create index if not exists idx_incubation_shelves_user_id
-  on public.incubation_shelves (user_id);
+do $$
+begin
+  if to_regclass('public.incubation_shelves') is not null then
+    create index if not exists idx_incubation_shelves_user_id
+      on public.incubation_shelves (user_id);
+  end if;
+end $$;
 
 create index if not exists idx_home_objects_user_id
   on public.home_objects (user_id);
@@ -77,8 +82,13 @@ create index if not exists idx_hatchery_slots_user_id_slot_index
 create index if not exists idx_hatchery_shelf_slots_user_id_slot_index
   on public.hatchery_shelf_slots (user_id, slot_index);
 
-create index if not exists idx_incubation_shelves_user_id_shelf_index
-  on public.incubation_shelves (user_id, shelf_index);
+do $$
+begin
+  if to_regclass('public.incubation_shelves') is not null then
+    create index if not exists idx_incubation_shelves_user_id_shelf_index
+      on public.incubation_shelves (user_id, shelf_index);
+  end if;
+end $$;
 
 create index if not exists idx_pets_user_id_is_active
   on public.pets (user_id, is_active);

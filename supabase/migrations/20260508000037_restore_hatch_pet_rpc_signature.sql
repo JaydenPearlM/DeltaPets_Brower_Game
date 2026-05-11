@@ -152,7 +152,7 @@ BEGIN
     unspent_points = 0,
     is_active = false,
     location = 'storage',
-    gender = p_gender,
+    gender = coalesce(nullif(p_gender, ''), 'null_gender')::public.pet_gender,
     atk = v_total_atk,
     def = v_total_def,
     spd = v_total_spd,

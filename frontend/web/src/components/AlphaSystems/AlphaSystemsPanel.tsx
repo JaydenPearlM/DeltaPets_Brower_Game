@@ -31,7 +31,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
     <section className={`alpha-panel ${className}`}>
       <div className="alpha-header">
         <h2 className="alpha-title">
-          {view === "systems" ? "Current Alpha Systems" : "Patch Notes"}
+          {view === "systems" ? "Alpha Current" : "Patch Notes"}
         </h2>
 
         <button

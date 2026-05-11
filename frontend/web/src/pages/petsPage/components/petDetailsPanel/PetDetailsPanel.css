@@ -8,8 +8,8 @@
   --scene-inner-mid: rgba(77, 36, 45, 0.96);
   --scene-inner-bottom: rgba(54, 21, 28, 0.98);
   --scene-panel-border: rgba(190, 209, 247, 0.16);
-  --scene-panel-bg-top: rgba(17, 30, 58, 0.96);
-  --scene-panel-bg-bottom: rgba(10, 18, 37, 0.98);
+  --scene-panel-bg-top: var(--dp-panel-lighter-top);
+  --scene-panel-bg-bottom: var(--dp-panel-lighter-mid);
 
   position: relative;
   padding: 20px;
@@ -20,42 +20,42 @@
   background:
     radial-gradient(
       circle at 12% 14%,
-      rgba(255, 255, 255, 0.22) 0 1px,
+      var(--dp-star-white) 0 1px,
       transparent 1.8px
     ),
     radial-gradient(
       circle at 78% 18%,
-      rgba(255, 255, 255, 0.16) 0 1px,
+      var(--dp-star-white-soft) 0 1px,
       transparent 1.8px
     ),
     radial-gradient(
       circle at 34% 38%,
-      rgba(173, 216, 255, 0.14) 0 1.2px,
+      var(--dp-star-cyan) 0 1.2px,
       transparent 2px
     ),
     radial-gradient(
       circle at 84% 56%,
-      rgba(255, 255, 255, 0.14) 0 1px,
+      var(--dp-star-white-subtle) 0 1px,
       transparent 1.7px
     ),
     radial-gradient(
       circle at 16% 76%,
-      rgba(194, 160, 255, 0.12) 0 1.2px,
+      var(--dp-star-purple) 0 1.2px,
       transparent 2px
     ),
     radial-gradient(
       circle at 68% 72%,
-      rgba(255, 255, 255, 0.1) 0 1px,
+      var(--dp-star-white-faint) 0 1px,
       transparent 1.8px
     ),
     radial-gradient(
       circle at 24% 26%,
-      rgba(74, 128, 255, 0.12),
+      var(--dp-panel-glow-cyan),
       transparent 28%
     ),
     radial-gradient(
       circle at 76% 70%,
-      rgba(146, 94, 255, 0.1),
+      var(--dp-panel-glow-purple),
       transparent 30%
     ),
     radial-gradient(
@@ -65,9 +65,9 @@
     ),
     linear-gradient(
       180deg,
-      rgba(34, 54, 102, 0.985) 0%,
-      rgba(21, 34, 73, 0.992) 48%,
-      rgba(10, 18, 40, 0.996) 100%
+      var(--dp-panel-gradient-top) 0%,
+      var(--dp-panel-gradient-mid) 48%,
+      var(--dp-panel-gradient-bottom) 100%
     );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -253,42 +253,42 @@
   background:
     radial-gradient(
       circle at 12% 14%,
-      rgba(255, 255, 255, 0.22) 0 1px,
+      var(--dp-star-white) 0 1px,
       transparent 1.8px
     ),
     radial-gradient(
       circle at 78% 18%,
-      rgba(255, 255, 255, 0.16) 0 1px,
+      var(--dp-star-white-soft) 0 1px,
       transparent 1.8px
     ),
     radial-gradient(
       circle at 34% 38%,
-      rgba(173, 216, 255, 0.14) 0 1.2px,
+      var(--dp-star-cyan) 0 1.2px,
       transparent 2px
     ),
     radial-gradient(
       circle at 84% 56%,
-      rgba(255, 255, 255, 0.14) 0 1px,
+      var(--dp-star-white-subtle) 0 1px,
       transparent 1.7px
     ),
     radial-gradient(
       circle at 16% 76%,
-      rgba(194, 160, 255, 0.12) 0 1.2px,
+      var(--dp-star-purple) 0 1.2px,
       transparent 2px
     ),
     radial-gradient(
       circle at 68% 72%,
-      rgba(255, 255, 255, 0.1) 0 1px,
+      var(--dp-star-white-faint) 0 1px,
       transparent 1.8px
     ),
     radial-gradient(
       circle at 24% 26%,
-      rgba(74, 128, 255, 0.12),
+      var(--dp-panel-glow-cyan),
       transparent 28%
     ),
     radial-gradient(
       circle at 76% 70%,
-      rgba(146, 94, 255, 0.1),
+      var(--dp-panel-glow-purple),
       transparent 30%
     ),
     radial-gradient(
@@ -298,9 +298,9 @@
     ),
     linear-gradient(
       180deg,
-      rgba(34, 54, 102, 0.985) 0%,
-      rgba(21, 34, 73, 0.992) 48%,
-      rgba(10, 18, 40, 0.996) 100%
+      var(--dp-panel-gradient-top) 0%,
+      var(--dp-panel-gradient-mid) 48%,
+      var(--dp-panel-gradient-bottom) 100%
     );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -1233,8 +1233,8 @@
   margin-top: 14px;
   padding: 12px 14px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(12, 22, 43, 0.3);
+  border: 1px solid var(--dp-panel-inner-highlight);
+  background: var(--dp-surface-card-dark);
   color: rgba(238, 245, 255, 0.92);
 }
 
@@ -1287,7 +1287,7 @@
   min-height: 48px;
   padding: 0 16px;
   border: 0;
-  border-bottom: 1px solid rgba(209, 224, 255, 0.06);
+  border-bottom: 1px solid var(--dp-info-row-border);
   background: transparent;
   color: rgba(236, 242, 255, 0.9);
   font-size: 0.92rem;

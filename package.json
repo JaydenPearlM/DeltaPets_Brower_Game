@@ -7,10 +7,11 @@
     "backend/*"
   ],
   "scripts": {
-    "dev": "pnpm -r --parallel dev",
+    "dev": "concurrently -k -n server,web \"pnpm --filter server dev\" \"powershell -NoProfile -Command Start-Sleep -Seconds 3; pnpm --filter web dev\"",
     "build": "pnpm -r build"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "supabase": "^2.98.2"
   }
 }

@@ -30,7 +30,7 @@ export function createApp() {
   // Global rate limiting
   const limiter = rateLimit({
     windowMs: env.RATE_LIMIT_WINDOW_MS,
-    max: env.RATE_LIMIT_MAX_REQUESTS,
+    max: env.RATE_LIMIT_MAX,
     standardHeaders: true,
     legacyHeaders: false,
     message: "Too many requests, please try again later.",
@@ -38,7 +38,7 @@ export function createApp() {
 
   const speedLimiter = slowDown({
     windowMs: env.RATE_LIMIT_WINDOW_MS,
-    delayAfter: Math.floor(env.RATE_LIMIT_MAX_REQUESTS / 2),
+    delayAfter: Math.floor(env.RATE_LIMIT_MAX / 2),
     delayMs: () => 500,
   });
 

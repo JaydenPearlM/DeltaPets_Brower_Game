@@ -130,88 +130,96 @@ export default function Homepage() {
                 </article>
               ))}
             </div>
-          </div>
-        </section>
 
-        <section className="hp-lowerGrid" aria-label="Homepage content">
-          <aside className="hp-newsColumn">
-            <AnnouncementPanel />
-          </aside>
-
-          <div className="hp-spotlightColumn">
-            <section
-              className="hp-panel hp-panel--amber hp-spotlightPanel hp-spotlightPanel--featured"
-              aria-label="Spotlight"
-            >
-              <div className="hp-panelHeader">
-                <div>
-                  <h2 className="hp-panelTitle">Spotlight</h2>
-                </div>
-              </div>
-
-              <div className="hp-panelBody hp-spotlightBody">
-                {spotlightLoading ? (
-                  <p className="hp-loadingBlock">Loading spotlight pet...</p>
-                ) : (
-                  <>
-                    <div className="hp-spotlightTop">
-                      <div className="hp-spotlightIdentity">
-                        <h3
-                          className={`hp-spotlightName hp-spotlightName--${spotlightPet.element}`}
-                        >
-                          {spotlightDisplayName}
-                        </h3>
-
-                        <div className="hp-spotlightMetaRow">
-                          <span className="hp-spotlightMetaItem">
-                            <span className="hp-spotlightAccent">Level:</span>{" "}
-                            {spotlightPet.level}
-                          </span>
-
-                          <span className="hp-spotlightMetaItem">
-                            <span className="hp-spotlightAccent">Element:</span>{" "}
-                            {displayElement}
-                          </span>
-
-                          <span className="hp-spotlightMetaItem">
-                            <span className="hp-spotlightAccent">Stage:</span>{" "}
-                            {displayStage}
-                          </span>
-
-                          <span className="hp-spotlightMetaItem">
-                            <span className="hp-spotlightAccent">
-                              Personality:
-                            </span>{" "}
-                            {spotlightPet.personality}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div
-                      className={`hp-spotlightVisual hp-spotlightVisual--${spotlightPet.element}`}
-                    >
-                      <div
-                        className={`hp-spotlightOrb hp-spotlightOrb--${spotlightPet.element}`}
-                        aria-hidden="true"
-                      />
-                    </div>
-
-                    <div className="hp-spotlightContent">
-                      <p className="hp-spotlightText">
-                        {spotlightPet.description?.trim() ||
-                          "This Delta's description will appear here."}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </section>
-
-            <AlphaSystemsPanel />
+            <p className="hp-heroDisclaimer">
+              Everything you see here belongs to Jayden. All DeltaPets art, UI
+              design, characters, and world-building are handcrafted and owned
+              by Jayden. AI tools are used solely to assist development
+              workflows and never to generate creative assets. © 2026 Jayden.
+              All rights reserved.
+            </p>
           </div>
         </section>
       </div>
+
+      <section className="hp-lowerGrid" aria-label="Homepage content">
+        <aside className="hp-newsColumn">
+          <AnnouncementPanel />
+        </aside>
+
+        <div className="hp-spotlightColumn">
+          <section
+            className="hp-panel hp-panel--amber hp-spotlightPanel hp-spotlightPanel--featured"
+            aria-label="Spotlight"
+          >
+            <div className="hp-panelHeader">
+              <div>
+                <h2 className="hp-panelTitle">Spotlight</h2>
+              </div>
+            </div>
+
+            <div className="hp-panelBody hp-spotlightBody">
+              {spotlightLoading ? (
+                <p className="hp-loadingBlock">Loading spotlight pet...</p>
+              ) : (
+                <>
+                  <div className="hp-spotlightTop">
+                    <div className="hp-spotlightIdentity">
+                      <h3
+                        className={`hp-spotlightName hp-spotlightName--${spotlightPet.element}`}
+                      >
+                        {spotlightDisplayName}
+                      </h3>
+
+                      <div className="hp-spotlightMetaRow">
+                        <span className="hp-spotlightMetaItem">
+                          <span className="hp-spotlightAccent">Level:</span>{" "}
+                          {spotlightPet.level}
+                        </span>
+
+                        <span className="hp-spotlightMetaItem">
+                          <span className="hp-spotlightAccent">Element:</span>{" "}
+                          {displayElement}
+                        </span>
+
+                        <span className="hp-spotlightMetaItem">
+                          <span className="hp-spotlightAccent">Stage:</span>{" "}
+                          {displayStage}
+                        </span>
+
+                        <span className="hp-spotlightMetaItem">
+                          <span className="hp-spotlightAccent">
+                            Personality:
+                          </span>{" "}
+                          {spotlightPet.personality}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`hp-spotlightVisual hp-spotlightVisual--${spotlightPet.element}`}
+                  >
+                    <div
+                      className={`hp-spotlightOrb hp-spotlightOrb--${spotlightPet.element}`}
+                      aria-hidden="true"
+                    />
+                  </div>
+
+                  <div className="hp-spotlightContent">
+                    <p className="hp-spotlightText">
+                      {spotlightPet.description?.trim() ||
+                        "This Delta's description will appear here."}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+
+          <AlphaSystemsPanel />
+        </div>
+      </section>
     </div>
   );
 }
