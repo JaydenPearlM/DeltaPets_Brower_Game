@@ -7,6 +7,7 @@ type AnnouncementsPanelProps = {
   pageScope?: string;
   title?: string;
   subtitle?: string;
+  maxItems?: number;
 };
 
 function formatDate(dateString?: string | null) {

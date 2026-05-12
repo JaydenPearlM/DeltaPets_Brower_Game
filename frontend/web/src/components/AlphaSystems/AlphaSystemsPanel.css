@@ -1,5 +1,8 @@
 .alpha-panel {
   position: relative;
+  width: calc(100% + 80px);
+  margin-left: 56px;
+  margin-right: 0;
   border-radius: 20px;
   overflow: hidden;
   display: flex;
@@ -18,11 +21,10 @@
     0 0 42px var(--dp-cyber-blue-soft),
     0 20px 32px rgba(26, 40, 68, 0.22);
 }
-
 .alpha-panel::before {
   content: "";
   position: absolute;
-  inset: 6px;
+  inset: 10px;
   border-radius: 14px;
   border: 3px solid #7fdcff;
   pointer-events: none;
@@ -37,42 +39,69 @@
 /* HEADER */
 
 .alpha-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   text-align: left;
   padding: 0.9rem 1rem;
-  background: linear-gradient(
-    180deg,
-    var(--dp-panel-bg-mid) 0%,
-    var(--dp-panel-bg-top) 100%
-  );
-  border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
-  box-shadow:
-    inset 0 1px 0 var(--dp-panel-inner-border),
-    inset 0 -1px 0 var(--dp-panel-inner-shadow);
+  margin: 10px 10px 0;
+  border-radius: 14px 14px 0 0;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(227, 199, 255, 0.22) 0%,
+      rgba(180, 108, 255, 0.12) 28%,
+      rgba(127, 220, 255, 0.06) 48%,
+      transparent 68%
+    ),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-bg-mid) 0%,
+      var(--dp-panel-bg-top) 100%
+    );
+  border-bottom: none;
+  box-shadow: inset 0 1px 0 var(--dp-panel-inner-border);
+}
+
+.alpha-header::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 0;
+  height: 1px;
+  background: var(--dp-panel-border-soft-cyan);
+  pointer-events: none;
 }
 
 .alpha-title {
-  margin: 0;
+  margin: 6px 0 2px 15px;
+  font-size: 3rem;
   color: var(--dp-spotlight-purple, #b46cff);
   -webkit-text-fill-color: var(--dp-spotlight-purple, #b46cff);
-  -webkit-text-stroke: 0.5px var(--dp-spotlight-lavender-stroke, #e3c7ff);
+  -webkit-text-stroke: 0.9px rgba(227, 199, 255, 0.82);
   font-family: var(--font-heading);
-  font-size: 3rem;
-  font-weight: 900;
   line-height: 1;
   letter-spacing: 0.025em;
-  text-shadow: none;
-  filter: none;
-  opacity: 1;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* BODY */
 .alpha-body {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   gap: 0;
+  margin: 0 10px 10px;
+  overflow: hidden;
+  border-radius: 0 0 13px 13px;
   color: var(--dp-panel-text);
 }
 
@@ -86,6 +115,7 @@
 
 /* TABLE HEADER */
 .alpha-tableHeader {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1.6fr 110px;
   gap: 0;
@@ -93,8 +123,23 @@
   font-weight: 700;
   text-transform: uppercase;
   color: var(--dp-panel-muted);
-  background: var(--dp-surface-raised);
+  background: linear-gradient(
+    180deg,
+    var(--ui-blue-900) 0%,
+    var(--ui-blue-850) 100%
+  );
   border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
+}
+
+.alpha-tableHeader::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--dp-panel-border-soft-cyan);
+  pointer-events: none;
 }
 
 .alpha-tableHeader span {
@@ -103,7 +148,7 @@
 }
 
 .alpha-tableHeader span:not(:last-child) {
-  border-right: none;
+  border-right: 1px solid var(--dp-panel-border-soft-cyan);
 }
 
 /* TABLE */
@@ -113,6 +158,7 @@
 }
 
 .alpha-row {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1.6fr 110px;
   gap: 0;
@@ -124,8 +170,19 @@
     transform 160ms ease;
 }
 
-.alpha-row:last-child {
-  border-bottom: none;
+.alpha-row::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--dp-panel-border-soft-cyan);
+  pointer-events: none;
+}
+
+.alpha-row:last-child::after {
+  display: block;
 }
 
 .alpha-row:hover {
@@ -136,7 +193,7 @@
   padding: 0.8rem 0.85rem;
   display: flex;
   align-items: center;
-  min-height: 58px;
+  min-height: 137.5px;
 }
 
 .alpha-row > span:not(:last-child) {
@@ -168,7 +225,7 @@
   justify-content: center;
   align-items: center;
   background: var(--dp-panel-bg-mid);
-  border-top: 1px solid var(--dp-panel-border-soft-cyan);
+  border-top: none;
 }
 
 /* BUTTON */
@@ -202,4 +259,123 @@
     inset 0 2px 0 rgba(255, 245, 200, 0.5),
     0 10px 20px rgba(90, 64, 15, 0.2);
   filter: brightness(1.03);
+}
+/* PATCH NOTES VIEW */
+
+.alpha-patchView {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: linear-gradient(
+    180deg,
+    var(--dp-panel-bg-mid) 0%,
+    var(--dp-panel-bg-bottom) 100%
+  );
+  border-top: 1px solid var(--dp-panel-border-soft-cyan);
+}
+
+/* PATCH META */
+
+.alpha-patchMeta {
+  padding: 0.9rem 1rem 1rem;
+  border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
+  background: linear-gradient(
+    180deg,
+    var(--ui-blue-900) 0%,
+    var(--ui-blue-850) 100%
+  );
+}
+
+.alpha-patchMetaTop {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.alpha-patchVersion,
+.alpha-patchReleased {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--dp-panel-muted);
+}
+
+.alpha-patchTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--dp-panel-text);
+  letter-spacing: 0.02em;
+}
+
+.alpha-patchSummary {
+  margin-top: 0.55rem;
+  line-height: 1.45;
+  color: var(--dp-panel-text);
+}
+
+/* PATCH TABLE */
+
+.alpha-patchTable {
+  display: flex;
+  flex-direction: column;
+}
+
+.alpha-patchTableHeader {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: linear-gradient(
+    180deg,
+    var(--ui-blue-900) 0%,
+    var(--ui-blue-850) 100%
+  );
+  border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
+}
+
+.alpha-patchTableHeader span {
+  padding: 0.75rem 0.8rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--dp-panel-muted);
+}
+
+.alpha-patchTableHeader span:not(:last-child) {
+  border-right: 1px solid var(--dp-panel-border-soft-cyan);
+}
+
+/* PATCH ROW */
+
+.alpha-patchTableRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--dp-panel-bg-mid);
+}
+
+.alpha-patchTableCell {
+  padding: 0.9rem 0.9rem 1rem;
+  min-height: 220px;
+}
+
+.alpha-patchTableCell:not(:last-child) {
+  border-right: 1px solid var(--dp-panel-border-soft-cyan);
+}
+
+/* PATCH LISTS */
+
+.alpha-patchList {
+  margin: 0;
+  padding-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.alpha-patchList li {
+  color: var(--dp-panel-text);
+  line-height: 1.35;
+}
+
+.alpha-patchEmpty {
+  opacity: 0.45;
 }

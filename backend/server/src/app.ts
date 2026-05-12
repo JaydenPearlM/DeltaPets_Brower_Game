@@ -1,10 +1,10 @@
 import express from "express";
 import helmet from "helmet";
-import { rateLimit } from "express-rate-limit";
-import { slowDown } from "express-slow-down";
 import * as Sentry from "@sentry/node";
+
 import { env } from "./env.server";
 import { errorHandler } from "./middleware/errorHandler";
+import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
 import { apiRouter } from "./routes/index";
 
 export function createApp() {
@@ -28,22 +28,8 @@ export function createApp() {
   app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 
   // Global rate limiting
-  const limiter = rateLimit({
-    windowMs: env.RATE_LIMIT_WINDOW_MS,
-    max: env.RATE_LIMIT_MAX,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: "Too many requests, please try again later.",
-  });
-
-  const speedLimiter = slowDown({
-    windowMs: env.RATE_LIMIT_WINDOW_MS,
-    delayAfter: Math.floor(env.RATE_LIMIT_MAX / 2),
-    delayMs: () => 500,
-  });
-
-  app.use(limiter);
-  app.use(speedLimiter);
+  app.use(apiLimiter);
+  app.use(apiSpeedLimiter);
 
   // Health check
   app.get("/health", (_req, res) => {

@@ -7,7 +7,7 @@ type DeltaClockProps = {
 };
 
 export function DeltaClock(props: DeltaClockProps = {}) {
-  const { label = "ALIUNE TIME", showDay = false } = props;
+  const { label = "ALIUNE TIME" } = props;
   const deltaTime = useDeltaTime();
 
   return (
@@ -17,20 +17,15 @@ export function DeltaClock(props: DeltaClockProps = {}) {
       aria-live="polite"
       aria-label={`${label}: ${deltaTime.digital12} ${deltaTime.phaseLabel}`}
     >
-      <div className="deltaClock__label">{label}</div>
-
       <div className="deltaClock__primaryRow">
-        <span className="deltaClock__time">{deltaTime.digital12}</span>
-        <span className="deltaClock__phase">
-          {deltaTime.phaseLabel.toUpperCase()}
-        </span>
-      </div>
+        <span className="deltaClock__mark">△</span>
 
-      <div className="deltaClock__secondaryRow">
-        <span className="deltaClock__time24">{deltaTime.digital24} ΔT</span>
-        {showDay ? (
-          <span className="deltaClock__day">DAY {deltaTime.deltaDay}</span>
-        ) : null}
+        <div className="deltaClock__textStack">
+          <span className="deltaClock__time">{deltaTime.digital12}</span>
+          <span className="deltaClock__phase">
+            {deltaTime.phaseLabel.toUpperCase()}
+          </span>
+        </div>
       </div>
     </div>
   );

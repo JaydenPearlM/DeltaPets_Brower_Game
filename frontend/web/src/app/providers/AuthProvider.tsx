@@ -72,14 +72,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let emailToUse = normalized;
 
         // If it doesn't look like an email, treat it as a username and resolve it.
+        // Replace ONLY this section inside signIn()
+
         if (!normalized.includes("@")) {
           const username = normalized;
 
-          const { data, error: lookupErr } = await supabase
-            .from("profiles")
-            .select("email")
-            .eq("username", username)
-            .maybeSingle();
+          const { data, error: lookupErr } = await supabase.rpc(
+            "get_email_by_username",
+            {
+              p_username: username,
+            },
+          );
 
           if (lookupErr) {
             console.error("[auth] username lookup failed", {
@@ -94,13 +97,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             };
           }
 
-          if (!data?.email) {
+          if (!data) {
             return {
               error: { message: "Incorrect Username and/or password." },
             };
           }
 
-          emailToUse = String(data.email).trim().toLowerCase();
+          emailToUse = String(data).trim().toLowerCase();
         }
 
         const { error } = await supabase.auth.signInWithPassword({
