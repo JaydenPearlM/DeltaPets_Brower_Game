@@ -6,7 +6,7 @@ export type DeltaPhase =
   | "dusk"
   | "night"
   | "deep_night"
-  | "pre_dawn";
+  | "twilight";
 
 export type DeltaTimeOfDay = "day" | "night";
 
@@ -83,10 +83,10 @@ export const DELTA_PHASES: PhaseDefinition[] = [
     color: "#8d6bff",
   },
   {
-    name: "pre_dawn",
+    name: "twilight",
     durationMinutes: 30,
     timeOfDay: "night",
-    label: "Pre-Dawn",
+    label: "Twilight",
     emoji: "🌌",
     color: "#5c7fd8",
   },

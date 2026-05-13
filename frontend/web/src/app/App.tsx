@@ -163,10 +163,15 @@ export default function App() {
     <div className="appRoot">
       <header className="appHeader">
         <div className="appShell appHeaderInner">
-          <div className="logoBlock">
-            <div className="logoText">DeltaPets</div>
-            <div className="logoTriangle">△</div>
-          </div>
+          <button
+            type="button"
+            className="logoBlock"
+            onClick={() => handleNavigate("/pet")}
+            aria-label="Go to your DeltaPets profile"
+          >
+            <span className="logoTriangle">△</span>
+            <span className="logoText">DeltaPets</span>
+          </button>
 
           <div className="headerStack">
             <div className="aliuneSignal">

@@ -32,7 +32,7 @@ const DEFAULT_STABLE_VIEW: SignalView = {
   isAlert: false,
 };
 
-const FALLBACK_REFRESH_MS = 60 * 60 * 1000;
+const FALLBACK_REFRESH_MS = 60 * 1000;
 const BOUNDARY_BUFFER_MS = 1500;
 
 function formatCondition(value?: string | null): string {
@@ -165,13 +165,9 @@ export function useAliuneSignal() {
     let timeoutId: number | null = null;
 
     async function loadSignalAndScheduleNextRefresh() {
-      const { data, error } = await supabase
-        .from("aliune_signal_reports")
-        .select(
-          "id, enabled, condition, region, corruption, report_text, start_time, end_time",
-        )
-        .eq("enabled", true)
-        .order("start_time", { ascending: true });
+      const { data, error } = await supabase.rpc(
+        "get_or_create_kithna_tutorial_signal",
+      );
 
       if (!alive) return;
 
@@ -192,7 +188,9 @@ export function useAliuneSignal() {
 
       setRow(activeRow);
 
-      const nextDelayMs = getDelayUntilNextBoundaryMs(rows);
+      const nextDelayMs = rows.length > 0
+        ? getDelayUntilNextBoundaryMs(rows)
+        : FALLBACK_REFRESH_MS;
 
       timeoutId = window.setTimeout(() => {
         void loadSignalAndScheduleNextRefresh();

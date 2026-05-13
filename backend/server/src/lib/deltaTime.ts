@@ -6,7 +6,7 @@ export type DeltaPhase =
   | "dusk"
   | "night"
   | "deep_night"
-  | "pre_dawn";
+  | "twilight";
 
 export type DeltaTimeOfDay = "day" | "night";
 
@@ -35,7 +35,7 @@ const PHASES: PhaseDefinition[] = [
   { name: "dusk", durationMinutes: 45, timeOfDay: "day" },
   { name: "night", durationMinutes: 90, timeOfDay: "night" },
   { name: "deep_night", durationMinutes: 60, timeOfDay: "night" },
-  { name: "pre_dawn", durationMinutes: 30, timeOfDay: "night" },
+  { name: "twilight", durationMinutes: 30, timeOfDay: "night" },
 ];
 
 const totalMinutes = PHASES.reduce((sum, p) => sum + p.durationMinutes, 0);

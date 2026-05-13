@@ -11,7 +11,20 @@
 /* ===== HEADER BASE ===== */
 .appHeader {
   width: 100%;
-  background: linear-gradient(180deg, #5c7aa6, #3c5b87);
+  background:
+    radial-gradient(circle at 50% 0%, var(--dp-panel-glow-top) 0%, transparent 38%),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-bg-top) 0%,
+      var(--dp-panel-bg-mid) 48%,
+      var(--dp-panel-bg-bottom) 100%
+    );
+  border-bottom: 3px solid var(--dp-panel-border);
+  box-shadow:
+    0 0 0 1px var(--dp-panel-inner-border) inset,
+    0 0 18px var(--dp-panel-glow),
+    0 0 42px var(--dp-cyber-blue-soft),
+    inset 0 0 24px var(--dp-panel-inner-shadow);
 }
 
 /* ===== TWO-ROW HEADER GRID ===== */
@@ -27,15 +40,22 @@
   box-sizing: border-box;
 }
 
-/* ===== LEFT: LOGO STACK ===== */
+/* ===== LEFT: LOGO LINK ===== */
 .logoBlock {
   grid-column: 1;
   grid-row: 1 / span 2;
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
   transform: translateX(79px);
+  cursor: pointer;
+  text-decoration: none;
   z-index: 3;
 }
 
@@ -43,15 +63,22 @@
   font-family: var(--font-heading);
   font-size: 26px;
   line-height: 1;
-  color: #ffd84c;
-  text-shadow: 1px 1px #c23a2b;
+  color: var(--dp-brand-yellow);
+  -webkit-text-stroke: 1px var(--dp-brand-red-stroke);
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.18),
+    0 0 10px rgba(255, 207, 97, 0.1);
 }
 
 .logoTriangle {
-  margin-top: 2px;
+  font-family: var(--font-heading);
   font-size: 26px;
   line-height: 1;
-  color: #ffd84c;
+  color: var(--dp-brand-yellow);
+  -webkit-text-stroke: 1px var(--dp-brand-red-stroke);
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.18),
+    0 0 10px rgba(255, 207, 97, 0.1);
 }
 
 /* ===== CENTERED STACK ACROSS THE WHOLE HEADER ===== */
@@ -210,7 +237,7 @@
   letter-spacing: 0.01em;
   color: #060b13;
   text-align: center;
-  font-weight: 55540;
+  font-weight: 700;
 }
 
 /* ===== RIGHT: CLOCK ===== */

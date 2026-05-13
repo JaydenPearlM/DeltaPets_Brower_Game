@@ -1,5 +1,3 @@
-// backend/server/src/routes/index.ts
-
 import { Router } from "express";
 
 import { healthRouter } from "./health";
@@ -14,6 +12,7 @@ import { dailyCareRouter } from "./care/dailyCare";
 import { careRouter } from "./care/care";
 
 import { battleRouter } from "./battle";
+import { pveInstabilitiesRouter } from "./battle/pveInstabilities";
 
 const apiRouter = Router();
 
@@ -50,5 +49,11 @@ apiRouter.use("/daily/care", dailyCareRouter);
 =============================== */
 
 apiRouter.use("/rewards", rewardsRouter);
+
+/* ===============================
+   PVE INSTABILITY SYSTEM
+=============================== */
+
+apiRouter.use("/pve", pveInstabilitiesRouter);
 
 export { apiRouter };
