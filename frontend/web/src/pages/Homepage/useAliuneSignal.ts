@@ -2,34 +2,43 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
 type SignalCondition = "stable" | "unbalanced" | "unstable";
-type SignalCorruption = "none" | "low" | "rising" | "high" | "too high";
+type SignalCorruption = "low" | "high";
 
 type SignalRow = {
   id: string;
   enabled?: boolean | null;
   condition?: SignalCondition | string | null;
   region?: string | null;
+  town?: string | null;
   corruption?: SignalCorruption | string | null;
   report_text?: string | null;
-  start_time?: string | null;
-  end_time?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
 };
 
-type SignalView = {
+export type SignalView = {
   conditionLabel: string;
   regionLabel: string;
+  townLabel: string;
   corruptionLabel: string;
   reportText: string;
   isAlert: boolean;
+  bossAvailable: boolean;
+};
+
+export type UseAliuneSignalResult = {
+  signal: SignalView;
 };
 
 const DEFAULT_STABLE_VIEW: SignalView = {
   conditionLabel: "Stable",
-  regionLabel: "All Regions Stable",
-  corruptionLabel: "None",
+  regionLabel: "Kithna",
+  townLabel: "Tutorial Island",
+  corruptionLabel: "Low",
   reportText:
-    "Aliune remains calm. No active portal disturbances are being reported at this time.",
+    "Kithna remains calm. No active instability is being reported at this time.",
   isAlert: false,
+  bossAvailable: false,
 };
 
 const FALLBACK_REFRESH_MS = 60 * 1000;
@@ -42,122 +51,45 @@ function formatCondition(value?: string | null): string {
 
   if (normalized === "unstable") return "Unstable";
   if (normalized === "unbalanced") return "Unbalanced";
+
   return "Stable";
 }
 
 function formatCorruption(value?: string | null): string {
-  if (!value) return "None";
+  if (!value) return "Low";
 
   const normalized = value.toLowerCase();
 
-  if (normalized === "too high") return "Too High";
-  if (normalized === "none") return "None";
+  if (normalized === "high") return "High";
 
-  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  return "Low";
 }
 
-function parseTimeToMinutes(value?: string | null): number | null {
-  if (!value) return null;
+function getDelayUntilSignalExpiresMs(row: SignalRow | null): number {
+  if (!row?.ends_at) return FALLBACK_REFRESH_MS;
 
-  const parts = value.split(":");
-  if (parts.length < 2) return null;
+  const endsAtMs = new Date(row.ends_at).getTime();
 
-  const hours = Number(parts[0]);
-  const minutes = Number(parts[1]);
+  if (Number.isNaN(endsAtMs)) return FALLBACK_REFRESH_MS;
 
-  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
-    return null;
+  const delay = endsAtMs - Date.now() + BOUNDARY_BUFFER_MS;
+
+  return delay > 0 ? delay : FALLBACK_REFRESH_MS;
+}
+
+function getFirstRow(data: unknown): SignalRow | null {
+  if (Array.isArray(data)) {
+    return (data[0] as SignalRow | undefined) ?? null;
   }
 
-  return hours * 60 + minutes;
-}
-
-function getCurrentLocalMinutes(): number {
-  const now = new Date();
-  return now.getHours() * 60 + now.getMinutes();
-}
-
-function isActiveForDailyWindow(
-  currentMinutes: number,
-  startTime?: string | null,
-  endTime?: string | null,
-): boolean {
-  const start = parseTimeToMinutes(startTime);
-  const end = parseTimeToMinutes(endTime);
-
-  if (start === null && end === null) return true;
-  if (start !== null && end === null) return currentMinutes >= start;
-  if (start === null && end !== null) return currentMinutes < end;
-  if (start === end) return true;
-
-  if (start !== null && end !== null && start < end) {
-    return currentMinutes >= start && currentMinutes < end;
+  if (data && typeof data === "object") {
+    return data as SignalRow;
   }
 
-  if (start !== null && end !== null) {
-    return currentMinutes >= start || currentMinutes < end;
-  }
-
-  return false;
+  return null;
 }
 
-function getStartMinutes(row: SignalRow): number {
-  return parseTimeToMinutes(row.start_time) ?? -1;
-}
-
-function pickActiveRow(
-  rows: SignalRow[],
-  currentMinutes: number,
-): SignalRow | null {
-  if (!Array.isArray(rows) || rows.length === 0) return null;
-
-  const activeRows = rows.filter((item) =>
-    isActiveForDailyWindow(currentMinutes, item.start_time, item.end_time),
-  );
-
-  if (activeRows.length === 0) return null;
-
-  activeRows.sort((a, b) => getStartMinutes(a) - getStartMinutes(b));
-
-  return activeRows[activeRows.length - 1] ?? null;
-}
-
-function getBoundaryMinutes(rows: SignalRow[]): number[] {
-  const values = new Set<number>();
-
-  for (const row of rows) {
-    const start = parseTimeToMinutes(row.start_time);
-    const end = parseTimeToMinutes(row.end_time);
-
-    if (start !== null) values.add(start);
-    if (end !== null) values.add(end);
-  }
-
-  return Array.from(values).sort((a, b) => a - b);
-}
-
-function getDelayUntilNextBoundaryMs(rows: SignalRow[]): number {
-  const currentMinutes = getCurrentLocalMinutes();
-  const boundaries = getBoundaryMinutes(rows);
-
-  if (boundaries.length === 0) {
-    return FALLBACK_REFRESH_MS;
-  }
-
-  for (const boundary of boundaries) {
-    if (boundary > currentMinutes) {
-      const diffMinutes = boundary - currentMinutes;
-      return diffMinutes * 60 * 1000 + BOUNDARY_BUFFER_MS;
-    }
-  }
-
-  const firstBoundaryTomorrow = boundaries[0];
-  const diffMinutes = 24 * 60 - currentMinutes + firstBoundaryTomorrow;
-
-  return diffMinutes * 60 * 1000 + BOUNDARY_BUFFER_MS;
-}
-
-export function useAliuneSignal() {
+export function useAliuneSignal(): UseAliuneSignalResult {
   const [row, setRow] = useState<SignalRow | null>(null);
 
   useEffect(() => {
@@ -172,7 +104,7 @@ export function useAliuneSignal() {
       if (!alive) return;
 
       if (error) {
-        console.error("[aliune-signal] fetch failed", error);
+        console.error("[aliune-signal] rpc failed", error);
         setRow(null);
 
         timeoutId = window.setTimeout(() => {
@@ -182,19 +114,13 @@ export function useAliuneSignal() {
         return;
       }
 
-      const rows: SignalRow[] = Array.isArray(data) ? data : [];
-      const currentMinutes = getCurrentLocalMinutes();
-      const activeRow = pickActiveRow(rows, currentMinutes);
+      const activeRow = getFirstRow(data);
 
       setRow(activeRow);
 
-      const nextDelayMs = rows.length > 0
-        ? getDelayUntilNextBoundaryMs(rows)
-        : FALLBACK_REFRESH_MS;
-
       timeoutId = window.setTimeout(() => {
         void loadSignalAndScheduleNextRefresh();
-      }, nextDelayMs);
+      }, getDelayUntilSignalExpiresMs(activeRow));
     }
 
     function handleVisibilityChange() {
@@ -232,7 +158,12 @@ export function useAliuneSignal() {
     const regionLabel =
       typeof row.region === "string" && row.region.trim().length > 0
         ? row.region
-        : "All Regions Stable";
+        : "Kithna";
+
+    const townLabel =
+      typeof row.town === "string" && row.town.trim().length > 0
+        ? row.town
+        : "Tutorial Island";
 
     const corruptionLabel = formatCorruption(row.corruption);
 
@@ -241,12 +172,16 @@ export function useAliuneSignal() {
         ? row.report_text
         : DEFAULT_STABLE_VIEW.reportText;
 
+    const bossAvailable = conditionLabel === "Unstable";
+
     return {
       conditionLabel,
       regionLabel,
+      townLabel,
       corruptionLabel,
       reportText,
-      isAlert: conditionLabel === "Unstable",
+      isAlert: bossAvailable,
+      bossAvailable,
     };
   }, [row]);
 

@@ -1,8 +1,11 @@
+// backend/server/src/routes/index.ts
+
 import { Router } from "express";
 
 import { healthRouter } from "./health";
 import { meRouter } from "./me";
 import { authRouter } from "../middleware/auth";
+import { authLimiter } from "../middleware/rateLimit";
 
 import { petsRouter } from "./routePets/routePets";
 import { petActionsRouter } from "./petActions";
@@ -12,7 +15,6 @@ import { dailyCareRouter } from "./care/dailyCare";
 import { careRouter } from "./care/care";
 
 import { battleRouter } from "./battle";
-import { pveInstabilitiesRouter } from "./battle/pveInstabilities";
 
 const apiRouter = Router();
 
@@ -22,6 +24,8 @@ const apiRouter = Router();
 
 apiRouter.use(healthRouter);
 apiRouter.use(meRouter);
+apiRouter.use(authRouter);
+apiRouter.use("/auth", authLimiter);
 apiRouter.use(authRouter);
 
 /* ===============================
@@ -49,11 +53,5 @@ apiRouter.use("/daily/care", dailyCareRouter);
 =============================== */
 
 apiRouter.use("/rewards", rewardsRouter);
-
-/* ===============================
-   PVE INSTABILITY SYSTEM
-=============================== */
-
-apiRouter.use("/pve", pveInstabilitiesRouter);
 
 export { apiRouter };

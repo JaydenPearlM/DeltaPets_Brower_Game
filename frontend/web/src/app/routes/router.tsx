@@ -98,6 +98,16 @@ export const router = createBrowserRouter([
       { path: "create", element: <CreatePage /> },
       { path: "pet", element: <PetPage /> },
 
+      {
+        path: "profile",
+        element: (
+          <ComingSoonPage
+            title="Profile"
+            subtitle="Your Profile page route is connected. Build the real ProfilePage here when you are ready."
+          />
+        ),
+      },
+
       { path: "hatchery", element: <HatcheryPage /> },
 
       { path: "gym", element: <Gym /> },

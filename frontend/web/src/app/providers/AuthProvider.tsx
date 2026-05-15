@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // 🔐 Username OR Email sign in
       // Supabase password auth requires email, so we resolve username -> email
-      // using the `profiles` table.
+      // using the backend helper route.
       signIn: async ({ identifier, password, captchaToken }) => {
         const raw = identifier.trim();
         if (!raw || !password) {
@@ -72,23 +72,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let emailToUse = normalized;
 
         // If it doesn't look like an email, treat it as a username and resolve it.
-        // Replace ONLY this section inside signIn()
-
         if (!normalized.includes("@")) {
           const username = normalized;
 
-          const { data, error: lookupErr } = await supabase.rpc(
-            "get_email_by_username",
-            {
-              p_username: username,
+          const response = await fetch("/api/auth/resolve-username", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-          );
+            body: JSON.stringify({ username }),
+          });
 
-          if (lookupErr) {
-            console.error("[auth] username lookup failed", {
-              error: lookupErr,
-            });
-
+          if (!response.ok) {
             return {
               error: {
                 message:
@@ -97,13 +92,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             };
           }
 
-          if (!data) {
+          const data = (await response.json()) as { email?: string | null };
+
+          if (!data.email) {
             return {
               error: { message: "Incorrect Username and/or password." },
             };
           }
 
-          emailToUse = String(data).trim().toLowerCase();
+          emailToUse = data.email.trim().toLowerCase();
         }
 
         const { error } = await supabase.auth.signInWithPassword({

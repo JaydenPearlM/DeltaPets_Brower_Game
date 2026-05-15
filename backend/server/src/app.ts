@@ -1,7 +1,7 @@
 import express from "express";
 import helmet from "helmet";
 import * as Sentry from "@sentry/node";
-
+import aliuneSignalRoutes from "./routes/world/aliuneSignal";
 import { env } from "./env.server";
 import { errorHandler } from "./middleware/errorHandler";
 import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
@@ -30,6 +30,9 @@ export function createApp() {
   // Global rate limiting
   app.use(apiLimiter);
   app.use(apiSpeedLimiter);
+
+  //Aliune Signal
+  app.use("/api/world", aliuneSignalRoutes);
 
   // Health check
   app.get("/health", (_req, res) => {

@@ -7,7 +7,7 @@ import { DeltaClock } from "../lib/timers/deltaClock";
 import { useAuth } from "./providers/useAuth";
 import "./App.css";
 
-const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? "ALPHAv0.0.1-alpha.2";
+const APP_VERSION = import.meta.env.__APP_VERSION__ ?? "ALPHAv0.0.1-alpha.2";
 
 type MenuSectionKey = "pets" | "battle" | "cities";
 
@@ -64,16 +64,32 @@ export default function App() {
     return "none";
   }, [location.pathname]);
 
-  const conditionText =
-    (signal as any)?.conditionLabel ?? (signal as any)?.condition ?? "Stable";
+  const conditionText = signal.conditionLabel;
+  const regionText = signal.regionLabel;
+  const corruptionText = signal.corruptionLabel;
 
-  const regionText =
-    (signal as any)?.regionLabel ??
-    (signal as any)?.region ??
-    "All Regions Stable";
+  const signalTone = useMemo<"green" | "yellow" | "red">(() => {
+    const condition = String(conditionText).toLowerCase();
+    const corruption = String(corruptionText).toLowerCase();
 
-  const corruptionText =
-    (signal as any)?.corruptionLabel ?? (signal as any)?.corruption ?? "None";
+    if (
+      condition === "unstable" ||
+      corruption === "high" ||
+      corruption === "too high"
+    ) {
+      return "red";
+    }
+
+    if (
+      condition === "unbalanced" ||
+      corruption === "low" ||
+      corruption === "rising"
+    ) {
+      return "yellow";
+    }
+
+    return "green";
+  }, [conditionText, corruptionText]);
 
   useEffect(() => {
     if (!menuOpen && !exploreHintOpen) return;
@@ -142,6 +158,7 @@ export default function App() {
     setExpandedSections(getCollapsedSections());
     setMenuOpen((prev) => !prev);
   }
+
   function renderMenuLinks(links: MenuLink[]) {
     return (
       <div className="hamburgerMenuSectionBody">
@@ -166,7 +183,7 @@ export default function App() {
           <button
             type="button"
             className="logoBlock"
-            onClick={() => handleNavigate("/pet")}
+            onClick={() => handleNavigate("/profile")}
             aria-label="Go to your DeltaPets profile"
           >
             <span className="logoTriangle">△</span>
@@ -174,7 +191,7 @@ export default function App() {
           </button>
 
           <div className="headerStack">
-            <div className="aliuneSignal">
+            <div className={`aliuneSignal aliuneSignal--${signalTone}`}>
               <div className="signalTitle">ALIUNE SIGNAL</div>
 
               <div className="signalRow">
@@ -261,7 +278,7 @@ export default function App() {
                         <button
                           type="button"
                           className="hamburgerMenuSectionStatic"
-                          onClick={() => handleNavigate("/secretHaven")}
+                          onClick={() => handleNavigate("/profile")}
                         >
                           <span>Profile</span>
                         </button>

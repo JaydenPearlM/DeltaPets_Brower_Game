@@ -831,25 +831,27 @@ a {
 }
 
 /* Global Popup Window System */
---dp-popup-inner-border: var(--dp-skill-purple);
---dp-popup-bg-top: var(--dp-panel-bg-top);
---dp-popup-bg-mid: var(--dp-panel-bg-mid);
---dp-popup-bg-bottom: var(--dp-panel-bg-bottom);
+:root {
+  --dp-popup-inner-border: var(--dp-skill-purple);
+  --dp-popup-bg-top: var(--dp-panel-bg-top);
+  --dp-popup-bg-mid: var(--dp-panel-bg-mid);
+  --dp-popup-bg-bottom: var(--dp-panel-bg-bottom);
 
---dp-popup-border: var(--dp-panel-border);
---dp-popup-inner-border: var(--dp-skill-purple);
+  --dp-popup-border: var(--dp-panel-border);
+  --dp-popup-inner-border: var(--dp-skill-purple);
 
---dp-popup-glow: var(--dp-panel-glow);
---dp-popup-glow-soft: var(--dp-cyber-blue-soft);
+  --dp-popup-glow: var(--dp-panel-glow);
+  --dp-popup-glow-soft: var(--dp-cyber-blue-soft);
 
---dp-popup-text: var(--dp-panel-text);
---dp-popup-muted: var(--dp-panel-muted);
+  --dp-popup-text: var(--dp-panel-text);
+  --dp-popup-muted: var(--dp-panel-muted);
 
---dp-popup-grid-line: rgba(255, 255, 255, 0.022);
---dp-popup-light-sheen: rgba(255, 255, 255, 0.08);
---dp-popup-cyan-wash: rgba(77, 234, 255, 0.16);
+  --dp-popup-grid-line: rgba(255, 255, 255, 0.022);
+  --dp-popup-light-sheen: rgba(255, 255, 255, 0.08);
+  --dp-popup-cyan-wash: rgba(77, 234, 255, 0.16);
 
---dp-popup-purple-splash: rgba(169, 105, 255, 0.16);
+  --dp-popup-purple-splash: rgba(169, 105, 255, 0.16);
+}
 
 .dp-window,
 .dp-popup,
@@ -1734,4 +1736,258 @@ a {
     #ea4e4e 48%,
     #c71f2d 100%
   ) !important;
+}
+
+/* =========================================================
+   GLOBAL BUTTON SYSTEM
+   Morning button pass: important, semi-important, and purple UI buttons.
+   Keep Start Your Journey separate.
+========================================================= */
+:root {
+  --dp-btn-yellow-top: var(--dp-brand-yellow-bright);
+  --dp-btn-yellow-mid: var(--dp-brand-yellow);
+  --dp-btn-yellow-bottom: var(--dp-brand-orange);
+  --dp-btn-yellow-hover-top: #fff8a6;
+  --dp-btn-yellow-hover-mid: #ffe36a;
+  --dp-btn-yellow-hover-bottom: #ffb23f;
+  --dp-btn-yellow-text: #2f1907;
+
+  --dp-btn-red-stroke: var(--dp-brand-red-stroke);
+  --dp-btn-red-stroke-dark: var(--dp-brand-red-dark);
+
+  --dp-btn-purple-top: #c79aff;
+  --dp-btn-purple-mid: var(--dp-skill-purple);
+  --dp-btn-purple-bottom: #6d35d7;
+  --dp-btn-purple-hover-top: #d9b8ff;
+  --dp-btn-purple-hover-mid: #b77cff;
+  --dp-btn-purple-hover-bottom: #7c42ea;
+  --dp-btn-purple-text: #fff9ff;
+  --dp-btn-purple-stroke: var(--dp-skill-lavender-stroke);
+
+  --dp-btn-gold-glow: rgba(255, 217, 77, 0.34);
+  --dp-btn-red-glow: rgba(207, 79, 47, 0.34);
+  --dp-btn-purple-glow: rgba(169, 105, 255, 0.34);
+}
+
+.btn,
+.dp-btn {
+  cursor: pointer;
+}
+
+/* Important buttons: yellow gradient with red stroke. */
+.dp-btn--important,
+.btn-important,
+.btn-gold-important {
+  color: var(--dp-btn-yellow-text);
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-yellow-top) 0%,
+    var(--dp-btn-yellow-mid) 48%,
+    var(--dp-btn-yellow-bottom) 100%
+  );
+  border: 2px solid var(--dp-btn-red-stroke);
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.32);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -2px 0 rgba(118, 46, 16, 0.18),
+    0 0 0 1px rgba(143, 23, 32, 0.26),
+    0 10px 22px var(--dp-btn-red-glow);
+}
+
+.dp-btn--important:hover,
+.btn-important:hover,
+.btn-gold-important:hover {
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-yellow-hover-top) 0%,
+    var(--dp-btn-yellow-hover-mid) 48%,
+    var(--dp-btn-yellow-hover-bottom) 100%
+  );
+  border-color: var(--dp-btn-red-stroke-dark);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.72),
+    inset 0 -2px 0 rgba(118, 46, 16, 0.22),
+    0 0 0 1px rgba(143, 23, 32, 0.34),
+    0 13px 26px var(--dp-btn-red-glow);
+}
+
+/* Semi-important buttons: yellow gradient, no red stroke. */
+.dp-btn--semi,
+.dp-btn--yellow,
+.btn-cool,
+.btn-gold-semi {
+  color: var(--dp-btn-yellow-text);
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-yellow-top) 0%,
+    var(--dp-btn-yellow-mid) 48%,
+    var(--dp-btn-yellow-bottom) 100%
+  );
+  border: 1px solid rgba(255, 217, 77, 0.72);
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.32);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.66),
+    inset 0 -2px 0 rgba(118, 79, 8, 0.16),
+    0 8px 18px var(--dp-btn-gold-glow);
+}
+
+.dp-btn--semi:hover,
+.dp-btn--yellow:hover,
+.btn-cool:hover,
+.btn-gold-semi:hover {
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-yellow-hover-top) 0%,
+    var(--dp-btn-yellow-hover-mid) 48%,
+    var(--dp-btn-yellow-hover-bottom) 100%
+  );
+  border-color: rgba(255, 229, 120, 0.86);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.76),
+    inset 0 -2px 0 rgba(118, 79, 8, 0.18),
+    0 11px 22px var(--dp-btn-gold-glow);
+}
+
+/* Other buttons: purple gradient with global lavender stroke. */
+.dp-btn--purple,
+.btn-purple,
+.btn-magic {
+  color: var(--dp-btn-purple-text);
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-purple-top) 0%,
+    var(--dp-btn-purple-mid) 48%,
+    var(--dp-btn-purple-bottom) 100%
+  );
+  border: 1px solid var(--dp-btn-purple-stroke);
+  text-shadow: 0 1px 0 rgba(26, 5, 55, 0.5);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(30, 8, 72, 0.28),
+    0 10px 22px var(--dp-btn-purple-glow);
+}
+
+.dp-btn--purple:hover,
+.btn-purple:hover,
+.btn-magic:hover {
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-purple-hover-top) 0%,
+    var(--dp-btn-purple-hover-mid) 48%,
+    var(--dp-btn-purple-hover-bottom) 100%
+  );
+  border-color: #ead9ff;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -2px 0 rgba(30, 8, 72, 0.3),
+    0 13px 26px var(--dp-btn-purple-glow);
+}
+
+/* Header Explore / Sign Up / Sign In: semi-important yellow with 3px inset. */
+.appRoot .appHeader .exploreButton {
+  color: var(--dp-btn-yellow-text);
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-yellow-top) 0%,
+    var(--dp-btn-yellow-mid) 48%,
+    var(--dp-btn-yellow-bottom) 100%
+  );
+  border: 1px solid rgba(255, 217, 77, 0.78);
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.34);
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 255, 255, 0.22),
+    inset 0 2px 0 rgba(255, 255, 255, 0.64),
+    inset 0 -2px 0 rgba(118, 79, 8, 0.16),
+    0 8px 18px var(--dp-btn-gold-glow);
+}
+
+.appRoot .appHeader .exploreButton:hover {
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-yellow-hover-top) 0%,
+    var(--dp-btn-yellow-hover-mid) 48%,
+    var(--dp-btn-yellow-hover-bottom) 100%
+  );
+  border-color: rgba(255, 229, 120, 0.9);
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 255, 255, 0.28),
+    inset 0 2px 0 rgba(255, 255, 255, 0.74),
+    inset 0 -2px 0 rgba(118, 79, 8, 0.18),
+    0 12px 24px var(--dp-btn-gold-glow);
+}
+
+/* Alpha Current button: purple gradient with global lavender stroke. */
+.alpha-card .alpha-footer .alpha-button,
+.alpha-footer .alpha-button,
+.alpha-button {
+  color: var(--dp-btn-purple-text);
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-purple-top) 0%,
+    var(--dp-btn-purple-mid) 48%,
+    var(--dp-btn-purple-bottom) 100%
+  );
+  border: 1px solid var(--dp-btn-purple-stroke);
+  text-shadow: 0 1px 0 rgba(26, 5, 55, 0.5);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(30, 8, 72, 0.28),
+    0 10px 22px var(--dp-btn-purple-glow);
+}
+
+.alpha-card .alpha-footer .alpha-button:hover,
+.alpha-footer .alpha-button:hover,
+.alpha-button:hover {
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-purple-hover-top) 0%,
+    var(--dp-btn-purple-hover-mid) 48%,
+    var(--dp-btn-purple-hover-bottom) 100%
+  );
+  border-color: #ead9ff;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -2px 0 rgba(30, 8, 72, 0.3),
+    0 13px 26px var(--dp-btn-purple-glow);
+}
+/* =========================================================
+   SMALL BUTTON COLOR PATCH
+   Sign Up / Sign In yellow, Explore untouched,
+   Alpha buttons purple, 18px rounded corners
+========================================================= */
+
+/* Sign Up + Sign In only */
+.dp-headerAuthRow a:not(.exploreButton),
+.dp-headerAuthRow button:not(.exploreButton) {
+  color: var(--dp-btn-yellow-text) !important;
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-yellow-top) 0%,
+    var(--dp-btn-yellow-mid) 48%,
+    var(--dp-btn-yellow-bottom) 100%
+  ) !important;
+  border: 1px solid rgba(255, 217, 77, 0.78) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 255, 255, 0.22),
+    inset 0 2px 0 rgba(255, 255, 255, 0.64),
+    inset 0 -2px 0 rgba(118, 79, 8, 0.16),
+    0 8px 18px var(--dp-btn-gold-glow) !important;
+}
+
+/* View Patches + Back to Systems */
+.alpha-button {
+  color: var(--dp-btn-purple-text) !important;
+  background: linear-gradient(
+    180deg,
+    var(--dp-btn-purple-top) 0%,
+    var(--dp-btn-purple-mid) 48%,
+    var(--dp-btn-purple-bottom) 100%
+  ) !important;
+  border: 1px solid var(--dp-skill-lavender-stroke) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(30, 8, 72, 0.28),
+    0 10px 22px var(--dp-btn-purple-glow) !important;
 }

@@ -1,17 +1,15 @@
 import { Router } from "express";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 
 export const pveInstabilitiesRouter = Router();
 
-// GET /pve/instabilities - List active instabilities
+// GET /pve/instabilities - List active instabilities (no auth required)
 pveInstabilitiesRouter.get(
   "/instabilities",
-  requireUser,
-  async (req: AuthedRequest, res: Response) => {
-    const userId = req.user?.id;
-    const region = (req.query.region as string) || "Kithna";
+  async (req: Request<{}, {}, {}, { region?: string }>, res: Response) => {
+    const region = req.query.region || "Kithna";
 
     try {
       const { data: instabilities, error } = await supabaseAdmin

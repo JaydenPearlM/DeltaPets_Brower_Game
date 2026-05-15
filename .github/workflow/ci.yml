@@ -1,39 +1,26 @@
-name: DeltaPets CI
+name: CI
 
 on:
   push:
-    branches:
-      - Core_Systems_version_1
-      - main
   pull_request:
-    branches:
-      - main
-      - Core_Systems_version_1
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build backend
-        run: pnpm --filter server build
-
+      - name: Install frontend dependencies
+        run: pnpm --dir frontend/web install --no-frozen-lockfile
+      - name: Install backend dependencies
+        run: pnpm --dir backend/server install --no-frozen-lockfile
       - name: Build frontend
-        run: pnpm --filter web build
+        run: pnpm --dir frontend/web build
+      - name: Build backend
+        run: pnpm --dir backend/server build
