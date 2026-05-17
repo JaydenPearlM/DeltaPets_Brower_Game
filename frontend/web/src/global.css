@@ -736,15 +736,17 @@ a {
   justify-content: center;
   gap: 8px;
   min-height: 40px;
-  padding: 9px 16px;
-  border-radius: 12px;
+  padding: 11px 16px 10px;
+  border-radius: 18px;
   font-family: var(--font-body);
   font-size: 0.82rem;
   font-weight: 900;
-  line-height: 1;
+  line-height: 0;
   letter-spacing: 0.02em;
+  cursor: pointer;
   transition:
     transform var(--transition-fast),
+    filter var(--transition-fast),
     box-shadow var(--transition-fast),
     border-color var(--transition-fast),
     background var(--transition-fast),
@@ -755,6 +757,7 @@ a {
 .btn:hover,
 .dp-btn:hover {
   transform: translateY(-1px);
+  filter: brightness(1.08);
 }
 
 .btn:active,
@@ -768,48 +771,61 @@ a {
   cursor: not-allowed;
 }
 
-/* Login */
+/* Sign Up / Sign In */
 .btn-cool,
-.dp-btn--yellow {
-  color: var(--dp-text-dark);
-  background: var(--dp-gradient-yellow-button);
-  border: 1px solid rgba(255, 217, 77, 0.62);
+.btn-gold,
+.dp-btn--yellow,
+.dp-btn-yellow {
+  color: #2b1a00;
+  background: linear-gradient(180deg, #ffe58a 0%, #ffcf61 45%, #f5a93a 100%);
+  border: 2px solid rgba(255, 238, 170, 0.85);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    var(--shadow-button);
+    0 0 14px rgba(255, 207, 97, 0.35);
 }
 
 .btn-cool:hover,
-.dp-btn--yellow:hover {
-  background: var(--dp-gradient-yellow-button-hover);
-}
-
-/* Sign up / Start Your Journey */
-.btn-gold,
-.dp-btn--blue,
-.btn-journey {
-  color: var(--btn-gold-text);
-  background: linear-gradient(
-    180deg,
-    var(--btn-gold-1) 0%,
-    var(--btn-gold-2) 48%,
-    var(--btn-gold-3) 100%
-  );
-  border: 1px solid rgba(174, 128, 15, 0.52);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.65),
-    0 8px 16px rgba(203, 141, 18, 0.25);
-}
-
 .btn-gold:hover,
+.dp-btn--yellow:hover,
+.dp-btn-yellow:hover {
+  background: linear-gradient(180deg, #fff799 0%, #ffe15f 48%, #f6b532 100%);
+}
+
+/* Explore */
+.dp-btn--blue,
+.dp-btn-blue {
+  color: #061827;
+  background: linear-gradient(180deg, #bdeeff 0%, #7ed8ff 52%, #4aa8f5 100%);
+  border: 2px solid rgba(216, 190, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 0 14px rgba(126, 216, 255, 0.38);
+}
+
 .dp-btn--blue:hover,
-.btn-journey:hover {
-  background: linear-gradient(
-    180deg,
-    var(--btn-gold-1-hover) 0%,
-    var(--btn-gold-2-hover) 48%,
-    var(--btn-gold-3-hover) 100%
-  );
+.dp-btn-blue:hover {
+  background: linear-gradient(180deg, #d6f6ff 0%, #91e2ff 52%, #5bb8ff 100%);
+}
+
+/* View Patches / Back To Systems */
+.dp-btn--purple,
+.dp-btn-purple,
+.alpha-button {
+  min-width: 82px;
+  min-height: 40px;
+  padding: 11px 16px 10px;
+  border-radius: 18px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 0;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #111111 !important;
+}
+
+.dp-btn--purple:hover,
+.dp-btn-purple:hover {
+  background: linear-gradient(180deg, #c8a3ff 0%, #8b5cf6 55%, #5b35b8 100%);
 }
 
 /* Logout */
@@ -828,6 +844,33 @@ a {
 .btn-red:hover,
 .btn-logout:hover {
   background: var(--dp-gradient-red-button-hover);
+}
+
+/* Hatch button */
+.btn-hatch,
+.btn-hatchery {
+  color: var(--text-darkWarm);
+  background: linear-gradient(180deg, #f3a12a 0%, #e08214 100%);
+  border: 1px solid rgba(153, 78, 11, 0.44);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 215, 166, 0.4),
+    0 8px 18px rgba(190, 110, 23, 0.22);
+}
+
+.btn-hatch:hover,
+.btn-hatchery:hover {
+  background: linear-gradient(180deg, #f8ad3c 0%, #e78d20 100%);
+}
+
+.btn-ghost {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(89, 122, 172, 0.22);
+  box-shadow: var(--shadow-button);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.68);
 }
 
 /* Global Popup Window System */
@@ -1734,4 +1777,19 @@ a {
     #ea4e4e 48%,
     #c71f2d 100%
   ) !important;
+}
+
+.btn-pearl,
+.dp-btn--pearl {
+  color: #2f435d;
+  background: linear-gradient(180deg, #ffffff 0%, #f3eee3 52%, #d9d1c3 100%);
+  border: 2px solid rgba(255, 238, 210, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 14px rgba(255, 255, 255, 0.25);
+}
+
+.btn-pearl:hover,
+.dp-btn--pearl:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f8f4ea 52%, #e2dbcf 100%);
 }

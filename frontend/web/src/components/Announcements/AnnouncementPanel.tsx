@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useAnnouncements, type AnnouncementItem } from "./useAnnouncements";
 import "./AnnouncementPanel.css";
 
@@ -127,41 +128,48 @@ export function AnnouncementPanel({
         </div>
       </section>
 
-      {selected ? (
-        <div
-          className="anp-modalBackdrop"
-          role="presentation"
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="anp-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="aliune-news-modal-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="anp-modalClose"
-              aria-label="Close announcement"
+      {selected
+        ? createPortal(
+            <div
+              className="anp-modalBackdrop"
+              role="presentation"
               onClick={() => setSelected(null)}
             >
-              ×
-            </button>
+              <div
+                className="anp-modal dp-popup dp-modal-window"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="aliune-news-modal-title"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className="anp-modalClose"
+                  aria-label="Close announcement"
+                  onClick={() => setSelected(null)}
+                >
+                  ×
+                </button>
 
-            <h3 id="aliune-news-modal-title" className="anp-modalTitle">
-              News and Events
-            </h3>
-            <hr className="anp-modalRule" />
+                <h3 id="aliune-news-modal-title" className="anp-modalTitle">
+                  News and Events
+                </h3>
+                <hr className="anp-modalRule" />
 
-            <h4 className="anp-modalTitle anp-modalEntryTitle">
-              {selected.title}
-            </h4>
-            <p className="anp-modalDate">{formatDate(selected.created_at)}</p>
-            <p className="anp-modalBody">{selected.body || "No message."}</p>
-          </div>
-        </div>
-      ) : null}
+                <h4 className="anp-modalTitle anp-modalEntryTitle">
+                  {selected.title}
+                </h4>
+                <p className="anp-modalDate">
+                  {formatDate(selected.created_at)}
+                </p>
+                <p className="anp-modalBody">
+                  {selected.body || "No message."}
+                </p>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }

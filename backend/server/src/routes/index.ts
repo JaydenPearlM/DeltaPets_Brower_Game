@@ -24,9 +24,7 @@ const apiRouter = Router();
 
 apiRouter.use(healthRouter);
 apiRouter.use(meRouter);
-apiRouter.use(authRouter);
-apiRouter.use("/auth", authLimiter);
-apiRouter.use(authRouter);
+apiRouter.use("/auth", authLimiter, authRouter);
 
 /* ===============================
    PET GAMEPLAY ROUTES

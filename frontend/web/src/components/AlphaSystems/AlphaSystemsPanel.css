@@ -240,9 +240,10 @@
   font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.02em;
-  color: #2f1907;
-  background: linear-gradient(180deg, #f4d76a 0%, #e2b93a 100%);
-  border: 1px solid rgba(255, 214, 96, 0.65);
+  color: #ffffff;
+  letter-spacing: 0.1em;
+  background: linear-gradient(180deg, #d9bcff 0%, #a879ff 52%, #7650d8 100%);
+  border: 1px solid rgba(232, 210, 255, 0.92);
   box-shadow:
     inset 0 2px 0 rgba(255, 245, 200, 0.42),
     0 6px 14px rgba(90, 64, 15, 0.14);

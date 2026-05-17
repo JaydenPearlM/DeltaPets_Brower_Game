@@ -1,7 +1,9 @@
 .anp-panel {
   position: relative;
   min-height: 58px;
+  padding-bottom: 21.06px;
   display: flex;
+  padding-bottom: 0;
   flex-direction: column;
   border-radius: 24px;
   border: 2px solid var(--dp-panel-border);
@@ -128,22 +130,15 @@
   line-height: 0.95;
   letter-spacing: 0.03em;
   color: var(--dp-brand-yellow);
-  -webkit-text-stroke: 1px var(--dp-brand-red-stroke);
+  -webkit-text-stroke: 0;
   transform: translateY(25px);
-  text-shadow:
-    0 1px 0 var(--dp-brand-yellow-bright),
-    0 2px 0 var(--dp-brand-red-stroke),
-    0 3px 0 var(--dp-brand-red-dark),
-    0 0 14px rgba(255, 217, 77, 0.36);
+  text-shadow: 0 0 14px rgba(255, 217, 77, 0.36);
 }
 
 .hp-aliuneNewsDelta {
   color: var(--dp-brand-yellow);
-  -webkit-text-stroke: 1px var(--dp-brand-red-stroke);
-  text-shadow:
-    0 1px 0 var(--dp-brand-yellow-bright),
-    0 2px 0 var(--dp-brand-red-stroke),
-    0 0 12px rgba(255, 217, 77, 0.32);
+  -webkit-text-stroke: 0;
+  text-shadow: 0 0 12px rgba(255, 217, 77, 0.32);
 }
 
 .anp-subtitle {
@@ -262,4 +257,107 @@
   transform: translateY(-1px);
   border-color: var(--dp-border-gold);
   background: var(--dp-surface-glass);
+}
+
+/* GLOBAL POPUP WINDOW HOOKUP */
+/* GLOBAL POPUP WINDOW HOOKUP */
+.anp-modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(2, 8, 22, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+.anp-modal {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: min(680px, calc(100vh - 49px));
+  overflow-y: auto;
+  border-radius: 24px;
+  padding: 28px;
+  border: 2px solid var(--dp-panel-border);
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      var(--dp-panel-glow-top) 0%,
+      transparent 38%
+    ),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-bg-top) 0%,
+      var(--dp-panel-bg-mid) 48%,
+      var(--dp-panel-bg-bottom) 100%
+    );
+  box-shadow:
+    0 0 0 1px var(--dp-panel-inner-border) inset,
+    0 0 18px var(--dp-panel-glow),
+    0 0 42px var(--dp-cyber-blue-soft),
+    inset 0 0 24px var(--dp-panel-inner-shadow);
+  color: var(--dp-panel-text);
+}
+
+.anp-modal::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 16px;
+  border: 5px solid var(--dp-panel-purple-border);
+  box-shadow:
+    0 0 18px var(--dp-panel-purple-glow),
+    inset 0 0 18px var(--dp-panel-glow-cyan);
+  pointer-events: none;
+}
+
+.anp-modalClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--dp-panel-border-cyan-soft);
+  background: var(--dp-surface-glass-light);
+  color: var(--dp-panel-text);
+  font-size: 1.4rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.anp-modalTitle {
+  margin: 0;
+  color: var(--dp-brand-yellow);
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.anp-modalRule {
+  margin: 12px 0 16px;
+  border: 0;
+  border-top: 1px solid var(--dp-border-panel-soft);
+}
+
+.anp-modalEntryTitle {
+  color: var(--dp-text-gold);
+}
+
+.anp-modalDate {
+  margin: 8px 0 0;
+  color: var(--dp-panel-muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.anp-modalBody {
+  margin: 14px 0 0;
+  color: var(--dp-panel-text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.6;
 }

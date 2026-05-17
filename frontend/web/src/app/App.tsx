@@ -7,7 +7,7 @@ import { DeltaClock } from "../lib/timers/deltaClock";
 import { useAuth } from "./providers/useAuth";
 import "./App.css";
 
-const APP_VERSION = import.meta.env.__APP_VERSION__ ?? "ALPHAv0.0.1-alpha.2";
+const APP_VERSION = __APP_VERSION__;
 
 type MenuSectionKey = "pets" | "battle" | "cities";
 
@@ -214,7 +214,7 @@ export default function App() {
                 {!user && (
                   <button
                     type="button"
-                    className="exploreButton"
+                    className="exploreButton dp-btn dp-btn-yellow"
                     onClick={() => navigate("/signup")}
                   >
                     SIGN UP
@@ -224,7 +224,7 @@ export default function App() {
                 <div className="exploreWrapper" ref={exploreWrapperRef}>
                   <button
                     type="button"
-                    className="exploreButton"
+                    className="exploreButton dp-btn dp-btn-blue"
                     aria-expanded={menuOpen || exploreHintOpen}
                     aria-haspopup="dialog"
                     onClick={handleExploreClick}
@@ -348,7 +348,7 @@ export default function App() {
                 {!user && (
                   <button
                     type="button"
-                    className="exploreButton"
+                    className="exploreButton dp-btn dp-btn-yellow"
                     onClick={() => navigate("/signin")}
                   >
                     SIGN IN

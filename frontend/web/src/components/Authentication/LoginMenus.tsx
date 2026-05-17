@@ -462,14 +462,14 @@ export function LoginMenus({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="dp-btn dp-btn--blue auth-submitButton"
+                  className="btn btn-gold auth-submitButton"
                 >
                   {loading ? "Signing in..." : "Sign in"}
                 </button>
 
                 <button
                   type="button"
-                  className="auth-inlineClose"
+                  className="btn btn-pearl auth-submitButton"
                   onClick={closeModal}
                 >
                   Close
@@ -554,14 +554,14 @@ export function LoginMenus({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="dp-btn dp-btn--blue auth-submitButton"
+                  className="btn btn-gold auth-submitButton"
                 >
                   {loading ? "Signing up..." : "Sign Up"}
                 </button>
 
                 <button
                   type="button"
-                  className="auth-inlineClose"
+                  className="btn btn-pearl auth-submitButton"
                   onClick={closeModal}
                 >
                   Close
@@ -591,7 +591,7 @@ export function LoginMenus({
         <div className="auth-launchers">
           <button
             type="button"
-            className="dp-btn dp-btn--blue"
+            className="dp-btn dp-btn--yellow auth-submitButton"
             onClick={openLogin}
           >
             Sign in
@@ -599,7 +599,7 @@ export function LoginMenus({
 
           <button
             type="button"
-            className="dp-btn dp-btn--blue"
+            className="dp-btn dp-btn--yellow auth-submitButton"
             onClick={openSignup}
           >
             Sign up

@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "./../../lib/supabaseAdmin";
+import { getDeltaTime } from "../../lib/deltaTime";
 
 export const dailyCareRouter = Router();
 
@@ -58,65 +59,24 @@ async function awardAlphaTesterRibbon(userId: string, earnedAtIso: string) {
   if (paErr) throw new Error(paErr.message);
 }
 
-/**
- * Next reset boundary: 8:00 AM America/New_York (EST/EDT safe)
- * We compute the next 8am in Eastern time, then return it as a real UTC ms value.
- */
-function nextEastern8amMs(nowMs: number) {
-  const now = new Date(nowMs);
+const DELTA_DAY_REAL_MS = 360 * 60 * 1000;
 
-  // Get "now" as a Date in America/New_York *representation*
-  const easternNow = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/New_York" }),
-  );
-
-  // Build 8:00 AM Eastern for "today" in that same representation
-  const next = new Date(easternNow);
-  next.setHours(8, 0, 0, 0);
-
-  // If we've already passed 8am Eastern, move to tomorrow
-  if (easternNow >= next) {
-    next.setDate(next.getDate() + 1);
-    next.setHours(8, 0, 0, 0);
-  }
-
-  // Convert the Eastern-represented Date back into a real UTC timestamp (ms)
-  // by interpreting the "wall clock" value as Eastern and asking what UTC time that is.
-  // The trick is to compute the offset between local "now" and "easternNow".
-  const easternOffsetMs = now.getTime() - easternNow.getTime();
-  return next.getTime() + easternOffsetMs;
+function getNextDeltaResetMs(nowMs: number) {
+  return (Math.floor(nowMs / DELTA_DAY_REAL_MS) + 1) * DELTA_DAY_REAL_MS;
 }
 
-function isSameEasternDay(aIso: string, nowMs: number) {
-  const a = new Date(aIso);
-
-  const easternA = new Date(
-    a.toLocaleString("en-US", { timeZone: "America/New_York" }),
-  );
-  const easternNow = new Date(
-    new Date(nowMs).toLocaleString("en-US", { timeZone: "America/New_York" }),
-  );
+function isSameDeltaDay(aIso: string, nowMs: number) {
+  const completedMs = Date.parse(aIso);
+  if (!Number.isFinite(completedMs)) return false;
 
   return (
-    easternA.getFullYear() === easternNow.getFullYear() &&
-    easternA.getMonth() === easternNow.getMonth() &&
-    easternA.getDate() === easternNow.getDate()
+    getDeltaTime(new Date(completedMs)).deltaDay ===
+    getDeltaTime(new Date(nowMs)).deltaDay
   );
 }
 
-/**
- * Extract the Eastern date from a timestamp for database constraint
- */
-function getEasternDate(nowMs: number): string {
-  const easternNow = new Date(
-    new Date(nowMs).toLocaleString("en-US", { timeZone: "America/New_York" }),
-  );
-
-  const year = easternNow.getFullYear();
-  const month = String(easternNow.getMonth() + 1).padStart(2, "0");
-  const day = String(easternNow.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+function getDeltaDateKey(nowMs: number): string {
+  return String(getDeltaTime(new Date(nowMs)).deltaDay);
 }
 
 dailyCareRouter.get(
@@ -136,11 +96,10 @@ dailyCareRouter.get(
 
     const last = data?.last_completed_at ?? null;
 
-    // "Today" is defined in Eastern time (for the 8am reset design)
-    const completed_today = !!last && isSameEasternDay(last, nowMs);
+    const completed_today = !!last && isSameDeltaDay(last, nowMs);
     const available = !completed_today;
 
-    const resetMs = nextEastern8amMs(nowMs);
+    const resetMs = getNextDeltaResetMs(nowMs);
     const remaining_ms = Math.max(0, resetMs - nowMs);
 
     return res.json({
@@ -163,9 +122,9 @@ dailyCareRouter.post(
     const userId = req.user!.id;
     const nowMs = Date.now();
     const nowIso = new Date(nowMs).toISOString();
-    const easternDate = getEasternDate(nowMs);
+    const deltaDateKey = getDeltaDateKey(nowMs);
 
-    const resetMs = nextEastern8amMs(nowMs);
+    const resetMs = getNextDeltaResetMs(nowMs);
 
     // Read existing to determine streak and ribbon status
     const { data: existing, error: readErr } = await supabaseAdmin
@@ -183,7 +142,7 @@ dailyCareRouter.post(
 
     // Quick check before attempting upsert (performance optimization)
     const alreadyDoneToday = existing?.last_completed_at
-      ? isSameEasternDay(existing.last_completed_at, nowMs)
+      ? isSameDeltaDay(existing.last_completed_at, nowMs)
       : false;
 
     if (alreadyDoneToday) {
@@ -200,8 +159,7 @@ dailyCareRouter.post(
     const shouldAward = !alreadyAwarded;
     const nextStreak = (existing?.streak ?? 0) + 1;
 
-    // Upsert with the computed Eastern date
-    // The unique constraint on (user_id, completed_date_eastern) will prevent duplicates
+    // The column name is legacy, but the value now tracks the Delta day key.
     const { data: saved, error: upErr } = await supabaseAdmin
       .from("daily_care")
       .upsert(
@@ -210,7 +168,7 @@ dailyCareRouter.post(
           last_completed_at: nowIso,
           streak: nextStreak,
           alpha_ribbon_awarded: alreadyAwarded || shouldAward,
-          completed_date_eastern: easternDate,
+          completed_delta_day: Number(deltaDateKey),
         },
         { onConflict: "user_id" },
       )
