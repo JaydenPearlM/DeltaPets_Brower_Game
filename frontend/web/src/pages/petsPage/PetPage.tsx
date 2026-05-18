@@ -676,6 +676,45 @@ export default function PetPage() {
             </div>
           </header>
 
+          <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--descriptionShell">
+            <div className="petRepoInfoStack">
+              <section className="petRepoInfoSection petRepoInfoSection--description">
+                <SectionPill title="Pet Description" />
+
+                <div className="petRepoDescriptionCard">
+                  <div className="petRepoDescriptionContent">
+                    <p className="petRepoDescription">{petDescription}</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </article>
+
+          <PetDetailsPanel
+            pet={pet}
+            personalityName={personalityName}
+            nicknameDraft={nicknameDraft}
+            nicknameSaving={nicknameSaving}
+            showNicknameEditor={showNicknameEditor}
+            canRenameNickname={canRenameNickname}
+            canSaveNickname={canSaveNickname}
+            busy={busy}
+            hunger={hunger}
+            clean={clean}
+            happy={happy}
+            comfort={comfort}
+            rest={rest}
+            energy={energy}
+            bond={bond}
+            inventoryCounts={careInventoryCounts}
+            actionMsg={actionMsg}
+            starterMerchant={starterMerchant}
+            setNicknameDraft={setNicknameDraft}
+            setShowNicknameEditor={setShowNicknameEditor}
+            saveNickname={saveNickname}
+            runCareAction={runCareAction}
+          />
+
           <section className="petRepoTeamPanel">
             <div className="petRepoTeamPanelHeader petRepoTeamPanelHeader--centered">
               <div className="petRepoSectionLine" />
@@ -788,111 +827,64 @@ export default function PetPage() {
             </div>
           </section>
 
-          <section className="petRepoMainGrid">
-            <div className="petRepoLeftColumn">
-              <PetDetailsPanel
-                pet={pet}
-                personalityName={personalityName}
-                nicknameDraft={nicknameDraft}
-                nicknameSaving={nicknameSaving}
-                showNicknameEditor={showNicknameEditor}
-                canRenameNickname={canRenameNickname}
-                canSaveNickname={canSaveNickname}
-                busy={busy}
-                hunger={hunger}
-                clean={clean}
-                happy={happy}
-                comfort={comfort}
-                rest={rest}
-                energy={energy}
-                bond={bond}
-                inventoryCounts={careInventoryCounts}
-                actionMsg={actionMsg}
-                starterMerchant={starterMerchant}
-                setNicknameDraft={setNicknameDraft}
-                setShowNicknameEditor={setShowNicknameEditor}
-                saveNickname={saveNickname}
-                runCareAction={runCareAction}
-              />
-            </div>
+          <section className="petRepoBottomGrid">
+            <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--bottomStats">
+              <div className="petRepoDataTwoCol">
+                <section className="petRepoInfoSection petRepoInfoSection--stats">
+                  <SectionPill title="Stats" />
 
-            <div className="petRepoRightColumn">
-              <article className="petRepoPanel petRepoPanel--infoShell">
-                <div className="petRepoInfoStack">
-                  <section className="petRepoInfoSection petRepoInfoSection--description">
-                    <SectionPill title="Pet Description" />
+                  <div className="petRepoStatList">
+                    {STAT_ORDER.map((statKey) => {
+                      const value = totalStats[statKey];
+                      const rowClassNames = ["petRepoInfoRow"];
 
-                    <div className="petRepoDescriptionCard">
-                      <div className="petRepoDescriptionContent">
-                        <p className="petRepoDescription">{petDescription}</p>
-                      </div>
-                    </div>
-                  </section>
+                      if (growthTraits.strongStats.includes(statKey)) {
+                        rowClassNames.push("is-strong-stat");
+                      }
 
-                  <div className="petRepoDataTwoCol">
-                    <section className="petRepoInfoSection petRepoInfoSection--stats">
-                      <SectionPill title="Stats" />
+                      if (growthTraits.weakStat === statKey) {
+                        rowClassNames.push("is-weak-stat");
+                      }
 
-                      <div className="petRepoStatList">
-                        {STAT_ORDER.map((statKey) => {
-                          const value = totalStats[statKey];
-                          const rowClassNames = ["petRepoInfoRow"];
-
-                          if (growthTraits.strongStats.includes(statKey)) {
-                            rowClassNames.push("is-strong-stat");
-                          }
-
-                          if (growthTraits.weakStat === statKey) {
-                            rowClassNames.push("is-weak-stat");
-                          }
-
-                          return (
-                            <div
-                              key={statKey}
-                              className={rowClassNames.join(" ")}
-                            >
-                              <span>{STAT_LABELS[statKey]}</span>
-                              <span>{String(value)}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </section>
-
-                    <section
-                      className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme}`}
-                    >
-                      <SectionPill title="Element Stats" />
-
-                      <div className="petRepoStatList">
-                        {elementRows.map((row) => {
-                          const rowClassNames = [
-                            "petRepoInfoRow",
-                            `petRepoInfoRow--element-${row.key}`,
-                          ];
-
-                          if (row.active) {
-                            rowClassNames.push("is-active-element");
-                          }
-
-                          return (
-                            <div
-                              key={row.key}
-                              className={rowClassNames.join(" ")}
-                            >
-                              <span>{row.label}</span>
-                              <span>{row.value}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </section>
+                      return (
+                        <div key={statKey} className={rowClassNames.join(" ")}>
+                          <span>{STAT_LABELS[statKey]}</span>
+                          <span>{String(value)}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
-              </article>
+                </section>
 
-              <PetSkillsPanel pet={pet} stats={totalStats} />
-            </div>
+                <section
+                  className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme}`}
+                >
+                  <SectionPill title="Element Stats" />
+
+                  <div className="petRepoStatList">
+                    {elementRows.map((row) => {
+                      const rowClassNames = [
+                        "petRepoInfoRow",
+                        `petRepoInfoRow--element-${row.key}`,
+                      ];
+
+                      if (row.active) {
+                        rowClassNames.push("is-active-element");
+                      }
+
+                      return (
+                        <div key={row.key} className={rowClassNames.join(" ")}>
+                          <span>{row.label}</span>
+                          <span>{row.value}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              </div>
+            </article>
+
+            <PetSkillsPanel pet={pet} stats={totalStats} />
           </section>
         </section>
       ) : null}

@@ -1306,3 +1306,133 @@
 .petRepoTalkBubble p {
   margin: 0;
 }
+
+/* Care Room visual/layout redesign */
+.petRepoPage {
+  color: var(--dp-panel-text);
+}
+
+.petRepoStage {
+  --petRepo-left-offset: 0px;
+  width: 100%;
+  padding-left: 0;
+}
+
+.petRepoHeroCard,
+.petRepoTeamPanel,
+.petRepoPanel,
+.petRepoStateCard {
+  border-color: var(--dp-panel-border-cyan-bright);
+  background:
+    radial-gradient(
+      circle at 12% 18%,
+      var(--dp-panel-glow-cyan),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 84% 78%,
+      var(--dp-panel-glow-purple),
+      transparent 32%
+    ),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-gradient-top) 0%,
+      var(--dp-panel-gradient-mid) 48%,
+      var(--dp-panel-gradient-bottom) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 var(--dp-panel-inner-highlight),
+    inset 0 0 0 1px var(--dp-panel-inner-border),
+    0 0 22px var(--dp-panel-glow),
+    14px 18px 30px rgba(0, 0, 0, 0.28);
+}
+
+.petRepoHeroCard {
+  grid-template-columns: 190px minmax(0, 1fr);
+}
+
+.petRepoHeroStatus {
+  border-color: rgba(102, 255, 143, 0.42);
+  background:
+    radial-gradient(
+      circle at 24% 18%,
+      rgba(102, 255, 143, 0.16),
+      transparent 36%
+    ),
+    linear-gradient(180deg, rgba(10, 73, 54, 0.95), rgba(6, 34, 46, 0.98));
+}
+
+.petRepoPanel--descriptionShell {
+  padding: 18px;
+}
+
+.petRepoBottomGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.82fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.petRepoBottomGrid > .petRepoPanel--infoShell,
+.petRepoBottomGrid > .petSkillsPanel {
+  min-height: 100%;
+}
+
+.petRepoPanel--bottomStats {
+  overflow: hidden;
+}
+
+.petRepoTeamPanelTitle,
+.petRepoSectionPill {
+  color: var(--dp-panel-text);
+  text-shadow: 0 0 14px var(--dp-panel-glow);
+}
+
+.petRepoSectionPill {
+  border-color: var(--dp-panel-purple-border);
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      var(--dp-panel-glow-purple),
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-deep-top),
+      var(--dp-panel-deep-bottom)
+    );
+  box-shadow:
+    0 0 16px var(--dp-panel-purple-glow),
+    inset 0 0 0 1px var(--dp-panel-inner-border);
+}
+
+.petRepoTeamRing--bond {
+  box-shadow:
+    inset 0 0 0 13px rgba(10, 24, 50, 0.86),
+    0 0 0 2px var(--dp-panel-border-cyan-soft),
+    0 0 22px rgba(89, 188, 255, 0.2);
+}
+
+.petRepoTeamRing--energy {
+  box-shadow:
+    inset 0 0 0 8px var(--dp-panel-purple-border),
+    0 0 18px var(--dp-panel-purple-glow),
+    0 0 30px rgba(89, 188, 255, 0.18);
+}
+
+.petRepoTeamPreview--circle {
+  background:
+    radial-gradient(
+      circle at 50% 34%,
+      rgba(95, 205, 255, 0.22) 0%,
+      transparent 42%
+    ),
+    linear-gradient(180deg, var(--dp-panel-bg-mid), var(--dp-panel-bg-bottom));
+  border-color: var(--dp-panel-border-cyan-soft);
+}
+
+@media (max-width: 1280px) {
+  .petRepoBottomGrid {
+    grid-template-columns: 1fr;
+  }
+}

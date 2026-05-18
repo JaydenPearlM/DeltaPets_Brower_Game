@@ -13,7 +13,7 @@ router.get("/aliune-signal", async (_req, res) => {
       .or("ends_at.is.null,ends_at.gte.now()")
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("[aliune-signal] failed:", error.message);
@@ -24,8 +24,11 @@ router.get("/aliune-signal", async (_req, res) => {
     }
 
     if (!data) {
-      return res.status(404).json({
-        error: "No active Aliune Signal found",
+      return res.json({
+        condition: "stable",
+        region: "Kithna",
+        corruption: "low",
+        reportText: "No active Aliune Signal detected.",
       });
     }
 

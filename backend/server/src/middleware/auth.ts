@@ -4,23 +4,12 @@ import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-/**
- * Request type with user attached by auth middleware.
- */
 export type AuthedRequest = Request & {
   user?: {
     id: string;
     email?: string;
   };
 };
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
 
 function getBearerToken(req: Request) {
   const header = req.headers.authorization;
@@ -30,14 +19,6 @@ function getBearerToken(req: Request) {
   return match ? match[1] : null;
 }
 
-// ---------------------------------------------------------------------------
-// Middleware
-// ---------------------------------------------------------------------------
-
-/**
- * Middleware: requires a valid Supabase bearer token.
- * Attaches req.user = { id, email } on success.
- */
 export async function requireUser(
   req: AuthedRequest,
   res: Response,
@@ -67,9 +48,6 @@ export async function requireUser(
   }
 }
 
-/**
- * Throws if req.user is missing. Use inside route handlers after requireUser.
- */
 export function getUserId(req: AuthedRequest): string {
   const id = req.user?.id;
 
@@ -80,57 +58,40 @@ export function getUserId(req: AuthedRequest): string {
   return id;
 }
 
-// ---------------------------------------------------------------------------
-// Auth routes
-// (Previously in routes/auth.ts consolidated here to keep auth in one place)
-// ---------------------------------------------------------------------------
-
-/**
- * Lightweight auth helper routes.
- *
- * Your main auth is Supabase (frontend gets session, backend verifies bearer token).
- * These endpoints are optional but handy for debugging + "who am I" checks.
- */
 export const authRouter = Router();
 
-/** Health-ish ping " " confirms the API is reachable */
-authRouter.get("/auth/ping", (_req, res: Response) => {
+authRouter.get("/ping", (_req, res: Response) => {
   return res.json({ ok: true });
 });
 
-/** Validate bearer token and return the user id/email. */
-authRouter.get("/auth/me", requireUser, (req: AuthedRequest, res: Response) => {
+authRouter.get("/me", requireUser, (req: AuthedRequest, res: Response) => {
   return res.json({ user: req.user ?? null });
 });
 
-/** Resolve username to email through backend only. */
-authRouter.post(
-  "/auth/resolve-username",
-  async (req: Request, res: Response) => {
-    try {
-      const username = String(req.body?.username ?? "")
-        .trim()
-        .toLowerCase();
+authRouter.post("/resolve-username", async (req: Request, res: Response) => {
+  try {
+    const username = String(req.body?.username ?? "")
+      .trim()
+      .toLowerCase();
 
-      if (!username) {
-        return res.status(400).json({ error: "Missing username." });
-      }
+    if (!username) {
+      return res.status(400).json({ error: "Missing username." });
+    }
 
-      const { data, error } = await supabaseAdmin.rpc("get_email_by_username", {
-        p_username: username,
-      });
+    const { data, error } = await supabaseAdmin.rpc("get_email_by_username", {
+      p_username: username,
+    });
 
-      if (error) {
-        console.error("[auth] resolve username failed", error);
-        return res.status(500).json({ error: "Could not resolve username." });
-      }
-
-      return res.json({
-        email: data ? String(data).trim().toLowerCase() : null,
-      });
-    } catch (err) {
-      console.error("[auth] resolve username crashed", err);
+    if (error) {
+      console.error("[auth] resolve username failed", error);
       return res.status(500).json({ error: "Could not resolve username." });
     }
-  },
-);
+
+    return res.json({
+      email: data ? String(data).trim().toLowerCase() : null,
+    });
+  } catch (err) {
+    console.error("[auth] resolve username crashed", err);
+    return res.status(500).json({ error: "Could not resolve username." });
+  }
+});
