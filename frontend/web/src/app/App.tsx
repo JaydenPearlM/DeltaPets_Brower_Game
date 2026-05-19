@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import {
+  Outlet,
+  useNavigate,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { LogoutButton } from "../components/Authentication/LogoutButton";
 import { LoginMenus } from "../components/Authentication/LoginMenus";
 import { useAliuneSignal } from "../pages/Homepage/useAliuneSignal";
@@ -179,7 +185,11 @@ export default function App() {
   return (
     <div className="appRoot">
       <header className="appHeader">
-        <div className="appShell appHeaderInner">
+        <div
+          className={`appShell appHeaderInner ${
+            location.pathname.startsWith("/pet") ? "petPageLayout" : ""
+          }`}
+        >
           <button
             type="button"
             className="logoBlock"

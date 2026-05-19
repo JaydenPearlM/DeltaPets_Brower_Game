@@ -9,7 +9,7 @@ import AuthCallback from "./AuthCallback";
 import HatcheryPage from "../../components/Hatchery/pages/HatcheryPage";
 
 function NotFound() {
-  return <div style={{ padding: 16 }}>404 " " Page not found</div>;
+  return <div style={{ padding: 16 }}>404 — Page not found</div>;
 }
 
 function ComingSoonPage({

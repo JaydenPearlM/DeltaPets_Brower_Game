@@ -1,0 +1,3 @@
+-- Intentionally empty.
+-- The hatch_pet RPC fix was handled in a later migration.
+-- Keeping this migration file so Supabase migration history remains stable.

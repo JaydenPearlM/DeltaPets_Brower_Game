@@ -9,8 +9,6 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@sentry/node": "^10.51.0",
-    "@sentry/profiling-node": "^10.51.0",
     "@supabase/supabase-js": "^2.93.3",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",

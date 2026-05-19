@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { safeNum, titleCase } from "@/lib/petUtils";
 import "./PetDetailsPanel.css";
@@ -168,6 +168,54 @@ function getPetSpeech({
   if (lowest.value <= 45) return `I'm okay, but ${lowest.text.toLowerCase()}`;
 
   return "I'm doing okay right now.";
+}
+
+function getRandomPetSpeech(options: {
+  hunger: number;
+  clean: number;
+  happy: number;
+  comfort: number;
+  rest: number;
+  energy: number;
+}) {
+  const sayings = [
+    getPetSpeech(options),
+    "Thanks for checking on me.",
+    "I'm just vibing in here.",
+    "This room feels cozy today.",
+  ];
+
+  if (options.hunger <= 25) {
+    sayings.push(
+      "My tummy is making noises...",
+      "Food would be amazing right now.",
+    );
+  }
+
+  if (options.clean <= 25) {
+    sayings.push("I feel kinda messy...", "A bath would help a lot.");
+  }
+
+  if (options.happy <= 25) {
+    sayings.push("Can we play soon?", "I'm getting a little bored.");
+  }
+
+  if (options.comfort <= 25) {
+    sayings.push(
+      "Can you stay with me for a bit?",
+      "I could use some comfort.",
+    );
+  }
+
+  if (options.rest <= 25) {
+    sayings.push("I'm getting sleepy...", "A nap sounds really good.");
+  }
+
+  if (options.energy <= 25) {
+    sayings.push("I'm low on energy today.", "I need to take it slow.");
+  }
+
+  return sayings[Math.floor(Math.random() * sayings.length)];
 }
 
 function randomNickname(seedName: string) {
@@ -388,14 +436,64 @@ export default function PetDetailsPanel({
   );
 
   const stablePreference = getStablePreference(pet);
-  const petSpeech = getPetSpeech({
-    hunger: hungerLevel,
-    clean: cleanLevel,
-    happy: moodLevel,
-    comfort: comfortLevel,
-    rest: restLevel,
-    energy: energyLevel,
-  });
+  const [petSpeech, setPetSpeech] = useState("");
+  const [showPetSpeech, setShowPetSpeech] = useState(false);
+
+  useEffect(() => {
+    let showTimer: number | null = null;
+    let hideTimer: number | null = null;
+    let stopped = false;
+
+    const schedulePetSpeech = () => {
+      showTimer = window.setTimeout(
+        () => {
+          if (stopped) return;
+
+          setPetSpeech(
+            getRandomPetSpeech({
+              hunger: hungerLevel,
+              clean: cleanLevel,
+              happy: moodLevel,
+              comfort: comfortLevel,
+              rest: restLevel,
+              energy: energyLevel,
+            }),
+          );
+
+          setShowPetSpeech(true);
+
+          hideTimer = window.setTimeout(() => {
+            if (stopped) return;
+
+            setShowPetSpeech(false);
+            schedulePetSpeech();
+          }, 60000);
+        },
+        20000 + Math.random() * 70000,
+      );
+    };
+
+    schedulePetSpeech();
+
+    return () => {
+      stopped = true;
+
+      if (showTimer !== null) {
+        window.clearTimeout(showTimer);
+      }
+
+      if (hideTimer !== null) {
+        window.clearTimeout(hideTimer);
+      }
+    };
+  }, [
+    hungerLevel,
+    cleanLevel,
+    moodLevel,
+    comfortLevel,
+    restLevel,
+    energyLevel,
+  ]);
 
   const safeInventory = inventoryCounts ?? {
     food: 0,
@@ -588,9 +686,11 @@ export default function PetDetailsPanel({
               </div>
             </div>
 
-            <div className="petRepoTalkBubble" aria-live="polite">
-              <p>{petSpeech}</p>
-            </div>
+            {showPetSpeech ? (
+              <div className="petRepoTalkBubble" aria-live="polite">
+                <p>{petSpeech}</p>
+              </div>
+            ) : null}
 
             <div className="petRepoVerticalInfo">
               <div className="petRepoStatStack">
@@ -630,6 +730,44 @@ export default function PetDetailsPanel({
             <MeterRow label="Rest" value={restLevel} tone="green" />
             <MeterRow label="Comfort" value={comfortLevel} tone="gold" />
           </div>
+
+          <div className="petRepoActionGrid">
+            <button
+              type="button"
+              className="petRepoAction petRepoActionBlue"
+              onClick={() => void runCareAction("feed")}
+              disabled={busy || nicknameSaving || safeInventory.food <= 0}
+            >
+              Feed {safeInventory.food > 0 ? `· ${safeInventory.food}` : ""}
+            </button>
+
+            <button
+              type="button"
+              className="petRepoAction petRepoActionPurple"
+              onClick={() => void runCareAction("clean")}
+              disabled={busy || nicknameSaving || safeInventory.soap <= 0}
+            >
+              Clean {safeInventory.soap > 0 ? `· ${safeInventory.soap}` : ""}
+            </button>
+
+            <button
+              type="button"
+              className="petRepoAction petRepoActionRed"
+              onClick={() => void runCareAction("play")}
+              disabled={busy || nicknameSaving || safeInventory.toy <= 0}
+            >
+              Play {safeInventory.toy > 0 ? `· ${safeInventory.toy}` : ""}
+            </button>
+
+            <button
+              type="button"
+              className="petRepoAction petRepoActionYellow"
+              onClick={() => void runCareAction("pet")}
+              disabled={busy || nicknameSaving}
+            >
+              Pet
+            </button>
+          </div>
         </section>
 
         {starterMerchant?.show ? (
@@ -653,44 +791,6 @@ export default function PetDetailsPanel({
             </a>
           </div>
         ) : null}
-
-        <div className="petRepoActionGrid">
-          <button
-            type="button"
-            className="petRepoAction petRepoActionBlue"
-            onClick={() => void runCareAction("feed")}
-            disabled={busy || nicknameSaving || safeInventory.food <= 0}
-          >
-            Feed {safeInventory.food > 0 ? `· ${safeInventory.food}` : ""}
-          </button>
-
-          <button
-            type="button"
-            className="petRepoAction petRepoActionPurple"
-            onClick={() => void runCareAction("clean")}
-            disabled={busy || nicknameSaving || safeInventory.soap <= 0}
-          >
-            Clean {safeInventory.soap > 0 ? `· ${safeInventory.soap}` : ""}
-          </button>
-
-          <button
-            type="button"
-            className="petRepoAction petRepoActionRed"
-            onClick={() => void runCareAction("play")}
-            disabled={busy || nicknameSaving || safeInventory.toy <= 0}
-          >
-            Play {safeInventory.toy > 0 ? `· ${safeInventory.toy}` : ""}
-          </button>
-
-          <button
-            type="button"
-            className="petRepoAction petRepoActionYellow"
-            onClick={() => void runCareAction("pet")}
-            disabled={busy || nicknameSaving}
-          >
-            Pet
-          </button>
-        </div>
 
         {actionMsg ? (
           <div className="petRepoInlineMessage">{actionMsg}</div>

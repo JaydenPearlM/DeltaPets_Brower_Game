@@ -377,7 +377,7 @@
 .petRepoTalkBubble {
   position: relative;
   width: min(100%, 390px);
-  margin: 14px auto 0;
+  margin: -8px auto 0;
   padding: 14px 16px;
   border-radius: 18px;
   border: 2px solid rgba(142, 243, 156, 0.78);

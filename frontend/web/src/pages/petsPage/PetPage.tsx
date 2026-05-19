@@ -660,7 +660,9 @@ export default function PetPage() {
 
       {!loadErr && pet ? (
         <section className="petRepoStage">
-          <header className="petRepoHeroCard">
+          <header
+            className={`petRepoHeroCard petRepoHeroCard--element-${petElementTheme}`}
+          >
             <div className="petRepoHeroStatus petRepoHeroStatus--focusLeft">
               <span className="petRepoStatusLabel">Current Focus</span>
               <strong>{getPetLabel(pet)}</strong>

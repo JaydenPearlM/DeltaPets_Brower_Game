@@ -72,8 +72,7 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
           .maybeSingle(),
       ]);
 
-    // Allow missing intro_seen column without crashing the route.
-    if (pErr && !String(pErr.message ?? "").includes("intro_seen")) {
+    if (pErr) {
       console.error("[GET /api/me] profile error:", pErr);
       return res.status(500).json({ error: pErr.message });
     }
@@ -129,7 +128,7 @@ meRouter.get(
             .limit(1),
         ]);
 
-      if (pErr && !String(pErr.message ?? "").includes("intro_seen")) {
+      if (pErr) {
         console.error("[GET /api/me/intro] profile query failed:", pErr);
         return res.status(500).json({ error: pErr.message });
       }
@@ -180,14 +179,6 @@ meRouter.post(
         )
         .select("intro_seen")
         .maybeSingle();
-
-      if (error && String(error.message ?? "").includes("intro_seen")) {
-        console.warn("[POST /api/me/intro/seen] intro_seen column missing");
-        return res.json({
-          intro_seen: true,
-          note: "intro_seen column missing",
-        });
-      }
 
       if (error) {
         console.error("[POST /api/me/intro/seen] upsert failed:", error);

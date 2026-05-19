@@ -4,5 +4,5 @@ import { pveInstabilitiesRouter } from "./pveInstabilities";
 
 export const battleRouter = Router();
 
-battleRouter.use("/pve", battlePveRouter);
 battleRouter.use("/pve/instabilities", pveInstabilitiesRouter);
+battleRouter.use("/pve", battlePveRouter);

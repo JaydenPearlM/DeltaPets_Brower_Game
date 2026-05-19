@@ -7,11 +7,12 @@
     "backend/*"
   ],
   "scripts": {
-    "dev": "concurrently -k -n server,web \"pnpm --filter server dev\" \"powershell -NoProfile -Command Start-Sleep -Seconds 3; pnpm --filter web dev\"",
+    "dev": "concurrently -k -n server,web \"pnpm --dir backend/server dev\" \"wait-on http://localhost:4000/health && pnpm --dir frontend/web dev\"",
     "build": "pnpm -r build"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "supabase": "^2.98.2"
+    "supabase": "^2.98.2",
+    "wait-on": "^8.0.1"
   }
 }

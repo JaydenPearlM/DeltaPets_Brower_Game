@@ -1,0 +1,307 @@
+/* frontend/web/src/components/Devlog/windowLogs.css */
+
+.devlog-window {
+  position: fixed;
+  width: 900px;
+  height: 700px;
+  border-radius: 30px;
+  border: 3px solid var(--dp-panel-border);
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      var(--dp-panel-glow-top) 0%,
+      transparent 38%
+    ),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-bg-top) 0%,
+      var(--dp-panel-bg-mid) 48%,
+      var(--dp-panel-bg-bottom) 100%
+    );
+  box-shadow:
+    0 0 0 1px var(--dp-panel-inner-border) inset,
+    0 0 18px var(--dp-panel-glow),
+    0 0 42px var(--dp-cyber-blue-soft),
+    inset 0 0 24px var(--dp-panel-inner-shadow);
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  resize: both;
+  overflow: hidden;
+  min-width: 500px;
+  min-height: 400px;
+  max-width: 95vw;
+  max-height: 95vh;
+}
+
+.devlog-window::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 22px;
+  border: 4px solid var(--dp-panel-purple-border);
+  box-shadow:
+    0 0 18px var(--dp-panel-purple-glow),
+    inset 0 0 18px var(--dp-panel-glow-cyan);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.devlog-window::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      circle at 8% 18%,
+      var(--dp-text-primary) 0 1.4px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 18% 68%,
+      var(--dp-cyber-cyan) 0 1.2px,
+      transparent 1.7px
+    ),
+    radial-gradient(
+      circle at 31% 32%,
+      var(--dp-text-primary) 0 1.1px,
+      transparent 1.6px
+    ),
+    radial-gradient(
+      circle at 43% 78%,
+      var(--dp-brand-yellow-bright) 0 1.2px,
+      transparent 1.7px
+    ),
+    radial-gradient(
+      circle at 56% 24%,
+      var(--dp-text-primary) 0 1.3px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 69% 62%,
+      var(--dp-cyber-cyan) 0 1.1px,
+      transparent 1.6px
+    ),
+    radial-gradient(
+      circle at 82% 36%,
+      var(--dp-text-primary) 0 1.4px,
+      transparent 1.9px
+    ),
+    radial-gradient(
+      circle at 92% 82%,
+      var(--dp-brand-yellow-bright) 0 1.1px,
+      transparent 1.6px
+    );
+  background-size:
+    86px 86px,
+    124px 124px,
+    154px 154px,
+    188px 188px,
+    112px 112px,
+    146px 146px,
+    176px 176px,
+    210px 210px;
+  background-position:
+    0 0,
+    18px 32px,
+    42px 18px,
+    12px 72px,
+    64px 12px,
+    28px 58px,
+    92px 44px,
+    54px 96px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.devlog-header {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    var(--dp-panel-bg-mid) 0%,
+    var(--dp-panel-bg-top) 100%
+  );
+  padding: 20px 28px;
+  border-bottom: 2px solid var(--dp-panel-inner-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+  user-select: none;
+}
+
+.devlog-title {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #f3d63f;
+  -webkit-text-stroke: 2px #b23a24;
+  text-shadow:
+    0 1px 0 rgba(255, 250, 217, 0.95),
+    0 2px 0 #b23a24,
+    0 3px 0 #b23a24,
+    0 4px 0 #8d2b1d,
+    0 8px 14px rgba(44, 25, 10, 0.2);
+  margin: 0;
+}
+
+.devlog-controls {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+}
+
+.devlog-btn {
+  background: transparent;
+  border: 2px solid #7c5cdb;
+  color: #00fff2;
+  font-family: "VT323", monospace;
+  font-size: 22px;
+  padding: 8px 18px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(124, 92, 219, 0.3);
+}
+
+.devlog-btn:hover {
+  background: rgba(124, 92, 219, 0.2);
+  border-color: #9f7cff;
+  box-shadow: 0 0 20px rgba(124, 92, 219, 0.5);
+  transform: translateY(-1px);
+}
+
+.devlog-content {
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  background: rgba(10, 10, 20, 0.6);
+}
+
+.devlog-content::-webkit-scrollbar {
+  width: 12px;
+}
+
+.devlog-content::-webkit-scrollbar-track {
+  background: rgba(15, 52, 96, 0.5);
+  border-radius: 6px;
+}
+
+.devlog-content::-webkit-scrollbar-thumb {
+  background: #7c5cdb;
+  border-radius: 6px;
+  border: 2px solid rgba(15, 52, 96, 0.5);
+}
+
+.devlog-content::-webkit-scrollbar-thumb:hover {
+  background: #9f7cff;
+}
+
+.log-entry {
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-left: 3px solid transparent;
+  border-radius: 6px;
+  background: rgba(15, 52, 96, 0.3);
+  transition: all 0.2s ease;
+  border: 1px solid rgba(124, 92, 219, 0.2);
+}
+
+.log-entry:hover {
+  background: rgba(15, 52, 96, 0.5);
+  border-left-color: #00fff2;
+  box-shadow: 0 0 10px rgba(0, 255, 242, 0.2);
+}
+
+.log-header {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.log-timestamp {
+  color: #888;
+  font-size: 11px;
+  font-family: "Courier New", monospace;
+}
+
+.log-type {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+}
+
+.log-type.log {
+  color: #00fff2;
+  background: rgba(0, 255, 242, 0.1);
+  border-color: #00fff2;
+}
+
+.log-type.error {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+  border-color: #ff4444;
+}
+
+.log-type.warn {
+  color: #ffaa00;
+  background: rgba(255, 170, 0, 0.1);
+  border-color: #ffaa00;
+}
+
+.log-type.info {
+  color: #00d4c4;
+  background: rgba(0, 212, 196, 0.1);
+  border-color: #00d4c4;
+}
+
+.log-message {
+  color: #e0e0e0;
+  margin: 0;
+  word-break: break-word;
+  white-space: pre-wrap;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+}
+
+.log-stack {
+  color: #888;
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+  font-size: 11px;
+  white-space: pre-wrap;
+  border-left: 2px solid #444;
+}
+
+.devlog-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-family: "VT323", monospace;
+  font-size: 24px;
+}
+
+@media (max-width: 768px) {
+  .devlog-window {
+    width: 95vw !important;
+    height: 90vh !important;
+  }
+
+  .devlog-title {
+    font-size: 2rem;
+  }
+}
