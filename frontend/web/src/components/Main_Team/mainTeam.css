@@ -1,459 +1,238 @@
 .mainTeamPanel {
-  border: 1px solid rgba(88, 240, 255, 0.22);
-  border-radius: 18px;
-  padding: 14px;
-  background:
-    radial-gradient(
-      140% 120% at 8% 0%,
-      rgba(52, 214, 255, 0.2),
-      transparent 34%
-    ),
-    radial-gradient(
-      130% 120% at 100% 0%,
-      rgba(116, 92, 255, 0.16),
-      transparent 34%
-    ),
-    radial-gradient(
-      120% 120% at 50% 100%,
-      rgba(87, 227, 137, 0.1),
-      transparent 42%
-    ),
-    linear-gradient(180deg, rgba(18, 28, 56, 0.95), rgba(7, 15, 34, 0.98));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 0 0 1px rgba(52, 214, 255, 0.06),
-    0 10px 28px rgba(0, 0, 0, 0.28),
-    0 0 24px rgba(52, 214, 255, 0.12);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  padding: 18px 20px 24px;
+  border: 1px solid var(--dp-panel-border);
+  border-radius: 18px;
+  color: var(--dp-panel-text);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    var(--dp-gradient-panel);
+  background-size:
+    24px 24px,
+    24px 24px,
+    auto;
+  box-shadow:
+    var(--dp-glow-cyan),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.mainTeamPanel::before {
+.mainTeamPanel::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 10px;
   pointer-events: none;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.04),
-    transparent 18%,
-    transparent 74%,
-    rgba(255, 255, 255, 0.02)
-  );
+  border: 4px solid var(--dp-panel-purple-border);
+  border-radius: 13px;
+  box-shadow: none;
+}
+
+.mainTeamPanel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .mainTeamHeader {
-  position: relative;
-  z-index: 1;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .mainTeamTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
   font-weight: 900;
-  font-size: 18px;
-  color: #ffd966;
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.45),
-    0 0 14px rgba(255, 78, 78, 0.18);
-  -webkit-text-stroke: 0.35px rgba(161, 30, 30, 0.8);
-}
-
-.mainTeamSubtext {
-  margin-top: 4px;
-  font-size: 12px;
-  color: rgba(214, 225, 255, 0.82);
-}
-
-.mainTeamHeaderMeta {
-  display: grid;
-  gap: 4px;
-  justify-items: end;
-  text-align: right;
-}
-
-.mainTeamHeaderCount {
-  font-size: 12px;
-  font-weight: 900;
-  color: #ebfaff;
-}
-
-.mainTeamHeaderGlow {
-  font-size: 11px;
-  font-weight: 800;
-  color: #93ffc5;
-  text-shadow: 0 0 10px rgba(87, 227, 137, 0.35);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dp-text-gold);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
 }
 
 .mainTeamGrid {
-  position: relative;
-  z-index: 1;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-  width: 100%;
+  align-items: center;
+  padding: 0;
 }
 
 .mainTeamSlotCard {
+  --main-team-element: var(--element-null);
   min-width: 0;
-  min-height: 260px;
-  border: 1px solid rgba(88, 240, 255, 0.18);
-  border-radius: 16px;
-  padding: 10px;
-  background:
-    radial-gradient(
-      120% 120% at 30% 20%,
-      rgba(255, 255, 255, 0.06),
-      transparent 28%
-    ),
-    linear-gradient(180deg, rgba(28, 41, 74, 0.94), rgba(12, 20, 40, 0.98));
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+}
+
+.mainTeamSlotButton {
+  width: 100%;
+  min-height: 172px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.mainTeamStats {
+  display: none;
+}
+
+.mainTeamCircleWrap {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: grid;
+  place-items: center;
+}
+
+.mainTeamCircleWrap::before,
+.mainTeamCircleWrap::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.mainTeamCircleWrap::after {
+  inset: 20px;
+  border: 5px solid var(--dp-stat-strong: #66ff8f;);
+  background: none;
+  mask: none;
+}
+
+.mainTeamCircle {
+  position: relative;
+  z-index: 1;
+  width: 92px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 0.5px solid var(--main-team-element);
+  background: var(--dp-surface-glass);
+  box-shadow: none;
+}
+
+.mainTeamStatTooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 10000;
+  min-width: 126px;
+  padding: 10px 12px;
+  border: 1px solid var(--dp-panel-border);
+  border-radius: 10px;
+  background: var(--dp-gradient-popup);
+  color: var(--dp-panel-text);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-align: left;
+  box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 6px);
   transition:
-    transform 0.16s ease,
-    border-color 0.16s ease,
-    box-shadow 0.16s ease;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    inset 0 -12px 20px rgba(0, 0, 0, 0.14);
+    opacity 140ms ease,
+    transform 140ms ease;
 }
 
-.mainTeamSlotCard:hover {
-  transform: translateY(-1px);
-  border-color: rgba(88, 240, 255, 0.34);
-  box-shadow:
-    0 0 0 1px rgba(88, 240, 255, 0.1),
-    0 0 18px rgba(88, 240, 255, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+.mainTeamCircleWrap:hover .mainTeamStatTooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
-.mainTeamSlotCard.selected {
-  border-color: rgba(255, 204, 102, 0.48);
-  box-shadow:
-    0 0 0 1px rgba(255, 204, 102, 0.14),
-    0 0 16px rgba(255, 204, 102, 0.08),
-    0 0 24px rgba(87, 227, 137, 0.08);
+.mainTeamCircleInitial {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--dp-text-primary);
+  text-shadow: none;
 }
 
-.mainTeamSlotCard.dragOver {
-  border-color: rgba(87, 227, 137, 0.74);
-  box-shadow:
-    0 0 0 1px rgba(87, 227, 137, 0.22),
-    0 0 22px rgba(87, 227, 137, 0.18),
-    inset 0 0 16px rgba(87, 227, 137, 0.08);
+.mainTeamNameArc {
+  position: absolute;
+  inset: -15px -20px -20px;
+  z-index: 2;
+  width: calc(100% + 40px);
+  height: calc(100% + 40px);
+  pointer-events: none;
 }
 
-.mainTeamSlotCardEmpty {
-  border-style: dashed;
+.mainTeamNameArc text {
+  fill: var(--main-team-element);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mainTeamSlotCard.selected .mainTeamCircle {
+  border: 0.5px solid var(--main-team-element);
+  box-shadow: none;
+}
+
+.mainTeamSlotCard.dragOver .mainTeamCircle {
+  box-shadow: none;
+}
+
+.mainTeamSlotCard.empty .mainTeamCircle {
+  opacity: 0.42;
+  border-color: var(--dp-panel-purple-border);
+}
+
+.mainTeamSlotCard.empty .mainTeamCircleWrap::before,
+.mainTeamSlotCard.empty .mainTeamCircleWrap::after {
+  opacity: 0;
 }
 
 .mainTeamSlotCard.isWorking {
-  opacity: 0.88;
-}
-
-.mainTeamCardButton {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  text-align: left;
-}
-
-.mainTeamCardButton.isFilled {
-  cursor: grab;
-}
-
-.mainTeamCardButton.isEmpty {
-  cursor: pointer;
-}
-
-.mainTeamTopRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: start;
-}
-
-.mainTeamTopRow--empty {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.mainTeamTopLeft {
-  min-width: 0;
-  display: grid;
-  gap: 10px;
-  align-content: start;
-}
-
-.mainTeamTopRight {
-  display: grid;
-  justify-items: end;
-  gap: 10px;
-}
-
-.mainTeamActiveBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 24px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(87, 227, 137, 0.26);
-  background: rgba(87, 227, 137, 0.09);
-  color: #bff6de;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  box-shadow: 0 0 14px rgba(87, 227, 137, 0.12);
-}
-
-.mainTeamSlotName {
-  font-size: 18px;
-  font-weight: 900;
-  color: #f8fbff;
-  line-height: 1.08;
-  word-break: break-word;
-}
-
-.mainTeamLevelBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  min-width: 62px;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(88, 240, 255, 0.18);
-  background: linear-gradient(
-    180deg,
-    rgba(17, 28, 54, 0.92),
-    rgba(8, 16, 33, 0.96)
-  );
-  color: #dff9ff;
-  font-size: 12px;
-  font-weight: 900;
-  line-height: 1;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    0 0 0 1px rgba(88, 240, 255, 0.05);
-}
-
-.mainTeamLevelBadge.isEmpty {
-  color: rgba(214, 225, 255, 0.45);
-}
-
-.mainTeamSlotPortrait {
-  width: 100px;
-  height: 100px;
-  border-radius: 20px;
-  border: 1px solid rgba(88, 240, 255, 0.18);
-  background:
-    radial-gradient(
-      120% 120% at 30% 20%,
-      rgba(255, 255, 255, 0.06),
-      transparent 30%
-    ),
-    linear-gradient(180deg, rgba(31, 43, 79, 0.94), rgba(14, 22, 43, 0.98));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    0 0 0 1px rgba(88, 240, 255, 0.05);
-}
-
-.mainTeamSlotPortrait.isEmpty {
-  opacity: 0.92;
-}
-
-.mainTeamSlotPortraitInner {
-  font-size: 42px;
-  font-weight: 900;
-  color: #f8fbff;
-  line-height: 1;
-}
-
-.mainTeamBottomInfo {
-  margin-top: 14px;
-  display: grid;
-  gap: 8px;
-  min-height: 0;
-}
-
-.mainTeamBottomInfo.empty {
-  opacity: 0;
-}
-
-.mainTeamTraitLine {
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(226, 235, 255, 0.88);
-  line-height: 1.25;
-  word-break: break-word;
-}
-
-.mainTeamSkillsBlock {
-  margin-top: 4px;
-  display: grid;
-  gap: 4px;
-}
-
-.mainTeamSkillsBlock.empty {
-  opacity: 0.7;
-}
-
-.mainTeamSkillLine {
-  font-size: 12px;
-  line-height: 1.3;
-  color: rgba(214, 225, 255, 0.84);
-  word-break: break-word;
-}
-
-.emptyLine {
-  opacity: 0;
+  opacity: 0.72;
+  pointer-events: none;
 }
 
 .mainTeamSlotCard.tone-fire {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(255, 116, 74, 0.15),
-      transparent 34%
-    ),
-    linear-gradient(180deg, rgba(42, 24, 32, 0.94), rgba(18, 12, 22, 0.98));
+  --main-team-element: var(--element-fire);
 }
 
 .mainTeamSlotCard.tone-water {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(79, 165, 255, 0.16),
-      transparent 34%
-    ),
-    linear-gradient(180deg, rgba(17, 29, 54, 0.94), rgba(8, 15, 33, 0.98));
+  --main-team-element: var(--element-water);
 }
 
 .mainTeamSlotCard.tone-earth {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(126, 196, 95, 0.16),
-      transparent 34%
-    ),
-    linear-gradient(180deg, rgba(24, 36, 24, 0.94), rgba(12, 21, 14, 0.98));
+  --main-team-element: var(--element-earth);
 }
 
 .mainTeamSlotCard.tone-air {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(208, 236, 255, 0.15),
-      transparent 34%
-    ),
-    linear-gradient(180deg, rgba(28, 34, 46, 0.94), rgba(12, 16, 24, 0.98));
+  --main-team-element: var(--element-air);
 }
 
 .mainTeamSlotCard.tone-ice {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(135, 234, 255, 0.16),
-      transparent 34%
-    ),
-    linear-gradient(180deg, rgba(19, 34, 48, 0.94), rgba(9, 16, 28, 0.98));
+  --main-team-element: var(--element-ice);
 }
 
 .mainTeamSlotCard.tone-storm {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(181, 131, 255, 0.16),
-      transparent 34%
-    ),
-    linear-gradient(180deg, rgba(28, 20, 48, 0.94), rgba(12, 10, 28, 0.98));
+  --main-team-element: var(--element-storm);
 }
 
 .mainTeamSlotCard.tone-light {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(255, 224, 120, 0.17),
-      transparent 34%
-    ),
-    linear-gradient(180deg, rgba(46, 38, 22, 0.94), rgba(24, 19, 10, 0.98));
+  --main-team-element: var(--element-light);
 }
 
 .mainTeamSlotCard.tone-shadow {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(206, 118, 255, 0.16),
-      transparent 34%
-    ),
-    linear-gradient(180deg, rgba(31, 18, 46, 0.94), rgba(12, 8, 23, 0.98));
-}
-
-.mainTeamSlotCard.tone-null {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(180, 186, 204, 0.14),
-      transparent 34%
-    ),
-    linear-gradient(180deg, rgba(27, 29, 40, 0.94), rgba(14, 15, 21, 0.98));
+  --main-team-element: var(--element-shadow);
 }
 
 .mainTeamSlotCard.tone-default {
-  background:
-    radial-gradient(
-      130% 120% at 18% 10%,
-      rgba(52, 214, 255, 0.12),
-      transparent 34%
-    ),
-    radial-gradient(
-      120% 120% at 86% 12%,
-      rgba(156, 92, 255, 0.08),
-      transparent 30%
-    ),
-    linear-gradient(180deg, rgba(15, 26, 52, 0.92), rgba(7, 15, 34, 0.96));
+  --main-team-element: var(--element-null);
 }
 
-@media (max-width: 1320px) {
+@media (max-width: 720px) {
   .mainTeamGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 700px) {
-  .mainTeamGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .mainTeamHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .mainTeamHeaderMeta {
-    justify-items: start;
-    text-align: left;
-  }
-
-  .mainTeamTopRow {
-    grid-template-columns: 1fr;
-  }
-
-  .mainTeamTopRight {
-    justify-items: start;
+    grid-template-columns: repeat(2, minmax(132px, 1fr));
   }
 }

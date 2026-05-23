@@ -1,50 +1,36 @@
-import express from "express";
-import helmet from "helmet";
+import express, { Request, Response, NextFunction } from "express";
+import { requireUser } from "./middleware/auth";
+import { apiRouter } from "./routes";
 
-import { env } from "./env.server";
-import { errorHandler } from "./middleware/errorHandler";
-import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
-import { apiRouter } from "./routes/index";
+const app = express();
 
-export function createApp() {
-  const app = express();
+// Body parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-  // Security headers
-  app.use(
-    helmet({
-      crossOriginResourcePolicy: false,
-    }),
-  );
+// Health check
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
 
-  // Trust proxy
-  app.set("trust proxy", 1);
+// API routes
+app.use("/api", requireUser, apiRouter);
 
-  // Hide Express signature
-  app.disable("x-powered-by");
+// Global error handler - MUST be defined with 4 parameters
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error("[Error]", err);
 
-  // Body parsing
-  app.use(express.json({ limit: "100kb" }));
-  app.use(express.urlencoded({ extended: true, limit: "100kb" }));
-
-  // Global rate limiting
-  app.use(apiLimiter);
-  app.use(apiSpeedLimiter);
-
-  // Health check
-  app.get("/health", (_req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  // Don't leak stack traces in production
+  const isDev = process.env.NODE_ENV === "development";
+  res.status(500).json({
+    error: "Internal server error",
+    ...(isDev && { details: err.message, stack: err.stack }),
   });
+});
 
-  // Mount all API routes via centralized router
-  app.use("/api", apiRouter);
+// 404 handler - MUST come after error handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
 
-  // 404 handler
-  app.use((_req, res) => {
-    res.status(404).json({ error: "Route not found" });
-  });
-
-  // Custom error handler
-  app.use(errorHandler);
-
-  return app;
-}
+export default app;

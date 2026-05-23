@@ -17,7 +17,7 @@ export type AuthContextValue = {
     email: string;
     password: string;
     captchaToken?: string;
-  }) => Promise<{ error: any | null }>;
+  }) => Promise<{ error: any | null; requiresConfirmation: boolean }>;
 
   signOut: () => Promise<{ error: any | null }>;
 };
@@ -113,13 +113,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
 
       signUp: async ({ email, password, captchaToken }) => {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: email.trim().toLowerCase(),
           password,
           options: captchaToken ? { captchaToken } : undefined,
         });
 
-        return { error: error ?? null };
+        if (error) {
+          return { error, requiresConfirmation: false };
+        }
+
+        // If session is null, Supabase requires email confirmation
+        const requiresConfirmation = data.session === null;
+
+        return { error: null, requiresConfirmation };
       },
 
       signOut: async () => {

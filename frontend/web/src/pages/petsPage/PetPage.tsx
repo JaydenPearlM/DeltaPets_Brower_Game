@@ -534,7 +534,7 @@ export default function PetPage() {
   const happy = clampPercent(pet?.happy);
   const comfort = Math.max(0, Math.min(50, safeNum(pet?.comfort, 50)));
   const rest = Math.max(0, Math.min(50, safeNum(pet?.rest, 50)));
-  const energy = clampPercent(pet?.energy);
+  const energy = clampPercent(pet?.energy ?? 100);
   const bond = clampPercent(pet?.bond);
 
   const totalStats = useMemo(
@@ -678,22 +678,9 @@ export default function PetPage() {
             </div>
           </header>
 
-          <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--descriptionShell">
-            <div className="petRepoInfoStack">
-              <section className="petRepoInfoSection petRepoInfoSection--description">
-                <SectionPill title="Pet Description" />
-
-                <div className="petRepoDescriptionCard">
-                  <div className="petRepoDescriptionContent">
-                    <p className="petRepoDescription">{petDescription}</p>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </article>
-
           <PetDetailsPanel
             pet={pet}
+            petDescription={petDescription}
             personalityName={personalityName}
             nicknameDraft={nicknameDraft}
             nicknameSaving={nicknameSaving}

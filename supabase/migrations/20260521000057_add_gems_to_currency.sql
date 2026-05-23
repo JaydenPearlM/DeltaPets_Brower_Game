@@ -1,0 +1,1 @@
+ALTER TYPE public.currency_kind ADD VALUE IF NOT EXISTS 'gems';

@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./LoginMenus.css";
 import PopupWindow from "../popup_windows/popupWindow";
 import { supabase } from "@/lib/supabase/client";
+import { useAuth } from "@/app/providers/useAuth";
 
 type AuthView = "login" | "signup";
 type ForcedAuthView = AuthView | "none";
@@ -91,6 +92,7 @@ export function LoginMenus({
 }: LoginMenusProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { signIn } = useAuth();
 
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<AuthView>("login");
@@ -198,12 +200,12 @@ export function LoginMenus({
     event.preventDefault();
     setMessage(null);
 
-    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedIdentifier = email.trim().toLowerCase();
 
-    if (!trimmedEmail || !loginPassword.trim()) {
+    if (!trimmedIdentifier || !loginPassword.trim()) {
       setMessage({
         type: "error",
-        text: "Email and password are required.",
+        text: "Username/email and password are required.",
       });
       return;
     }
@@ -212,8 +214,8 @@ export function LoginMenus({
     console.log("[auth] sign-in request started");
 
     try {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
+      const { error } = await signIn({
+        identifier: trimmedIdentifier,
         password: loginPassword,
       });
 
@@ -221,6 +223,18 @@ export function LoginMenus({
         setMessage({
           type: "error",
           text: error.message ?? "Sign in failed.",
+        });
+        return;
+      }
+
+      const { data: authData, error: userError } =
+        await supabase.auth.getUser();
+
+      if (userError) {
+        setMessage({
+          type: "error",
+          text:
+            userError.message ?? "Sign in succeeded, but user lookup failed.",
         });
         return;
       }
@@ -390,11 +404,7 @@ export function LoginMenus({
         return;
       }
 
-      const userId = signUpData.user?.id ?? null;
       const hasSession = Boolean(signUpData.session);
-
-      if (userId) {
-      }
 
       if (hasSession) {
         await supabase.auth.signOut();
@@ -438,14 +448,13 @@ export function LoginMenus({
 
             <form onSubmit={handleLoginSubmit} className="dp-form">
               <div className="dp-field">
-                <label className="dp-label">Email</label>
+                <label className="dp-label">Username or Email</label>
                 <input
                   className="dp-input"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  autoComplete="email"
-                  inputMode="email"
-                  placeholder="you@example.com"
+                  autoComplete="username"
+                  placeholder="Username or email"
                   required
                 />
               </div>

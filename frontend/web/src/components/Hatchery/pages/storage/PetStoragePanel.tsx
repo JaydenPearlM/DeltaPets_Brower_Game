@@ -231,6 +231,9 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
   const [filter, setFilter] = useState<StorageStageFilter>("all");
   const [search, setSearch] = useState("");
   const [selectedPartySlot, setSelectedPartySlot] = useState<number | null>(1);
+  const [selectedTeamPet, setSelectedTeamPet] = useState<StoragePet | null>(
+    null,
+  );
 
   const [draggingPetId, setDraggingPetId] = useState<string | null>(null);
   const [dragOverSlotIndex, setDragOverSlotIndex] = useState<number | null>(

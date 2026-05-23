@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { safeNum, titleCase } from "@/lib/petUtils";
 import "./PetDetailsPanel.css";
-
+import { getPetDialogue } from "./petDialogue";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type PetRecord = {
@@ -54,6 +54,7 @@ const CARE_MAX = 50;
 
 type PetDetailsPanelProps = {
   pet: PetRecord;
+  petDescription?: string;
   stats?: PetPanelStats;
   personalityName: string | null;
   nicknameDraft: string;
@@ -387,6 +388,7 @@ function SectionPill({
 export default function PetDetailsPanel({
   pet,
   personalityName,
+  petDescription,
   nicknameDraft,
   nicknameSaving,
   showNicknameEditor,
@@ -449,15 +451,30 @@ export default function PetDetailsPanel({
         () => {
           if (stopped) return;
 
-          setPetSpeech(
-            getRandomPetSpeech({
+          const dialogueText =
+            getPetDialogue({
+              petName: getPetLabel(pet),
+              personalityKey:
+                pet.personality_key ?? pet.personality ?? personalityName,
               hunger: hungerLevel,
               clean: cleanLevel,
               happy: moodLevel,
               comfort: comfortLevel,
               rest: restLevel,
               energy: energyLevel,
-            }),
+              bond: clampedBond,
+            })?.trim() ?? "";
+
+          setPetSpeech(
+            dialogueText ||
+              getRandomPetSpeech({
+                hunger: hungerLevel,
+                clean: cleanLevel,
+                happy: moodLevel,
+                comfort: comfortLevel,
+                rest: restLevel,
+                energy: energyLevel,
+              }),
           );
 
           setShowPetSpeech(true);
@@ -467,7 +484,7 @@ export default function PetDetailsPanel({
 
             setShowPetSpeech(false);
             schedulePetSpeech();
-          }, 60000);
+          }, 90000);
         },
         20000 + Math.random() * 70000,
       );
@@ -493,6 +510,9 @@ export default function PetDetailsPanel({
     comfortLevel,
     restLevel,
     energyLevel,
+    clampedBond,
+    pet,
+    personalityName,
   ]);
 
   const safeInventory = inventoryCounts ?? {
@@ -623,10 +643,28 @@ export default function PetDetailsPanel({
       {nicknameModal}
 
       <article className={`petRepoCareCard petRepoElement-${elementKey}`}>
-        <SectionPill
-          title="Pet Details"
-          className="petRepoSectionHeader--careDetails"
-        />
+        <div className="petRepoDetailsHeaderBlock">
+          <h3 className="petRepoDeltaDetailsTitle">Kith Details</h3>
+
+          <div className="petRepoBondPanel" aria-label="Bond level">
+            <span className="petRepoBondTitle">Bond</span>
+
+            <div className="petRepoBondTrack">
+              <div
+                className="petRepoBondFill"
+                style={{ width: `${clampedBond}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <section className="petRepoDetailsTopPanel">
+          {petDescription ? (
+            <div className="petRepoDetailsTopPanelBody">
+              <p className="petRepoDetailsTopPanelText">{petDescription}</p>
+            </div>
+          ) : null}
+        </section>
 
         <div className="petRepoCreatureTop">
           <section
@@ -651,7 +689,21 @@ export default function PetDetailsPanel({
                 aria-hidden="true"
               />
 
+              <div
+                className="petRepoSupplyShelf"
+                aria-label="Care item shelves"
+              >
+                <div className="petRepoSupplySlot" />
+                <div className="petRepoSupplySlot" />
+                <div className="petRepoSupplySlot" />
+                <div className="petRepoSupplySlot" />
+                <p className="petRepoSupplyShelfHint">Care Items go here</p>
+              </div>
+
               <div className="petRepoSceneInner">
+                <div className="petRepoSceneCeiling" aria-hidden="true" />
+                <div className="petRepoSceneWallLeft" aria-hidden="true" />
+                <div className="petRepoSceneWallRight" aria-hidden="true" />
                 <div className="petRepoSceneGlow" aria-hidden="true" />
                 <div className="petRepoSceneSparkles" aria-hidden="true">
                   <span className="petRepoSceneSparkle petRepoSceneSparkle-1" />
@@ -686,11 +738,22 @@ export default function PetDetailsPanel({
               </div>
             </div>
 
-            {showPetSpeech ? (
+            {showPetSpeech && petSpeech ? (
               <div className="petRepoTalkBubble" aria-live="polite">
                 <p>{petSpeech}</p>
               </div>
             ) : null}
+
+            <div className="petRepoEnergyPanel" aria-label="Energy level">
+              <span className="petRepoEnergyTitle">Energy</span>
+
+              <div className="petRepoEnergyTrack">
+                <div
+                  className="petRepoEnergyFill"
+                  style={{ width: `${clampedEnergy}%` }}
+                />
+              </div>
+            </div>
 
             <div className="petRepoVerticalInfo">
               <div className="petRepoStatStack">
@@ -768,6 +831,12 @@ export default function PetDetailsPanel({
               Pet
             </button>
           </div>
+
+          <div className="petRepoCareActionMessageSlot" aria-live="polite">
+            {actionMsg ? (
+              <div className="petRepoInlineMessage">{actionMsg}</div>
+            ) : null}
+          </div>
         </section>
 
         {starterMerchant?.show ? (
@@ -780,7 +849,7 @@ export default function PetDetailsPanel({
             </h3>
             <p className="petRepoRunawayBanner__body">
               {starterMerchant.body ||
-                "All of your Kith are gone. A quiet merchant has opened inside Kithna’s tutorial market with lower-tier starter rescues so you can rebuild."}
+                "All of your Kith are gone. A quiet merchant has opened inside Kithna's tutorial market with lower-tier starter rescues so you can rebuild."}
             </p>
 
             <a
@@ -790,10 +859,6 @@ export default function PetDetailsPanel({
               {starterMerchant.ctaLabel || "Visit the Kithna Merchant"}
             </a>
           </div>
-        ) : null}
-
-        {actionMsg ? (
-          <div className="petRepoInlineMessage">{actionMsg}</div>
         ) : null}
       </article>
     </>

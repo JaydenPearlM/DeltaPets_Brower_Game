@@ -13,12 +13,19 @@
       var(--dp-panel-glow-top) 0%,
       transparent 38%
     ),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     linear-gradient(
       180deg,
       var(--dp-panel-bg-top) 0%,
       var(--dp-panel-bg-mid) 48%,
       var(--dp-panel-bg-bottom) 100%
     );
+  background-size:
+    100% 100%,
+    22px 22px,
+    22px 22px,
+    100% 100%;
   box-shadow:
     0 0 0 1px var(--dp-panel-inner-border) inset,
     0 0 18px var(--dp-panel-glow),

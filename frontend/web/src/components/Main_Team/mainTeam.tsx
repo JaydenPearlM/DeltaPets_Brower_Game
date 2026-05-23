@@ -1,13 +1,12 @@
-import type { DragEvent } from "react";
-import {
-  formatStageLabel,
-  type PartySlotView,
-  type StoragePet,
+import type { CSSProperties, DragEvent } from "react";
+import type {
+  PartySlotView,
+  StoragePet,
 } from "../Hatchery/pages/storage/usePetStorage";
 import "./mainTeam.css";
 
 type MainTeamProps = {
-  partySlots: PartySlotView[];
+  partySlots?: PartySlotView[];
   selectedPartySlot: number | null;
   workingPetId: string | null;
   workingSlotIndex: number | null;
@@ -25,16 +24,34 @@ type MainTeamProps = {
   onDropOnSlot: (event: DragEvent<HTMLElement>, slotIndex: number) => void;
 };
 
-type PetWithExtras = StoragePet & {
+type PetStats = StoragePet & {
   nickname?: string | null;
-  personality_key?: string | null;
-  personality?: string | null;
-  skill_1_name?: string | null;
-  skill_2_name?: string | null;
-  skill_3_name?: string | null;
-  skill_4_name?: string | null;
-  skills?: Array<string | null> | null;
+  species?: string | null;
+  energy?: number | null;
+  bond?: number | null;
+  hp?: number | null;
+  atk?: number | null;
+  def?: number | null;
+  magi?: number | null;
+  mana?: number | null;
+  spd?: number | null;
+  trait?: string | null;
 };
+
+function getPetDisplayName(pet: StoragePet) {
+  const source = pet as PetStats;
+  return (
+    source.nickname?.trim() ||
+    source.species?.trim() ||
+    pet.name?.trim() ||
+    "Unnamed Kith"
+  );
+}
+
+function clampStat(value: number | null | undefined, fallback: number) {
+  if (typeof value !== "number" || Number.isNaN(value)) return fallback;
+  return Math.max(0, Math.min(100, value));
+}
 
 function getToneClass(line?: string | null) {
   const value = String(line ?? "")
@@ -58,181 +75,14 @@ function getToneClass(line?: string | null) {
       return "tone-light";
     case "shadow":
       return "tone-shadow";
-    case "null":
-      return "tone-null";
     default:
       return "tone-default";
   }
 }
 
-function getPetDisplayName(pet: StoragePet) {
-  const source = pet as PetWithExtras;
-  const nickname = source.nickname?.trim();
-  const name = pet.name?.trim();
-  return nickname || name || "Unnamed Delta";
-}
-
-function formatPersonality(pet: StoragePet) {
-  const source = pet as PetWithExtras;
-  const raw = source.personality_key || source.personality || "";
-  if (!raw) return "Unknown Personality";
-
-  return raw
-    .replace(/[_-]+/g, " ")
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function getPetSkills(pet: StoragePet) {
-  const source = pet as PetWithExtras;
-
-  const directSkills = [
-    source.skill_1_name,
-    source.skill_2_name,
-    source.skill_3_name,
-    source.skill_4_name,
-  ];
-
-  const arraySkills = Array.isArray(source.skills) ? source.skills : [];
-
-  const merged = [...directSkills, ...arraySkills]
-    .map((skill) => String(skill ?? "").trim())
-    .filter(Boolean);
-
-  return Array.from(new Set(merged)).slice(0, 4);
-}
-
-function MainTeamSlotCard(props: {
-  slot: PartySlotView;
-  isSelected: boolean;
-  isWorking: boolean;
-  isDragOver: boolean;
-  onSelect: () => void;
-  onDragStartPet: (
-    event: DragEvent<HTMLDivElement>,
-    pet: StoragePet,
-    slotIndex: number,
-  ) => void;
-  onDragEndPet: () => void;
-  onDragOverSlot: (event: DragEvent<HTMLElement>) => void;
-  onDragEnterSlot: () => void;
-  onDragLeaveSlot: () => void;
-  onDropOnSlot: (event: DragEvent<HTMLElement>, slotIndex: number) => void;
-}) {
-  const {
-    slot,
-    isSelected,
-    isWorking,
-    isDragOver,
-    onSelect,
-    onDragStartPet,
-    onDragEndPet,
-    onDragOverSlot,
-    onDragEnterSlot,
-    onDragLeaveSlot,
-    onDropOnSlot,
-  } = props;
-
-  const pet = slot.pet;
-  const displayName = pet ? getPetDisplayName(pet) : "Empty Slot";
-  const personality = pet ? formatPersonality(pet) : "";
-  const skills = pet ? getPetSkills(pet) : [];
-
-  return (
-    <article
-      className={[
-        "mainTeamSlotCard",
-        pet ? getToneClass(pet.line) : "tone-default",
-        isSelected ? "selected" : "",
-        isDragOver ? "dragOver" : "",
-        !pet ? "mainTeamSlotCardEmpty" : "",
-        isWorking ? "isWorking" : "",
-      ].join(" ")}
-      onDragOver={onDragOverSlot}
-      onDragEnter={onDragEnterSlot}
-      onDragLeave={onDragLeaveSlot}
-      onDrop={(event) => onDropOnSlot(event, slot.slotIndex)}
-    >
-      {pet ? (
-        <div
-          className="mainTeamCardButton isFilled"
-          draggable={!isWorking}
-          onClick={onSelect}
-          onDragStart={(event) => onDragStartPet(event, pet, slot.slotIndex)}
-          onDragEnd={onDragEndPet}
-          title={displayName}
-        >
-          <div className="mainTeamTopRow">
-            <div className="mainTeamTopLeft">
-              <div className="mainTeamSlotName">{displayName}</div>
-              <div className="mainTeamLevelBadge">Lv. {pet.level ?? 1}</div>
-            </div>
-
-            <div className="mainTeamTopRight">
-              {pet.is_active ? (
-                <div className="mainTeamActiveBadge">Active</div>
-              ) : null}
-
-              <div className="mainTeamSlotPortrait">
-                <div className="mainTeamSlotPortraitInner">
-                  {displayName.charAt(0).toUpperCase() || "D"}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mainTeamBottomInfo">
-            <div className="mainTeamTraitLine">{personality}</div>
-            <div className="mainTeamTraitLine">
-              {formatStageLabel(pet.stage)}
-            </div>
-
-            {skills.length > 0 ? (
-              <div className="mainTeamSkillsBlock">
-                {skills.map((skill, index) => (
-                  <div key={`${skill}-${index}`} className="mainTeamSkillLine">
-                    {index + 1}. {skill}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="mainTeamSkillsBlock empty">
-                <div className="mainTeamSkillLine">No skills loaded</div>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="mainTeamCardButton isEmpty"
-          onClick={onSelect}
-          title={`Main Team Slot ${slot.slotIndex}`}
-        >
-          <div className="mainTeamTopRow mainTeamTopRow--empty">
-            <div className="mainTeamTopLeft">
-              <div className="mainTeamSlotName">Empty Slot</div>
-              <div className="mainTeamLevelBadge isEmpty">Lv. --</div>
-            </div>
-          </div>
-
-          <div className="mainTeamBottomInfo empty">
-            <div className="mainTeamTraitLine emptyLine">&nbsp;</div>
-            <div className="mainTeamTraitLine emptyLine">&nbsp;</div>
-            <div className="mainTeamSkillsBlock empty">
-              <div className="mainTeamSkillLine emptyLine">&nbsp;</div>
-              <div className="mainTeamSkillLine emptyLine">&nbsp;</div>
-            </div>
-          </div>
-        </button>
-      )}
-    </article>
-  );
-}
-
 export default function MainTeam(props: MainTeamProps) {
   const {
-    partySlots,
+    partySlots = [],
     selectedPartySlot,
     workingPetId,
     workingSlotIndex,
@@ -246,44 +96,113 @@ export default function MainTeam(props: MainTeamProps) {
     onDropOnSlot,
   } = props;
 
-  const filledCount = partySlots.filter((slot) => slot.petId).length;
-
   return (
     <section className="mainTeamPanel">
       <div className="mainTeamHeader">
-        <div>
-          <div className="mainTeamTitle">Main Team</div>
-          <div className="mainTeamSubtext">
-            Your frontline squad. Drag stored pets into any slot.
-          </div>
-        </div>
-
-        <div className="mainTeamHeaderMeta">
-          <div className="mainTeamHeaderCount">{filledCount}/4 Filled</div>
-          <div className="mainTeamHeaderGlow">Core Link Active</div>
-        </div>
+        <h2 className="mainTeamTitle">Main Team</h2>
       </div>
 
       <div className="mainTeamGrid">
-        {partySlots.map((slot) => (
-          <MainTeamSlotCard
-            key={slot.slotIndex}
-            slot={slot}
-            isSelected={selectedPartySlot === slot.slotIndex}
-            isWorking={
-              workingSlotIndex === slot.slotIndex ||
-              (slot.petId != null && workingPetId === slot.petId)
-            }
-            isDragOver={dragOverSlotIndex === slot.slotIndex}
-            onSelect={() => onSelectSlot(slot.slotIndex)}
-            onDragStartPet={onDragStartPet}
-            onDragEndPet={onDragEndPet}
-            onDragOverSlot={onDragOverSlot}
-            onDragEnterSlot={() => onDragEnterSlot(slot.slotIndex)}
-            onDragLeaveSlot={() => onDragLeaveSlot(slot.slotIndex)}
-            onDropOnSlot={onDropOnSlot}
-          />
-        ))}
+        {partySlots.map((slot) => {
+          const pet = slot.pet;
+          const source = pet as PetStats | null;
+          const displayName = pet ? getPetDisplayName(pet) : "";
+          const energy = clampStat(source?.energy, 100);
+          const bond = clampStat(source?.bond, 0);
+          const pathId = `main-team-name-${slot.slotIndex}-${pet?.id ?? "empty"}`;
+          const isWorking =
+            workingSlotIndex === slot.slotIndex ||
+            (slot.petId != null && workingPetId === slot.petId);
+
+          return (
+            <article
+              key={slot.slotIndex}
+              className={[
+                "mainTeamSlotCard",
+                pet ? getToneClass(pet.line) : "tone-default",
+                selectedPartySlot === slot.slotIndex ? "selected" : "",
+                dragOverSlotIndex === slot.slotIndex ? "dragOver" : "",
+                !pet ? "empty" : "",
+                isWorking ? "isWorking" : "",
+              ].join(" ")}
+              onDragOver={onDragOverSlot}
+              onDragEnter={() => onDragEnterSlot(slot.slotIndex)}
+              onDragLeave={() => onDragLeaveSlot(slot.slotIndex)}
+              onDrop={(event) => onDropOnSlot(event, slot.slotIndex)}
+            >
+              <button
+                type="button"
+                className="mainTeamSlotButton"
+                onClick={() => onSelectSlot(slot.slotIndex)}
+              >
+                <div
+                  className="mainTeamCircleWrap"
+                  style={
+                    {
+                      "--main-team-energy": `${energy}%`,
+                      "--main-team-bond": `${bond}%`,
+                    } as CSSProperties
+                  }
+                >
+                  <div
+                    className="mainTeamCircle"
+                    draggable={Boolean(pet) && !isWorking}
+                    onDragStart={(event) => {
+                      if (pet) {
+                        onDragStartPet(event, pet, slot.slotIndex);
+                      }
+                    }}
+                    onDragEnd={onDragEndPet}
+                  >
+                    {pet ? (
+                      <span className="mainTeamCircleInitial">
+                        {displayName.charAt(0).toUpperCase()}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {pet ? (
+                    <div className="mainTeamStatTooltip">
+                      <div>HP: {source?.hp ?? 0}</div>
+                      <div>ATK: {source?.atk ?? 0}</div>
+                      <div>DEF: {source?.def ?? 0}</div>
+                      <div>MAGI: {source?.magi ?? 0}</div>
+                      <div>MANA: {source?.mana ?? 0}</div>
+                      <div>SPD: {source?.spd ?? 0}</div>
+                      <div>TRAIT: {source?.trait ?? "None"}</div>
+                    </div>
+                  ) : null}
+
+                  {pet ? (
+                    <svg
+                      className="mainTeamNameArc"
+                      viewBox="0 0 150 150"
+                      aria-hidden="true"
+                    >
+                      <defs>
+                        <path
+                          id={pathId}
+                          d="M 24 72 A 51 51 0 0 1 126 72"
+                          fill="none"
+                        />
+                      </defs>
+
+                      <text>
+                        <textPath
+                          href={`#${pathId}`}
+                          startOffset="50%"
+                          textAnchor="middle"
+                        >
+                          {displayName}
+                        </textPath>
+                      </text>
+                    </svg>
+                  ) : null}
+                </div>
+              </button>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
