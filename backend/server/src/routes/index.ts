@@ -2,7 +2,6 @@
 
 import { Router } from "express";
 
-import { healthRouter } from "./health";
 import { meRouter } from "./me";
 import { authRouter } from "../middleware/auth";
 import { authLimiter } from "../middleware/rateLimit";
@@ -23,7 +22,6 @@ const apiRouter = Router();
    CORE SYSTEM ROUTES
 =============================== */
 
-apiRouter.use(healthRouter);
 apiRouter.use(meRouter);
 apiRouter.use("/auth", authLimiter, authRouter);
 apiRouter.use("/world", worldRouter);

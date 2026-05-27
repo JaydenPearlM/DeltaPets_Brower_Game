@@ -38,6 +38,7 @@ type PetStats = StoragePet & {
   trait?: string | null;
 };
 
+// Keep this helper as-is. It already does nickname → species → name fallback.
 function getPetDisplayName(pet: StoragePet) {
   const source = pet as PetStats;
   return (
@@ -107,8 +108,8 @@ export default function MainTeam(props: MainTeamProps) {
           const pet = slot.pet;
           const source = pet as PetStats | null;
           const displayName = pet ? getPetDisplayName(pet) : "";
-          const energy = clampStat(source?.energy, 100);
-          const bond = clampStat(source?.bond, 0);
+          const energy = clampStat(source?.energy ?? 100, 100);
+          const bond = clampStat(source?.bond ?? 0, 0);
           const pathId = `main-team-name-${slot.slotIndex}-${pet?.id ?? "empty"}`;
           const isWorking =
             workingSlotIndex === slot.slotIndex ||
@@ -141,6 +142,14 @@ export default function MainTeam(props: MainTeamProps) {
                     {
                       "--main-team-energy": `${energy}%`,
                       "--main-team-bond": `${bond}%`,
+                      "--main-team-bond-color":
+                        bond <= 0
+                          ? "transparent"
+                          : bond < 34
+                            ? "#ff334f"
+                            : bond < 67
+                              ? "#ffb340"
+                              : "#45cf6f",
                     } as CSSProperties
                   }
                 >

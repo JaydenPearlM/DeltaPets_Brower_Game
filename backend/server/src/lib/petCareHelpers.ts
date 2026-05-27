@@ -17,11 +17,16 @@ export type PetCareStatsUpdate = {
 };
 
 const CARE_DEFAULT = 50;
+const ENERGY_DEFAULT = 100;
 
 function safeWhole(value: unknown, fallback: number, min = 0, max = 50) {
   const n = Number(value ?? fallback);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+function safeEnergy(value: unknown, fallback = ENERGY_DEFAULT) {
+  return safeWhole(value, fallback, 0, 100);
 }
 
 export function normalizePetForClient<T extends Record<string, any>>(
@@ -42,7 +47,7 @@ export function normalizePetForClient<T extends Record<string, any>>(
     happiness: happy,
     comfort: safeWhole(pet.comfort, CARE_DEFAULT),
     rest: safeWhole(pet.rest, CARE_DEFAULT),
-    energy: safeWhole(pet.energy, CARE_DEFAULT),
+    energy: safeEnergy(pet.energy, ENERGY_DEFAULT),
     neglect_hours: Number(pet.neglect_hours ?? 0) || 0,
     ran_away: ranAway,
     is_runaway: ranAway,
@@ -67,7 +72,7 @@ export async function updatePetCareStats(
       happy: safeWhole(updates.happy, CARE_DEFAULT),
       comfort: safeWhole(updates.comfort, CARE_DEFAULT),
       rest: safeWhole(updates.rest, CARE_DEFAULT),
-      energy: safeWhole(updates.energy, CARE_DEFAULT),
+      energy: safeEnergy(updates.energy, ENERGY_DEFAULT),
       neglect_hours: Math.max(
         0,
         Math.round(Number(updates.neglect_hours ?? 0)),
@@ -80,6 +85,7 @@ export async function updatePetCareStats(
 
   if (error) throw error;
 }
+
 /**
  * Fetches the active pet, applies decay, updates one or more care stats,
  * and writes the result back to the database.
@@ -133,7 +139,7 @@ export async function applyCarePatch(
 
   await updatePetCareStats(current.id, {
     ...next,
-    energy: safeWhole(current.energy, CARE_DEFAULT),
+    energy: safeEnergy(current.energy),
     neglect_hours: Math.max(0, Number(current.neglect_hours ?? 0)),
     ran_away: Boolean(current.ran_away),
     runaway_at: current.runaway_at ?? null,
@@ -141,7 +147,6 @@ export async function applyCarePatch(
     last_care_decay_at: now,
   });
 
-  // Only return the keys that were in the patch so routes respond cleanly
   return Object.fromEntries(
     Object.keys(patch).map((key) => [key, next[key as keyof typeof next]]),
   );

@@ -262,7 +262,7 @@ petsRouter.post(
         species: starter.speciesId,
         line: resolvedLine,
         stage: "egg",
-        energy: 50, // ADD THIS LINE
+        energy: 100,
         hatch_ends_at: hatchEndsAt,
         is_active: false,
         location: "hatchery",
@@ -277,7 +277,7 @@ petsRouter.post(
         name: starter.eggName,
         line: resolvedLine,
         stage: "egg",
-        energy: 50, // ADD THIS LINE
+        energy: 100,
         hatch_ends_at: hatchEndsAt,
         is_active: false,
         location: "hatchery",

@@ -6,15 +6,15 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ) {
-  // Log the error server-side
   console.error("[errorHandler]", err);
 
-  // Don't expose internal error details to client
   const statusCode = err.status || err.statusCode || 500;
   const message = err.message || "Internal server error";
 
   res.status(statusCode).json({
     error: message,
+    code: err.code ?? null,
+    details: err.details ?? null,
     ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 }

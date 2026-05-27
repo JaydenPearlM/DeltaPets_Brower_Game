@@ -64,6 +64,24 @@ type PlayerActionBody = {
 };
 
 const battleStore = new Map<string, BattleState>();
+
+const BATTLE_TTL_MS = 30 * 60 * 1000;
+
+setInterval(
+  () => {
+    const now = Date.now();
+
+    for (const [battleId, battle] of battleStore.entries()) {
+      const updatedAt = new Date(battle.updatedAt).getTime();
+
+      if (now - updatedAt > BATTLE_TTL_MS) {
+        battleStore.delete(battleId);
+      }
+    }
+  },
+  5 * 60 * 1000,
+);
+
 const MAX_BATTLE_LOG_ENTRIES = 50;
 
 export const battlePveRouter = Router();

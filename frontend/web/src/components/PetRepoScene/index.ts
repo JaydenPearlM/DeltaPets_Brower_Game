@@ -1,5 +1,1 @@
-export { 
-  PetRepoScene, 
-  PetRepoVerticalInfo, 
-  PetRepoCareStatusPanel 
-} from './PetRepoScene';
+// intentionally empty

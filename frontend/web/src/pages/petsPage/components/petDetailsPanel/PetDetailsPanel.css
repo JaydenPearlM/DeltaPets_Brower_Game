@@ -715,6 +715,55 @@
   display: none !important;
 }
 
+/* =========================================================
+   SCENE ORB DECORATIVE RINGS (BOND + ENERGY)
+   These wrap around the pet scene orb
+========================================================= */
+
+.petRepoSceneRing {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.petRepoSceneRing--bond {
+  border: 12px solid transparent;
+  background: conic-gradient(
+      from 0deg,
+      var(--scene-ring-bond, #c8a84a) 0% calc(var(--bond, 0) * 1%),
+      transparent calc(var(--bond, 0) * 1%) 100%
+    )
+    border-box;
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+}
+
+.petRepoSceneRing--energy {
+  inset: 20px;
+  border: 8px solid transparent;
+  background: conic-gradient(
+      from 0deg,
+      var(--scene-ring-energy, #43cf6e) 0% calc(var(--energy, 100) * 1%),
+      transparent calc(var(--energy, 100) * 1%) 100%
+    )
+    border-box;
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+}
+
 .petRepoVerticalInfo {
   width: min(100%, 470px);
   display: flex;
@@ -1823,7 +1872,7 @@
   text-transform: uppercase;
   color: var(--dp-brand-yellow);
   -webkit-text-stroke: 1px var(--dp-brand-red);
-  text-shadow: var(--dp-glow-gold);
+  text-shadow: none;
 }
 
 .petRepoEnergyTrack {
@@ -1841,12 +1890,10 @@
 .petRepoEnergyFill {
   display: block;
   height: 100%;
-  min-width: 5px;
+  min-width: 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, #91f06d 75%, #3ee989 100%);
-  box-shadow:
-    0 0 10px rgba(255, 228, 92, 0.28),
-    0 0 18px rgba(62, 233, 137, 0.2);
+  background: var(--scene-ring-energy, #45cf6f);
+  box-shadow: none;
 }
 
 .petRepoCareStatusPanel {
@@ -2041,4 +2088,19 @@
   box-shadow:
     0 0 10px rgba(255, 228, 92, 0.28),
     0 0 18px rgba(62, 233, 137, 0.2);
+}
+.petRepoFarmButtonWrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  margin-right: -795px;
+  position: relative;
+  z-index: 99999;
+}
+
+.petRepoFarmButton {
+  min-width: 180px;
+  background: linear-gradient(180deg, #ffc56f 0%, #9f2f1f 100%);
+  box-shadow: none;
+  text-shadow: none;
 }

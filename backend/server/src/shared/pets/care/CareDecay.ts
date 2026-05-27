@@ -15,20 +15,20 @@ export type CarePet = {
 };
 
 const CARE_MAX = 50;
-const ENERGY_MAX = 50;
+const ENERGY_MAX = 100;
 const MIN = 0;
 
 // step-based decay intervals
-const HUNGER_STEP_MINUTES = 60; // every 1 hour
-const CLEAN_STEP_MINUTES = 90; // every 1.5 hours
-const HAPPY_STEP_MINUTES = 75; // mood drops between hunger and clean
-const COMFORT_STEP_MINUTES = 120; // every 2 hours
-const REST_STEP_MINUTES = 150; // every 2.5 hours
-const ENERGY_STEP_MINUTES = 180; // every 3 hours
-
+const HUNGER_STEP_MINUTES = 60;
+const CLEAN_STEP_MINUTES = 90;
+const HAPPY_STEP_MINUTES = 75;
+const COMFORT_STEP_MINUTES = 120;
+const REST_STEP_MINUTES = 150;
 const RUNAWAY_THRESHOLD_HOURS = 24;
 
-// Development-only logging - controlled by NODE_ENV
+// Energy does not decay over time.
+// Energy only decreases from Gym/training actions.
+
 declare const process:
   | {
       env?: {
@@ -205,11 +205,9 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   const comfortLoss = stepsFromMinutes(elapsedMinutes, COMFORT_STEP_MINUTES);
   const restLoss = stepsFromMinutes(elapsedMinutes, REST_STEP_MINUTES);
 
-  const energyLoss = stepsFromMinutes(elapsedMinutes, ENERGY_STEP_MINUTES);
-
   const totalLoss = hungerLoss + cleanLoss + happyLoss + comfortLoss + restLoss;
 
-  if (totalLoss <= 0 && energyLoss <= 0) {
+  if (totalLoss <= 0) {
     const runawayState = buildRunawayState({
       pet,
       hunger: hungerBase,
@@ -243,7 +241,7 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   const happy = clampCare(happyBase - happyLoss);
   const comfort = clampCare(comfortBase - comfortLoss);
   const rest = clampCare(restBase - restLoss);
-  const energy = clampEnergy(energyBase - energyLoss);
+  const energy = energyBase;
 
   const runawayState = buildRunawayState({
     pet,
@@ -268,7 +266,6 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
       happyLoss,
       comfortLoss,
       restLoss,
-      energyLoss,
     },
     before: {
       hunger: hungerBase,

@@ -21,8 +21,7 @@ import {
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import { PetSkillsPanel } from "@/components/Skills";
-import "./PetPage.css";
-
+import "./petFarmFood.css";
 type CareAction = "feed" | "clean" | "play" | "pet";
 
 type PetRecord = Record<string, any>;
@@ -248,7 +247,7 @@ function SectionPill({ title }: { title: string }) {
   return <h3 className="petRepoSectionPill">{title}</h3>;
 }
 
-export default function PetPage() {
+export function PetFarmFood() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
 

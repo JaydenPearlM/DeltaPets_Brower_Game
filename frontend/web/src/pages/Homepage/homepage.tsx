@@ -2,7 +2,6 @@ import "./homepage.css";
 import { useNavigate } from "react-router-dom";
 import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { AlphaSystemsPanel } from "@/components/AlphaSystems/AlphaSystemsPanel";
-import { DevLogLauncher } from "../../components/Devlog/DevLogLauncher";
 import { useHomepageBanner } from "./useHomepageBanner";
 import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
 

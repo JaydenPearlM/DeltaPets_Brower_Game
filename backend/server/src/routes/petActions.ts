@@ -117,9 +117,8 @@ petActionsRouter.post(
     if (action === "play") {
       const nextHappy = clamp(happy + 8, 0, 50);
       patch.happy = nextHappy;
-      // FIXED: Removed patch.happiness (doesn't exist)
 
-      patch.energy = clamp(safeNum(pet.energy, 0) - 3, 0, 50);
+      patch.energy = clamp(safeNum(pet.energy, 0) - 3, 0, 100);
     }
 
     const { data: updated, error: upErr } = await supabaseAdmin

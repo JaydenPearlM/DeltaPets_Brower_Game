@@ -1,36 +1,31 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
+import helmet from "helmet";
+import { healthRouter } from "./routes/health";
 import { requireUser } from "./middleware/auth";
+import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
 import { apiRouter } from "./routes";
+import { careRouter } from "./routes/care/care";
+import { errorHandler } from "./middleware/errorHandler";
 
-const app = express();
+export function createApp() {
+  const app = express();
 
-// Body parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+  app.set("trust proxy", 1);
 
-// Health check
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
-});
+  app.use(helmet());
 
-// API routes
-app.use("/api", requireUser, apiRouter);
+  app.use(express.json());
 
-// Global error handler - MUST be defined with 4 parameters
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error("[Error]", err);
+  app.use(healthRouter);
 
-  // Don't leak stack traces in production
-  const isDev = process.env.NODE_ENV === "development";
-  res.status(500).json({
-    error: "Internal server error",
-    ...(isDev && { details: err.message, stack: err.stack }),
+  app.use("/api/care", apiLimiter, apiSpeedLimiter, requireUser, careRouter);
+  app.use("/api", apiLimiter, apiSpeedLimiter, requireUser, apiRouter);
+
+  app.use((_req, res) => {
+    res.status(404).json({ error: "Not found" });
   });
-});
 
-// 404 handler - MUST come after error handler
-app.use((req, res) => {
-  res.status(404).json({ error: "Not found" });
-});
+  app.use(errorHandler);
 
-export default app;
+  return app;
+}

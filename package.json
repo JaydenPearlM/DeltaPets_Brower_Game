@@ -7,7 +7,7 @@
     "backend/*"
   ],
   "scripts": {
-    "dev": "concurrently -k -n server,web \"pnpm --dir backend/server dev\" \"wait-on http://localhost:4000/health && pnpm --dir frontend/web dev\"",
+    "dev": "concurrently -k -n server,web \"pnpm --dir backend/server dev\" \"pnpm --dir frontend/web dev\"",
     "build": "pnpm -r build"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import { safeNum, titleCase } from "@/lib/petUtils";
 import "./PetDetailsPanel.css";
 import { getPetDialogue } from "./petDialogue";
@@ -51,6 +52,7 @@ type PetPanelStats = {
 };
 
 const CARE_MAX = 50;
+const ENERGY_MAX = 100;
 
 type PetDetailsPanelProps = {
   pet: PetRecord;
@@ -367,22 +369,6 @@ function MeterRow({
   );
 }
 
-function SectionPill({
-  title,
-  className = "",
-}: {
-  title: string;
-  className?: string;
-}) {
-  return (
-    <div className={`petRepoSectionHeader ${className}`.trim()}>
-      <div className="petRepoSectionLine" />
-      <div className="petRepoSectionPill">{title}</div>
-      <div className="petRepoSectionLine" />
-    </div>
-  );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function PetDetailsPanel({
@@ -417,9 +403,11 @@ export default function PetDetailsPanel({
     .replace(/\s+/g, "_");
 
   const nicknameIsSet = hasNickname(pet);
-
   const clampedBond = Math.max(0, Math.min(100, bond));
-  const clampedEnergy = Math.max(0, Math.min(100, energy));
+  const clampedEnergy = Math.max(
+    0,
+    Math.min(ENERGY_MAX, safeNum(energy, ENERGY_MAX)),
+  );
 
   const hungerLevel = Math.max(
     0,
@@ -434,7 +422,7 @@ export default function PetDetailsPanel({
   );
   const energyLevel = Math.max(
     0,
-    Math.min(CARE_MAX, safeNum(energy, CARE_MAX)),
+    Math.min(ENERGY_MAX, safeNum(energy, ENERGY_MAX)),
   );
 
   const stablePreference = getStablePreference(pet);
@@ -743,7 +731,11 @@ export default function PetDetailsPanel({
                 <p>{petSpeech}</p>
               </div>
             ) : null}
-
+            <div className="petRepoFarmButtonWrap">
+              <Link to="/farm" className="btn btn-gold petRepoFarmButton">
+                Farm
+              </Link>
+            </div>
             <div className="petRepoEnergyPanel" aria-label="Energy level">
               <span className="petRepoEnergyTitle">Energy</span>
 

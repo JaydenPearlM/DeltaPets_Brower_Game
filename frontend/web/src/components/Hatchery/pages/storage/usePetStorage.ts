@@ -14,6 +14,10 @@ export type StoragePet = {
   id: string;
   user_id: string;
   name: string | null;
+  nickname?: string | null;
+  species?: string | null;
+  energy?: number | null;
+  bond?: number | null;
   stage: string | null;
   line: string | null;
   level: number | null;
@@ -151,27 +155,31 @@ export function usePetStorage(options: UsePetStorageOptions) {
         .from("pets")
         .select(
           `
-            id,
-            user_id,
-            name,
-            stage,
-            line,
-            level,
-            location,
-            is_active,
-            created_at,
-            hatched_at,
-            hatch_ends_at,
-            pet_stats (
-              base_hp,
-              base_atk,
-              base_magi,
-              base_def,
-              base_spd,
-              base_mana,
-              base_total
-            )
-          `,
+    id,
+    user_id,
+    name,
+    nickname,
+    species,
+    energy,
+    bond,
+    stage,
+    line,
+    level,
+    location,
+    is_active,
+    created_at,
+    hatched_at,
+    hatch_ends_at,
+    pet_stats (
+      base_hp,
+      base_atk,
+      base_magi,
+      base_def,
+      base_spd,
+      base_mana,
+      base_total
+    )
+  `,
         )
         .eq("user_id", userId)
         .order("created_at", { ascending: true }),
@@ -205,6 +213,10 @@ export function usePetStorage(options: UsePetStorageOptions) {
           id: pet.id,
           user_id: pet.user_id,
           name: pet.name,
+          nickname: pet.nickname,
+          species: pet.species,
+          energy: pet.energy,
+          bond: pet.bond,
           stage: pet.stage,
           line: pet.line,
           level: pet.level,

@@ -96,11 +96,53 @@
   pointer-events: none;
 }
 
+.mainTeamCircleWrap::before {
+  inset: 21px;
+  border: 10px solid transparent;
+  background: conic-gradient(
+      var(--scene-ring-energy, #45cf6f) 0 var(--main-team-energy, 100%),
+      transparent var(--main-team-energy, 100%) 100%
+    )
+    border-box;
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
 .mainTeamCircleWrap::after {
-  inset: 20px;
-  border: 5px solid var(--dp-stat-strong: #66ff8f;);
-  background: none;
-  mask: none;
+  inset: 11px;
+  border: 5px solid transparent;
+  background: conic-gradient(
+      var(--main-team-bond-color, transparent) 0 var(--main-team-bond, 0%),
+      transparent var(--main-team-bond, 0%) 100%
+    )
+    border-box;
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.petRepoEnergyFill {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--scene-ring-energy, #45cf6f);
+  box-shadow: none;
+}
+
+.mainTeamCircle {
+  position: relative;
+  z-index: 1;
+  width: 92px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 0.5px solid rgba(255, 255, 255, 0.55);
+  background: var(--dp-surface-glass);
+  box-shadow: none;
 }
 
 .mainTeamCircle {

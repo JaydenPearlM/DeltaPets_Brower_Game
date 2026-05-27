@@ -26,7 +26,7 @@ const STARTER_TROUGH_CAPACITY = 50;
 const EGG_HATCH_MINUTES = 2;
 
 const ELEMENTS = [
-  "null_element",
+  "neutral",
   "water",
   "fire",
   "earth",
@@ -248,7 +248,7 @@ async function giveEgg(user_id: string, element: Element) {
     species: "reward_egg",
     line: element,
     stage: "egg",
-    energy: 50, // ADD THIS LINE
+    energy: 100, // ADD THIS LINE
     hatch_ends_at: hatchEndsAt,
     is_active: false,
     location: "hatchery",
