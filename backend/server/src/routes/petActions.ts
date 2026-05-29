@@ -76,8 +76,8 @@ petActionsRouter.post(
 
     // Your care system is 0–50, so keep these aligned with that scale.
     const hunger = safeNum(pet.hunger, 0);
-    const clean = safeNum(pet.clean ?? pet.cleanliness, 0);
-    const happy = safeNum(pet.happy ?? pet.happiness, 0);
+    const clean = safeNum(pet.clean, 0);
+    const happy = safeNum(pet.happy, 0);
     const bond = safeNum(pet.bond, 0);
 
     const patch: Record<string, any> = {};

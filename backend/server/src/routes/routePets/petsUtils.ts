@@ -43,7 +43,7 @@ export function hatchPayload(pet: any, serverNowMs: number) {
   };
 }
 
-export function elementMapForLine(_line: ElementalLine) {
+export function elementMapForLine(line: ElementalLine) {
   // keeping current behavior for now
   const base: Record<ElementalLine, number> = {
     null_element: 0,
@@ -56,6 +56,8 @@ export function elementMapForLine(_line: ElementalLine) {
     light: 0,
     shadow: 0,
   };
+
+  base[line] = 1;
 
   return base;
 }

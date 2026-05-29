@@ -22,29 +22,62 @@ type MainTeamProps = {
   onDragEnterSlot: (slotIndex: number) => void;
   onDragLeaveSlot: (slotIndex: number) => void;
   onDropOnSlot: (event: DragEvent<HTMLElement>, slotIndex: number) => void;
+  teamName?: string | null;
 };
 
 type PetStats = StoragePet & {
   nickname?: string | null;
   species?: string | null;
+  stage?: string | null;
+  level?: number | null;
   energy?: number | null;
   bond?: number | null;
   hp?: number | null;
+  current_hp?: number | null;
+  max_hp?: number | null;
+  experience?: number | null;
+  xp?: number | null;
+  experience_to_next_level?: number | null;
+  xp_to_next_level?: number | null;
+  next_level_xp?: number | null;
+  portrait_url?: string | null;
+  image_url?: string | null;
+  sprite_url?: string | null;
   atk?: number | null;
   def?: number | null;
   magi?: number | null;
   mana?: number | null;
   spd?: number | null;
-  trait?: string | null;
+  personality_key?: string | null;
 };
 
-// Keep this helper as-is. It already does nickname → species → name fallback.
+const STARTER_DISPLAY_NAMES: Record<string, string> = {
+  water_starter: "Mizu",
+  fire_starter: "Kindlekin",
+  earth_starter: "Twiglet",
+  air_starter: "Wistpip",
+  ice_starter: "Cribi",
+  storm_starter: "Volb",
+  light_starter: "Solen",
+  shadow_night_bad: "Esperon",
+  shadow_day_good: "Esperon",
+};
+
+function resolveSpeciesLabel(value?: string | null) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+
+  const key = raw.toLowerCase();
+  return STARTER_DISPLAY_NAMES[key] ?? raw;
+}
+
 function getPetDisplayName(pet: StoragePet) {
   const source = pet as PetStats;
+
   return (
     source.nickname?.trim() ||
-    source.species?.trim() ||
-    pet.name?.trim() ||
+    resolveSpeciesLabel(source.species) ||
+    resolveSpeciesLabel(pet.name) ||
     "Unnamed Kith"
   );
 }
@@ -52,6 +85,47 @@ function getPetDisplayName(pet: StoragePet) {
 function clampStat(value: number | null | undefined, fallback: number) {
   if (typeof value !== "number" || Number.isNaN(value)) return fallback;
   return Math.max(0, Math.min(100, value));
+}
+
+function formatStage(stage?: string | null) {
+  const raw = String(stage ?? "").trim();
+  if (!raw) return "Hatchling";
+
+  return raw
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getHpNumbers(pet: PetStats | null) {
+  const currentHp = pet?.current_hp ?? pet?.hp ?? 0;
+  const maxHp = pet?.max_hp ?? pet?.hp ?? currentHp;
+
+  return {
+    currentHp,
+    maxHp,
+    hpPercent:
+      maxHp > 0 ? Math.max(0, Math.min(100, (currentHp / maxHp) * 100)) : 0,
+  };
+}
+
+function getXpNumbers(pet: PetStats | null) {
+  const currentXp = pet?.experience ?? pet?.xp ?? 0;
+  const nextXp =
+    pet?.experience_to_next_level ??
+    pet?.xp_to_next_level ??
+    pet?.next_level_xp ??
+    100;
+
+  return {
+    currentXp,
+    nextXp,
+    xpPercent:
+      nextXp > 0 ? Math.max(0, Math.min(100, (currentXp / nextXp) * 100)) : 0,
+  };
+}
+
+function getPetImage(pet: PetStats | null) {
+  return pet?.portrait_url || pet?.image_url || pet?.sprite_url || "";
 }
 
 function getToneClass(line?: string | null) {
@@ -95,22 +169,42 @@ export default function MainTeam(props: MainTeamProps) {
     onDragEnterSlot,
     onDragLeaveSlot,
     onDropOnSlot,
+    teamName,
   } = props;
 
+  const teamDisplayName = teamName?.trim() || "Kith Team";
+
   return (
-    <section className="mainTeamPanel">
+    <section className="mainTeamPanel" aria-label={teamDisplayName}>
       <div className="mainTeamHeader">
-        <h2 className="mainTeamTitle">Main Team</h2>
+        <div className="mainTeamTitleRow">
+          <span
+            className="mainTeamTitleDelta mainTeamTitleDeltaLeft"
+            aria-hidden="true"
+          >
+            △
+          </span>
+          <h2 className="mainTeamTitle">{teamDisplayName}</h2>
+          <span
+            className="mainTeamTitleDelta mainTeamTitleDeltaRight"
+            aria-hidden="true"
+          >
+            △
+          </span>
+        </div>
+
+        <p className="mainTeamSubtitle">Your trusted companions</p>
       </div>
 
       <div className="mainTeamGrid">
         {partySlots.map((slot) => {
           const pet = slot.pet;
           const source = pet as PetStats | null;
-          const displayName = pet ? getPetDisplayName(pet) : "";
-          const energy = clampStat(source?.energy ?? 100, 100);
+          const displayName = pet ? getPetDisplayName(pet) : "No Pet";
           const bond = clampStat(source?.bond ?? 0, 0);
-          const pathId = `main-team-name-${slot.slotIndex}-${pet?.id ?? "empty"}`;
+          const hp = getHpNumbers(source);
+          const xp = getXpNumbers(source);
+          const petImage = getPetImage(source);
           const isWorking =
             workingSlotIndex === slot.slotIndex ||
             (slot.petId != null && workingPetId === slot.petId);
@@ -137,78 +231,113 @@ export default function MainTeam(props: MainTeamProps) {
                 onClick={() => onSelectSlot(slot.slotIndex)}
               >
                 <div
-                  className="mainTeamCircleWrap"
-                  style={
-                    {
-                      "--main-team-energy": `${energy}%`,
-                      "--main-team-bond": `${bond}%`,
-                      "--main-team-bond-color":
-                        bond <= 0
-                          ? "transparent"
-                          : bond < 34
-                            ? "#ff334f"
-                            : bond < 67
-                              ? "#ffb340"
-                              : "#45cf6f",
-                    } as CSSProperties
-                  }
+                  className="mainTeamPetArt"
+                  draggable={Boolean(pet) && !isWorking}
+                  onDragStart={(event) => {
+                    if (pet) {
+                      onDragStartPet(event, pet, slot.slotIndex);
+                    }
+                  }}
+                  onDragEnd={onDragEndPet}
                 >
-                  <div
-                    className="mainTeamCircle"
-                    draggable={Boolean(pet) && !isWorking}
-                    onDragStart={(event) => {
-                      if (pet) {
-                        onDragStartPet(event, pet, slot.slotIndex);
-                      }
-                    }}
-                    onDragEnd={onDragEndPet}
-                  >
-                    {pet ? (
-                      <span className="mainTeamCircleInitial">
-                        {displayName.charAt(0).toUpperCase()}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  {pet ? (
-                    <div className="mainTeamStatTooltip">
-                      <div>HP: {source?.hp ?? 0}</div>
-                      <div>ATK: {source?.atk ?? 0}</div>
-                      <div>DEF: {source?.def ?? 0}</div>
-                      <div>MAGI: {source?.magi ?? 0}</div>
-                      <div>MANA: {source?.mana ?? 0}</div>
-                      <div>SPD: {source?.spd ?? 0}</div>
-                      <div>TRAIT: {source?.trait ?? "None"}</div>
-                    </div>
-                  ) : null}
-
-                  {pet ? (
-                    <svg
-                      className="mainTeamNameArc"
-                      viewBox="0 0 150 150"
-                      aria-hidden="true"
-                    >
-                      <defs>
-                        <path
-                          id={pathId}
-                          d="M 24 72 A 51 51 0 0 1 126 72"
-                          fill="none"
-                        />
-                      </defs>
-
-                      <text>
-                        <textPath
-                          href={`#${pathId}`}
-                          startOffset="50%"
-                          textAnchor="middle"
-                        >
-                          {displayName}
-                        </textPath>
-                      </text>
-                    </svg>
-                  ) : null}
+                  {petImage ? (
+                    <img src={petImage} alt={displayName} />
+                  ) : (
+                    <span className="mainTeamNoImageText">
+                      {pet ? "No image yet" : "No Pet"}
+                    </span>
+                  )}
                 </div>
+
+                <div className="mainTeamInfo">
+                  {pet ? (
+                    <>
+                      <div className="mainTeamTopInfoRow">
+                        <div className="mainTeamLeftStats">
+                          <div className="mainTeamStatLine">
+                            LV. {source?.level ?? 1}
+                          </div>
+                          <div className="mainTeamStatLine">
+                            HP {hp.currentHp} / {hp.maxHp}
+                          </div>
+                        </div>
+
+                        <h3 className="mainTeamPetName">{displayName}</h3>
+                      </div>
+
+                      <div className="mainTeamHpBar" aria-hidden="true">
+                        <span
+                          style={
+                            {
+                              "--main-team-hp": `${hp.hpPercent}%`,
+                            } as CSSProperties
+                          }
+                        />
+                      </div>
+
+                      <p className="mainTeamStage">
+                        {formatStage(source?.stage)}
+                      </p>
+
+                      <div className="mainTeamXpWrap">
+                        <div className="mainTeamXpBar" aria-hidden="true">
+                          <span
+                            style={
+                              {
+                                "--main-team-xp": `${xp.xpPercent}%`,
+                              } as CSSProperties
+                            }
+                          />
+                        </div>
+
+                        <p className="mainTeamXp">
+                          {xp.currentXp} / {xp.nextXp} XP
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="mainTeamPetName">{displayName}</h3>
+                      <p className="mainTeamStage">No Pet</p>
+                    </>
+                  )}
+                </div>
+
+                {pet ? (
+                  <div
+                    className="mainTeamCircleWrap"
+                    style={
+                      {
+                        "--main-team-bond": `${bond}%`,
+                        "--main-team-bond-color": "var(--main-team-element)",
+                      } as CSSProperties
+                    }
+                  >
+                    <div className="mainTeamCircle">
+                      <span className="mainTeamCircleValue">{bond}%</span>
+                      <span className="mainTeamCircleLabel">Bond</span>
+                    </div>
+                  </div>
+                ) : null}
               </button>
+
+              {pet ? (
+                <div className="mainTeamTooltip">
+                  <div>
+                    HP: {hp.currentHp} / {hp.maxHp}
+                  </div>
+                  <div>
+                    EXP: {xp.currentXp} / {xp.nextXp}
+                  </div>
+                  <div>ATK: {source?.atk ?? "—"}</div>
+                  <div>DEF: {source?.def ?? "—"}</div>
+                  <div>MAGI: {source?.magi ?? "—"}</div>
+                  <div>MANA: {source?.mana ?? "—"}</div>
+                  <div>SPD: {source?.spd ?? "—"}</div>
+                  <div>PERSONALITY: {source?.personality_key ?? "—"}</div>
+                  <div>BOND: {bond}%</div>
+                </div>
+              ) : null}
             </article>
           );
         })}

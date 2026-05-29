@@ -102,8 +102,10 @@ export async function fetchAllocTotals(petId: string) {
 }
 
 export async function fetchTotalPoints(petId: string) {
-  const base = await fetchBaseStatsMapped(petId);
-  const alloc = await fetchAllocTotals(petId);
+  const [base, alloc] = await Promise.all([
+    fetchBaseStatsMapped(petId),
+    fetchAllocTotals(petId),
+  ]);
 
   if (!base) return null;
 

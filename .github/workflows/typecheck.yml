@@ -1,0 +1,45 @@
+name: Typecheck
+
+on:
+  push:
+    branches:
+      - main
+      - Core_Systems_version_1
+  pull_request:
+    branches:
+      - main
+      - Core_Systems_version_1
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install frontend dependencies
+        working-directory: frontend/web
+        run: pnpm install
+
+      - name: Build frontend
+        working-directory: frontend/web
+        run: pnpm build
+
+      - name: Install backend dependencies
+        working-directory: backend/server
+        run: pnpm install
+
+      - name: Build backend
+        working-directory: backend/server
+        run: pnpm build

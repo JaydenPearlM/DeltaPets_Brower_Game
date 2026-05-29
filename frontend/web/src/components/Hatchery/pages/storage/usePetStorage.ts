@@ -33,6 +33,7 @@ export type StoragePet = {
   def?: number | null;
   spd?: number | null;
   mana?: number | null;
+  personality_key?: string | null;
   base_total?: number | null;
 };
 
@@ -162,6 +163,13 @@ export function usePetStorage(options: UsePetStorageOptions) {
     species,
     energy,
     bond,
+    hp_max,
+    atk,
+    def,
+    spd,
+    magi,
+    mana,
+    personality_key,
     stage,
     line,
     level,
@@ -169,16 +177,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
     is_active,
     created_at,
     hatched_at,
-    hatch_ends_at,
-    pet_stats (
-      base_hp,
-      base_atk,
-      base_magi,
-      base_def,
-      base_spd,
-      base_mana,
-      base_total
-    )
+    hatch_ends_at
   `,
         )
         .eq("user_id", userId)
@@ -205,10 +204,6 @@ export function usePetStorage(options: UsePetStorageOptions) {
 
     const normalizedPets: StoragePet[] = ((petsResult.data ?? []) as any[]).map(
       (pet) => {
-        const stats = Array.isArray(pet.pet_stats)
-          ? (pet.pet_stats[0] ?? null)
-          : (pet.pet_stats ?? null);
-
         return {
           id: pet.id,
           user_id: pet.user_id,
@@ -225,13 +220,14 @@ export function usePetStorage(options: UsePetStorageOptions) {
           created_at: pet.created_at,
           hatched_at: pet.hatched_at,
           hatch_ends_at: pet.hatch_ends_at,
-          hp: stats?.base_hp ?? null,
-          atk: stats?.base_atk ?? null,
-          magi: stats?.base_magi ?? null,
-          def: stats?.base_def ?? null,
-          spd: stats?.base_spd ?? null,
-          mana: stats?.base_mana ?? null,
-          base_total: stats?.base_total ?? null,
+          hp: pet.hp_max ?? null,
+          atk: pet.atk ?? null,
+          magi: pet.magi ?? null,
+          def: pet.def ?? null,
+          spd: pet.spd ?? null,
+          mana: pet.mana ?? null,
+          personality_key: pet.personality_key ?? null,
+          base_total: null,
         };
       },
     );

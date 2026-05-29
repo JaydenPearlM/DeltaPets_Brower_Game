@@ -1,10 +1,14 @@
 import express from "express";
 import helmet from "helmet";
 import { healthRouter } from "./routes/health";
-import { requireUser } from "./middleware/auth";
-import { apiLimiter, apiSpeedLimiter } from "./middleware/rateLimit";
+import { publicAuthRouter, requireUser } from "./middleware/auth";
+import {
+  apiLimiter,
+  apiSpeedLimiter,
+  authLimiter,
+} from "./middleware/rateLimit";
 import { apiRouter } from "./routes";
-import { careRouter } from "./routes/care/care";
+import { worldRouter } from "./routes/world/world";
 import { errorHandler } from "./middleware/errorHandler";
 
 export function createApp() {
@@ -18,7 +22,8 @@ export function createApp() {
 
   app.use(healthRouter);
 
-  app.use("/api/care", apiLimiter, apiSpeedLimiter, requireUser, careRouter);
+  app.use("/api/auth", authLimiter, publicAuthRouter);
+  app.use("/api/world", apiLimiter, apiSpeedLimiter, worldRouter);
   app.use("/api", apiLimiter, apiSpeedLimiter, requireUser, apiRouter);
 
   app.use((_req, res) => {

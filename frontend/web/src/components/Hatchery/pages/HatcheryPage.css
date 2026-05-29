@@ -1670,3 +1670,88 @@ textarea {
   background: rgba(255, 251, 241, 0.94);
   color: #32537f;
 }
+
+/* =========================================================
+   Hatchery 2-column layout fix
+   Keeps Kith Team/Storage in its assigned seat.
+   Keeps Egg Rack in the left column underneath the egg panels.
+   ========================================================= */
+
+.hatcheryWorkbenchLayout {
+  display: grid;
+  grid-template-columns: minmax(360px, 420px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.hatcheryLeftColumn {
+  grid-column: 1;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 14px;
+  min-width: 0;
+  margin-left: 0;
+}
+
+.storagePanel {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 0;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.rackPanelSide {
+  grid-column: 1;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.eggRackBody {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+}
+
+.eggGrid {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  height: auto;
+  align-content: start;
+}
+
+.eggGridCompact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.eggSlotCard {
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .hatcheryWorkbenchLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .hatcheryLeftColumn,
+  .storagePanel,
+  .rackPanelSide {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .eggGridCompact {
+    grid-template-columns: repeat(5, minmax(110px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .eggGridCompact {
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+  }
+}

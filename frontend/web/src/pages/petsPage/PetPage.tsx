@@ -3,27 +3,45 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
-import { supabase } from "@/lib/supabase/client";
 import {
   clampPercent,
   normalizeElement,
   safeNum,
   titleCase,
 } from "@/lib/petUtils";
-import {
-  addCareItem,
-  consumeCareItem,
-  ensureStarterCareInventory,
-  getCareItemCount,
-  getInventoryChangeEventName,
-  type CareInventoryCategory,
-} from "@/components/inventory/inventory";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import { PetSkillsPanel } from "@/components/Skills";
 import "./PetPage.css";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
+type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
+
+const TEMP_DISABLED_CARE_INVENTORY_COUNTS: Record<
+  CareInventoryCategory,
+  number
+> = {
+  food: 999,
+  soap: 999,
+  toy: 999,
+  bed: 999,
+};
+
+function ensureStarterCareInventory() {
+  // Inventory is temporarily disabled.
+}
+
+function getInventoryChangeEventName() {
+  return "deltapets:inventory-disabled";
+}
+
+function consumeCareItem(_category: CareInventoryCategory, _amount: number) {
+  return true;
+}
+
+function addCareItem(_category: CareInventoryCategory, _amount: number) {
+  // Inventory is temporarily disabled.
+}
 
 type PetRecord = Record<string, any>;
 
@@ -267,12 +285,13 @@ export default function PetPage() {
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [showNicknameEditor, setShowNicknameEditor] = useState(false);
-  const [careInventoryCounts, setCareInventoryCounts] = useState({
-    food: 0,
-    soap: 0,
-    toy: 0,
-    bed: 0,
-  });
+  const [careInventoryCounts, setCareInventoryCounts] = useState(
+    TEMP_DISABLED_CARE_INVENTORY_COUNTS,
+  );
+
+  const syncCareInventoryCounts = useCallback(() => {
+    setCareInventoryCounts(TEMP_DISABLED_CARE_INVENTORY_COUNTS);
+  }, []);
 
   const hasLoadedOnceRef = useRef(false);
   const hasLoggedRunawayLockRef = useRef(false);
@@ -340,16 +359,6 @@ export default function PetPage() {
     [user],
   );
 
-  const syncCareInventoryCounts = useCallback(() => {
-    ensureStarterCareInventory();
-    setCareInventoryCounts({
-      food: getCareItemCount("food"),
-      soap: getCareItemCount("soap"),
-      toy: getCareItemCount("toy"),
-      bed: getCareItemCount("bed"),
-    });
-  }, []);
-
   useEffect(() => {
     syncCareInventoryCounts();
     const eventName = getInventoryChangeEventName();
@@ -390,7 +399,7 @@ export default function PetPage() {
 
   const runCareAction = useCallback(
     async (action: CareAction) => {
-      if (busy) return;
+      if (busy || nicknameSaving) return;
 
       const inventoryCategoryByAction: Partial<
         Record<CareAction, CareInventoryCategory>
@@ -425,16 +434,21 @@ export default function PetPage() {
       setActionMsg(null);
 
       try {
-        const json = await apiFetch<{ message?: string }>(
-          `/api/care/${action}`,
-          { method: "POST" },
-        );
+        const json =
+          action === "pet"
+            ? await apiFetch<{ message?: string }>(`/api/care/${action}`, {
+                method: "POST",
+              })
+            : await apiFetch<{ message?: string }>("/api/pets/actions/do", {
+                method: "POST",
+                json: { action },
+              });
 
         const defaultMessageMap: Record<CareAction, string> = {
-          feed: "Your Delta has been fed.",
-          clean: "Your Delta is all cleaned up.",
-          play: "Your Delta had a fun play session.",
-          pet: "Your Delta looks happier after the extra affection.",
+          feed: "Successful Food Intake.",
+          clean: "Successful Bath.",
+          play: "Successful play time.",
+          pet: "They look happier.",
         };
 
         setActionMsg(json?.message || defaultMessageMap[action]);
@@ -455,7 +469,7 @@ export default function PetPage() {
         setBusy(false);
       }
     },
-    [busy, loadPetPage, syncCareInventoryCounts],
+    [busy, loadPetPage, nicknameSaving, syncCareInventoryCounts],
   );
 
   const switchActivePet = useCallback(
@@ -507,16 +521,15 @@ export default function PetPage() {
     setActionMsg(null);
 
     try {
-      const { error } = await supabase
-        .from("pets")
-        .update({ nickname: trimmed })
-        .eq("id", pet.id)
-        .eq("user_id", user.id)
-        .is("nickname", null);
+      const json = await apiFetch<{ message?: string; pet?: PetRecord }>(
+        `/api/pets/${pet.id}/nickname`,
+        {
+          method: "PATCH",
+          json: { nickname: trimmed },
+        },
+      );
 
-      if (error) throw new Error(error.message);
-
-      setActionMsg(`Nickname locked in as ${trimmed}.`);
+      setActionMsg(json.message || `Nickname locked in as ${trimmed}.`);
       setShowNicknameEditor(false);
       await loadPetPage(false);
     } catch (error) {

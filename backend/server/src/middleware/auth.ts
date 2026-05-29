@@ -58,6 +58,7 @@ export function getUserId(req: AuthedRequest): string {
   return id;
 }
 
+export const publicAuthRouter = Router();
 export const authRouter = Router();
 
 authRouter.get("/ping", (_req, res: Response) => {
@@ -68,30 +69,33 @@ authRouter.get("/me", requireUser, (req: AuthedRequest, res: Response) => {
   return res.json({ user: req.user ?? null });
 });
 
-authRouter.post("/resolve-username", async (req: Request, res: Response) => {
-  try {
-    const username = String(req.body?.username ?? "")
-      .trim()
-      .toLowerCase();
+publicAuthRouter.post(
+  "/resolve-username",
+  async (req: Request, res: Response) => {
+    try {
+      const username = String(req.body?.username ?? "")
+        .trim()
+        .toLowerCase();
 
-    if (!username) {
-      return res.status(400).json({ error: "Missing username." });
-    }
+      if (!username) {
+        return res.status(400).json({ error: "Missing username." });
+      }
 
-    const { data, error } = await supabaseAdmin.rpc("get_email_by_username", {
-      p_username: username,
-    });
+      const { data, error } = await supabaseAdmin.rpc("get_email_by_username", {
+        p_username: username,
+      });
 
-    if (error) {
-      console.error("[auth] resolve username failed", error);
+      if (error) {
+        console.error("[auth] resolve username failed", error);
+        return res.status(500).json({ error: "Could not resolve username." });
+      }
+
+      return res.json({
+        email: data ? String(data).trim().toLowerCase() : null,
+      });
+    } catch (err) {
+      console.error("[auth] resolve username crashed", err);
       return res.status(500).json({ error: "Could not resolve username." });
     }
-
-    return res.json({
-      email: data ? String(data).trim().toLowerCase() : null,
-    });
-  } catch (err) {
-    console.error("[auth] resolve username crashed", err);
-    return res.status(500).json({ error: "Could not resolve username." });
-  }
-});
+  },
+);

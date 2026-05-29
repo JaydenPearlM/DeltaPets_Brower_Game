@@ -197,5 +197,3 @@ meRouter.post(
     }
   },
 );
-
-export default meRouter;

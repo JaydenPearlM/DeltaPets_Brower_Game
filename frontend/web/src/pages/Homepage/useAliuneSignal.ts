@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
 
 type SignalCondition = "stable" | "unbalanced" | "unstable";
 type SignalCorruption = "low" | "high";
 
 type SignalRow = {
-  id: string;
+  id?: string;
   enabled?: boolean | null;
   condition?: SignalCondition | string | null;
   region?: string | null;
@@ -97,30 +96,33 @@ export function useAliuneSignal(): UseAliuneSignalResult {
     let timeoutId: number | null = null;
 
     async function loadSignalAndScheduleNextRefresh() {
-      const { data, error } = await supabase.rpc(
-        "get_or_create_kithna_tutorial_signal",
-      );
+      try {
+        const res = await fetch("/api/world/aliune-signal");
 
-      if (!alive) return;
+        if (!alive) return;
 
-      if (error) {
-        console.error("[aliune-signal] rpc failed", error);
+        if (!res.ok) {
+          throw new Error(`Aliune Signal request failed (${res.status})`);
+        }
+
+        const data = await res.json();
+        const activeRow = getFirstRow(data);
+
+        setRow(activeRow);
+
+        timeoutId = window.setTimeout(() => {
+          void loadSignalAndScheduleNextRefresh();
+        }, getDelayUntilSignalExpiresMs(activeRow));
+      } catch (error) {
+        if (!alive) return;
+
+        console.error("[aliune-signal] fetch failed", error);
         setRow(null);
 
         timeoutId = window.setTimeout(() => {
           void loadSignalAndScheduleNextRefresh();
         }, FALLBACK_REFRESH_MS);
-
-        return;
       }
-
-      const activeRow = getFirstRow(data);
-
-      setRow(activeRow);
-
-      timeoutId = window.setTimeout(() => {
-        void loadSignalAndScheduleNextRefresh();
-      }, getDelayUntilSignalExpiresMs(activeRow));
     }
 
     function handleVisibilityChange() {

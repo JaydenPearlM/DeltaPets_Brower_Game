@@ -2,11 +2,6 @@ import rateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
 import { env } from "../env.server";
 
-/**
- * Let express-rate-limit use its default keyGenerator (IPv6-safe).
- * Make sure app.set("trust proxy", 1) is set so req.ip is correct behind proxies.
- */
-
 export const apiLimiter = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
   max: env.RATE_LIMIT_MAX,
@@ -18,7 +13,7 @@ export const apiLimiter = rateLimit({
 export const apiSpeedLimiter = slowDown({
   windowMs: env.SLOW_DOWN_WINDOW_MS,
   delayAfter: env.SLOW_DOWN_AFTER,
-  delayMs: () => env.SLOW_DOWN_DELAY_MS, // new behavior
+  delayMs: (_used: number) => env.SLOW_DOWN_DELAY_MS,
   skip: (req) => req.path === "/health",
 });
 

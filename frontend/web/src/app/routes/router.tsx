@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Homepage from "../../pages/Homepage/homepage";
 import CreatePage from "../../pages/cutscene/create";
-import InventoryPage from "../../components/inventory/inventory";
+
 import PetPage from "../../pages/petsPage/PetPage";
 import AuthCallback from "./AuthCallback";
 import HatcheryPage from "../../components/Hatchery/pages/HatcheryPage";
@@ -28,7 +28,6 @@ export const router = createBrowserRouter([
       { path: "create", element: <CreatePage /> },
       { path: "pet", element: <PetPage /> },
       { path: "hatchery", element: <HatcheryPage /> },
-      { path: "inventory", element: <InventoryPage /> },
 
       { path: "farm", element: <ComingSoonPage pageName="Pet Farm" /> },
       { path: "gym", element: <ComingSoonPage pageName="Gym" /> },

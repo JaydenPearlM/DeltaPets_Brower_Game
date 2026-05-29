@@ -1,31 +1,85 @@
 .mainTeamPanel {
   position: relative;
   overflow: visible;
-  padding: 18px 20px 24px;
-  border: 1px solid var(--dp-panel-border);
+  padding: 30px 30px 60px;
+  border: 4px solid var(--dp-popup-border, var(--dp-cyan, #38dfff));
   border-radius: 18px;
-  color: var(--dp-panel-text);
   background:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    var(--dp-gradient-panel);
+    radial-gradient(
+      circle at 18% 18%,
+      rgba(255, 255, 255, 0.08),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at 82% 22%,
+      rgba(130, 75, 255, 0.18),
+      transparent 28%
+    ),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    var(
+      --dp-gradient-popup,
+      linear-gradient(
+        180deg,
+        rgba(24, 104, 186, 0.28) 0%,
+        rgba(5, 43, 94, 0.92) 38%,
+        rgba(3, 20, 38, 0.96) 100%
+      )
+    );
   background-size:
-    24px 24px,
-    24px 24px,
+    auto,
+    auto,
+    18px 18px,
+    18px 18px,
     auto;
+  color: var(--dp-popup-text, var(--dp-panel-text));
+  clip-path: polygon(
+    30px 0,
+    calc(100% - 30px) 0,
+    100% 30px,
+    100% calc(100% - 30px),
+    calc(100% - 30px) 100%,
+    30px 100%,
+    0 calc(100% - 30px),
+    0 30px
+  );
   box-shadow:
-    var(--dp-glow-cyan),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 0 0 2px var(--dp-panel-purple-border, #7b4dff) inset,
+    0 0 0 12px rgba(123, 77, 255, 0.08) inset,
+    var(--dp-popup-glow, 0 0 22px rgba(56, 223, 255, 0.25));
+}
+
+.mainTeamPanel::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 2px solid var(--dp-panel-purple-border, #7b4dff);
+  clip-path: polygon(
+    22px 0,
+    calc(100% - 22px) 0,
+    100% 22px,
+    100% calc(100% - 22px),
+    calc(100% - 22px) 100%,
+    22px 100%,
+    0 calc(100% - 22px),
+    0 22px
+  );
+  pointer-events: none;
+  z-index: 0;
 }
 
 .mainTeamPanel::after {
   content: "";
   position: absolute;
-  inset: 10px;
+  left: 50%;
+  bottom: -11px;
+  width: 72px;
+  height: 22px;
+  transform: translateX(-50%);
+  background: var(--dp-panel-purple-border, #7b4dff);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   pointer-events: none;
-  border: 4px solid var(--dp-panel-purple-border);
-  border-radius: 13px;
-  box-shadow: none;
+  z-index: 5;
 }
 
 .mainTeamPanel > * {
@@ -34,202 +88,417 @@
 }
 
 .mainTeamHeader {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  margin-bottom: 28px;
+}
+
+.mainTeamHeader::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -41px;
+  width: 72px;
+  height: 22px;
+  transform: translateX(-50%);
+  background: var(--dp-panel-purple-border, #7b4dff);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  pointer-events: none;
+}
+
+.mainTeamTitleRow {
+  position: relative;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  gap: 18px;
+  width: 100%;
+}
+
+.mainTeamTitleDelta {
+  display: inline-grid;
+  place-items: center;
+  color: var(--dp-text-gold, var(--dp-gold, #ffd66b));
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: none;
+}
+
+.mainTeamTitleDeltaLeft {
+  transform: translateX(-34px);
+}
+
+.mainTeamTitleDeltaRight {
+  transform: translateX(18px);
 }
 
 .mainTeamTitle {
   margin: 0;
+  color: var(--dp-text-gold, var(--dp-gold, #ffd66b));
   font-family: var(--font-heading);
-  font-size: 1.1rem;
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--dp-text-gold);
+  -webkit-text-stroke: 1px var(--dp-red, #b72f2f);
   text-shadow: none;
-  -webkit-text-stroke: 0;
+}
+
+.mainTeamSubtitle {
+  margin: 0;
+  color: var(--dp-text-gold, var(--dp-gold, #ffd66b));
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
 }
 
 .mainTeamGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  align-items: center;
-  padding: 0;
+  grid-template-columns: repeat(4, minmax(165px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+  overflow: visible;
 }
 
 .mainTeamSlotCard {
   --main-team-element: var(--element-null);
+  position: relative;
   min-width: 0;
+  min-height: 320px;
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      color-mix(in srgb, var(--main-team-element) 24%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(32, 67, 126, 0.82) 0%,
+      rgba(10, 30, 72, 0.96) 48%,
+      rgba(4, 12, 34, 0.98) 100%
+    );
+  clip-path: polygon(
+    22px 0,
+    calc(100% - 22px) 0,
+    100% 22px,
+    100% calc(100% - 22px),
+    calc(100% - 22px) 100%,
+    22px 100%,
+    0 calc(100% - 22px),
+    0 22px
+  );
+  overflow: visible;
+}
+
+.mainTeamSlotCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--main-team-element);
+  clip-path: polygon(
+    22px 0,
+    calc(100% - 22px) 0,
+    100% 22px,
+    100% calc(100% - 22px),
+    calc(100% - 22px) 100%,
+    22px 100%,
+    0 calc(100% - 22px),
+    0 22px
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+.mainTeamSlotCard::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      color-mix(in srgb, var(--main-team-element) 24%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(32, 67, 126, 0.82) 0%,
+      rgba(10, 30, 72, 0.96) 48%,
+      rgba(4, 12, 34, 0.98) 100%
+    );
+  clip-path: polygon(
+    20px 0,
+    calc(100% - 20px) 0,
+    100% 20px,
+    100% calc(100% - 20px),
+    calc(100% - 20px) 100%,
+    20px 100%,
+    0 calc(100% - 20px),
+    0 20px
+  );
+  z-index: 1;
+  pointer-events: none;
 }
 
 .mainTeamSlotButton {
+  position: relative;
+  z-index: 2;
   width: 100%;
-  min-height: 172px;
+  min-height: 320px;
   display: grid;
+  grid-template-rows: 142px 1fr 48px;
   justify-items: center;
-  align-content: start;
-  gap: 8px;
+  align-items: stretch;
+  gap: 0;
+  padding: 14px 12px 0;
   border: 0;
   background: transparent;
   color: inherit;
+  cursor: pointer;
+  overflow: visible;
 }
 
-.mainTeamStats {
-  display: none;
+.mainTeamPetArt {
+  position: relative;
+  width: 100%;
+  height: 142px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.mainTeamPetArt img {
+  position: relative;
+  z-index: 1;
+  width: 150px;
+  max-width: 112%;
+  height: 150px;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.mainTeamNoImageText {
+  position: relative;
+  z-index: 2;
+  color: rgba(232, 240, 255, 0.64);
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mainTeamInfo {
+  width: 100%;
+  min-height: 128px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 5px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+}
+
+.mainTeamMeta {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  color: var(--dp-text-muted, rgba(232, 240, 255, 0.84));
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.mainTeamPetName {
+  max-width: 100%;
+  margin: 0;
+  color: var(--dp-text-primary, #ffffff);
+  font-family: var(--font-heading);
+  font-size: 0.98rem;
+  font-weight: 900;
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.mainTeamStage {
+  margin: 0;
+  color: color-mix(in srgb, var(--main-team-element) 72%, white);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.mainTeamHpBar,
+.mainTeamXpBar {
+  width: min(110px, 86%);
+  height: 7px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.mainTeamHpBar span,
+.mainTeamXpBar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.mainTeamHpBar span {
+  width: var(--main-team-hp, 0%);
+  background: var(--main-team-element);
+}
+
+.mainTeamXpWrap {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  width: 100%;
+}
+
+.mainTeamXpBar span {
+  width: var(--main-team-xp, 0%);
+  background: var(--dp-text-gold, var(--dp-gold, #ffd66b));
+}
+
+.mainTeamXp {
+  margin: 0;
+  color: rgba(232, 240, 255, 0.78);
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .mainTeamCircleWrap {
   position: relative;
-  width: 150px;
-  height: 150px;
+  z-index: 999;
+  width: 76px;
+  height: 76px;
   display: grid;
   place-items: center;
-}
-
-.mainTeamCircleWrap::before,
-.mainTeamCircleWrap::after {
-  content: "";
-  position: absolute;
+  align-self: end;
+  margin-bottom: -24px;
   border-radius: 999px;
-  pointer-events: none;
+  overflow: visible;
 }
 
 .mainTeamCircleWrap::before {
-  inset: 21px;
-  border: 10px solid transparent;
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 8px solid transparent;
+  border-radius: 999px;
   background: conic-gradient(
-      var(--scene-ring-energy, #45cf6f) 0 var(--main-team-energy, 100%),
-      transparent var(--main-team-energy, 100%) 100%
+      var(--main-team-bond-color, var(--main-team-element)) 0
+        var(--main-team-bond, 0%),
+      rgba(168, 200, 223, 0.24) var(--main-team-bond, 0%) 100%
     )
     border-box;
   mask:
     linear-gradient(#000 0 0) padding-box,
     linear-gradient(#000 0 0);
   mask-composite: exclude;
-}
-
-.mainTeamCircleWrap::after {
-  inset: 11px;
-  border: 5px solid transparent;
-  background: conic-gradient(
-      var(--main-team-bond-color, transparent) 0 var(--main-team-bond, 0%),
-      transparent var(--main-team-bond, 0%) 100%
-    )
-    border-box;
-  mask:
-    linear-gradient(#000 0 0) padding-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-}
-
-.petRepoEnergyFill {
-  height: 100%;
-  width: 100%;
-  border-radius: inherit;
-  background: var(--scene-ring-energy, #45cf6f);
-  box-shadow: none;
+  pointer-events: none;
 }
 
 .mainTeamCircle {
   position: relative;
-  z-index: 1;
-  width: 92px;
+  z-index: 1000;
+  width: 56px;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
+  align-content: center;
   border-radius: 999px;
-  border: 0.5px solid rgba(255, 255, 255, 0.55);
-  background: var(--dp-surface-glass);
-  box-shadow: none;
+  border: 1px solid var(--main-team-element);
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(255, 255, 255, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(35, 78, 122, 0.94), rgba(5, 20, 42, 0.98));
+  text-align: center;
 }
 
-.mainTeamCircle {
-  position: relative;
-  z-index: 1;
-  width: 92px;
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  border: 0.5px solid var(--main-team-element);
-  background: var(--dp-surface-glass);
-  box-shadow: none;
+.mainTeamCircleValue {
+  color: var(--dp-text-primary, #ffffff);
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1;
 }
 
-.mainTeamStatTooltip {
+.mainTeamCircleLabel {
+  margin-top: 1px;
+  color: var(--dp-text-muted, rgba(232, 240, 255, 0.78));
+  font-size: 0.48rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mainTeamTooltip {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 8px);
-  z-index: 10000;
-  min-width: 126px;
+  bottom: calc(100% + 10px);
+  z-index: 1001;
+  min-width: 155px;
   padding: 10px 12px;
-  border: 1px solid var(--dp-panel-border);
-  border-radius: 10px;
-  background: var(--dp-gradient-popup);
-  color: var(--dp-panel-text);
+  border: 1px solid var(--main-team-element);
+  border-radius: 12px;
+  background: var(
+    --dp-gradient-popup,
+    linear-gradient(180deg, rgba(24, 104, 186, 0.94), rgba(3, 20, 38, 0.98))
+  );
+  color: var(--dp-popup-text, #ffffff);
   font-size: 0.68rem;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  line-height: 1.45;
   text-align: left;
-  box-shadow: none;
   opacity: 0;
+  transform: translate(-50%, 8px);
   pointer-events: none;
-  transform: translate(-50%, 6px);
   transition:
     opacity 140ms ease,
     transform 140ms ease;
 }
 
-.mainTeamCircleWrap:hover .mainTeamStatTooltip {
+.mainTeamSlotCard:hover .mainTeamTooltip {
   opacity: 1;
   transform: translate(-50%, 0);
 }
 
-.mainTeamCircleInitial {
-  font-family: var(--font-heading);
-  font-size: 2rem;
-  font-weight: 900;
-  color: var(--dp-text-primary);
-  text-shadow: none;
+.mainTeamSlotCard.selected::before {
+  background: color-mix(in srgb, var(--main-team-element) 82%, white);
 }
 
-.mainTeamNameArc {
-  position: absolute;
-  inset: -15px -20px -20px;
-  z-index: 2;
-  width: calc(100% + 40px);
-  height: calc(100% + 40px);
-  pointer-events: none;
+.mainTeamSlotCard.dragOver::before {
+  background: color-mix(in srgb, var(--main-team-element) 70%, white);
 }
 
-.mainTeamNameArc text {
-  fill: var(--main-team-element);
-  font-family: var(--font-heading);
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.mainTeamSlotCard.empty {
+  --main-team-element: rgba(174, 213, 255, 0.38);
+  opacity: 0.62;
 }
 
-.mainTeamSlotCard.selected .mainTeamCircle {
-  border: 0.5px solid var(--main-team-element);
-  box-shadow: none;
+.mainTeamSlotCard.empty .mainTeamInfo {
+  align-content: center;
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
 
-.mainTeamSlotCard.dragOver .mainTeamCircle {
-  box-shadow: none;
-}
-
-.mainTeamSlotCard.empty .mainTeamCircle {
-  opacity: 0.42;
-  border-color: var(--dp-panel-purple-border);
-}
-
-.mainTeamSlotCard.empty .mainTeamCircleWrap::before,
-.mainTeamSlotCard.empty .mainTeamCircleWrap::after {
-  opacity: 0;
+.mainTeamSlotCard.empty .mainTeamStage {
+  display: none;
 }
 
 .mainTeamSlotCard.isWorking {
@@ -273,8 +542,57 @@
   --main-team-element: var(--element-null);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 920px) {
   .mainTeamGrid {
-    grid-template-columns: repeat(2, minmax(132px, 1fr));
+    grid-template-columns: repeat(2, minmax(165px, 1fr));
   }
+}
+
+@media (max-width: 480px) {
+  .mainTeamGrid {
+    grid-template-columns: 1fr;
+  }
+}
+.mainTeamStatLine {
+  width: 100%;
+  color: var(--dp-text-muted, rgba(232, 240, 255, 0.84));
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.mainTeamHpBar {
+  width: 100%;
+  margin-top: 3px;
+  margin-bottom: 8px;
+  justify-self: stretch;
+}
+
+.mainTeamPetName,
+.mainTeamStage,
+.mainTeamXpWrap {
+  justify-self: center;
+  text-align: center;
+}
+
+.mainTeamXpWrap {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.mainTeamXp {
+  order: 1;
+  margin: 0;
+  color: rgba(232, 240, 255, 0.78);
+  text-align: center;
+}
+
+.mainTeamXpBar {
+  order: 2;
+  width: min(110px, 86%);
+  margin-top: 0;
 }

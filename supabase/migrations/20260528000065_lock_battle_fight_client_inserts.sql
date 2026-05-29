@@ -1,0 +1,1 @@
+drop policy if exists "battle_fights_insert_own" on public.battle_run_fights;

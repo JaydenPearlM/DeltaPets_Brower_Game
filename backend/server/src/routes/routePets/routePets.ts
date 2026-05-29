@@ -84,7 +84,7 @@ type PetInsertPayload = {
   species?: string;
   line: ElementalLine;
   stage: string;
-  energy: number; // ADD THIS LINE
+  energy: number;
   hatch_ends_at: string;
   is_active: boolean;
   location: string;
@@ -122,6 +122,56 @@ type PetLocationUpdatePayload = {
 };
 
 export const petsRouter = Router();
+
+petsRouter.patch(
+  "/:petId/nickname",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const petId = req.params.petId;
+      const nickname = String(req.body?.nickname ?? "").trim();
+
+      if (!nickname) {
+        return res.status(400).json({ error: "Nickname is required." });
+      }
+
+      if (nickname.length > 24) {
+        return res.status(400).json({
+          error: "Nickname must be 24 characters or less.",
+        });
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from("pets")
+        .update({ nickname })
+        .eq("id", petId)
+        .eq("user_id", userId)
+        .is("nickname", null)
+        .select("id, nickname")
+        .maybeSingle();
+
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      if (!data) {
+        return res.status(409).json({
+          error: "This Delta's nickname is already locked.",
+        });
+      }
+
+      return res.json({
+        message: `Nickname locked in as ${data.nickname}.`,
+        pet: data,
+      });
+    } catch (e: any) {
+      return res.status(500).json({
+        error: e?.message ?? "Failed to save nickname.",
+      });
+    }
+  },
+);
 
 // ============================================================
 // GET /api/pets/active

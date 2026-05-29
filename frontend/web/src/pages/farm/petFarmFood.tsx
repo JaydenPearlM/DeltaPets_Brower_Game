@@ -433,7 +433,7 @@ export function PetFarmFood() {
           feed: "Your Delta has been fed.",
           clean: "Your Delta is all cleaned up.",
           play: "Your Delta had a fun play session.",
-          pet: "Your Delta looks happier after the extra affection.",
+          pet: "Your Delta looks happier.",
         };
 
         setActionMsg(json?.message || defaultMessageMap[action]);

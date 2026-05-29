@@ -248,7 +248,7 @@ async function giveEgg(user_id: string, element: Element) {
     species: "reward_egg",
     line: element,
     stage: "egg",
-    energy: 100, // ADD THIS LINE
+    energy: 100,
     hatch_ends_at: hatchEndsAt,
     is_active: false,
     location: "hatchery",
