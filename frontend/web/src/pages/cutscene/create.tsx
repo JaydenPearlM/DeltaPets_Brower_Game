@@ -50,12 +50,6 @@ const LINE_1 = `"Every bond begins with a chance..."`;
 const LINE_2 = `"You look around and something catches your eye."`;
 const BUBBLE_TEXT = `"Oh you found an egg, how peculiar!"`;
 
-const DEV = import.meta.env.DEV;
-
-const dlog = (...args: unknown[]) => {
-  if (DEV) console.log(...args);
-};
-
 function pickRandomStarterLine(): StarterLine {
   const lines: StarterLine[] = [
     "water",
@@ -102,6 +96,7 @@ async function typeText(
   alive: () => boolean,
 ) {
   set("");
+
   for (let i = 1; i <= full.length; i++) {
     if (!alive()) return;
     set(full.slice(0, i));
@@ -124,9 +119,11 @@ async function deleteText(
 
 async function getAccessTokenOrThrow() {
   const { data, error } = await supabase.auth.getSession();
+
   if (error) throw error;
 
   const token = data.session?.access_token;
+
   if (!token) throw new Error("No access token");
 
   return token;
@@ -148,6 +145,7 @@ async function postJson(
   });
 
   const data = await res.json().catch(() => ({}));
+
   return { ok: res.ok, status: res.status, data };
 }
 
@@ -166,9 +164,7 @@ export default function CreatePage() {
   const [eggVisible, setEggVisible] = useState(false);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState("Initializing…");
   const [fatalError, setFatalError] = useState<string | null>(null);
-
   const [retryCount, setRetryCount] = useState(0);
 
   const runIdRef = useRef(0);
@@ -182,10 +178,7 @@ export default function CreatePage() {
     async function run() {
       setFatalError(null);
 
-      if (authLoading) {
-        setStatus("Waiting for auth…");
-        return;
-      }
+      if (authLoading) return;
 
       if (!user) {
         navigate("/", { replace: true });
@@ -201,12 +194,10 @@ export default function CreatePage() {
       setBubbleVisible(false);
 
       try {
-        setStatus("Cutscene: fade in…");
         setPhase("fadeInBlack");
         await sleep(TIMING.fadeInMs);
         if (!alive()) return;
 
-        setStatus("Cutscene: line 1…");
         setPhase("typeLine1");
         await typeText(LINE_1, setLine1, TIMING.type1MsPerChar, alive);
         if (!alive()) return;
@@ -214,33 +205,24 @@ export default function CreatePage() {
         await sleep(TIMING.pauseAfterLine1Ms);
         if (!alive()) return;
 
-        setStatus("Cutscene: delete line 1…");
         setPhase("deleteLine1");
         await deleteText(LINE_1, setLine1, TIMING.delete1MsPerChar, alive);
         if (!alive()) return;
 
-        setStatus("Cutscene: pause…");
         setPhase("pauseBeforeLine2");
         await sleep(TIMING.pauseBeforeLine2Ms);
         if (!alive()) return;
 
-        setStatus("Cutscene: line 2…");
         setPhase("typeLine2");
         await typeText(LINE_2, setLine2, TIMING.type2MsPerChar, alive);
         if (!alive()) return;
 
-        dlog("[create] starter line:", starterLine);
-        dlog("[create] world time:", worldTime);
-        dlog("[create] mystery egg:", MYSTERY_EGG);
-
-        setStatus("Cutscene: egg fade in…");
         setPhase("eggFadeIn");
         setEggVisible(true);
 
         await sleep(TIMING.pauseAfterLine2TypedMs);
         if (!alive()) return;
 
-        setStatus("Cutscene: delete line 2…");
         setPhase("deleteLine2");
         await deleteText(LINE_2, setLine2, TIMING.delete2MsPerChar, alive);
         if (!alive()) return;
@@ -248,14 +230,12 @@ export default function CreatePage() {
         await sleep(TIMING.bubblePopDelayMs);
         if (!alive()) return;
 
-        setStatus("Cutscene: bubble…");
         setPhase("bubblePop");
         setBubbleVisible(true);
 
         await sleep(450);
         if (!alive()) return;
 
-        setStatus("Cutscene: goodluck…");
         setPhase("typeGoodluck");
         await typeText(
           GOODLUCK,
@@ -269,7 +249,6 @@ export default function CreatePage() {
         await sleep(TIMING.holdMs);
         if (!alive()) return;
 
-        setStatus("Entering game…");
         setPhase("fadeOut");
         await sleep(TIMING.fadeOutMs);
         if (!alive()) return;
@@ -281,23 +260,16 @@ export default function CreatePage() {
             const token = await getAccessTokenOrThrow();
             const requestedLine = starterLine;
 
-            setStatus("Creating your egg…");
             const ensure = await postJson("/api/pets/ensure-egg", token, {
               line: requestedLine,
               worldTime,
               personalityKey: null,
             });
 
-            dlog("[create] ensure-egg response:", ensure);
-            dlog("[create] ensure-egg requested_line:", requestedLine);
-            dlog(
-              "[create] ensure-egg resolved_line:",
-              ensure?.data?.resolved_line ?? "(missing from backend response)",
-            );
-
             if (!ensure.ok) {
               throw new Error(
-                ensure.data?.error ??
+                ensure?.data?.error ??
+                  ensure?.data?.message ??
                   `ensure-egg failed (HTTP ${ensure.status})`,
               );
             }
@@ -327,7 +299,10 @@ export default function CreatePage() {
         navigate("/hatchery", { replace: true });
       } catch (err: any) {
         console.error("[create] cutscene crashed:", err);
-        if (alive()) setFatalError(err?.message ?? "Cutscene crashed");
+
+        if (alive()) {
+          setFatalError(err?.message ?? "Cutscene crashed");
+        }
       }
     }
 
@@ -392,7 +367,9 @@ export default function CreatePage() {
 
           <div className="dp-slot-eggrow">
             <div
-              className={`dp-egg-wrap ${eggVisible ? "is-visible" : "is-hidden"}`}
+              className={`dp-egg-wrap ${
+                eggVisible ? "is-visible" : "is-hidden"
+              }`}
             >
               <img
                 className="dp-egg-img"
@@ -409,13 +386,13 @@ export default function CreatePage() {
             </div>
 
             <div
-              className={`dp-bubble ${bubbleVisible ? "is-visible" : "is-hidden"}`}
+              className={`dp-bubble ${
+                bubbleVisible ? "is-visible" : "is-hidden"
+              }`}
             >
               <span className="dp-chat-text">{BUBBLE_TEXT}</span>
             </div>
           </div>
-
-          <div className="dp-status">{fatalError ? "Error" : status}</div>
 
           {fatalError ? (
             <div className="dp-debug">

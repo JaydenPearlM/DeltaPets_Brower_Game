@@ -7,6 +7,7 @@ import "./mainTeam.css";
 
 type MainTeamProps = {
   partySlots?: PartySlotView[];
+  enableDragAndDrop?: boolean;
   selectedPartySlot: number | null;
   workingPetId: string | null;
   workingSlotIndex: number | null;
@@ -30,7 +31,6 @@ type PetStats = StoragePet & {
   species?: string | null;
   stage?: string | null;
   level?: number | null;
-  energy?: number | null;
   bond?: number | null;
   hp?: number | null;
   current_hp?: number | null;
@@ -67,8 +67,7 @@ function resolveSpeciesLabel(value?: string | null) {
   const raw = String(value ?? "").trim();
   if (!raw) return "";
 
-  const key = raw.toLowerCase();
-  return STARTER_DISPLAY_NAMES[key] ?? raw;
+  return STARTER_DISPLAY_NAMES[raw.toLowerCase()] ?? raw;
 }
 
 function getPetDisplayName(pet: StoragePet) {
@@ -158,6 +157,7 @@ function getToneClass(line?: string | null) {
 export default function MainTeam(props: MainTeamProps) {
   const {
     partySlots = [],
+    enableDragAndDrop = true,
     selectedPartySlot,
     workingPetId,
     workingSlotIndex,
@@ -177,20 +177,62 @@ export default function MainTeam(props: MainTeamProps) {
   return (
     <section className="mainTeamPanel" aria-label={teamDisplayName}>
       <div className="mainTeamHeader">
-        <div className="mainTeamTitleRow">
-          <span
-            className="mainTeamTitleDelta mainTeamTitleDeltaLeft"
+        <div className="mainTeamHeaderLine" aria-hidden="true">
+          <span className="mainTeamHeaderDot" />
+          <span className="mainTeamHeaderDash" />
+          <span className="mainTeamTitleDelta">△</span>
+        </div>
+
+        <div className="mainTeamTitleShell">
+          <svg
+            className="mainTeamRainbowOrb"
+            viewBox="0 0 100 86.6"
             aria-hidden="true"
           >
-            △
-          </span>
-          <h2 className="mainTeamTitle">{teamDisplayName}</h2>
-          <span
-            className="mainTeamTitleDelta mainTeamTitleDeltaRight"
-            aria-hidden="true"
-          >
-            △
-          </span>
+            <defs>
+              <linearGradient
+                id="mainTeamDeltaGradient"
+                x1="0%"
+                y1="100%"
+                x2="100%"
+                y2="0%"
+              >
+                <stop offset="0%" stopColor="var(--element-fire, #ff5b3d)" />
+                <stop offset="25%" stopColor="var(--element-light, #ffd66b)" />
+                <stop offset="50%" stopColor="var(--element-water, #38dfff)" />
+                <stop offset="75%" stopColor="var(--element-storm, #9d6bff)" />
+                <stop
+                  offset="100%"
+                  stopColor="var(--element-shadow, #7b4dff)"
+                />
+              </linearGradient>
+            </defs>
+
+            <polygon
+              points="50 4, 94 80, 6 80"
+              fill="none"
+              stroke="url(#mainTeamDeltaGradient)"
+              strokeWidth="4"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          </svg>
+
+          <div className="mainTeamTitleRow">
+            <h2 className="mainTeamTitle">
+              <span>Kith</span>
+              <span>Team</span>
+            </h2>
+          </div>
+        </div>
+
+        <div
+          className="mainTeamHeaderLine mainTeamHeaderLineRight"
+          aria-hidden="true"
+        >
+          <span className="mainTeamTitleDelta">△</span>
+          <span className="mainTeamHeaderDash" />
+          <span className="mainTeamHeaderDot" />
         </div>
 
         <p className="mainTeamSubtitle">Your trusted companions</p>
@@ -219,7 +261,9 @@ export default function MainTeam(props: MainTeamProps) {
                 dragOverSlotIndex === slot.slotIndex ? "dragOver" : "",
                 !pet ? "empty" : "",
                 isWorking ? "isWorking" : "",
-              ].join(" ")}
+              ]
+                .filter(Boolean)
+                .join(" ")}
               onDragOver={onDragOverSlot}
               onDragEnter={() => onDragEnterSlot(slot.slotIndex)}
               onDragLeave={() => onDragLeaveSlot(slot.slotIndex)}
@@ -232,7 +276,7 @@ export default function MainTeam(props: MainTeamProps) {
               >
                 <div
                   className="mainTeamPetArt"
-                  draggable={Boolean(pet) && !isWorking}
+                  draggable={enableDragAndDrop && Boolean(pet) && !isWorking}
                   onDragStart={(event) => {
                     if (pet) {
                       onDragStartPet(event, pet, slot.slotIndex);
@@ -243,43 +287,54 @@ export default function MainTeam(props: MainTeamProps) {
                   {petImage ? (
                     <img src={petImage} alt={displayName} />
                   ) : (
-                    <span className="mainTeamNoImageText">
-                      {pet ? "No image yet" : "No Pet"}
+                    <span className="mainTeamNoImageBadge">
+                      {pet ? (
+                        <>
+                          <span
+                            className="mainTeamNoImageDelta"
+                            aria-hidden="true"
+                          />
+                          <span className="mainTeamNoImageText">
+                            No image yet
+                          </span>
+                        </>
+                      ) : (
+                        <span className="mainTeamNoImageText">No Pet</span>
+                      )}
                     </span>
                   )}
                 </div>
 
                 <div className="mainTeamInfo">
                   {pet ? (
-                    <>
-                      <div className="mainTeamTopInfoRow">
-                        <div className="mainTeamLeftStats">
-                          <div className="mainTeamStatLine">
-                            LV. {source?.level ?? 1}
-                          </div>
-                          <div className="mainTeamStatLine">
-                            HP {hp.currentHp} / {hp.maxHp}
-                          </div>
+                    <div className="mainTeamStatsGrid">
+                      <div className="mainTeamLeftStats">
+                        <div className="mainTeamStatLine">
+                          LV. {source?.level ?? 1}
                         </div>
 
-                        <h3 className="mainTeamPetName">{displayName}</h3>
+                        <div className="mainTeamStatLine">
+                          HP {hp.currentHp} / {hp.maxHp}
+                        </div>
+
+                        <div className="mainTeamHpBar" aria-hidden="true">
+                          <span
+                            style={
+                              {
+                                "--main-team-hp": `${hp.hpPercent}%`,
+                              } as CSSProperties
+                            }
+                          />
+                        </div>
                       </div>
 
-                      <div className="mainTeamHpBar" aria-hidden="true">
-                        <span
-                          style={
-                            {
-                              "--main-team-hp": `${hp.hpPercent}%`,
-                            } as CSSProperties
-                          }
-                        />
-                      </div>
-
-                      <p className="mainTeamStage">
+                      <div className="mainTeamCenterStage">
                         {formatStage(source?.stage)}
-                      </p>
+                      </div>
 
-                      <div className="mainTeamXpWrap">
+                      <div className="mainTeamRightStats">
+                        <h3 className="mainTeamPetName">{displayName}</h3>
+
                         <div className="mainTeamXpBar" aria-hidden="true">
                           <span
                             style={
@@ -291,10 +346,10 @@ export default function MainTeam(props: MainTeamProps) {
                         </div>
 
                         <p className="mainTeamXp">
-                          {xp.currentXp} / {xp.nextXp} XP
+                          {xp.currentXp} / {xp.nextXp}
                         </p>
                       </div>
-                    </>
+                    </div>
                   ) : (
                     <>
                       <h3 className="mainTeamPetName">{displayName}</h3>

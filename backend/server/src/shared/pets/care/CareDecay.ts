@@ -1,4 +1,6 @@
 import { safeNum } from "../../../lib/utils";
+import { CARE_DECAY_STEP_MINUTES } from "../../constants";
+import { logger } from "../../../lib/logger";
 
 export type CarePet = {
   id: string;
@@ -18,12 +20,12 @@ const CARE_MAX = 50;
 const ENERGY_MAX = 100;
 const MIN = 0;
 
-// step-based decay intervals
-const HUNGER_STEP_MINUTES = 60;
-const CLEAN_STEP_MINUTES = 90;
-const HAPPY_STEP_MINUTES = 75;
-const COMFORT_STEP_MINUTES = 120;
-const REST_STEP_MINUTES = 150;
+const HUNGER_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.hunger;
+const CLEAN_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.clean;
+const HAPPY_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.happy;
+const COMFORT_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.comfort;
+const REST_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.rest;
+
 const RUNAWAY_THRESHOLD_HOURS = 24;
 
 // Energy does not decay over time.
@@ -45,7 +47,7 @@ function logCareDecay(
   payload: Record<string, unknown>,
 ) {
   if (isDev) {
-    console.log(`[care/decay] ${kind}`, payload);
+    logger.debug(`[care/decay] ${kind}`, payload);
   }
 }
 

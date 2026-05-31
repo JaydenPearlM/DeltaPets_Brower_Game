@@ -18,9 +18,6 @@ export const ensureEggSchema = z.object({
     .enum(["water", "fire", "earth", "air", "null_element"])
     .optional()
     .nullable(),
-  worldTime: z
-    .enum(["dawn", "day", "dusk", "night", "deep_night", "twilight"])
-    .optional()
-    .nullable(),
+  worldTime: z.enum(["day", "night"]).optional().nullable(),
   personalityKey: z.string().min(1).max(50).optional().nullable(),
 });

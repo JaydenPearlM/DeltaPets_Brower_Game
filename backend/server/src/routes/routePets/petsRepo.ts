@@ -1,5 +1,6 @@
 // backend/server/src/routes/routePets/petsRepo.ts
 
+import { logger } from "../../lib/logger";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { STARTER_ANY_STAGE_NAMES } from "./starters";
 
@@ -97,22 +98,17 @@ async function isHatcheryInitialized(userId: string): Promise<boolean> {
 
 /**
  * Flips hatchery_initialized = true so future visits skip the ensure step.
- * Fire-and-forget " " never throws. A missed flip just costs one extra ensure
- * on the next load, which is harmless.
  */
-function markHatcheryInitialized(userId: string): void {
-  supabaseAdmin
+async function markHatcheryInitialized(userId: string): Promise<void> {
+  const { error } = await supabaseAdmin
     .from("profiles")
     .update({ hatchery_initialized: true } as { hatchery_initialized: boolean })
-    .eq("user_id", userId)
-    .then(({ error }) => {
-      if (error) {
-        console.warn(
-          "[petsRepo] Failed to mark hatchery initialized:",
-          error.message,
-        );
-      }
-    });
+    .eq("user_id", userId);
+
+  if (error) {
+    logger.error("[petsRepo] Failed to mark hatchery initialized:", error);
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -221,8 +217,7 @@ async function initializeHatcheryForUser(userId: string): Promise<void> {
     runEnsureHatcheryShelfSlots(userId),
   ]);
 
-  // Fire-and-forget " " don't block the response on this profile write
-  markHatcheryInitialized(userId);
+  await markHatcheryInitialized(userId);
 }
 
 // ---------------------------------------------------------------------------

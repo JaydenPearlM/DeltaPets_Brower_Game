@@ -1,3 +1,5 @@
+import { env } from "../../env.server";
+import { logger } from "../../lib/logger";
 import {
   STARTER_SPROUTS,
   findStarterByName as findSharedStarterByName,
@@ -120,11 +122,6 @@ function isSharedElementLine(value: string): value is SharedElementLine {
   ].includes(value);
 }
 
-/**
- * Minimal-safe fix:
- * - keep your existing fallback behavior ("water")
- * - make normalization reusable/exportable for the route layer
- */
 export function normalizeStarterElementLine(
   line?: string | null,
 ): SharedElementLine {
@@ -137,10 +134,6 @@ export function normalizeStarterElementLine(
   return "water";
 }
 
-/**
- * Optional helper for clearer route logging / response payloads.
- * This gives the backend a single source of truth for what line was resolved.
- */
 export function resolveStarterLine(
   input: StarterSelectionInput,
 ): SharedElementLine {
@@ -152,10 +145,14 @@ export function getStarterForSelection(
 ): StarterDefinition {
   const normalizedLine = normalizeStarterElementLine(input.line);
 
-  console.log("[starters] requested line:", input.line ?? null);
-  console.log("[starters] resolved line:", normalizedLine);
-  console.log("[starters] world time:", input.worldTime ?? null);
-  console.log("[starters] personalityKey:", input.personalityKey ?? null);
+  if (env.NODE_ENV !== "production") {
+    logger.info("[intro] starter selection input", {
+      requestedLine: input.line ?? null,
+      resolvedLine: normalizedLine,
+      worldTime: input.worldTime ?? null,
+      personalityKey: input.personalityKey ?? null,
+    });
+  }
 
   const species = getStarterSpeciesFromSelection(
     normalizedLine,
@@ -164,6 +161,13 @@ export function getStarterForSelection(
   );
 
   if (!species) {
+    logger.error("[element] starter species resolution failed", {
+      requestedLine: input.line ?? null,
+      resolvedLine: normalizedLine,
+      worldTime: input.worldTime ?? null,
+      personalityKey: input.personalityKey ?? null,
+    });
+
     throw new Error(
       `Could not resolve starter species for line: ${input.line ?? "unknown"}`,
     );
@@ -172,10 +176,23 @@ export function getStarterForSelection(
   const starter = STARTERS.find((entry) => entry.speciesId === species.id);
 
   if (!starter) {
+    logger.error("[element] starter definition missing", {
+      speciesId: species.id,
+      requestedLine: input.line ?? null,
+      resolvedLine: normalizedLine,
+    });
+
     throw new Error(
       `Could not resolve starter definition for species: ${species.id}`,
     );
   }
+
+  logger.info("[element] starter resolved", {
+    requestedLine: input.line ?? null,
+    resolvedLine: normalizedLine,
+    speciesId: starter.speciesId,
+    eggName: starter.eggName,
+  });
 
   return starter;
 }

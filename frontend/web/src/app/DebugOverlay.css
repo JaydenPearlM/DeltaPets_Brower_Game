@@ -1,0 +1,113 @@
+.debugOverlayButton {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 99999;
+
+  background: var(--dp-panel-bg, #12081f);
+  color: var(--dp-text-gold, #ffd66b);
+  border: 2px solid var(--dp-panel-border-cyan-bright, #9be7ff);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(155, 231, 255, 0.35);
+}
+
+.debugOverlayPanel {
+  position: fixed;
+  width: 760px;
+  height: 460px;
+  min-width: 440px;
+  min-height: 260px;
+  resize: both;
+  overflow: auto;
+  z-index: 99998;
+
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(10, 30, 68, 0.96), rgba(3, 12, 28, 0.98));
+
+  background-size:
+    20px 20px,
+    20px 20px,
+    auto;
+
+  color: #fff;
+  border: 3px solid var(--dp-panel-border-cyan-bright, #9be7ff);
+  border-radius: 14px;
+  font-family: monospace;
+  font-size: 20px;
+
+  box-shadow:
+    0 0 0 2px var(--dp-panel-purple-border, #7b4dff),
+    0 0 24px rgba(155, 231, 255, 0.35);
+}
+
+.debugOverlayHeader {
+  cursor: move;
+  user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  padding: 10px 12px;
+  background: rgba(18, 8, 31, 0.98);
+  border-bottom: 2px solid var(--dp-panel-border-cyan-bright, #9be7ff);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  color: var(--dp-text-gold, #ffd66b);
+  text-shadow: 1px 1px 0 var(--dp-brand-red, #9b1b30);
+}
+
+.debugOverlayActions {
+  display: flex;
+  gap: 8px;
+}
+
+.debugOverlayActions button {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dp-text-gold, #ffd66b);
+  border: 1px solid var(--dp-panel-border-cyan-bright, #9be7ff);
+  border-radius: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.debugOverlayBody {
+  padding: 12px;
+}
+
+.debugOverlayEmpty {
+  margin: 0;
+  color: #ffffff;
+}
+
+.debugOverlayLog {
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border-left: 4px solid transparent;
+}
+
+.debugOverlayLog.log {
+  color: var(--dp-stat-strong, #67ff87);
+  border-left-color: var(--dp-stat-strong, #67ff87);
+}
+
+.debugOverlayLog.warn {
+  color: var(--dp-text-gold, #ffd66b);
+  border-left-color: var(--dp-text-gold, #ffd66b);
+}
+
+.debugOverlayLog.error {
+  color: #ff5f6d;
+  border-left-color: #ff5f6d;
+}

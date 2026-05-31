@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { safeNum, titleCase } from "@/lib/petUtils";
@@ -429,6 +429,42 @@ export default function PetDetailsPanel({
   const [petSpeech, setPetSpeech] = useState("");
   const [showPetSpeech, setShowPetSpeech] = useState(false);
 
+  const speechDataRef = useRef({
+    pet,
+    personalityName,
+    hungerLevel,
+    cleanLevel,
+    moodLevel,
+    comfortLevel,
+    restLevel,
+    energyLevel,
+    clampedBond,
+  });
+
+  useEffect(() => {
+    speechDataRef.current = {
+      pet,
+      personalityName,
+      hungerLevel,
+      cleanLevel,
+      moodLevel,
+      comfortLevel,
+      restLevel,
+      energyLevel,
+      clampedBond,
+    };
+  }, [
+    pet,
+    personalityName,
+    hungerLevel,
+    cleanLevel,
+    moodLevel,
+    comfortLevel,
+    restLevel,
+    energyLevel,
+    clampedBond,
+  ]);
+
   useEffect(() => {
     let showTimer: number | null = null;
     let hideTimer: number | null = null;
@@ -439,29 +475,33 @@ export default function PetDetailsPanel({
         () => {
           if (stopped) return;
 
+          const current = speechDataRef.current;
+
           const dialogueText =
             getPetDialogue({
-              petName: getPetLabel(pet),
+              petName: getPetLabel(current.pet),
               personalityKey:
-                pet.personality_key ?? pet.personality ?? personalityName,
-              hunger: hungerLevel,
-              clean: cleanLevel,
-              happy: moodLevel,
-              comfort: comfortLevel,
-              rest: restLevel,
-              energy: energyLevel,
-              bond: clampedBond,
+                current.pet.personality_key ??
+                current.pet.personality ??
+                current.personalityName,
+              hunger: current.hungerLevel,
+              clean: current.cleanLevel,
+              happy: current.moodLevel,
+              comfort: current.comfortLevel,
+              rest: current.restLevel,
+              energy: current.energyLevel,
+              bond: current.clampedBond,
             })?.trim() ?? "";
 
           setPetSpeech(
             dialogueText ||
               getRandomPetSpeech({
-                hunger: hungerLevel,
-                clean: cleanLevel,
-                happy: moodLevel,
-                comfort: comfortLevel,
-                rest: restLevel,
-                energy: energyLevel,
+                hunger: current.hungerLevel,
+                clean: current.cleanLevel,
+                happy: current.moodLevel,
+                comfort: current.comfortLevel,
+                rest: current.restLevel,
+                energy: current.energyLevel,
               }),
           );
 
@@ -491,17 +531,7 @@ export default function PetDetailsPanel({
         window.clearTimeout(hideTimer);
       }
     };
-  }, [
-    hungerLevel,
-    cleanLevel,
-    moodLevel,
-    comfortLevel,
-    restLevel,
-    energyLevel,
-    clampedBond,
-    pet,
-    personalityName,
-  ]);
+  }, [pet?.id, personalityName]);
 
   const safeInventory = inventoryCounts ?? {
     food: 0,

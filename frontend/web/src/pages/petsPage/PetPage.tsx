@@ -385,7 +385,7 @@ export default function PetPage() {
       if (document.visibilityState === "visible") {
         void loadPetPage(false);
       }
-    }, 60_000);
+    }, 5 * 60_000);
 
     window.addEventListener("focus", handleWindowFocus);
     document.addEventListener("visibilitychange", handleVisibilityChange);

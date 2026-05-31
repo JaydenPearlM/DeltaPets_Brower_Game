@@ -40,7 +40,7 @@ const DEFAULT_STABLE_VIEW: SignalView = {
   bossAvailable: false,
 };
 
-const FALLBACK_REFRESH_MS = 60 * 1000;
+const FALLBACK_REFRESH_MS = 5 * 60 * 1000;
 const BOUNDARY_BUFFER_MS = 1500;
 
 function formatCondition(value?: string | null): string {

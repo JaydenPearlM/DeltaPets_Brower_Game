@@ -10,6 +10,7 @@ import {
 import { apiRouter } from "./routes";
 import { worldRouter } from "./routes/world/world";
 import { errorHandler } from "./middleware/errorHandler";
+import { debugRouter } from "./routes/debug/debugRoutes";
 
 export function createApp() {
   const app = express();
@@ -24,6 +25,7 @@ export function createApp() {
 
   app.use("/api/auth", authLimiter, publicAuthRouter);
   app.use("/api/world", apiLimiter, apiSpeedLimiter, worldRouter);
+  app.use("/api/debug", debugRouter);
   app.use("/api", apiLimiter, apiSpeedLimiter, requireUser, apiRouter);
 
   app.use((_req, res) => {

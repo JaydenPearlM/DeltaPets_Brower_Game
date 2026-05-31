@@ -62,7 +62,7 @@ petActionsRouter.post(
     // Enforce cooldown
     try {
       assertCooldownReady(pet, action, nowMs);
-    } catch (e: any) {
+    } catch (e: unknown) {
       const status = e?.status ?? 409;
       return res.status(status).json({
         error: e?.message ?? "Cooldown not ready",
@@ -80,7 +80,21 @@ petActionsRouter.post(
     const happy = safeNum(pet.happy, 0);
     const bond = safeNum(pet.bond, 0);
 
-    const patch: Record<string, any> = {};
+    type PetCareActionPatch = Partial<{
+      hunger: number;
+      clean: number;
+      happy: number;
+      comfort: number;
+      rest: number;
+      energy: number;
+      bond: number;
+      cd_feed_ends_at: string;
+      cd_clean_ends_at: string;
+      cd_play_ends_at: string;
+      cd_bond_ends_at: string;
+    }>;
+
+    const patch: PetCareActionPatch = {};
 
     // Apply cooldown by writing ends_at column
     const col = colNameForKey(action);
@@ -140,5 +154,3 @@ petActionsRouter.post(
     });
   },
 );
-
-export default petActionsRouter;

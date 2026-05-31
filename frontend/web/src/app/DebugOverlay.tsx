@@ -1,110 +1,137 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import "./DebugOverlay.css";
 
-type DebugLog = {
-  type: "log" | "warn" | "error";
+type ServerLog = {
+  timestamp: string;
+  level: "info" | "warn" | "error" | "debug";
+  tag: string;
   message: string;
-  time: string;
+  data?: unknown;
 };
 
-const MAX_LOGS = 100;
+type ServerLogDisplayType = "log" | "warn" | "error";
 
 export function DebugOverlay() {
   const [isOpen, setIsOpen] = useState(false);
-  const [logs, setLogs] = useState<DebugLog[]>([]);
+  const [serverLogs, setServerLogs] = useState<ServerLog[]>([]);
+  const [position, setPosition] = useState({ x: 96, y: 96 });
+  const dragOffsetRef = useRef<{ x: number; y: number } | null>(null);
+
+  async function fetchServerLogs() {
+    try {
+      const res = await fetch("/api/debug/logs");
+      const data = await res.json();
+
+      setServerLogs(data.logs ?? []);
+    } catch (err) {
+      console.error("[debug-overlay] failed to fetch server logs", err);
+    }
+  }
 
   useEffect(() => {
-    const originalLog = console.log;
-    const originalWarn = console.warn;
-    const originalError = console.error;
+    if (!isOpen) return;
 
-    const addLog = (type: DebugLog["type"], args: unknown[]) => {
-      const message = args
-        .map((arg) =>
-          typeof arg === "string" ? arg : JSON.stringify(arg, null, 2),
-        )
-        .join(" ");
+    void fetchServerLogs();
 
-      setLogs((currentLogs) =>
-        [
-          {
-            type,
-            message,
-            time: new Date().toLocaleTimeString(),
-          },
-          ...currentLogs,
-        ].slice(0, MAX_LOGS),
-      );
-    };
-
-    console.log = (...args: unknown[]) => {
-      originalLog(...args);
-      addLog("log", args);
-    };
-
-    console.warn = (...args: unknown[]) => {
-      originalWarn(...args);
-      addLog("warn", args);
-    };
-
-    console.error = (...args: unknown[]) => {
-      originalError(...args);
-      addLog("error", args);
-    };
+    const intervalId = window.setInterval(() => {
+      void fetchServerLogs();
+    }, 2000);
 
     return () => {
-      console.log = originalLog;
-      console.warn = originalWarn;
-      console.error = originalError;
+      window.clearInterval(intervalId);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!dragOffsetRef.current) return;
+
+      setPosition({
+        x: event.clientX - dragOffsetRef.current.x,
+        y: event.clientY - dragOffsetRef.current.y,
+      });
+    };
+
+    const handleMouseUp = () => {
+      dragOffsetRef.current = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, []);
+
+  const startDrag = (event: React.MouseEvent<HTMLElement>) => {
+    dragOffsetRef.current = {
+      x: event.clientX - position.x,
+      y: event.clientY - position.y,
+    };
+  };
+
+  const getServerLogType = (
+    level: ServerLog["level"],
+  ): ServerLogDisplayType => {
+    if (level === "error") return "error";
+    if (level === "warn") return "warn";
+    return "log";
+  };
 
   return (
     <>
       <button
         type="button"
+        className="debugOverlayButton"
         onClick={() => setIsOpen((current) => !current)}
-        style={{
-          position: "fixed",
-          right: "16px",
-          bottom: "16px",
-          zIndex: 9999,
-        }}
       >
         🐛 Debug
       </button>
 
       {isOpen ? (
         <section
+          className="debugOverlayPanel"
           style={{
-            position: "fixed",
-            right: "16px",
-            bottom: "56px",
-            width: "420px",
-            maxHeight: "360px",
-            overflow: "auto",
-            zIndex: 9999,
-            padding: "12px",
-            background: "#111",
-            color: "#fff",
-            border: "1px solid #555",
-            borderRadius: "8px",
-            fontFamily: "monospace",
-            fontSize: "12px",
+            left: `${position.x}px`,
+            top: `${position.y}px`,
           }}
         >
-          <button type="button" onClick={() => setLogs([])}>
-            Clear
-          </button>
+          <header className="debugOverlayHeader" onMouseDown={startDrag}>
+            <strong>Server Logs</strong>
 
-          {logs.length === 0 ? (
-            <p>No logs yet.</p>
-          ) : (
-            logs.map((log, index) => (
-              <pre key={`${log.time}-${index}`}>
-                [{log.time}] [{log.type.toUpperCase()}] {log.message}
+            <div className="debugOverlayActions">
+              <button type="button" onClick={fetchServerLogs}>
+                Refresh
+              </button>
+
+              <button type="button" onClick={() => setServerLogs([])}>
+                Clear
+              </button>
+
+              <button type="button" onClick={() => setIsOpen(false)}>
+                Close
+              </button>
+            </div>
+          </header>
+
+          <div className="debugOverlayBody">
+            {serverLogs.length === 0 ? (
+              <p className="debugOverlayEmpty">No server logs yet.</p>
+            ) : null}
+
+            {serverLogs.map((log, index) => (
+              <pre
+                key={`${log.timestamp}-${index}`}
+                className={`debugOverlayLog ${getServerLogType(log.level)}`}
+              >
+                [{log.timestamp}] [{log.level.toUpperCase()}] [{log.tag}]{" "}
+                {log.message}
+                {log.data ? ` ${JSON.stringify(log.data)}` : ""}
               </pre>
-            ))
-          )}
+            ))}
+          </div>
         </section>
       ) : null}
     </>

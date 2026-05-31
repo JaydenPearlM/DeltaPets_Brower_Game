@@ -23,7 +23,7 @@ import {
 } from "../../pets/growthTraits";
 import { rollPersonality, getAllPersonalities } from "../../pets/personalities";
 import { assignPetToMainParty } from "../../pets/partySlots";
-
+import { logger } from "../../lib/logger";
 import { fetchTotalPoints, insertBaseStats } from "./petsStats";
 
 import {
@@ -99,7 +99,7 @@ type MinimalPetInsertPayload = {
   name: string;
   line: ElementalLine;
   stage: string;
-  energy: number; // ADD THIS LINE
+  energy: number;
   hatch_ends_at: string;
   is_active: boolean;
   location: string;
@@ -165,9 +165,9 @@ petsRouter.patch(
         message: `Nickname locked in as ${data.nickname}.`,
         pet: data,
       });
-    } catch (e: any) {
+    } catch (err: any) {
       return res.status(500).json({
-        error: e?.message ?? "Failed to save nickname.",
+        error: err?.message ?? "Failed to save nickname.",
       });
     }
   },
@@ -246,8 +246,8 @@ petsRouter.get(
         elements,
         cooldowns: null,
       });
-    } catch (e: any) {
-      return res.status(500).json({ error: e?.message ?? "Server error" });
+    } catch (err: any) {
+      return res.status(500).json({ error: err?.message ?? "Server error" });
     }
   },
 );
@@ -266,13 +266,28 @@ petsRouter.post(
       const worldTime = req.body?.worldTime ?? null;
       const personalityKey = req.body?.personalityKey ?? null;
 
-      console.log("[ensure-egg] requested_line:", requestedLine);
+      logger.info("[intro] starter line requested", {
+        requestedLine,
+        worldTime,
+        personalityKey,
+      });
+
+      logger.info("[ensure-egg] creating starter egg", {
+        userId,
+        requestedLine,
+      });
 
       const existingPet = await fetchStarterPetAnyStage(userId);
 
       if (existingPet) {
         const existingResolvedLine =
           existingPet.line ?? requestedLine ?? "water";
+
+        logger.info("[ensure-egg] existing starter found", {
+          petId: existingPet.id,
+          requestedLine,
+          resolvedLine: existingResolvedLine,
+        });
 
         return res.status(200).json({
           success: true,
@@ -295,12 +310,14 @@ petsRouter.post(
         now.getTime() + BASIC_EGG_HATCH_MINUTES * 60 * 1000,
       ).toISOString();
 
-      console.log("[ensure-egg] resolved_line:", resolvedLine);
-      console.log("[ensure-egg] starter_species_id:", starter.speciesId);
+      logger.info("[element] starter line resolved", { resolvedLine });
+      logger.info("[ensure-egg] starter species resolved", {
+        speciesId: starter.speciesId,
+      });
 
       const { strongStats, weakStat } = rollGrowthTraits();
 
-      console.log("[ensure-egg] growth traits locked ->", {
+      logger.info("[ensure-egg] growth traits locked", {
         speciesId: starter.speciesId,
         strongStats,
         weakStat,
@@ -342,8 +359,8 @@ petsRouter.post(
         .single();
 
       if (fullInsertResult.error) {
-        console.error(
-          "[ensure-egg] full pets insert failed:",
+        logger.error(
+          "[ensure-egg] full pets insert failed",
           fullInsertResult.error,
         );
 
@@ -354,8 +371,8 @@ petsRouter.post(
           .single();
 
         if (fallbackInsertResult.error) {
-          console.error(
-            "[ensure-egg] fallback pets insert failed:",
+          logger.error(
+            "[ensure-egg] fallback pets insert failed",
             fallbackInsertResult.error,
           );
 
@@ -386,7 +403,7 @@ petsRouter.post(
       try {
         await insertBaseStats(insertedPet.id, starter.baseStats);
       } catch (statsError: any) {
-        console.error("[ensure-egg] insertBaseStats failed:", statsError);
+        logger.error("[ensure-egg] insertBaseStats failed", statsError);
 
         return res.status(500).json({
           success: false,
@@ -402,6 +419,12 @@ petsRouter.post(
         });
       }
 
+      logger.info("[ensure-egg] egg ensured", {
+        petId: insertedPet.id,
+        resolvedLine,
+        speciesId: starter.speciesId,
+      });
+
       return res.status(200).json({
         success: true,
         existing: false,
@@ -410,18 +433,15 @@ petsRouter.post(
         starter_species_id: starter.speciesId,
         pet: insertedPet,
       });
-    } catch (error: any) {
-      console.error("[ensure-egg] failed:", error);
+    } catch (err: any) {
+      logger.error("[ensure-egg] failed", err);
 
       return res.status(500).json({
         success: false,
         requested_line: requestedLine,
         resolved_line: null,
         error:
-          error?.message ??
-          error?.details ??
-          error?.hint ??
-          "Failed to ensure egg",
+          err?.message ?? err?.details ?? err?.hint ?? "Failed to ensure egg",
       });
     }
   },
@@ -516,8 +536,8 @@ petsRouter.get(
         points,
         elements,
       });
-    } catch (e: any) {
-      return res.status(500).json({ error: e?.message ?? "Server error" });
+    } catch (err: any) {
+      return res.status(500).json({ error: err?.message ?? "Server error" });
     }
   },
 );
@@ -534,7 +554,6 @@ petsRouter.post(
       const serverNowMs = Date.now();
       const nowIso = new Date(serverNowMs).toISOString();
 
-      // Step 1: Fetch the egg
       const { pet: egg } = await fetchHatcheryEgg(userId);
 
       if (!egg) {
@@ -546,14 +565,16 @@ petsRouter.post(
       }
 
       const hatchEndsAt = egg.hatch_ends_at;
+
       if (!hatchEndsAt) {
         return res.status(400).json({ error: "Egg has no hatch timer" });
       }
 
-      // Step 2: Check if egg is ready
       const readyMs = new Date(hatchEndsAt).getTime();
+
       if (serverNowMs < readyMs) {
         const remainingMs = readyMs - serverNowMs;
+
         return res.status(409).json({
           error: "Egg is not ready to hatch",
           server_now: nowIso,
@@ -562,33 +583,28 @@ petsRouter.post(
         });
       }
 
-      // Step 3: Resolve starter species
       const typedEgg = egg as any;
       const starter = typedEgg.species
         ? (STARTERS.find((s) => s.speciesId === typedEgg.species) ?? null)
         : (STARTERS.find((s) => s.line === typedEgg.line) ?? null);
 
       if (!starter) {
-        console.error("[hatch] no starter matched egg:", {
+        logger.error("[hatch] no starter matched egg", {
           egg_id: egg.id,
           egg_species: typedEgg.species,
           egg_line: typedEgg.line,
         });
+
         return res.status(500).json({ error: "Invalid egg species or line" });
       }
 
-      // Step 4: Roll IVs (hatch bonus)
       const iv = rollIV(HATCH_ALLOCATION_POINTS);
-
-      // Step 5: Roll gender
       const gender = rollGender();
 
-      // Step 6: Get or roll personality
       let personalityId = egg.personality_id ?? null;
       let personalityKey = egg.personality_key ?? null;
 
       if (personalityId && !personalityKey) {
-        // Backfill personality key
         const { data: personalityRow } = await supabaseAdmin
           .from("personalities")
           .select("id, key")
@@ -606,7 +622,6 @@ petsRouter.post(
         personalityId = rolled.id;
       }
 
-      // Step 7: Get or roll growth traits
       const savedStrongStats = sanitizeGrowthStrongStats(
         typedEgg.growth_strong_stats,
       );
@@ -624,7 +639,6 @@ petsRouter.post(
 
       const weakness = savedWeakStat ?? fallbackTraits?.weakStat ?? null;
 
-      // Step 8: Generate description
       const description = generatePetDescription({
         species: starter.hatchlingName,
         name: starter.hatchlingName,
@@ -638,8 +652,6 @@ petsRouter.post(
 
       const hatchTimeAlignment = typedEgg.hatch_time_alignment ?? null;
 
-      // Step 9: Call the atomic hatch RPC function
-      // This executes ALL hatch logic in a single database transaction
       const { data: hatchResult, error: hatchError } = await supabaseAdmin.rpc(
         "hatch_pet",
         {
@@ -663,23 +675,22 @@ petsRouter.post(
       );
 
       if (hatchError) {
-        console.error("[hatch] RPC failed:", hatchError);
+        logger.error("[hatch] RPC failed", hatchError);
+
         return res.status(500).json({ error: "Failed to hatch pet" });
       }
 
-      // RPC returns array with single row
       const result = Array.isArray(hatchResult) ? hatchResult[0] : hatchResult;
 
       if (!result?.success) {
-        console.error("[hatch] RPC returned failure:", result?.error_message);
+        logger.error("[hatch] RPC returned failure", result?.error_message);
+
         return res.status(500).json({
           error: result?.error_message || "Failed to hatch pet",
         });
       }
 
       const hatched = result.pet_row;
-
-      // Step 10: Assign party slot (separate transaction - safe to fail)
       const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
 
       let finalLocation: "active" | "storage" = "storage";
@@ -698,8 +709,7 @@ petsRouter.post(
           .eq("user_id", userId);
 
         if (activateErr) {
-          console.error("[hatch] activate pet failed:", activateErr);
-          // Non-fatal - pet is already hatched, just not activated
+          logger.error("[hatch] activate pet failed", activateErr);
         } else {
           finalLocation = "active";
           finalIsActive = true;
@@ -708,8 +718,14 @@ petsRouter.post(
         }
       }
 
-      // Step 11: Fetch final stats
       const points = await fetchTotalPoints(egg.id);
+
+      logger.info("[hatch] pet hatched", {
+        petId: egg.id,
+        speciesId: starter.speciesId,
+        line: typedEgg.line ?? starter.line ?? null,
+        storageResult,
+      });
 
       return res.json({
         server_now: nowIso,
@@ -732,8 +748,9 @@ petsRouter.post(
         is_mystery_starter_hatch: true,
         starter_species_id: starter.speciesId,
       });
-    } catch (e: any) {
-      console.error("[POST /api/pets/hatch] crash:", e);
+    } catch (err: any) {
+      logger.error("[POST /api/pets/hatch] crash", err);
+
       return res.status(500).json({
         error: "Failed to hatch pet",
       });

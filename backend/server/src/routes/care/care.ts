@@ -2,6 +2,7 @@
 
 import { Router } from "express";
 import type { NextFunction, Response } from "express";
+import { safeNum } from "../../lib/utils";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
@@ -74,11 +75,6 @@ async function buildNoPetCareResponse(userId: string, team: any[]) {
     team,
     starter_merchant: starterMerchant,
   };
-}
-
-function safeNum(value: unknown, fallback = 0) {
-  const n = Number(value ?? fallback);
-  return Number.isFinite(n) ? n : fallback;
 }
 
 function wholeCare(value: unknown, fallback = 0, min = 0, max = 50) {

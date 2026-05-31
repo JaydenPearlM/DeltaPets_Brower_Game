@@ -385,7 +385,7 @@ rewardsRouter.post(
 
     try {
       await applyReward(user_id, reward);
-    } catch (e: any) {
+    } catch (e: unknown) {
       return res
         .status(500)
         .json({ error: e?.message ?? "Failed to apply reward" });

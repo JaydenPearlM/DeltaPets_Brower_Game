@@ -15,12 +15,31 @@ export class ApiError extends Error {
   }
 }
 
+let cachedAccessToken: string | null = null;
+
+supabase.auth.onAuthStateChange((_event, session) => {
+  cachedAccessToken = session?.access_token ?? null;
+});
+
 async function getAccessToken(): Promise<string> {
+  if (cachedAccessToken) {
+    return cachedAccessToken;
+  }
+
   const { data, error } = await supabase.auth.getSession();
-  if (error) throw new Error(error.message);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   const token = data.session?.access_token;
-  if (!token) throw new Error("Missing access token. Are you logged in?");
+
+  if (!token) {
+    throw new Error("Missing access token. Are you logged in?");
+  }
+
+  cachedAccessToken = token;
+
   return token;
 }
 
@@ -28,6 +47,7 @@ export async function getAuthHeaders(
   extra?: HeadersInit,
 ): Promise<HeadersInit> {
   const token = await getAccessToken();
+
   return {
     Authorization: `Bearer ${token}`,
     ...(extra ?? {}),
@@ -36,6 +56,7 @@ export async function getAuthHeaders(
 
 async function parseMaybeJson(res: Response) {
   const ct = res.headers.get("content-type") ?? "";
+
   if (ct.includes("application/json")) {
     try {
       return await res.json();

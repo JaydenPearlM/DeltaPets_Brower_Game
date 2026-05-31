@@ -432,7 +432,7 @@ export default function HatcheryPage() {
 
         setData(next);
         syncServerClock(next.server_now);
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (!alive) return;
         setLoadErr(e?.message ?? String(e));
       }
@@ -608,7 +608,7 @@ export default function HatcheryPage() {
 
     try {
       await completeHatchFlow();
-    } catch (e: any) {
+    } catch (e: unknown) {
       alert(e?.message ?? String(e));
     } finally {
       setIsHatching(false);

@@ -14,7 +14,6 @@ import { dailyCareRouter } from "./care/dailyCare";
 import { careRouter } from "./care/care";
 
 import { battleRouter } from "./battle";
-import { worldRouter } from "./world/world";
 
 const apiRouter = Router();
 
@@ -24,7 +23,6 @@ const apiRouter = Router();
 
 apiRouter.use(meRouter);
 apiRouter.use("/auth", authLimiter, authRouter);
-apiRouter.use("/world", worldRouter);
 
 /* ===============================
    PET GAMEPLAY ROUTES

@@ -1,3 +1,5 @@
+project_id = "uhdpwgybrcizligqypzb"
+
 # Supabase local dev configuration.
-# If you run `supabase init`, the CLI will generate a full config.
-# Keeping this file (even minimal) prevents "empty file" confusion in diffs.
+# This project ref matches supabase/.temp/project-ref in the uploaded ZIP.
+# Run `supabase init` if you need the full generated local stack config.

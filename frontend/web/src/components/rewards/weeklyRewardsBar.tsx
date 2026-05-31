@@ -28,7 +28,7 @@ export function WeeklyRewardsBar() {
       setError(null);
       const s = await getRewardsStatus();
       setStatus(s);
-    } catch (e: any) {
+    } catch (e: unknown) {
       setStatus(null);
       setError(e?.message ?? String(e));
     }
@@ -54,7 +54,7 @@ export function WeeklyRewardsBar() {
       const result = await claimReward();
       setToast(`Claimed: ${result.reward?.label ?? "Reward"}`);
       await refresh();
-    } catch (e: any) {
+    } catch (e: unknown) {
       setToast(e?.message ?? "Claim failed.");
     } finally {
       setBusy(false);
