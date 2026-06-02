@@ -17,6 +17,10 @@ const WEEK1_LABELS = [
   { day: "Sun", label: "Trough (50)" },
 ];
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export function WeeklyRewardsBar() {
   const [status, setStatus] = useState<RewardsStatus | null>(null);
   const [busy, setBusy] = useState(false);
@@ -30,7 +34,7 @@ export function WeeklyRewardsBar() {
       setStatus(s);
     } catch (e: unknown) {
       setStatus(null);
-      setError(e?.message ?? String(e));
+      setError(getErrorMessage(e));
     }
   }
 
@@ -55,7 +59,7 @@ export function WeeklyRewardsBar() {
       setToast(`Claimed: ${result.reward?.label ?? "Reward"}`);
       await refresh();
     } catch (e: unknown) {
-      setToast(e?.message ?? "Claim failed.");
+      setToast(getErrorMessage(e));
     } finally {
       setBusy(false);
     }

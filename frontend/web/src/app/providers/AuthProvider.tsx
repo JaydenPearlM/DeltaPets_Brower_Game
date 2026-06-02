@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useMemo, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import type { AuthError, User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase/client";
 
 export type AuthContextValue = {
@@ -17,9 +17,12 @@ export type AuthContextValue = {
     email: string;
     password: string;
     captchaToken?: string;
-  }) => Promise<{ error: any | null; requiresConfirmation: boolean }>;
+  }) => Promise<{
+    error: AuthError | Error | null;
+    requiresConfirmation: boolean;
+  }>;
 
-  signOut: () => Promise<{ error: any | null }>;
+  signOut: () => Promise<{ error: AuthError | null }>;
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);

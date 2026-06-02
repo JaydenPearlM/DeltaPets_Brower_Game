@@ -181,6 +181,10 @@ const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function formatTraitList(words: string[]) {
   if (words.length === 0) return "";
   if (words.length === 1) return words[0];
@@ -371,8 +375,6 @@ export default function HatcheryPage() {
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
   const localNowMs = useNow(1000);
 
-  // ─── Server clock sync ─────────────────────────────────────────────────────
-
   const serverNowIso = useMemo(() => {
     if (serverNowBaseMs == null || fetchedAtLocalMs == null) {
       return new Date().toISOString();
@@ -395,25 +397,11 @@ export default function HatcheryPage() {
     setFetchedAtLocalMs(Date.now());
   }
 
-  // ─── Auth guard ────────────────────────────────────────────────────────────
-
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/", { replace: true });
     }
   }, [authLoading, user, navigate]);
-
-  // ─── Data loading + visibility-aware polling ───────────────────────────────
-  //
-  // BEFORE: setInterval fired every 30s unconditionally. The visibility check
-  // was INSIDE load(), so the timer still ticked on hidden tabs and wasted
-  // a closure execution every 30s even when doing nothing.
-  //
-  // AFTER:
-  // - Interval only calls load() when the tab IS visible
-  // - Switching back to the tab triggers an immediate refresh
-  // - alive flag prevents state updates after unmount
-  // - intervalId is tracked so cleanup is guaranteed even if auth changes
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -434,22 +422,18 @@ export default function HatcheryPage() {
         syncServerClock(next.server_now);
       } catch (e: unknown) {
         if (!alive) return;
-        setLoadErr(e?.message ?? String(e));
+        setLoadErr(getErrorMessage(e));
       }
     }
 
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
-        // Tab came back into focus — refresh immediately so
-        // countdown timers and egg states are never stale
         void load();
       }
     }
 
-    // Initial load
     void load();
 
-    // Poll only while tab is visible
     intervalId = setInterval(() => {
       if (document.visibilityState === "visible") {
         void load();
@@ -469,8 +453,6 @@ export default function HatcheryPage() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [authLoading, user]);
-
-  // ─── Derived slot state ────────────────────────────────────────────────────
 
   const slots: HatchSlot[] = useMemo(() => {
     if (data?.slots && data.slots.length > 0) {
@@ -574,8 +556,6 @@ export default function HatcheryPage() {
     return getEggGrowthTraits(selectedEgg);
   }, [selectedEgg]);
 
-  // ─── Hatch flow ────────────────────────────────────────────────────────────
-
   async function refreshAfterHatch() {
     const next = await fetchHatchery();
     setData(next);
@@ -609,13 +589,11 @@ export default function HatcheryPage() {
     try {
       await completeHatchFlow();
     } catch (e: unknown) {
-      alert(e?.message ?? String(e));
+      alert(getErrorMessage(e));
     } finally {
       setIsHatching(false);
     }
   }
-
-  // ─── Render ────────────────────────────────────────────────────────────────
 
   if (authLoading) return null;
 

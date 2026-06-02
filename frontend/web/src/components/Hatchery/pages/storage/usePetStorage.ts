@@ -26,6 +26,9 @@ export type StoragePet = {
   created_at: string | null;
   hatched_at: string | null;
   hatch_ends_at?: string | null;
+  portrait_url?: string | null;
+  current_hp?: number | null;
+  max_hp?: number | null;
 
   hp?: number | null;
   atk?: number | null;
