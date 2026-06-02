@@ -458,10 +458,8 @@ petsRouter.get(
       const userId = req.user!.id;
       const serverNowMs = Date.now();
 
-      const [{ slots }, { shelfSlots }] = await Promise.all([
-        fetchHatcherySlots(userId),
-        fetchHatcheryShelfSlots(userId),
-      ]);
+      const { slots } = await fetchHatcherySlots(userId);
+      const { shelfSlots } = await fetchHatcheryShelfSlots(userId);
 
       const slotMapper = (slot: any) => ({
         id: slot.id,
@@ -473,6 +471,9 @@ petsRouter.get(
               name: slot.pet.name ?? null,
               stage: slot.pet.stage ?? null,
               line: slot.pet.line ?? null,
+              species: slot.pet.species ?? null,
+              hatch_ends_at: slot.pet.hatch_ends_at ?? null,
+              hatch_time_alignment: slot.pet.hatch_time_alignment ?? null,
               growth_strong_stats: slot.pet.growth_strong_stats ?? [],
               growth_weak_stat: slot.pet.growth_weak_stat ?? null,
             }

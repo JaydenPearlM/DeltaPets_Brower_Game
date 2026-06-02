@@ -60,16 +60,19 @@ petActionsRouter.post(
     }
 
     // Enforce cooldown
+    // Enforce cooldown
     try {
       assertCooldownReady(pet, action, nowMs);
-    } catch (e: unknown) {
-      const status = e?.status ?? 409;
+    } catch (e) {
+      const err = e as any;
+      const status = err?.status ?? 409;
+
       return res.status(status).json({
-        error: e?.message ?? "Cooldown not ready",
+        error: err?.message ?? "Cooldown not ready",
         server_now: nowIso,
-        cooldown_key: e?.cooldown_key ?? action,
-        cooldown_ends_at: e?.cooldown_ends_at ?? null,
-        cooldown_remaining_ms: e?.cooldown_remaining_ms ?? null,
+        cooldown_key: err?.cooldown_key ?? action,
+        cooldown_ends_at: err?.cooldown_ends_at ?? null,
+        cooldown_remaining_ms: err?.cooldown_remaining_ms ?? null,
         pet_source: used,
       });
     }
@@ -98,7 +101,10 @@ petActionsRouter.post(
 
     // Apply cooldown by writing ends_at column
     const col = colNameForKey(action);
-    patch[col] = calcNewCooldownEndsAtIso(nowMs, action);
+    (patch as Record<string, unknown>)[col] = calcNewCooldownEndsAtIso(
+      nowMs,
+      action,
+    );
 
     if (action === "feed") {
       const nextHunger = clamp(hunger + 15, 0, 50);

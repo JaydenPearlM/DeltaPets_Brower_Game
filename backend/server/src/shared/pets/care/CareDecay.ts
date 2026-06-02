@@ -1,6 +1,18 @@
 import { safeNum } from "../../../lib/utils";
 import { CARE_DECAY_STEP_MINUTES } from "../../constants";
-import { logger } from "../../../lib/logger";
+
+type CareDecayLogKind = "skipped" | "output";
+
+type CareDecayLogger = (
+  kind: CareDecayLogKind,
+  payload: Record<string, unknown>,
+) => void;
+
+let careDecayLogger: CareDecayLogger | null = null;
+
+export function setCareDecayLogger(logger: CareDecayLogger | null) {
+  careDecayLogger = logger;
+}
 
 export type CarePet = {
   id: string;
@@ -43,11 +55,11 @@ const isDev =
   typeof process !== "undefined" && process.env?.NODE_ENV !== "production";
 
 function logCareDecay(
-  kind: "skipped" | "output",
+  kind: CareDecayLogKind,
   payload: Record<string, unknown>,
 ) {
   if (isDev) {
-    logger.debug(`[care/decay] ${kind}`, payload);
+    careDecayLogger?.(kind, payload);
   }
 }
 

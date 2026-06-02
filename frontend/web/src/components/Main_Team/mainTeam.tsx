@@ -3,6 +3,7 @@ import type {
   PartySlotView,
   StoragePet,
 } from "../Hatchery/pages/storage/usePetStorage";
+import { SHARED_SPECIES } from "@shared/pets/species";
 import "./mainTeam.css";
 
 type MainTeamProps = {
@@ -95,9 +96,52 @@ function formatStage(stage?: string | null) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function normalizeSpeciesMatch(value?: string | null) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function getEggBaseHp(pet: PetStats | null) {
+  const speciesKeys = new Set(
+    [pet?.species, pet?.name, pet?.line]
+      .map(normalizeSpeciesMatch)
+      .filter(Boolean),
+  );
+
+  const species = SHARED_SPECIES.find((entry) => {
+    const possibleKeys = [
+      entry.id,
+      entry.evolution.egg,
+      entry.evolution.hatchling,
+      entry.evolution.lowform,
+      entry.evolution.highform,
+      entry.evolution.legion,
+      entry.evolution.mythical_legendary,
+    ]
+      .map(normalizeSpeciesMatch)
+      .filter(Boolean);
+
+    return possibleKeys.some((key) => speciesKeys.has(key));
+  });
+
+  return species?.eggBaseStats.hp ?? 0;
+}
+
+function getPositiveStat(value: number | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : null;
+}
+
 function getHpNumbers(pet: PetStats | null) {
-  const currentHp = pet?.current_hp ?? pet?.hp ?? 0;
-  const maxHp = pet?.max_hp ?? pet?.hp ?? currentHp;
+  const storedMaxHp = getPositiveStat(pet?.max_hp) ?? getPositiveStat(pet?.hp);
+  const eggBaseHp = getEggBaseHp(pet);
+  const derivedMaxHp = eggBaseHp > 0 ? eggBaseHp * 2 : 0;
+  const maxHp = storedMaxHp ?? derivedMaxHp;
+  const currentHp = getPositiveStat(pet?.current_hp) ?? maxHp;
 
   return {
     currentHp,

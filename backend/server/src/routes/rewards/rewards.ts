@@ -385,10 +385,12 @@ rewardsRouter.post(
 
     try {
       await applyReward(user_id, reward);
-    } catch (e: unknown) {
+    } catch (e) {
+      const err = e as any;
+
       return res
         .status(500)
-        .json({ error: e?.message ?? "Failed to apply reward" });
+        .json({ error: err?.message ?? "Failed to apply reward" });
     }
 
     const { error: e2 } = await supabaseAdmin

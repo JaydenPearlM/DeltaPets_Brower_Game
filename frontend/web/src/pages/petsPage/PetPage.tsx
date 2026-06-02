@@ -12,6 +12,11 @@ import {
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import { PetSkillsPanel } from "@/components/Skills";
+import MainTeam from "@/components/Main_Team/mainTeam";
+import type {
+  PartySlotView,
+  StoragePet,
+} from "@/components/Hatchery/pages/storage/usePetStorage";
 import "./PetPage.css";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
@@ -49,12 +54,27 @@ type TeamCardPet = {
   id: string;
   name?: string | null;
   nickname?: string | null;
+  species?: string | null;
+  stage?: string | null;
   element?: string | null;
+  elementKey?: string | null;
   line?: string | null;
   level?: number | null;
+  energy?: number | null;
+  bond?: number | null;
   isActive?: boolean | null;
   slotIndex?: number | null;
   previewUrl?: string | null;
+  hp?: number | null;
+  current_hp?: number | null;
+  max_hp?: number | null;
+  atk?: number | null;
+  def?: number | null;
+  magi?: number | null;
+  mana?: number | null;
+  spd?: number | null;
+  personality?: string | null;
+  personality_key?: string | null;
 };
 
 type StarterMerchantState = {
@@ -128,18 +148,6 @@ function getElementValue(elements: PetElementsRow | null, key: string) {
   }
 
   return safeNum((elements as any)[key]);
-}
-
-function getTeamDisplayName(teamPet: TeamCardPet) {
-  return teamPet.nickname?.trim() || teamPet.name?.trim() || "Unnamed Delta";
-}
-
-function getTeamElementKey(teamPet: TeamCardPet): ElementThemeKey {
-  return getElementThemeKey(teamPet.element || teamPet.line);
-}
-
-function buildArcId(value: string) {
-  return `pet-team-arc-${String(value).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
 }
 
 function getPetPageDescription(pet: PetRecord | null) {
@@ -233,33 +241,6 @@ function getPetGrowthTraits(pet: PetRecord | null, stats: PetStatsRow | null) {
     strongStats: sortedStats.slice(0, 2),
     weakStat: sortedStats.at(-1) ?? null,
   };
-}
-
-function TeamOrbTextRing({
-  pathId,
-  label,
-  elementKey,
-}: {
-  pathId: string;
-  label: string;
-  elementKey: string;
-}) {
-  return (
-    <svg
-      className={`petRepoTeamTextRing petRepoTeamTextRing--${elementKey}`}
-      viewBox="0 0 220 220"
-      aria-hidden="true"
-    >
-      <defs>
-        <path id={pathId} d="M 35 118 A 75 75 0 1 1 185 118" fill="none" />
-      </defs>
-      <text>
-        <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle">
-          {label}
-        </textPath>
-      </text>
-    </svg>
-  );
 }
 
 function SectionPill({ title }: { title: string }) {
@@ -581,6 +562,75 @@ export default function PetPage() {
     [pet, stats],
   );
 
+  const kithTeamSlots = useMemo<PartySlotView[]>(() => {
+    const teamBySlot = new Map<number, TeamCardPet>();
+
+    for (const teamPet of team) {
+      const slotIndex = Math.max(1, Math.min(4, safeNum(teamPet.slotIndex, 0)));
+
+      if (slotIndex >= 1) {
+        teamBySlot.set(slotIndex, teamPet);
+      }
+    }
+
+    return Array.from({ length: 4 }, (_, index) => {
+      const slotIndex = index + 1;
+      const teamPet = teamBySlot.get(slotIndex) ?? team[index] ?? null;
+      const storagePet: StoragePet | null = teamPet
+        ? {
+            id: teamPet.id,
+            user_id: user?.id ?? "",
+            name: teamPet.name ?? teamPet.nickname ?? teamPet.species ?? null,
+            nickname: teamPet.nickname ?? null,
+            species: teamPet.species ?? teamPet.name ?? null,
+            energy: teamPet.energy ?? 100,
+            bond: teamPet.bond ?? 0,
+            stage: teamPet.stage ?? "hatchling",
+            line: teamPet.elementKey ?? teamPet.line ?? teamPet.element ?? null,
+            level: teamPet.level ?? 1,
+            location: "active",
+            is_active: teamPet.isActive ?? false,
+            created_at: null,
+            hatched_at: null,
+            portrait_url: teamPet.previewUrl ?? null,
+            current_hp: teamPet.current_hp ?? teamPet.hp ?? null,
+            max_hp: teamPet.max_hp ?? teamPet.hp ?? null,
+            hp: teamPet.hp ?? teamPet.max_hp ?? teamPet.current_hp ?? null,
+            atk: teamPet.atk ?? null,
+            def: teamPet.def ?? null,
+            magi: teamPet.magi ?? null,
+            mana: teamPet.mana ?? null,
+            spd: teamPet.spd ?? null,
+            personality_key:
+              teamPet.personality_key ?? teamPet.personality ?? null,
+          }
+        : null;
+
+      return {
+        slotIndex,
+        entryId: null,
+        petId: teamPet?.id ?? null,
+        pet: storagePet,
+      };
+    });
+  }, [team, user?.id]);
+
+  const selectedKithTeamSlot =
+    kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ?? null;
+
+  const selectKithTeamSlot = useCallback(
+    (slotIndex: number) => {
+      const selectedSlot = kithTeamSlots.find(
+        (slot) => slot.slotIndex === slotIndex,
+      );
+
+      if (selectedSlot?.petId) {
+        void switchActivePet(selectedSlot.petId);
+      }
+    },
+    [kithTeamSlots, switchActivePet],
+  );
+
   const nicknameLocked = Boolean(pet?.nickname?.trim());
   const canRenameNickname = !nicknameLocked;
   const trimmedNicknameDraft = nicknameDraft.trim();
@@ -716,117 +766,22 @@ export default function PetPage() {
             runCareAction={runCareAction}
           />
 
-          <section className="petRepoTeamPanel">
-            <div className="petRepoTeamPanelHeader petRepoTeamPanelHeader--centered">
-              <div className="petRepoSectionLine" />
-              <h2 className="petRepoTeamPanelTitle">Main Team</h2>
-              <p className="petRepoTeamPanelCopy petRepoTeamPanelCopy--centered">
-                Click any team pet here to switch the Care panel focus.
-              </p>
-              <div className="petRepoSectionLine" />
-            </div>
-
-            <div className="petRepoTeamGrid">
-              {Array.from({ length: 4 }, (_, index) => {
-                const teamPet = team[index] ?? null;
-
-                if (!teamPet) {
-                  const arcId = buildArcId(`empty-${index + 1}`);
-
-                  return (
-                    <div
-                      key={`empty-slot-${index + 1}`}
-                      className="petRepoTeamOrbWrap"
-                    >
-                      <div className="petRepoTeamOrb petRepoTeamOrb--empty">
-                        <div
-                          className="petRepoTeamRing petRepoTeamRing--bond petRepoTeamRing--bondEmpty"
-                          aria-hidden="true"
-                        />
-                        <div
-                          className="petRepoTeamRing petRepoTeamRing--energy"
-                          aria-hidden="true"
-                        />
-                        <div className="petRepoTeamPreview petRepoTeamPreview--circle petRepoTeamPreview--empty" />
-
-                        <TeamOrbTextRing
-                          pathId={arcId}
-                          label="No Pet Yet"
-                          elementKey="silver"
-                        />
-                      </div>
-                    </div>
-                  );
-                }
-
-                const teamDisplayName = getTeamDisplayName(teamPet);
-                const elementKey = getTeamElementKey(teamPet);
-                const arcId = buildArcId(`${teamPet.id}-${index + 1}`);
-
-                return (
-                  <button
-                    key={teamPet.id}
-                    type="button"
-                    className={`petRepoTeamOrbWrap petRepoTeamOrbWrapButton ${
-                      teamPet.isActive ? "is-active" : ""
-                    }`}
-                    onClick={() => void switchActivePet(teamPet.id)}
-                    disabled={busy || nicknameSaving}
-                  >
-                    <div
-                      className={`petRepoTeamOrb petRepoTeamOrb--${elementKey}`}
-                    >
-                      <div
-                        className="petRepoTeamRing petRepoTeamRing--bond petRepoTeamRing--bondEmpty"
-                        aria-hidden="true"
-                      />
-                      <div
-                        className="petRepoTeamRing petRepoTeamRing--energy"
-                        aria-hidden="true"
-                      />
-
-                      <div className="petRepoTeamPreview petRepoTeamPreview--circle">
-                        <div
-                          className="petRepoTeamPreviewGlow"
-                          aria-hidden="true"
-                        />
-                        <div
-                          className="petRepoTeamPreviewPlatformOuter"
-                          aria-hidden="true"
-                        />
-                        <div
-                          className="petRepoTeamPreviewPlatformInner"
-                          aria-hidden="true"
-                        />
-
-                        {teamPet.previewUrl ? (
-                          <img
-                            className="petRepoTeamPreviewImage petRepoTeamPreviewImage--circle"
-                            src={teamPet.previewUrl}
-                            alt={teamDisplayName}
-                          />
-                        ) : (
-                          <div className="petRepoTeamPreviewFallback petRepoTeamPreviewFallback--orb">
-                            <div className="petRepoCreatureCore petRepoCreatureCore--team">
-                              <span className="petRepoCreatureEye petRepoCreatureEyeLeft" />
-                              <span className="petRepoCreatureEye petRepoCreatureEyeRight" />
-                              <span className="petRepoCreatureSmile" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <TeamOrbTextRing
-                        pathId={arcId}
-                        label={teamDisplayName}
-                        elementKey={elementKey}
-                      />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+          <MainTeam
+            partySlots={kithTeamSlots}
+            enableDragAndDrop={false}
+            selectedPartySlot={selectedKithTeamSlot}
+            workingPetId={busy || nicknameSaving ? pet.id : null}
+            workingSlotIndex={null}
+            dragOverSlotIndex={null}
+            onSelectSlot={selectKithTeamSlot}
+            onDragStartPet={() => undefined}
+            onDragEndPet={() => undefined}
+            onDragOverSlot={(event) => event.preventDefault()}
+            onDragEnterSlot={() => undefined}
+            onDragLeaveSlot={() => undefined}
+            onDropOnSlot={(event) => event.preventDefault()}
+            teamName="Kith Team"
+          />
 
           <section className="petRepoBottomGrid">
             <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--bottomStats">

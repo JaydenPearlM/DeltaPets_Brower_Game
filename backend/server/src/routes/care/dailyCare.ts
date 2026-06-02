@@ -201,10 +201,12 @@ dailyCareRouter.post(
     if (shouldAward) {
       try {
         await awardAlphaTesterRibbon(userId, nowIso);
-      } catch (e: unknown) {
+      } catch (e) {
+        const err = e as any;
+
         console.warn(
           "[dailyCare] Failed to award Alpha Tester ribbon:",
-          e?.message ?? e,
+          err?.message ?? err,
         );
         // Don't fail the request if ribbon award fails
         // The daily care completion succeeded

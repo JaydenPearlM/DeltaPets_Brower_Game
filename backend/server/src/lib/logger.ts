@@ -43,7 +43,15 @@ export function log(level: LogLevel, message: string, data?: unknown): void {
     data,
   };
 
+  const MAX_LOG_BUFFER = 500;
+
   logBuffer.push(entry);
+
+  if (logBuffer.length > MAX_LOG_BUFFER) {
+    logBuffer.shift();
+  }
+
+  printToConsole(entry);
   // Stored for /api/debug/logs. Do not print app logs to the terminal.
 }
 
