@@ -11,7 +11,7 @@ export type AuthContextValue = {
     identifier: string;
     password: string;
     captchaToken?: string;
-  }) => Promise<{ error: any | null }>;
+  }) => Promise<{ error: AuthError | Error | null }>;
 
   signUp: (args: {
     email: string;
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signIn: async ({ identifier, password, captchaToken }) => {
         const raw = identifier.trim();
         if (!raw || !password) {
-          return { error: { message: "Missing username/email and password." } };
+          return { error: new Error("Missing username/email and password.") };
         }
 
         const normalized = raw.toLowerCase();
@@ -88,10 +88,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (!response.ok) {
             return {
-              error: {
-                message:
-                  "Could not look up that username right now. Try again in a sec.",
-              },
+              error: new Error(
+                "Could not look up that username right now. Try again in a sec.",
+              ),
             };
           }
 
@@ -99,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (!data.email) {
             return {
-              error: { message: "Incorrect Username and/or password." },
+              error: new Error("Incorrect Username and/or password."),
             };
           }
 

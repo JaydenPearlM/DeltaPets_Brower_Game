@@ -2,31 +2,33 @@ name: CI
 
 on:
   push:
+    branches:
+      - Core_Systems_version_1
+      - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 9.0.0
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
-      - name: Install frontend dependencies
-        run: pnpm --dir frontend/web install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Install backend dependencies
-        run: pnpm --dir backend/server install --frozen-lockfile
-
-      - name: Build frontend
-        run: pnpm --dir frontend/web build
-
-      - name: Build backend
-        run: pnpm --dir backend/server build
+      - name: Build
+        run: pnpm build

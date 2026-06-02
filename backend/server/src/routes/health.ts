@@ -5,10 +5,7 @@ import { supabaseAdmin } from "../lib/supabaseAdmin";
 export const healthRouter = Router();
 
 healthRouter.get("/health", async (_req, res) => {
-  const { error } = await supabaseAdmin
-    .from("game_config")
-    .select("key")
-    .limit(1);
+  const { error } = await supabaseAdmin.from("profiles").select("id").limit(1);
 
   if (error) {
     res.status(503).json({

@@ -60,20 +60,23 @@ petActionsRouter.post(
     }
 
     // Enforce cooldown
-    // Enforce cooldown
     try {
       assertCooldownReady(pet, action, nowMs);
-    } catch (e) {
-      const err = e as any;
-      const status = err?.status ?? 409;
+    } catch (e: unknown) {
+      const err = e as {
+        status?: number;
+        message?: string;
+        cooldown_key?: string;
+        cooldown_ends_at?: string | null;
+        cooldown_remaining_ms?: number | null;
+      };
+      const status = err.status ?? 409;
 
       return res.status(status).json({
-        error: err?.message ?? "Cooldown not ready",
-        server_now: nowIso,
-        cooldown_key: err?.cooldown_key ?? action,
-        cooldown_ends_at: err?.cooldown_ends_at ?? null,
-        cooldown_remaining_ms: err?.cooldown_remaining_ms ?? null,
-        pet_source: used,
+        error: err.message ?? "Cooldown not ready",
+        cooldown_key: err.cooldown_key ?? action,
+        cooldown_ends_at: err.cooldown_ends_at ?? null,
+        cooldown_remaining_ms: err.cooldown_remaining_ms ?? null,
       });
     }
 
