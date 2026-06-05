@@ -812,6 +812,33 @@ export default function PetPage() {
                     })}
                   </div>
 
+                  <div className="petRepoPassiveTraitCard">
+                    <div className="petRepoPassiveTraitHeader">
+                      <span>Passive Trait</span>
+                      <span className="petRepoPassiveTraitRarity">
+                        {pet.passive_trait_rarity ?? "Common"}
+                      </span>
+                    </div>
+
+                    <h3>
+                      {pet.passive_trait_name ??
+                        titleCase(pet.passive_trait_key ?? "Unknown Trait")}
+                    </h3>
+
+                    <p>
+                      {pet.passive_trait_description ??
+                        "Kindness isn't weakness. It's how they win."}
+                    </p>
+
+                    <div className="petRepoPassiveTraitEffects">
+                      <strong>Battle Effect:</strong>
+                      <span>
+                        {pet.passive_trait_effect_summary ??
+                          "Battle bonus will appear here once this passive is fully connected."}
+                      </span>
+                    </div>
+                  </div>
+
                   <button
                     type="button"
                     className="petRepoSkillTreeButton skillChamberActionButton skillChamberActionButton--gold"

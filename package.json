@@ -7,12 +7,18 @@
     "backend/*"
   ],
   "scripts": {
-    "dev": "concurrently -k -n server,web \"pnpm --dir backend/server dev\" \"pnpm --dir frontend/web exec vite --host 0.0.0.0\"",
-    "build": "pnpm -r build"
+    "dev": "pnpm ports:clear && concurrently -k -n server,web \"pnpm --dir backend/server dev\" \"pnpm --dir frontend/web exec vite --host 0.0.0.0\"",
+    "build": "pnpm --dir frontend/web build && pnpm --dir backend/server build",
+    "ports:clear": "pnpm exec kill-port 3000 4000",
+    "safe:build": "pnpm ports:clear && pnpm run build",
+    "safe:start": "pnpm ports:clear && pnpm run build && pnpm dev"
   },
-  "devDependencies": {
+  "dependencies": {
     "concurrently": "^9.2.1",
     "supabase": "^2.98.2",
     "wait-on": "^8.0.1"
+  },
+  "devDependencies": {
+    "kill-port": "^2.0.1"
   }
 }

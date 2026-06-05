@@ -125,6 +125,37 @@ async function markPetAsRunaway(pet: Record<string, any>) {
   });
 }
 
+async function hydratePassiveTrait(pet: Record<string, any>) {
+  if (!pet?.passive_trait_id && !pet?.passive_trait_key) return pet;
+
+  let query = supabaseAdmin
+    .from("passive_traits")
+    .select("id,key,name,rarity,description,effect_summary,effects,stat_key")
+    .eq("is_active", true);
+
+  if (pet.passive_trait_id) {
+    query = query.eq("id", pet.passive_trait_id);
+  } else {
+    query = query.eq("key", pet.passive_trait_key);
+  }
+
+  const { data, error } = await query.maybeSingle();
+
+  if (error || !data) return pet;
+
+  return {
+    ...pet,
+    passive_trait_id: data.id,
+    passive_trait_key: data.key,
+    passive_trait_name: data.name,
+    passive_trait_rarity: data.rarity,
+    passive_trait_description: data.description,
+    passive_trait_effect_summary: data.effect_summary,
+    passive_trait_effects: data.effects,
+    passive_trait_stat_key: data.stat_key,
+  };
+}
+
 careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
   const userId = req.user!.id;
 
@@ -307,7 +338,9 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       return res.json(await buildNoPetCareResponse(userId, team));
     }
 
-    activePetResolved = normalizePetForClient(activePetResolved);
+    activePetResolved = normalizePetForClient(
+      await hydratePassiveTrait(activePetResolved),
+    );
 
     let hydratedPet = activePetResolved;
 

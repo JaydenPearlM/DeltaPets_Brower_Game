@@ -24,7 +24,11 @@ import {
 import { rollPersonality, getAllPersonalities } from "../../pets/personalities";
 import { assignPetToMainParty } from "../../pets/partySlots";
 import { logger } from "../../lib/logger";
-import { fetchTotalPoints, insertBaseStats } from "./petsStats";
+import {
+  fetchBaseStatsMapped,
+  fetchTotalPoints,
+  insertBaseStats,
+} from "./petsStats";
 
 import {
   findStarterByName,
@@ -293,10 +297,25 @@ petsRouter.post(
       });
 
       const existingPet = await fetchStarterPetAnyStage(userId);
-
       if (existingPet) {
         const existingResolvedLine =
           existingPet.line ?? requestedLine ?? "water";
+
+        const existingStarter = findStarterByName(existingPet.name);
+        const existingBaseStats = await fetchBaseStatsMapped(existingPet.id);
+
+        if (!existingBaseStats && existingStarter) {
+          logger.warn(
+            "[ensure-egg] existing starter missing base stats; repairing",
+            {
+              petId: existingPet.id,
+              requestedLine,
+              resolvedLine: existingResolvedLine,
+            },
+          );
+
+          await insertBaseStats(existingPet.id, existingStarter.baseStats);
+        }
 
         logger.info("[ensure-egg] existing starter found", {
           petId: existingPet.id,
