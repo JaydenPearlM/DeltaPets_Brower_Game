@@ -72,6 +72,8 @@ type EggRow = {
   hatch_ends_at?: string | null;
   personality_id?: string | null;
   personality_key?: string | null;
+  passive_trait_id?: string | null;
+  passive_trait_key?: string | null;
   growth_strong_stats?: string[] | null;
   growth_weak_stat?: string | null;
   hatch_time_alignment?: string | null;
@@ -89,6 +91,8 @@ type PetInsertPayload = {
   is_active: boolean;
   location: string;
   personality_key?: string | null;
+  passive_trait_id?: string | null;
+  passive_trait_key?: string | null;
   hatch_time_alignment?: string | null;
   growth_strong_stats?: string[] | null;
   growth_weak_stat?: string | null;
@@ -120,6 +124,17 @@ type PetLocationUpdatePayload = {
   location: string;
   is_active: boolean;
 };
+
+async function rollPassiveTrait() {
+  const { data, error } = await supabaseAdmin
+    .from("passive_traits")
+    .select("id,key")
+    .eq("is_active", true);
+
+  if (error || !data?.length) return null;
+
+  return data[Math.floor(Math.random() * data.length)];
+}
 
 export const petsRouter = Router();
 
@@ -316,11 +331,18 @@ petsRouter.post(
       });
 
       const { strongStats, weakStat } = rollGrowthTraits();
+      const passiveTrait = await rollPassiveTrait();
 
       logger.info("[ensure-egg] growth traits locked", {
         speciesId: starter.speciesId,
         strongStats,
         weakStat,
+      });
+
+      logger.info("[ensure-egg] passive trait locked", {
+        speciesId: starter.speciesId,
+        passiveTraitId: passiveTrait?.id ?? null,
+        passiveTraitKey: passiveTrait?.key ?? null,
       });
 
       const fullInsertPayload = {
@@ -334,6 +356,8 @@ petsRouter.post(
         is_active: false,
         location: "hatchery",
         personality_key: personalityKey ?? null,
+        passive_trait_id: passiveTrait?.id ?? null,
+        passive_trait_key: passiveTrait?.key ?? null,
         hatch_time_alignment: worldTime ?? null,
         growth_strong_stats: strongStats,
         growth_weak_stat: weakStat,
@@ -476,6 +500,8 @@ petsRouter.get(
               hatch_time_alignment: slot.pet.hatch_time_alignment ?? null,
               growth_strong_stats: slot.pet.growth_strong_stats ?? [],
               growth_weak_stat: slot.pet.growth_weak_stat ?? null,
+              passive_trait_id: slot.pet.passive_trait_id ?? null,
+              passive_trait_key: slot.pet.passive_trait_key ?? null,
             }
           : null,
         hatch:
@@ -531,6 +557,8 @@ petsRouter.get(
           line: egg.line ?? null,
           growth_strong_stats: egg.growth_strong_stats ?? [],
           growth_weak_stat: egg.growth_weak_stat ?? null,
+          passive_trait_id: egg.passive_trait_id ?? null,
+          passive_trait_key: egg.passive_trait_key ?? null,
         },
         hatch: hatchPayload(egg, serverNowMs),
         stats,
@@ -736,6 +764,8 @@ petsRouter.post(
           location: finalLocation,
           is_active: finalIsActive,
           description,
+          passive_trait_id: typedEgg.passive_trait_id ?? null,
+          passive_trait_key: typedEgg.passive_trait_key ?? null,
         },
         awarded_points: HATCH_ALLOCATION_POINTS,
         iv,

@@ -11,10 +11,10 @@
   display: block;
   width: calc(100% + 160px);
   max-width: none;
-  margin: 0 -160px 140px 0;
+  margin: 0 -160px 10px 0;
   border-radius: 16px;
   border: 2px solid var(--dp-panel-border-soft-cyan);
-  overflow: visible;
+  overflow: hidden;
   box-shadow:
     0 8px 20px rgba(8, 18, 38, 0.22),
     inset 0 1px 0 var(--dp-panel-inner-highlight),
@@ -33,7 +33,7 @@
 .hp-bannerTickerViewport {
   position: relative;
   flex: 1 1 auto;
-  overflow: visible;
+  overflow: hidden;
   min-width: 0;
   margin-inline: 0;
 }
@@ -109,13 +109,15 @@
 }
 
 .hp-banner--green {
-  background: linear-gradient(180deg, #6f9f7c 0%, #5c8a6b 100%);
-  border: 2px solid rgba(78, 105, 148, 0.42);
+  background: linear-gradient(180deg, #7af09a 0%, #45d96f 52%, #2fbd62 100%);
+  border: 2px solid rgba(155, 255, 190, 0.72);
 }
 
 .hp-heroCard {
   position: relative;
-  margin-bottom: 18px;
+  width: calc(100% + 160px);
+  max-width: none;
+  margin: 0 -160px 18px 0;
   border-radius: 30px;
   border: 3px solid var(--dp-panel-border);
   background:
@@ -808,7 +810,7 @@
 .hp-spotlightPanel {
   justify-self: start;
   margin-left: 56px;
-  width: calc(100% + 80px);
+  width: calc(100% + 100px);
   border-color: var(--dp-panel-border);
   outline: 3px solid #7fdcff;
   outline-offset: -14px;
@@ -820,6 +822,7 @@
 
 .hp-createdPanel {
   overflow: hidden;
+  margin-right: -120px;
   position: relative;
   box-shadow:
     14px 0 24px rgba(18, 28, 49, 0.16),
@@ -1281,6 +1284,18 @@
     padding: 0 var(--space-3) var(--space-8);
   }
 
+  .hp-banner {
+    width: 100%;
+    max-width: none;
+    margin: 0 0 140px 0;
+  }
+
+  .hp-heroCard {
+    width: 100%;
+    max-width: none;
+    margin: 0 0 18px 0;
+  }
+
   .hp-bannerContent {
     padding: 8px 12px;
     min-height: 50px;
@@ -1432,8 +1447,8 @@
 }
 
 .hp-banner--green {
-  background: linear-gradient(180deg, #1f5c2f, #2fa85a);
-  border: 2px solid rgba(120, 255, 170, 0.6);
+  background: linear-gradient(180deg, #7af09a 0%, #45d96f 52%, #2fbd62 100%);
+  border: 2px solid rgba(155, 255, 190, 0.72);
 }
 
 .hp-banner--blue {
@@ -1452,7 +1467,7 @@
 }
 
 .hp-bannerTickerViewport {
-  overflow: visible;
+  overflow: hidden;
   position: relative;
   min-width: 0;
   margin-inline: 0;

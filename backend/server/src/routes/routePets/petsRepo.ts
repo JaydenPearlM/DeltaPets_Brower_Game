@@ -238,11 +238,6 @@ export async function fetchHatcherySlots(userId: string) {
 
   if (!initialized) {
     await initializeHatcheryForUser(userId);
-  } else {
-    await Promise.all([
-      runEnsureHatcherySlots(userId),
-      runEnsureHatcheryShelfSlots(userId),
-    ]);
   }
 
   const { data: slotRows, error: slotError } = await supabaseAdmin

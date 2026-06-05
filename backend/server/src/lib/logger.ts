@@ -9,6 +9,7 @@ export interface LogEntry {
   level: LogLevel;
   tag: string;
   message: string;
+  color: string;
   data?: unknown;
 }
 
@@ -19,8 +20,23 @@ const colors = {
   yellow: "\x1b[33m",
   red: "\x1b[31m",
   gray: "\x1b[90m",
+  cyan: "\x1b[36m",
+  blue: "\x1b[34m",
+  magenta: "\x1b[35m",
+  white: "\x1b[97m",
   reset: "\x1b[0m",
 };
+
+const elementColors = new Set([
+  "fire",
+  "water",
+  "earth",
+  "air",
+  "ice",
+  "storm",
+  "light",
+  "shadow",
+]);
 
 function splitTag(message: string): { tag: string; message: string } {
   const match = message.match(/^\[([^\]]+)\]\s*(.*)$/);
@@ -32,6 +48,39 @@ function splitTag(message: string): { tag: string; message: string } {
   return { tag: match[1], message: match[2] || message };
 }
 
+function readDataField(data: unknown, key: string): string | null {
+  if (!data || typeof data !== "object") return null;
+
+  const value = (data as Record<string, unknown>)[key];
+
+  if (typeof value !== "string") return null;
+
+  const normalized = value.trim().toLowerCase();
+
+  return normalized || null;
+}
+
+function getElementColor(data: unknown): string | null {
+  const element = readDataField(data, "element");
+  const line = readDataField(data, "line");
+
+  if (element && elementColors.has(element)) return element;
+  if (line && elementColors.has(line)) return line;
+
+  return null;
+}
+
+function getLogColor(level: LogLevel, tag: string, data: unknown): string {
+  if (level === "error") return "error";
+  if (level === "warn") return "warn";
+
+  if (tag === "hatch") {
+    return getElementColor(data) ?? "normal";
+  }
+
+  return "normal";
+}
+
 export function log(level: LogLevel, message: string, data?: unknown): void {
   const parsed = splitTag(message);
 
@@ -40,6 +89,7 @@ export function log(level: LogLevel, message: string, data?: unknown): void {
     level,
     tag: parsed.tag,
     message: parsed.message,
+    color: getLogColor(level, parsed.tag, data),
     data,
   };
 
@@ -80,15 +130,25 @@ function serializeData(data: unknown): string {
   }
 }
 
+function getConsoleColor(entry: LogEntry): string {
+  if (entry.color === "error") return colors.red;
+  if (entry.color === "warn") return colors.yellow;
+  if (entry.color === "fire") return colors.red;
+  if (entry.color === "water") return colors.blue;
+  if (entry.color === "earth") return colors.green;
+  if (entry.color === "air") return colors.cyan;
+  if (entry.color === "ice") return colors.cyan;
+  if (entry.color === "storm") return colors.magenta;
+  if (entry.color === "light") return colors.white;
+  if (entry.color === "shadow") return colors.magenta;
+
+  return colors.green;
+}
+
 function printToConsole(entry: LogEntry): void {
   const { timestamp, level, tag, message, data } = entry;
   const status = level === "error" ? "ERROR" : level === "warn" ? "WARN" : "OK";
-  const color =
-    level === "error"
-      ? colors.red
-      : level === "warn"
-        ? colors.yellow
-        : colors.green;
+  const color = getConsoleColor(entry);
 
   const dataText = serializeData(data);
   const output = `${colors.gray}[${timestamp}]${colors.reset} ${color}[${status}]${colors.reset} [${tag}] ${message}${

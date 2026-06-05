@@ -96,6 +96,7 @@ desktop.ini
 *dump*.sql
 backup_*.sql
 *.backup
+supabase/.temp/
 
 # =============================================================================
 # Build
@@ -121,3 +122,7 @@ frontend/web/dist
 backend/server/dist
 supabase/.temp
 supabase/migrations.zip
+|
+#Important things:
+
+discord_backup_codes.txt

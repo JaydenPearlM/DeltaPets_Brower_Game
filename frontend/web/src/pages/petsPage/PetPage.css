@@ -592,10 +592,32 @@
 .petRepoPanel--infoShell {
   padding: 18px;
   overflow: hidden;
-  border: 1px solid rgba(188, 205, 226, 0.22);
-  background: linear-gradient(180deg, #2a4570 0%, #1b3358 55%, #112544 100%);
+  border: 2px solid var(--dp-popup-border, var(--dp-panel-border));
+  background:
+    linear-gradient(
+      135deg,
+      var(--dp-popup-light-sheen, rgba(255, 255, 255, 0.08)),
+      rgba(255, 255, 255, 0) 38%
+    ),
+    linear-gradient(
+      var(--dp-popup-grid-line, rgba(255, 255, 255, 0.022)) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      var(--dp-popup-grid-line, rgba(255, 255, 255, 0.022)) 1px,
+      transparent 1px
+    ),
+    var(--dp-gradient-popup);
+  background-size:
+    100% 100%,
+    22px 22px,
+    22px 22px,
+    100% 100%;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 18px var(--dp-popup-glow, var(--dp-panel-glow)),
+    0 0 42px var(--dp-popup-glow-soft, var(--dp-cyber-blue-soft)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
     14px 18px 30px rgba(9, 16, 32, 0.28);
 }
 
@@ -1573,4 +1595,126 @@
 .petRepoHeroCard--element-shadow {
   --pet-focus-element-color: var(--element-shadow);
   --pet-focus-element-bg: var(--element-shadow-bg);
+}
+
+/* Stats + Element Stats UI fixes */
+/* Stats + Element Stats UI fixes */
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats {
+  position: relative;
+  padding: 22px;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 3px solid var(--dp-panel-border-cyan-bright);
+  background:
+    radial-gradient(
+      circle at 12% 18%,
+      var(--dp-panel-glow-cyan),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 84% 78%,
+      var(--dp-panel-glow-purple),
+      transparent 32%
+    ),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-gradient-top) 0%,
+      var(--dp-panel-gradient-mid) 48%,
+      var(--dp-panel-gradient-bottom) 100%
+    );
+  box-shadow:
+    0 0 22px var(--dp-panel-glow),
+    0 0 30px var(--dp-panel-border-cyan-soft),
+    14px 18px 30px rgba(0, 0, 0, 0.28);
+}
+
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 16px;
+  border: 3px solid var(--dp-panel-purple-border);
+  pointer-events: none;
+  box-shadow: none;
+  z-index: 2;
+}
+
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats::after {
+  content: "";
+  position: absolute;
+  inset: 17px;
+  border-radius: 13px;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 18px 18px;
+  z-index: 0;
+}
+
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
+  .petRepoDataTwoCol {
+  position: relative;
+  z-index: 1;
+  gap: 14px;
+  padding: 4px;
+}
+
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
+  .petRepoInfoSection {
+  gap: 8px;
+}
+
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
+  .petRepoSectionHeader {
+  justify-content: flex-start;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
+  .petRepoSectionLine {
+  display: none;
+}
+
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
+  .petRepoSectionPill {
+  justify-content: flex-start;
+  min-width: 0;
+  width: 100%;
+  padding: 0 0 2px;
+  border: 0;
+  border-radius: 0;
+  transform: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--dp-brand-yellow-bright, var(--dp-brand-yellow, #ffd94d));
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-shadow:
+    1px 1px 0 var(--dp-brand-red, #ab432f),
+    0 0 14px rgba(255, 217, 77, 0.26);
+}
+
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
+  .petRepoStatList {
+  border-radius: 14px;
+  border: 1px solid var(--dp-panel-border-cyan-soft);
+  background: linear-gradient(
+    180deg,
+    rgba(37, 62, 108, 0.9),
+    rgba(13, 28, 58, 0.96)
+  );
+  box-shadow:
+    inset 0 1px 0 var(--dp-panel-inner-highlight),
+    inset 0 0 0 1px var(--dp-panel-inner-border);
+}
+
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
+  .petRepoInfoRow {
+  min-height: 46px;
+  padding: 0 12px;
 }

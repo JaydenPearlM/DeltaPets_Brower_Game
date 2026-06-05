@@ -30,6 +30,9 @@ type PetRecord = {
   sprite_url?: string | null;
   portrait_url?: string | null;
   hatch_time_alignment?: string | null;
+  passive_trait_id?: string | null;
+  passive_trait_key?: string | null;
+  passive_trait_name?: string | null;
 };
 
 type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
@@ -115,6 +118,21 @@ function getDisplayedPersonality(
     null;
 
   return direct ? titleCase(direct) : "Mysterious";
+}
+
+function getDisplayedPassiveTrait(
+  pet: Pick<
+    PetRecord,
+    "passive_trait_name" | "passive_trait_key" | "passive_trait_id"
+  > | null,
+) {
+  const direct =
+    pet?.passive_trait_name ??
+    pet?.passive_trait_key ??
+    pet?.passive_trait_id ??
+    null;
+
+  return direct ? titleCase(direct) : "None";
 }
 
 function getPreviewUrl(pet: PetRecord) {
@@ -793,10 +811,14 @@ export default function PetDetailsPanel({
                 <InfoRow label="Gender" value={titleCase(pet.gender) || "--"} />
                 <InfoRow label="Element" value={getDisplayedElement(pet)} />
                 <InfoRow label="Stage" value={titleCase(pet.stage) || "--"} />
-                <InfoRow label="Prefers" value={stablePreference} />
+                <InfoRow label="Day or Night" value={stablePreference} />
                 <InfoRow
                   label="Trait"
                   value={getDisplayedPersonality(pet, personalityName)}
+                />
+                <InfoRow
+                  label="Passive Trait"
+                  value={getDisplayedPassiveTrait(pet)}
                 />
               </div>
             </div>

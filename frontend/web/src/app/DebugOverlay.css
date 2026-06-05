@@ -97,7 +97,8 @@
   border-left: 4px solid transparent;
 }
 
-.debugOverlayLog.log {
+.debugOverlayLog.log,
+.debugOverlayLog.normal {
   color: var(--dp-stat-strong, #67ff87);
   border-left-color: var(--dp-stat-strong, #67ff87);
 }
@@ -110,4 +111,44 @@
 .debugOverlayLog.error {
   color: #ff5f6d;
   border-left-color: #ff5f6d;
+}
+
+.debugOverlayLog.fire {
+  color: #ff6b45;
+  border-left-color: #ff6b45;
+}
+
+.debugOverlayLog.water {
+  color: #5cc8ff;
+  border-left-color: #5cc8ff;
+}
+
+.debugOverlayLog.earth {
+  color: #91d36b;
+  border-left-color: #91d36b;
+}
+
+.debugOverlayLog.air {
+  color: #b7f7ff;
+  border-left-color: #b7f7ff;
+}
+
+.debugOverlayLog.ice {
+  color: #9be7ff;
+  border-left-color: #9be7ff;
+}
+
+.debugOverlayLog.storm {
+  color: #d28cff;
+  border-left-color: #d28cff;
+}
+
+.debugOverlayLog.light {
+  color: #fff3a6;
+  border-left-color: #fff3a6;
+}
+
+.debugOverlayLog.shadow {
+  color: #b08cff;
+  border-left-color: #b08cff;
 }

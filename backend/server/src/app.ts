@@ -26,7 +26,7 @@ export function createApp() {
 
   app.use("/api/auth", authLimiter, publicAuthRouter);
   app.use("/api/world", apiLimiter, apiSpeedLimiter, worldRouter);
-  if (process.env.NODE_ENV === "development") {
+  if (env.NODE_ENV === "development") {
     app.use("/api/debug", debugRouter);
   }
   app.use("/api", apiLimiter, apiSpeedLimiter, requireUser, apiRouter);

@@ -7,7 +7,7 @@
     "backend/*"
   ],
   "scripts": {
-    "dev": "concurrently -k -n server,web \"pnpm --dir backend/server dev\" \"pnpm --dir frontend/web dev\"",
+    "dev": "concurrently -k -n server,web \"pnpm --dir backend/server dev\" \"pnpm --dir frontend/web exec vite --host 0.0.0.0\"",
     "build": "pnpm -r build"
   },
   "devDependencies": {

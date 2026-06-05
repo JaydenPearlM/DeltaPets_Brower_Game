@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate, useLocation } from "react-router-dom";
 import App from "../App";
+import { useAuth } from "../providers/useAuth";
 import AuthCallback from "./AuthCallback";
 
 const Homepage = lazy(() => import("../../pages/Homepage/homepage"));
@@ -28,6 +29,21 @@ function NotFound() {
   return <div style={{ padding: 16 }}>404 — Page not found</div>;
 }
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return <PageLoader />;
+  }
+
+  if (!user) {
+    return <Navigate to="/signin" replace state={{ from: location }} />;
+  }
+
+  return <>{children}</>;
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -41,13 +57,38 @@ export const router = createBrowserRouter([
 
       { path: "authcallback", element: <AuthCallback /> },
 
-      { path: "create", element: withSuspense(<CreatePage />) },
-      { path: "pet", element: withSuspense(<PetPage />) },
-      { path: "hatchery", element: withSuspense(<HatcheryPage />) },
+      {
+        path: "create",
+        element: withSuspense(
+          <ProtectedRoute>
+            <CreatePage />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "pet",
+        element: withSuspense(
+          <ProtectedRoute>
+            <PetPage />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "hatchery",
+        element: withSuspense(
+          <ProtectedRoute>
+            <HatcheryPage />
+          </ProtectedRoute>,
+        ),
+      },
 
       {
         path: "farm",
-        element: withSuspense(<ComingSoonPage pageName="Pet Farm" />),
+        element: withSuspense(
+          <ProtectedRoute>
+            <ComingSoonPage pageName="Pet Farm" />
+          </ProtectedRoute>,
+        ),
       },
       {
         path: "gym",

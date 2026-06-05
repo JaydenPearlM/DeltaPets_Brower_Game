@@ -6,6 +6,7 @@ type ServerLog = {
   level: "info" | "warn" | "error" | "debug";
   tag: string;
   message: string;
+  color?: string;
   data?: unknown;
 };
 
@@ -80,6 +81,10 @@ export function DebugOverlay() {
     return "log";
   };
 
+  const getServerLogColor = (log: ServerLog): string => {
+    return log.color ?? getServerLogType(log.level);
+  };
+
   return (
     <>
       <button
@@ -124,7 +129,9 @@ export function DebugOverlay() {
             {serverLogs.map((log, index) => (
               <pre
                 key={`${log.timestamp}-${index}`}
-                className={`debugOverlayLog ${getServerLogType(log.level)}`}
+                className={`debugOverlayLog ${getServerLogType(
+                  log.level,
+                )} ${getServerLogColor(log)}`}
               >
                 [{log.timestamp}] [{log.level.toUpperCase()}] [{log.tag}]{" "}
                 {log.message}

@@ -404,13 +404,17 @@ function createEnemyTeam(playerLevelAverage: number): BattleUnit[] {
 function normalizePetToBattleUnit(pet: any, index: number): BattleUnit {
   const hpMax = Number(pet.hp_max ?? pet.hpMax ?? 30);
   const hpCur = Number(pet.hp_cur ?? pet.hpCur ?? hpMax);
+  const rawElement = String(pet.element ?? pet.line ?? "fire");
+  const element = ELEMENTS.includes(rawElement as BattleElement)
+    ? (rawElement as BattleElement)
+    : "fire";
 
   return {
     id: `player-${index + 1}-${pet.id}`,
     sourcePetId: pet.id,
     side: "player",
     name: pet.name ?? `Kith ${index + 1}`,
-    element: (pet.element ?? pet.line ?? "fire") as BattleElement,
+    element,
     level: Number(pet.level ?? 1),
     hpMax,
     hpCur: clampHp(hpCur, hpMax),

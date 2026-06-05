@@ -11,13 +11,14 @@ import {
 } from "@/lib/petUtils";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
-import { PetSkillsPanel } from "@/components/Skills";
+import PetSkillsPanel from "../../components/Skills/PetSkillsInventory";
 import MainTeam from "@/components/Main_Team/mainTeam";
 import type {
   PartySlotView,
   StoragePet,
 } from "@/components/Hatchery/pages/storage/usePetStorage";
 import "./PetPage.css";
+import SkillTree from "@/components/Skills/skilltree";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
 type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
@@ -255,7 +256,7 @@ export default function PetPage() {
   const [stats, setStats] = useState<PetStatsRow | null>(null);
   const [elements, setElements] = useState<PetElementsRow | null>(null);
   const [team, setTeam] = useState<TeamCardPet[]>([]);
-
+  const [showSkillTree, setShowSkillTree] = useState(false);
   const [busy, setBusy] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -787,7 +788,7 @@ export default function PetPage() {
             <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--bottomStats">
               <div className="petRepoDataTwoCol">
                 <section className="petRepoInfoSection petRepoInfoSection--stats">
-                  <SectionPill title="Stats" />
+                  <SectionPill title="Stats:" />
 
                   <div className="petRepoStatList">
                     {STAT_ORDER.map((statKey) => {
@@ -810,12 +811,20 @@ export default function PetPage() {
                       );
                     })}
                   </div>
+
+                  <button
+                    type="button"
+                    className="petRepoSkillTreeButton skillChamberActionButton skillChamberActionButton--gold"
+                    onClick={() => setShowSkillTree(true)}
+                  >
+                    Skill Trees
+                  </button>
                 </section>
 
                 <section
                   className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme}`}
                 >
-                  <SectionPill title="Element Stats" />
+                  <SectionPill title="Element Stats:" />
 
                   <div className="petRepoStatList">
                     {elementRows.map((row) => {
@@ -842,6 +851,22 @@ export default function PetPage() {
 
             <PetSkillsPanel pet={pet} stats={totalStats} />
           </section>
+
+          {showSkillTree
+            ? createPortal(
+                <div
+                  className="skillPopupBackdrop"
+                  role="presentation"
+                  onMouseDown={() => setShowSkillTree(false)}
+                >
+                  <SkillTree
+                    pet={pet}
+                    onClose={() => setShowSkillTree(false)}
+                  />
+                </div>,
+                document.body,
+              )
+            : null}
         </section>
       ) : null}
     </div>

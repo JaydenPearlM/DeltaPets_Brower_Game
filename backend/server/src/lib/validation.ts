@@ -6,12 +6,6 @@ export const petActionSchema = z.object({
   action: z.enum(["feed", "clean", "play", "bond"]),
 });
 
-export const careActionSchema = z.object({
-  petId: z.string().uuid(),
-  action: z.enum(["feed", "clean", "play", "comfort", "rest"]),
-  amount: z.number().int().min(1).max(50).optional(),
-});
-
 // NEW: Validation schema for ensure-egg endpoint
 export const ensureEggSchema = z.object({
   line: z

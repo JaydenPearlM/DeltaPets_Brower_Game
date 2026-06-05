@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
-import { supabase } from "@/lib/supabase/client";
+
 import {
   clampPercent,
   normalizeElement,
@@ -20,8 +20,9 @@ import {
 } from "@/components/inventory/inventory";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
-import { PetSkillsPanel } from "@/components/Skills";
+import PetSkillsPanel from "@/components/Skills/PetSkillsInventory";
 import "./petFarmFood.css";
+
 type CareAction = "feed" | "clean" | "play" | "pet";
 
 type PetRecord = Record<string, any>;
@@ -433,7 +434,7 @@ export function PetFarmFood() {
           feed: "Your Delta has been fed.",
           clean: "Your Delta is all cleaned up.",
           play: "Your Delta had a fun play session.",
-          pet: "Your Delta looks happier.",
+          pet: "Your Delta looks happy.",
         };
 
         setActionMsg(json?.message || defaultMessageMap[action]);
@@ -506,14 +507,10 @@ export function PetFarmFood() {
     setActionMsg(null);
 
     try {
-      const { error } = await supabase
-        .from("pets")
-        .update({ nickname: trimmed })
-        .eq("id", pet.id)
-        .eq("user_id", user.id)
-        .is("nickname", null);
-
-      if (error) throw new Error(error.message);
+      await apiFetch(`/api/pets/${pet.id}/nickname`, {
+        method: "PATCH",
+        json: { nickname: trimmed },
+      });
 
       setActionMsg(`Nickname locked in as ${trimmed}.`);
       setShowNicknameEditor(false);

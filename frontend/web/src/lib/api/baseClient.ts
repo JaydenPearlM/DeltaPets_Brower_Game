@@ -15,17 +15,7 @@ export class ApiError extends Error {
   }
 }
 
-let cachedAccessToken: string | null = null;
-
-supabase.auth.onAuthStateChange((_event, session) => {
-  cachedAccessToken = session?.access_token ?? null;
-});
-
 async function getAccessToken(): Promise<string> {
-  if (cachedAccessToken) {
-    return cachedAccessToken;
-  }
-
   const { data, error } = await supabase.auth.getSession();
 
   if (error) {
@@ -37,8 +27,6 @@ async function getAccessToken(): Promise<string> {
   if (!token) {
     throw new Error("Missing access token. Are you logged in?");
   }
-
-  cachedAccessToken = token;
 
   return token;
 }

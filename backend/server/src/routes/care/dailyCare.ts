@@ -19,7 +19,10 @@ async function awardAlphaTesterRibbon(userId: string, earnedAtIso: string) {
     .from("pets")
     .select("id")
     .eq("user_id", userId)
-    .single();
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   if (petErr) throw new Error(petErr.message);
   if (!pet?.id)

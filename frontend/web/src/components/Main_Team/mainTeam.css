@@ -2,7 +2,7 @@
   position: relative;
   overflow: visible;
   padding: 30px 30px 60px;
-  border: 4px solid var(--dp-popup-border, var(--dp-cyan, #38dfff));
+  border: 4px solid var(--dp-panel-border-cyan-bright);
   border-radius: 18px;
   background:
     radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.08), transparent 24%),
@@ -24,7 +24,7 @@
   );
   box-shadow:
     0 0 0 12px rgba(123, 77, 255, 0.08) inset,
-    var(--dp-popup-glow, 0 0 22px rgba(56, 223, 255, 0.25));
+    var(--dp-glow-cyan-strong);
 }
 
 .mainTeamPanel::before {

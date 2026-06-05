@@ -22,7 +22,7 @@
   position: relative;
   width: 100%;
   z-index: 9999;
-  overflow:;
+  overflow: visable;
   background:
     radial-gradient(
       circle at 50% 0%,
