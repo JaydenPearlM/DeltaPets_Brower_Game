@@ -158,10 +158,6 @@
   filter: drop-shadow(0 0 6px rgba(255, 214, 107, 0.45));
   pointer-events: none;
 }
-  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-  filter: blur(0.5px);
-  pointer-events: none;
-}
 
 .mainTeamRainbowOrb::after {
   content: "";

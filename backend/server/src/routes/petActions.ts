@@ -33,15 +33,6 @@ petActionsRouter.post(
     const nowIso = new Date(nowMs).toISOString();
     const { action } = (req.body ?? {}) as Body;
 
-    if (
-      action !== "feed" &&
-      action !== "clean" &&
-      action !== "play" &&
-      action !== "bond"
-    ) {
-      return res.status(400).json({ error: "Invalid action" });
-    }
-
     // Always load the ACTIVE pet, not just some random pet owned by the user.
     const { pet, used } = await fetchActivePet(userId);
 

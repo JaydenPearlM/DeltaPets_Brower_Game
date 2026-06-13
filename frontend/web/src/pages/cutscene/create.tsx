@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase/client";
+import { clientLog } from "@/lib/debug/clientLogger";
 import { useAuth } from "../../app/providers/useAuth";
 import { MYSTERY_EGG } from "../../Pets_Creation/assets/eggs/eggType";
+import { apiFetch } from "@/lib/api/baseClient";
 import "./create.css";
 
 type Phase =
@@ -117,38 +118,6 @@ async function deleteText(
   }
 }
 
-async function getAccessTokenOrThrow() {
-  const { data, error } = await supabase.auth.getSession();
-
-  if (error) throw error;
-
-  const token = data.session?.access_token;
-
-  if (!token) throw new Error("No access token");
-
-  return token;
-}
-
-async function postJson(
-  url: string,
-  token: string,
-  body?: unknown,
-): Promise<{ ok: boolean; status: number; data: any }> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: body === undefined ? JSON.stringify({}) : JSON.stringify(body),
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  return { ok: res.ok, status: res.status, data };
-}
-
 export default function CreatePage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -257,28 +226,37 @@ export default function CreatePage() {
           setBusy(true);
 
           try {
-            const token = await getAccessTokenOrThrow();
             const requestedLine = starterLine;
 
-            const ensure = await postJson("/api/pets/ensure-egg", token, {
+            clientLog("create", "ensure-egg started", "info", {
               line: requestedLine,
-              worldTime,
-              personalityKey: null,
             });
 
-            if (!ensure.ok) {
-              throw new Error(
-                ensure?.data?.error ??
-                  ensure?.data?.message ??
-                  `ensure-egg failed (HTTP ${ensure.status})`,
-              );
-            }
+            await apiFetch("/api/pets/ensure-egg", {
+              method: "POST",
+              body: JSON.stringify({
+                line: requestedLine ?? "null_element",
+              }),
+            });
 
-            postJson("/api/me/intro/seen", token).catch((err) => {
-              console.warn("[create] intro/seen failed (non-fatal):", err);
+            clientLog("create", "ensure-egg success", "info", {
+              line: requestedLine,
+            });
+
+            apiFetch("/api/me/intro/seen", {
+              method: "POST",
+              json: {},
+            }).catch((err) => {
+              clientLog("create", "intro-seen failed", "error", {
+                error: err?.message ?? String(err),
+              });
             });
           } catch (err: any) {
             console.error("[create] ensure-egg failed:", err);
+
+            clientLog("create", "ensure-egg failed", "error", {
+              error: err?.message ?? String(err),
+            });
 
             if (alive()) {
               setBusy(false);
@@ -299,6 +277,10 @@ export default function CreatePage() {
         navigate("/hatchery", { replace: true });
       } catch (err: any) {
         console.error("[create] cutscene crashed:", err);
+
+        clientLog("create", "cutscene crashed", "error", {
+          error: err?.message ?? String(err),
+        });
 
         if (alive()) {
           setFatalError(err?.message ?? "Cutscene crashed");

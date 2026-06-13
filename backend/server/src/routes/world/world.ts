@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
+import { logger } from "../../lib/logger";
 
 export const worldRouter = Router();
 
@@ -19,7 +20,7 @@ worldRouter.get("/aliune-signal", async (_req, res) => {
     .maybeSingle();
 
   if (error) {
-    console.error("[aliune-signal] failed:", error.message);
+    logger.error("[aliune-signal] failed:", error.message);
 
     return res.status(500).json({
       error: "Failed to load Aliune Signal",

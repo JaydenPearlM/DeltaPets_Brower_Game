@@ -1,66 +1,62 @@
 /* ========================================
-   LOCAL SKILL TREE DESIGN TOKENS (SAFE)
+   LOCAL SKILL TREE DESIGN TOKENS
 ======================================== */
+
 .skillTreeModal {
   --dp-brand-yellow: #ffcf61;
   --dp-brand-red-stroke: #cf4f2f;
-
-  --dp-skilltree-panel-top: #1b315d;
-  --dp-skilltree-panel-mid: #24457a;
-  --dp-skilltree-panel-bottom: #2f5e99;
-
-  --dp-skilltree-neon-green: rgba(144, 255, 179, 0.58);
+  --dp-skilltree-cyan: rgba(77, 234, 255, 0.95);
+  --dp-skilltree-purple: rgba(174, 109, 255, 1);
 }
 
 /* ================================
-   Kith Talent System
-   ================================ */
+   Main Skill Tree Popup
+================================ */
 
 .skillTreeModal {
   position: relative;
   width: min(1240px, calc(100vw - 28px));
-  /* No fixed height, no scroll — backdrop scrolls if page needs it */
   overflow: visible;
-  padding: 28px 28px 28px;
+  padding: 32px;
   box-sizing: border-box;
-
-  /* Kill the blue panel from PetSkillsPanel.css shared rule */
   border: 0 !important;
-  border-radius: 22px;
+  border-radius: 24px;
   background: transparent !important;
   box-shadow: none !important;
-
   transform: translateY(20px);
 }
 
-/* Green glowing border panel */
+.skillTreeModal,
+.skillTreeModal * {
+  font-family: var(--font-body, "Space Mono", monospace);
+}
+
 .skillTreeModal::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 0;
-  border: 1px solid rgba(82, 255, 176, 0.6);
-  border-radius: 22px;
+  border: 3px solid var(--dp-skilltree-cyan);
+  border-radius: 24px;
   background:
     radial-gradient(
       circle at top left,
-      rgba(58, 119, 158, 0.2),
-      transparent 32%
+      rgba(63, 196, 255, 0.18),
+      transparent 34%
     ),
-    linear-gradient(
-      180deg,
-      var(--dp-skilltree-panel-top) 0%,
-      var(--dp-skilltree-panel-mid) 46%,
-      var(--dp-skilltree-panel-bottom) 100%
-    );
-  box-shadow:
-    0 0 24px rgba(82, 255, 176, 0.35),
-    0 0 60px rgba(82, 255, 176, 0.18),
-    0 26px 80px rgba(0, 0, 0, 0.48);
+    linear-gradient(180deg, rgba(8, 23, 55, 0.97), rgba(5, 16, 39, 0.98));
+  box-shadow: 0 0 18px rgba(77, 234, 255, 0.22);
+}
+
+.skillTreeModal::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  z-index: 0;
   pointer-events: none;
+  border: 5px solid var(--dp-skilltree-purple);
+  border-radius: 16px;
+  opacity: 1;
 }
 
 .skillTreeModal > * {
@@ -69,8 +65,172 @@
 }
 
 /* ================================
-   Close button inside skill tree
-   ================================ */
+   Header
+================================ */
+
+.talentTreeHeader {
+  display: grid;
+  grid-template-columns: 260px repeat(3, 120px) auto;
+  align-items: start;
+  gap: 28px;
+  margin-top: 0;
+  padding: 0 14px 14px 0;
+}
+
+.talentTreeHeaderCopy {
+  min-width: 0;
+  max-width: 260px;
+}
+
+.talentTreeTitle,
+.talentTreeHeader h3 {
+  margin: 0;
+  color: #ffd84c;
+  -webkit-text-stroke: 0;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: clamp(2rem, 3vw, 2.35rem);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-shadow: none;
+}
+
+.talentTreeSubtitle,
+.talentTreeHeader p {
+  max-width: 260px;
+  margin: 8px 0 0;
+  color: rgba(238, 248, 255, 0.74);
+  font-weight: 700;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+/* ================================
+   Points
+================================ */
+
+.talentTreeHeaderActions {
+  display: contents;
+}
+
+.talentPointPanel {
+  display: contents;
+}
+
+.talentPointPanel div {
+  min-width: 0;
+  text-align: center;
+}
+
+.talentPointPanel span,
+.talentPointPanel small {
+  display: block;
+  color: #ffd84c;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-shadow: none;
+  white-space: nowrap;
+}
+
+.talentPointPanel strong {
+  display: block;
+  margin-top: 7px;
+  color: #ffd84c;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: none;
+}
+
+.talentResetHeaderButton {
+  align-self: start;
+  justify-self: start;
+  border: 1px solid rgba(77, 234, 255, 0.52);
+  border-radius: 999px;
+  padding: 10px 18px;
+  background: rgba(17, 45, 80, 0.76);
+  color: #ffffff;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.talentResetHeaderButton:hover {
+  transform: none;
+  background: rgba(77, 234, 255, 0.14);
+}
+
+/* ================================
+   Talent Info Row
+================================ */
+
+.talentNodeInfoRow {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: start;
+  column-gap: 54px;
+  row-gap: 8px;
+  width: 100%;
+  grid-column: 1 / 3;
+  grid-row: 1;
+}
+
+.talentInfoLabel {
+  color: #ffffff;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.talentInfoValue {
+  color: #ffd84c;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 1.18rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.talentInfoLabel:nth-child(1) {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.talentInfoValue:nth-child(2) {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  max-width: 230px;
+  overflow-wrap: break-word;
+}
+
+.talentInfoLabel:nth-child(3) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.talentInfoValue:nth-child(4) {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* ================================
+   Close Button
+================================ */
 
 .skillTreeModal .skillPopupClose {
   display: inline-flex;
@@ -80,126 +240,29 @@
   min-width: 74px;
   min-height: 36px;
   padding: 8px 14px;
-  border: 1px solid rgba(126, 19, 31, 0.62);
+  border: 0;
   border-radius: 10px;
-  background: linear-gradient(180deg, #7b161b 0%, #4a0d13 52%, #250407 100%);
-  color: #fff4ee;
-  font-family: "Space Mono", monospace;
+  background: linear-gradient(180deg, #ffffff, #f1e4c8);
+  color: #151019;
+  font-family: var(--font-heading, "Space Mono", monospace);
   font-size: 0.76rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   box-shadow:
-    inset 0 1px 0 rgba(255, 196, 196, 0.22),
-    0 8px 18px rgba(34, 4, 7, 0.34);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 0 rgba(98, 78, 52, 0.55);
   cursor: pointer;
 }
 
 .skillTreeModal .skillPopupClose:hover {
-  background: linear-gradient(180deg, #9a2027 0%, #5e1018 52%, #300509 100%);
-  transform: translateY(-1px);
+  transform: none;
+  background: linear-gradient(180deg, #ffffff, #f7e9ca);
 }
 
 /* ================================
-   Header row: Title | Points | Close
-   ================================ */
-
-.talentTreeHeader {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: end;
-  gap: 14px;
-  margin-top: 0;
-  padding-bottom: 14px;
-}
-
-.talentTreeHeaderCopy {
-  min-width: 0;
-  max-width: 600px;
-  padding-top: 6px;
-}
-
-.talentTreeHeaderActions {
-  justify-self: center;
-  /* Shift left so points panel sits roughly above Majo Path tab */
-  transform: translateX(-202px);
-}
-
-.talentTreeHeader > .skillPopupClose {
-  flex: 0 0 auto;
-  justify-self: end;
-  align-self: end;
-  margin-right: 40px;
-  margin-bottom: 2px;
-  transform: translateY(19px);
-}
-
-.talentTreeHeader > .skillPopupClose:hover {
-  transform: translateY(-1px);
-}
-
-.talentTreeHeader h3,
-.talentTreeTitle {
-  margin: 0;
-  color: #ffd84c;
-  -webkit-text-stroke: 2px #c23a2b;
-  paint-order: stroke fill;
-  font-family: var(--font-heading, "Space Mono", monospace);
-  font-size: clamp(2rem, 3vw, 2.35rem);
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  line-height: 1.15;
-  text-shadow:
-    0 2px 0 rgba(0, 0, 0, 0.25),
-    0 0 14px rgba(255, 207, 97, 0.2);
-}
-
-.talentTreeHeader p,
-.talentTreeSubtitle {
-  max-width: 600px;
-  margin: 8px 0 0;
-  color: rgba(238, 248, 255, 0.74);
-  font-weight: 700;
-  line-height: 1.5;
-  font-size: 0.9rem;
-}
-
-/* ================================
-   Points panel
-   ================================ */
-
-.talentPointPanel {
-  min-width: 130px;
-  padding: 8px 14px;
-  border: 1px solid rgba(82, 255, 176, 0.34);
-  border-radius: 18px;
-  background: rgba(8, 58, 49, 0.42);
-  text-align: center;
-  margin-top: 20px;
-  box-shadow: 0 0 16px rgba(82, 255, 176, 0.12);
-}
-
-.talentPointPanel span,
-.talentPointPanel small {
-  display: block;
-  color: #52ffb0;
-  font-family: "Space Mono", monospace;
-  font-size: 0.7rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.talentPointPanel strong {
-  display: block;
-  color: #ffffff;
-  font-family: "Space Mono", monospace;
-  font-size: 1.3rem;
-  line-height: 1;
-}
-
-/* ================================
-   Path tab legend
-   ================================ */
+   Path Tabs
+================================ */
 
 .talentTreeLegend {
   display: grid;
@@ -211,15 +274,16 @@
 .talentTreeLegend span,
 .talentTreeLegend button {
   padding: 8px 10px;
-  border: 1px solid rgba(112, 178, 220, 0.24);
+  border: 1px solid rgba(77, 234, 255, 0.45);
   border-radius: 999px;
-  background: rgba(18, 52, 78, 0.72);
-  color: #ffe69b;
-  font-family: "Space Mono", monospace;
+  background: rgba(20, 55, 91, 0.72);
+  color: #ffd84c;
+  font-family: var(--font-heading, "Space Mono", monospace);
   font-size: 0.7rem;
   font-weight: 900;
   text-align: center;
   text-transform: uppercase;
+  box-shadow: none;
 }
 
 .talentTreeLegend button {
@@ -227,8 +291,8 @@
 }
 
 .talentTreeLegend button:hover:not(:disabled) {
-  border-color: rgba(82, 255, 176, 0.46);
-  background: rgba(82, 255, 176, 0.08);
+  border-color: rgba(77, 234, 255, 0.85);
+  background: rgba(77, 234, 255, 0.12);
 }
 
 .talentTreeLegend button:disabled {
@@ -237,82 +301,53 @@
 }
 
 /* ================================
-   Tree board
-   ================================ */
+   Talent Board
+================================ */
 
 .talentTreeBoard {
   position: relative;
   height: 560px;
   margin-top: 14px;
-  /* Clip nodes + comet inside the border — no more bleeding */
   overflow: hidden;
-  border: 1px solid rgba(82, 255, 176, 0.78);
+  border: 3px solid rgba(77, 234, 255, 0.92);
   border-radius: 24px;
-  box-shadow:
-    0 0 24px rgba(82, 255, 176, 0.34),
-    inset 0 0 18px rgba(82, 255, 176, 0.08);
   background:
     radial-gradient(
-      circle at 50% 42%,
-      rgba(82, 255, 176, 0.07),
+      circle at top left,
+      rgba(77, 234, 255, 0.16),
       transparent 34%
     ),
-    linear-gradient(180deg, #102f4a 0%, #0c2439 48%, #061625 100%);
+    linear-gradient(180deg, rgba(10, 35, 72, 0.96), rgba(5, 18, 42, 0.98));
+  box-shadow: none;
 }
 
 .talentTreeBoard::before {
   content: "";
   position: absolute;
-  z-index: 4;
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: #baffd6;
-  box-shadow:
-    0 0 10px rgba(82, 255, 176, 0.95),
-    0 0 20px rgba(82, 255, 176, 0.62);
+  inset: 0;
   pointer-events: none;
-  animation: talentBoardCometPath 10s linear infinite;
+  opacity: 0.1;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.075) 1px, transparent 1px);
+  background-size: 26px 26px;
 }
 
-@keyframes talentBoardCometPath {
-  0% {
-    top: 2px;
-    left: 18px;
-  }
-  25% {
-    top: 2px;
-    left: calc(100% - 18px);
-  }
-  26% {
-    top: 18px;
-    left: calc(100% - 6px);
-  }
-  50% {
-    top: calc(100% - 18px);
-    left: calc(100% - 6px);
-  }
-  51% {
-    top: calc(100% - 6px);
-    left: calc(100% - 18px);
-  }
-  75% {
-    top: calc(100% - 6px);
-    left: 18px;
-  }
-  76% {
-    top: calc(100% - 18px);
-    left: 2px;
-  }
-  100% {
-    top: 18px;
-    left: 2px;
-  }
+.talentTreeBoard::after {
+  display: none;
+}
+
+.talentTreeBoard--feral {
+  height: 820px;
+  min-height: 820px;
+  overflow: hidden;
+  padding: 20px;
+  border-color: rgba(77, 234, 255, 0.92);
 }
 
 /* ================================
-   Base node
-   ================================ */
+   Talent Nodes
+================================ */
 
 .talentNode {
   position: absolute;
@@ -322,20 +357,23 @@
   transform: translate(-50%, -50%);
   padding: 0;
   border: 0;
-  border-radius: 0;
-  clip-path: none;
   background: transparent;
   color: #ffffff;
   cursor: pointer;
   box-shadow: none;
-  transition:
-    transform 140ms ease,
-    opacity 140ms ease;
+  transition: opacity 140ms ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
+}
+
+.talentNode:hover,
+.talentNode:focus-visible,
+.talentTreeBoard--feral .talentNode:hover {
+  z-index: 500;
+  transform: translate(-50%, -50%);
 }
 
 .talentNodeShape {
@@ -345,15 +383,12 @@
   justify-content: center;
   width: 58px;
   height: 58px;
-  border: 2px solid rgba(143, 208, 255, 0.34);
+  border: 2px solid rgba(77, 234, 255, 0.42);
   border-radius: 14px;
   background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.12), transparent 48%),
-    linear-gradient(145deg, #1d496d, #12334f, #071827);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -10px 18px rgba(0, 0, 0, 0.18),
-    0 12px 24px rgba(0, 0, 0, 0.28);
+    radial-gradient(circle at top, rgba(255, 216, 76, 0.14), transparent 44%),
+    linear-gradient(145deg, #274e7c, #102d55, #06162c);
+  box-shadow: none;
 }
 
 .talentNode--shape-circle .talentNodeShape,
@@ -379,11 +414,8 @@
       rgba(255, 255, 255, 0.12),
       transparent 48%
     ),
-    linear-gradient(145deg, #1d496d, #12334f, #071827);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -10px 18px rgba(0, 0, 0, 0.18),
-    0 12px 24px rgba(0, 0, 0, 0.28);
+    linear-gradient(145deg, #274e7c, #102d55, #06162c);
+  box-shadow: none;
 }
 
 .talentNode--shape-triangle .talentNodeInset {
@@ -398,15 +430,13 @@
 .talentNode span {
   display: block;
   color: #ffffff;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-heading, "Space Mono", monospace);
   font-size: 0.68rem;
   font-weight: 900;
   line-height: 1.15;
   text-align: center;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.88),
-    0 0 8px rgba(0, 0, 0, 0.55);
   text-transform: uppercase;
+  text-shadow: none;
 }
 
 .talentNodeName {
@@ -414,18 +444,16 @@
   width: 132px;
   max-width: 132px;
   min-height: 24px;
+  margin-top: 9px;
   color: #eef8ff;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-heading, "Space Mono", monospace);
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.05em;
   line-height: 1.15;
   text-align: center;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.88),
-    0 0 8px rgba(0, 0, 0, 0.55);
   text-transform: uppercase;
-  margin-top: 9px;
+  text-shadow: none;
 }
 
 .talentNode strong,
@@ -437,37 +465,16 @@
   border-radius: 999px;
   background: rgba(2, 8, 14, 0.72);
   color: rgba(238, 248, 255, 0.96);
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-heading, "Space Mono", monospace);
   font-size: 0.66rem;
   line-height: 1.1;
+  text-shadow: none;
 }
 
-.talentNode:hover,
-.talentNode:focus-visible {
-  z-index: 500;
-}
-
-.talentNode:hover {
-  transform: translate(-50%, -50%) scale(1.035);
-}
-
-.talentNode.can-upgrade .talentNodeShape {
-  border-color: rgba(82, 255, 176, 0.72);
-  box-shadow:
-    0 0 16px rgba(82, 255, 176, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 0 0 1px rgba(82, 255, 176, 0.16);
-}
-
+.talentNode.can-upgrade .talentNodeShape,
 .talentNode.is-ranked .talentNodeShape {
-  border-color: rgba(82, 255, 176, 0.72);
-  background:
-    radial-gradient(circle at top, rgba(82, 255, 176, 0.18), transparent 50%),
-    linear-gradient(145deg, #1d496d, #12334f, #071827);
-  box-shadow:
-    0 0 16px rgba(82, 255, 176, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 0 0 1px rgba(82, 255, 176, 0.16);
+  border-color: rgba(255, 216, 76, 0.92);
+  box-shadow: none;
 }
 
 .talentNode--shape-triangle.is-ranked .talentNodeShape {
@@ -478,10 +485,10 @@
   background:
     radial-gradient(
       circle at 50% 26%,
-      rgba(82, 255, 176, 0.18),
+      rgba(255, 216, 76, 0.16),
       transparent 50%
     ),
-    linear-gradient(145deg, #1d496d, #12334f, #071827);
+    linear-gradient(145deg, #274e7c, #102d55, #06162c);
 }
 
 .talentNode.is-row-locked {
@@ -500,190 +507,163 @@
 }
 
 .talentNode.is-selected .talentNodeShape {
-  outline: 2px solid rgba(255, 214, 90, 0.95);
+  outline: 3px solid #ffd84c;
   outline-offset: 5px;
 }
 
 /* ================================
-   Feral board
-   ================================ */
-
-.talentTreeBoard--feral {
-  height: 820px;
-  min-height: 820px;
-  overflow: hidden;
-  padding-top: 20px;
-  border-color: rgba(82, 255, 176, 0.28);
-  background:
-    radial-gradient(
-      circle at 50% 52%,
-      rgba(82, 255, 176, 0.075),
-      transparent 34%
-    ),
-    linear-gradient(180deg, #163f5f 0%, #102f4a 42%, #0a2238 72%, #061625 100%);
-}
-
-.talentTreeBoard--feral::before {
-  content: "";
-}
-
-.talentTreeBoard--feral .talentNode,
-.talentTreeBoard--feral .talentNode--branch-merge,
-.talentTreeBoard--feral .talentNode--branch-capstone {
-  width: 138px;
-  min-height: 120px;
-}
-
-.talentTreeBoard--feral .talentNode span {
-  font-size: 0.68rem;
-}
-
-.talentTreeBoard--feral .talentNode strong {
-  font-size: 0.66rem;
-}
-
-.talentTreeBoard--feral .talentNode {
-  transform: translate(-50%, -50%);
-}
-
-.talentTreeBoard--feral .talentNode:hover {
-  transform: translate(-50%, -50%) scale(1.035);
-}
-
-/* ================================
-   Details panel
-   ================================ */
+   Details Panel
+================================ */
 
 .talentNodeDetails {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 22px;
-  margin-top: 5px;
-  padding: 18px 22px 22px;
-  border: 1px solid rgba(112, 178, 220, 0.22);
+  position: relative;
+  display: grid;
+  grid-template-columns: 280px minmax(360px, 1fr) 300px;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 72px;
+  row-gap: 8px;
+  margin-top: 10px;
+  padding: 18px 20px;
+  min-height: 160px;
+  height: 160px;
+  box-sizing: border-box;
+  border: 2px solid rgba(77, 234, 255, 0.75);
   border-radius: 18px;
-  background: linear-gradient(
-    180deg,
-    rgba(16, 35, 54, 0.94),
-    rgba(7, 18, 31, 0.96)
-  );
-  overflow: visible;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(77, 234, 255, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(10, 31, 66, 0.95), rgba(4, 15, 34, 0.98));
+  box-shadow: none;
+  overflow: hidden;
 }
 
-.talentNodeDetailsMain {
-  min-width: 0;
-  flex: 1 1 auto;
+.talentNodeDetails::after {
+  display: none;
+}
+
+.talentNodeDetailsMain,
+.talentNodeDetailsStats {
+  position: relative;
+  z-index: 1;
+  padding: 5px;
 }
 
 .talentNodeDetailsStats {
-  align-self: center;
-  justify-self: end;
+  min-width: 310px;
+  padding-left: 24px;
 }
 
-.talentNodeDetails h4 {
-  margin: 0;
-  color: #ffd65a;
-  font-family: "Space Mono", monospace;
-}
-
-.talentNodeDetails p {
-  margin: 8px 0 0;
-  color: rgba(238, 248, 255, 0.78);
-  line-height: 1.45;
-}
-
-.talentNodeDetails ul {
-  margin: 0;
-  padding-left: 18px;
-  color: rgba(238, 248, 255, 0.8);
-  font-size: 0.82rem;
-  line-height: 1.6;
-}
-
-.talentNodeTradeoff,
-.talentNodeSynergy,
-.talentNodeRowUnlock {
-  display: grid;
-  gap: 4px;
-  margin-top: 12px !important;
-}
-
-.talentNodeTradeoff span,
-.talentNodeSynergy span,
-.talentNodeRowUnlock span {
-  display: block;
-  font-family: "Space Mono", monospace;
-  font-size: 0.68rem;
+.skillPopupEyebrow,
+.talentNodeDetailsStats h5 {
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 1.1rem;
   font-weight: 900;
   letter-spacing: 0.08em;
+  line-height: 1.1;
   text-transform: uppercase;
 }
 
-.talentNodeTradeoff span {
-  color: rgba(224, 84, 84, 0.8);
+.talentNodeDetails h4,
+.talentNodeDetailsStats p {
+  margin: 0;
+  color: #ffd84c;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-transform: uppercase;
 }
 
-.talentNodeSynergy span {
-  color: rgba(82, 255, 176, 0.7);
+.talentNodeDetails p {
+  margin-top: 8px;
+  color: rgba(238, 248, 255, 0.84);
+  line-height: 1.45;
 }
 
-.talentNodeRowUnlock span {
-  color: rgba(255, 214, 90, 0.7);
+.talentNodeDetailsStats p {
+  margin-top: 0;
+  color: #ffd84c;
+}
+
+.talentNodeTradeoff {
+  display: block;
+  margin-top: 8px;
+  color: rgba(255, 94, 94, 0.9);
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
+  text-transform: uppercase;
 }
 
 /* ================================
-   Action buttons beside Feral Instinct
-   ================================ */
+   Action Buttons
+================================ */
 
 .talentTreeActions {
   position: absolute;
-  right: 36px;
-  top: 188px;
+  right: 52px;
+  bottom: 88px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: flex-end;
   gap: 8px;
   z-index: 20;
 }
 
 .talentTreeActions button {
-  border: 1px solid rgba(112, 178, 220, 0.3);
-  border-radius: 999px;
-  padding: 10px 14px;
-  background: rgba(18, 52, 78, 0.84);
-  color: #eef8ff;
-  font-family: "Space Mono", monospace;
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 74px;
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #f1e4c8);
+  color: #151019;
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 0.76rem;
   font-weight: 900;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 0 rgba(98, 78, 52, 0.55);
   cursor: pointer;
 }
 
 .talentTreeActions button:hover {
-  border-color: rgba(82, 255, 176, 0.42);
-  background: rgba(82, 255, 176, 0.08);
+  transform: none;
+  background: linear-gradient(180deg, #ffffff, #f7e9ca);
 }
 
 /* ================================
-   Empty state
-   ================================ */
+   Empty State
+================================ */
 
 .talentTreeEmptyState {
   margin-top: 14px;
   padding: 34px;
   border: 1px solid rgba(112, 178, 220, 0.22);
   border-radius: 24px;
-  background:
-    radial-gradient(circle at top, rgba(82, 255, 176, 0.08), transparent 36%),
-    rgba(7, 18, 31, 0.82);
+  background: rgba(7, 18, 31, 0.82);
   text-align: center;
 }
 
 .talentTreeEmptyState h4 {
   margin: 0;
   color: #ffd65a;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-heading, "Space Mono", monospace);
 }
 
 .talentTreeEmptyState p {
@@ -695,7 +675,7 @@
 
 /* ================================
    Tooltip
-   ================================ */
+================================ */
 
 .talentNode::after {
   content: attr(data-tooltip);
@@ -709,15 +689,13 @@
   border-radius: 14px;
   background: #02080e;
   color: rgba(238, 248, 255, 0.96);
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-body, "Space Mono", monospace);
   font-size: 0.66rem;
   font-weight: 800;
   line-height: 1.35;
   text-align: center;
   text-transform: none;
-  box-shadow:
-    0 0 14px rgba(82, 255, 176, 0.32),
-    0 12px 28px rgba(0, 0, 0, 0.38);
+  box-shadow: none;
   opacity: 0;
   transform: translate(-50%, 0);
   pointer-events: none;
@@ -728,7 +706,6 @@
 .talentNode:focus-visible::after {
   opacity: 1;
   visibility: visible;
-  transform: translate(-50%, 0);
 }
 
 .talentNode--branch-capstone::after {
@@ -738,29 +715,92 @@
 
 /* ================================
    Mobile
-   ================================ */
+================================ */
 
 @media (max-width: 760px) {
   .skillTreeModal {
     width: min(96vw, 560px);
-    padding: 16px;
+    padding: 24px;
   }
 
   .talentTreeHeader {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
   }
 
   .talentTreeHeaderActions {
-    transform: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+
+  .talentPointPanel {
+    display: flex;
+    min-width: 0;
+    width: 100%;
+    gap: 12px;
+    margin-left: 0;
+  }
+
+  .talentPointPanel span,
+  .talentPointPanel small {
+    font-size: 0.72rem;
+  }
+
+  .talentPointPanel strong {
+    font-size: 1.45rem;
   }
 
   .talentNodeDetails {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 190px;
+    padding: 24px;
+  }
+
+  .talentNodeInfoRow {
+    grid-template-columns: 1fr;
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .talentInfoLabel:nth-child(1),
+  .talentInfoValue:nth-child(2),
+  .talentInfoLabel:nth-child(3),
+  .talentInfoValue:nth-child(4) {
+    grid-column: 1;
+  }
+
+  .talentInfoLabel:nth-child(1) {
+    grid-row: 1;
+  }
+
+  .talentInfoValue:nth-child(2) {
+    grid-row: 2;
+  }
+
+  .talentInfoLabel:nth-child(3) {
+    grid-row: 3;
+  }
+
+  .talentInfoValue:nth-child(4) {
+    grid-row: 4;
   }
 
   .talentNodeDetailsStats {
-    flex: 1 1 auto;
+    min-width: 0;
+    padding-left: 5px;
+  }
+
+  .talentDetailsClose {
+    position: relative;
+    top: 0;
+    grid-column: auto;
+    grid-row: auto;
+    justify-self: center;
+    margin-top: 10px;
   }
 
   .talentTreeLegend {
@@ -801,4 +841,76 @@
     justify-content: flex-end;
     margin-top: 12px;
   }
+}
+
+/* ================================
+   Bottom Detail Buttons
+================================ */
+
+.talentDetailsButtons {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: 5px;
+  row-gap: 5px;
+  justify-self: end;
+  align-self: center;
+  justify-items: end;
+  align-items: center;
+  width: 100%;
+  padding-top: 0;
+  padding-right: 4px;
+}
+
+.talentSaveRow {
+  grid-column: 1 / 3;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) auto;
+  column-gap: 5px;
+  align-items: center;
+  justify-items: end;
+  width: 100%;
+}
+
+.talentTreeSaveStatus {
+  grid-column: 1;
+  margin: 0;
+  color: rgba(238, 248, 255, 0.88);
+  font-family: var(--font-heading, "Space Mono", monospace);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-align: right;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.talentDetailsButtons button {
+  width: auto;
+  min-width: 74px;
+  justify-self: end;
+}
+
+.talentSaveButton {
+  grid-column: 2;
+  order: 1;
+}
+
+.talentDetailsClose {
+  grid-column: 2;
+  grid-row: 2;
+  order: 2;
+  margin: 0;
+  position: static;
+  top: auto;
+  transform: none;
+}
+
+.talentDetailsClose:hover {
+  top: auto;
+  transform: none;
 }

@@ -103,7 +103,7 @@
   content: "";
   position: absolute;
   inset: 15px;
-  border: 6px solid var(--dp-panel-purple-border);
+  border: 3px solid var(--dp-panel-border-cyan-bright);
   border-radius: 18px;
   pointer-events: none;
   background:
@@ -165,10 +165,7 @@
     28px 58px,
     92px 44px,
     54px 96px;
-  box-shadow:
-    0 0 0 1px rgba(224, 186, 255, 0.18) inset,
-    0 0 18px var(--dp-panel-purple-glow),
-    0 0 42px rgba(104, 54, 210, 0.24);
+  box-shadow: 0 0 0 1px var(--dp-panel-inner-border) inset;
   z-index: 0;
 }
 
@@ -771,40 +768,6 @@
   gap: 12px;
 }
 
-.petRepoStatStack {
-  height: 100%;
-  padding: 16px;
-  border: 3px solid rgb(var(--pet-element-rgb, 255, 228, 100));
-  border-radius: 18px;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(var(--pet-element-rgb, 255, 228, 100), 0.2),
-      rgba(var(--pet-element-rgb, 255, 228, 100), 0.08)
-    ),
-    linear-gradient(
-      180deg,
-      var(--scene-panel-bg-top),
-      var(--scene-panel-bg-bottom)
-    );
-  box-shadow:
-    inset 0 0 0 3px rgba(var(--pet-element-rgb, 255, 228, 100), 0.62),
-    0 0 18px rgba(var(--pet-element-rgb, 255, 228, 100), 0.38);
-}
-
-.petRepoStatStack::before {
-  content: "";
-  display: block;
-  height: 2px;
-  margin-bottom: 10px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(var(--pet-element-rgb, 255, 228, 100), 0.72),
-    transparent
-  );
-}
-
 .petRepoCreatureCore {
   position: relative;
   width: 160px;
@@ -1078,7 +1041,7 @@
 }
 
 .petRepoCareStatusPanel {
-  position: status;
+  position: relative;
   align-self: stretch;
   width: 100%;
 
@@ -1441,7 +1404,7 @@
   width: 100%;
   min-height: 48px;
   padding: 0 16px;
-  border: 1px solid rgba(var(--pet-element-rgb, 255, 228, 100), 0.5);
+  border: 1px solid rgba(var(--pet-element-rgb, 255, 228, 100), 0.64);
   border-radius: 10px;
   color: rgba(236, 242, 255, 0.9);
   font-size: 0.92rem;
@@ -1450,15 +1413,16 @@
 }
 
 .petRepoInfoRow {
-  background: rgba(var(--pet-element-rgb, 255, 228, 100), 0.18);
+  background: rgba(var(--pet-element-rgb, 255, 228, 100), 0.12);
 }
 
 .petRepoInfoRowButton {
-  background: rgba(var(--pet-element-rgb, 255, 228, 100), 0);
+  background: rgba(var(--pet-element-rgb, 255, 228, 100), 0.08);
 }
 
 .petRepoInfoRow.is-strong {
-  background: rgba(var(--pet-element-rgb, 255, 228, 100), 0.6);
+  background: rgba(var(--pet-element-rgb, 255, 228, 100), 0.5);
+  border-color: rgba(var(--pet-element-rgb, 255, 228, 100), 0.92);
   color: rgba(255, 255, 255, 0.96);
 }
 
@@ -1754,7 +1718,7 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   text-align: center;
-  color: var(--dp-brand-yellow: #ffd94d;);
+  color: var(--dp-brand-yellow);
   -webkit-text-stroke: none;
   text-shadow: none;
 }
@@ -1769,7 +1733,7 @@
   color: var(--dp-brand-yellow);
   -webkit-text-stroke: 0;
   transform: translateY(-0.5px);
-  text-shadow: 0 0 px rgba(255, 217, 77, 0.36);
+  text-shadow: none;
 }
 
 .petRepoCreatureTop,
@@ -1787,8 +1751,22 @@
 .petRepoStatStack {
   height: 100%;
   padding: 16px;
-  border: 1px solid var(--dp-panel-border-cyan-bright);
+  border: 3px solid rgba(var(--pet-element-rgb, 255, 228, 100), 0.92);
   border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at 18% 12%,
+      rgba(var(--pet-element-rgb, 255, 228, 100), 0.18),
+      transparent 36%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(var(--pet-element-rgb, 255, 228, 100), 0.12),
+      rgba(12, 18, 34, 0.78)
+    );
+  box-shadow:
+    0 0 0 1px rgba(var(--pet-element-rgb, 255, 228, 100), 0.22) inset,
+    10px 12px 22px var(--dp-panel-inner-shadow);
 }
 
 .petRepoSceneOrb {
@@ -2103,4 +2081,32 @@
   background: linear-gradient(180deg, #ffc56f 0%, #9f2f1f 100%);
   box-shadow: none;
   text-shadow: none;
+}
+
+/* =========================================================
+   PASSIVE TRAIT + SKILL TREES ALIGNMENT FIX
+   UI-only adjustment.
+   Moves Passive Trait up 5px and aligns Skill Trees bottom edge
+   with the Passive Trait bottom edge.
+========================================================= */
+
+.petRepoPassiveTraitCard,
+.petRepoInfoRow--passiveTrait,
+.petRepoInfoRowButton--passiveTrait {
+  transform: translateY(-4px);
+}
+
+.petRepoSkillTreesButtonWrap,
+.petRepoSkillTreeButtonWrap,
+.petRepoSkillsButtonWrap {
+  display: flex;
+  align-items: flex-end;
+  transform: translateY(-10px);
+}
+
+.petRepoSkillTreesButton,
+.petRepoSkillTreeButton,
+.petRepoSkillsButton {
+  transform: translateY(-2px);
+  align-self: flex-end;
 }

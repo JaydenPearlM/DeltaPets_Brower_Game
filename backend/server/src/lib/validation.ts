@@ -9,7 +9,18 @@ export const petActionSchema = z.object({
 // NEW: Validation schema for ensure-egg endpoint
 export const ensureEggSchema = z.object({
   line: z
-    .enum(["water", "fire", "earth", "air", "null_element"])
+    .enum([
+      "neutral",
+      "water",
+      "fire",
+      "earth",
+      "air",
+      "ice",
+      "storm",
+      "light",
+      "shadow",
+      "corruption",
+    ])
     .optional()
     .nullable(),
   worldTime: z.enum(["day", "night"]).optional().nullable(),

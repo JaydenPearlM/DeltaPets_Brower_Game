@@ -187,8 +187,8 @@ export default function App() {
           <button
             type="button"
             className="logoBlock"
-            onClick={() => handleNavigate("/profile")}
-            aria-label="Go to your DeltaPets profile"
+            onClick={() => handleNavigate("/")}
+            aria-label="Go to DeltaPets home"
           >
             <span className="logoTriangle">△</span>
             <span className="logoText">DeltaPets</span>

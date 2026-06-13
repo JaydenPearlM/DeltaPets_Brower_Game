@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { env } from "../env.server";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 
 export const healthRouter = Router();
@@ -10,7 +9,6 @@ healthRouter.get("/health", async (_req, res) => {
   if (error) {
     res.status(503).json({
       ok: false,
-      env: env.NODE_ENV,
       uptime: Math.floor(process.uptime()),
       database: "down",
       error: error.message,
@@ -20,7 +18,6 @@ healthRouter.get("/health", async (_req, res) => {
 
   res.json({
     ok: true,
-    env: env.NODE_ENV,
     uptime: Math.floor(process.uptime()),
     database: "up",
   });

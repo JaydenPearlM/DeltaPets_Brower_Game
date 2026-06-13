@@ -4,6 +4,7 @@ import { Router } from "express";
 import type { Response } from "express";
 import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
+import { logger } from "../lib/logger";
 
 export const meRouter = Router();
 
@@ -16,7 +17,7 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
     const userId = req.user?.id;
 
     if (!userId) {
-      console.error("[GET /api/me] missing req.user");
+      logger.error("[GET /api/me] missing req.user");
       return res.status(401).json({ error: "Unauthorized" });
     }
 
@@ -73,12 +74,12 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
       ]);
 
     if (pErr) {
-      console.error("[GET /api/me] profile error:", pErr);
+      logger.error("[GET /api/me] profile error:", pErr);
       return res.status(500).json({ error: pErr.message });
     }
 
     if (petErr) {
-      console.error("[GET /api/me] pet error:", petErr);
+      logger.error("[GET /api/me] pet error:", petErr);
       return res.status(500).json({ error: petErr.message });
     }
 
@@ -88,7 +89,7 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
       pet: pet ?? null,
     });
   } catch (e: unknown) {
-    console.error("[GET /api/me] crash:", e);
+    logger.error("[GET /api/me] crash:", e);
     return res.status(500).json({
       error: "Server error",
     });
@@ -108,7 +109,7 @@ meRouter.get(
       const userId = req.user?.id;
 
       if (!userId) {
-        console.error("[GET /api/me/intro] missing req.user");
+        logger.error("[GET /api/me/intro] missing req.user");
         return res.status(401).json({ error: "Unauthorized" });
       }
 
@@ -129,12 +130,12 @@ meRouter.get(
         ]);
 
       if (pErr) {
-        console.error("[GET /api/me/intro] profile query failed:", pErr);
+        logger.error("[GET /api/me/intro] profile query failed:", pErr);
         return res.status(500).json({ error: pErr.message });
       }
 
       if (eErr) {
-        console.error("[GET /api/me/intro] egg query failed:", eErr);
+        logger.error("[GET /api/me/intro] egg query failed:", eErr);
         return res.status(500).json({ error: eErr.message });
       }
 
@@ -147,7 +148,7 @@ meRouter.get(
         has_hatchery_egg,
       });
     } catch (e: unknown) {
-      console.error("[GET /api/me/intro] crash:", e);
+      logger.error("[GET /api/me/intro] crash:", e);
       return res.status(500).json({
         error: "Server error",
       });
@@ -167,7 +168,7 @@ meRouter.post(
       const userId = req.user?.id;
 
       if (!userId) {
-        console.error("[POST /api/me/intro/seen] missing req.user");
+        logger.error("[POST /api/me/intro/seen] missing req.user");
         return res.status(401).json({ error: "Unauthorized" });
       }
 
@@ -181,7 +182,7 @@ meRouter.post(
         .maybeSingle();
 
       if (error) {
-        console.error("[POST /api/me/intro/seen] upsert failed:", error);
+        logger.error("[POST /api/me/intro/seen] upsert failed:", error);
         return res.status(500).json({ error: error.message });
       }
 
@@ -190,7 +191,7 @@ meRouter.post(
           (data as { intro_seen?: boolean } | null)?.intro_seen ?? true,
       });
     } catch (e: unknown) {
-      console.error("[POST /api/me/intro/seen] crash:", e);
+      logger.error("[POST /api/me/intro/seen] crash:", e);
       return res.status(500).json({
         error: "Server error",
       });

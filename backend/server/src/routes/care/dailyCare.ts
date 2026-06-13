@@ -2,7 +2,7 @@ import { Router, Response } from "express";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "./../../lib/supabaseAdmin";
 import { getDeltaTime } from "../../lib/deltaTime";
-
+import { logger } from "../../lib/logger";
 export const dailyCareRouter = Router();
 
 /**
@@ -137,7 +137,7 @@ dailyCareRouter.post(
       .maybeSingle();
 
     if (readErr) {
-      console.error("[dailyCare] failed to read existing:", readErr);
+      logger.error("[dailyCare] failed to read existing:", readErr);
       return res
         .status(500)
         .json({ error: "Failed to check daily care status" });
@@ -195,7 +195,7 @@ dailyCareRouter.post(
       }
 
       // Other database errors
-      console.error("[dailyCare] upsert failed:", upErr);
+      logger.error("[dailyCare] upsert failed:", upErr);
       return res.status(500).json({ error: "Failed to complete daily care" });
     }
 

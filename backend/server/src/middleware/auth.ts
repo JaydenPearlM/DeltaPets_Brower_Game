@@ -3,6 +3,7 @@
 import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
+import { logger } from "../lib/logger";
 
 export type AuthedRequest = Request & {
   user?: {
@@ -86,7 +87,7 @@ publicAuthRouter.post(
       });
 
       if (error) {
-        console.error("[auth] resolve username failed", error);
+        logger.error("[auth] token verification failed", error);
         return res.status(500).json({ error: "Could not resolve username." });
       }
 
@@ -94,7 +95,7 @@ publicAuthRouter.post(
         email: data ? String(data).trim().toLowerCase() : null,
       });
     } catch (err) {
-      console.error("[auth] resolve username crashed", err);
+      logger.error("[auth] resolve username crashed", err);
       return res.status(500).json({ error: "Could not resolve username." });
     }
   },

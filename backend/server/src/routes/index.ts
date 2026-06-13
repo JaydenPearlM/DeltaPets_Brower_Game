@@ -9,6 +9,7 @@ import { authLimiter } from "../middleware/rateLimit";
 import { petsRouter } from "./routePets/routePets";
 import { petActionsRouter } from "./petActions";
 import { rewardsRouter } from "./rewards/rewards";
+import { debugRouter } from "./debug/debugRoutes";
 
 import { dailyCareRouter } from "./care/dailyCare";
 import { careRouter } from "./care/care";
@@ -28,12 +29,13 @@ apiRouter.use("/auth", authLimiter, authRouter);
    PET GAMEPLAY ROUTES
 =============================== */
 
-apiRouter.use("/pets", petsRouter);
 apiRouter.use("/pets/actions", petActionsRouter);
+apiRouter.use("/pets", petsRouter);
 apiRouter.use("/battle", battleRouter);
+apiRouter.use("/debug", debugRouter);
 
 /* ===============================
-   CARE ROOM SYSTEM
+   CARE ROOM SYSTEM 
 =============================== */
 
 apiRouter.use("/care", careRouter);

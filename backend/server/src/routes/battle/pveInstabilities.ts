@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
+import { logger } from "../../lib/logger";
 
 export const pveInstabilitiesRouter = Router();
 
@@ -22,13 +23,13 @@ pveInstabilitiesRouter.get(
         .limit(10);
 
       if (error) {
-        console.error("[pve-instabilities] fetch failed", error);
+        logger.error("[pve-instabilities] fetch failed", error);
         return res.status(500).json({ error: "Failed to fetch instabilities" });
       }
 
       return res.json({ instabilities: instabilities || [] });
     } catch (err) {
-      console.error("[pve-instabilities] unexpected error", err);
+      logger.error("[pve-instabilities] unexpected error", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -105,7 +106,7 @@ pveInstabilitiesRouter.post(
         .single();
 
       if (runError || !run) {
-        console.error("[pve-start-run] insert failed", runError);
+        logger.error("[pve-start-run] insert failed", runError);
         return res.status(500).json({ error: "Failed to create run" });
       }
 
@@ -115,7 +116,7 @@ pveInstabilitiesRouter.post(
         pet,
       });
     } catch (err) {
-      console.error("[pve-start-run] unexpected error", err);
+      logger.error("[pve-start-run] unexpected error", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -154,7 +155,7 @@ pveInstabilitiesRouter.get(
         fights: fights || [],
       });
     } catch (err) {
-      console.error("[pve-get-run] unexpected error", err);
+      logger.error("[pve-get-run] unexpected error", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -212,7 +213,7 @@ pveInstabilitiesRouter.post(
         .eq("id", runId);
 
       if (updateError) {
-        console.error("[pve-complete-run] update failed", updateError);
+        logger.error("[pve-complete-run] update failed", updateError);
         return res.status(500).json({ error: "Failed to complete run" });
       }
 
@@ -249,7 +250,7 @@ pveInstabilitiesRouter.post(
         },
       });
     } catch (err) {
-      console.error("[pve-complete-run] unexpected error", err);
+      logger.error("[pve-complete-run] unexpected error", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -271,13 +272,13 @@ pveInstabilitiesRouter.get(
         .order("expires_at", { ascending: false });
 
       if (error) {
-        console.error("[pve-buffs] fetch failed", error);
+        logger.error("[pve-buffs] fetch failed", error);
         return res.status(500).json({ error: "Failed to fetch buffs" });
       }
 
       return res.json({ buffs: buffs || [] });
     } catch (err) {
-      console.error("[pve-buffs] unexpected error", err);
+      logger.error("[pve-buffs] unexpected error", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -298,7 +299,7 @@ pveInstabilitiesRouter.get(
         .single();
 
       if (error && error.code !== "PGRST116") {
-        console.error("[pve-research] fetch failed", error);
+        logger.error("[pve-research] fetch failed", error);
         return res
           .status(500)
           .json({ error: "Failed to fetch research stats" });
@@ -313,7 +314,7 @@ pveInstabilitiesRouter.get(
           .single();
 
         if (insertError) {
-          console.error("[pve-research] insert failed", insertError);
+          logger.error("[pve-research] insert failed", insertError);
           return res
             .status(500)
             .json({ error: "Failed to create research stats" });
@@ -324,7 +325,7 @@ pveInstabilitiesRouter.get(
 
       return res.json({ stats });
     } catch (err) {
-      console.error("[pve-research] unexpected error", err);
+      logger.error("[pve-research] unexpected error", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },

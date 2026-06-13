@@ -1,8 +1,10 @@
 // backend/server/src/routes/care/care.ts
+// backend/server/src/routes/care/care.ts
 
 import { Router } from "express";
 import type { NextFunction, Response } from "express";
 import { safeNum } from "../../lib/utils";
+import { logger } from "../../lib/logger";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
@@ -171,7 +173,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       ]);
 
     if (slotError) {
-      console.error("[care/current] failed to load party slots", slotError);
+      logger.error("[care/current] failed to load party slots", slotError);
       return res.status(500).json({ error: slotError.message });
     }
 
@@ -181,7 +183,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
         (a: any, b: any) =>
           Number(a?.slot_index ?? 0) - Number(b?.slot_index ?? 0),
       )
-      .slice(0, 4);
+      .slice(0, 5);
 
     const teamPetIds = normalizedSlots
       .map((row: any) => row?.pet_id)
@@ -199,7 +201,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
         .in("id", teamPetIds);
 
       if (teamError) {
-        console.error("[care/current] failed to load team pets", teamError);
+        logger.error("[care/current] failed to load team pets", teamError);
         return res.status(500).json({ error: teamError.message });
       }
 
@@ -224,7 +226,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
             .in("id", personalityIds);
 
         if (personalityError) {
-          console.error(
+          logger.error(
             "[care/current] failed to load team personalities",
             personalityError,
           );
@@ -239,8 +241,12 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
         );
       }
 
+      const hydratedTeamPets = await Promise.all(
+        (teamPets ?? []).map(async (row: any) => hydratePassiveTrait(row)),
+      );
+
       const petMap = new Map<string, any>(
-        (teamPets ?? []).map((row: any) => {
+        hydratedTeamPets.map((row: any) => {
           const derivedPersonality =
             row?.personality_name ??
             row?.personality ??
@@ -263,7 +269,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
           const source = petMap.get(String(slot.pet_id));
           if (!source?.id) return null;
 
-          const rawElement = String(source.element ?? source.line ?? "null")
+          const rawElement = String(source.line ?? "null_element")
             .trim()
             .toLowerCase();
 
@@ -287,11 +293,8 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
                 source.personality_key,
               "Mysterious",
             ),
-            element: titleCaseValue(
-              source.element ?? source.line ?? "Voidborne",
-              "Voidborne",
-            ),
-            elementKey: rawElement === "neutral" ? "null" : rawElement,
+            element: titleCaseValue(source.line ?? "Voidborne", "Voidborne"),
+            elementKey: rawElement === "neutral" ? "null_element" : rawElement,
             level: Number(source.level ?? 1),
             isActive: Boolean(source.is_active),
             previewUrl:
@@ -320,7 +323,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
           .maybeSingle();
 
       if (personalityLookupError) {
-        console.error(
+        logger.error(
           "[care/current] failed to hydrate active pet personality",
           personalityLookupError,
         );
@@ -347,7 +350,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     try {
       hydratedPet = normalizePetForClient(applyCareDecay(activePetResolved));
     } catch (decayError) {
-      console.error("[care/current] applyCareDecay failed", decayError);
+      logger.error("[care/current] applyCareDecay failed", decayError);
       hydratedPet = activePetResolved;
     }
 
@@ -387,9 +390,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
         ...hydratedPet,
         hunger: wholeCare(hydratedPet.hunger, 50),
         clean: wholeCare(hydratedPet.clean, 50),
-        cleanliness: wholeCare(hydratedPet.clean, 50),
         happy: wholeCare(hydratedPet.happy, 50),
-        happiness: wholeCare(hydratedPet.happy, 50),
         comfort: wholeCare(hydratedPet.comfort, 50),
         rest: wholeCare(hydratedPet.rest, 50),
         energy: wholeCare(hydratedPet.energy, 100, 0, 100),
@@ -417,7 +418,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
 
     const [pointsResult, elementsResult] = await Promise.all([
       fetchTotalPoints(activePetResolved.id).catch((pointsError) => {
-        console.error("[care/current] fetchTotalPoints failed", pointsError);
+        logger.error("[care/current] fetchTotalPoints failed", pointsError);
         return null;
       }),
       supabaseAdmin
@@ -436,7 +437,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     const starterMerchant = await getStarterMerchantState(userId);
 
     if (elementsResult.error) {
-      console.error(
+      logger.error(
         "[care/current] failed to load pet elements",
         elementsResult.error,
       );
@@ -464,10 +465,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     const elements =
       elementsRow && typeof elementsRow === "object"
         ? {
-            null:
-              (elementsRow as any).null ??
-              (elementsRow as any).null_element ??
-              0,
+            null: (elementsRow as any).null_element ?? 0,
             water: (elementsRow as any).water ?? 0,
             fire: (elementsRow as any).fire ?? 0,
             earth: (elementsRow as any).earth ?? 0,
@@ -496,7 +494,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       starter_merchant: starterMerchant,
     });
   } catch (error) {
-    console.error("[care/current] failed", error);
+    logger.error("[care/current] failed", error);
 
     return res.status(500).json({
       error:
@@ -580,15 +578,15 @@ careRouter.post(
       const timestamp = new Date().toISOString();
 
       await updatePetCareStats(pet.id, {
-        hunger: 50,
-        clean: 50,
-        happy: 50,
-        comfort: 50,
-        rest: 50,
-        energy: 100,
-        neglect_hours: 0,
-        ran_away: false,
-        runaway_at: null,
+        hunger: 0,
+        clean: 0,
+        happy: 0,
+        comfort: 0,
+        rest: 0,
+        energy: 0,
+        neglect_hours: 999,
+        ran_away: true,
+        runaway_at: timestamp,
         last_care_update: timestamp,
         last_care_decay_at: timestamp,
       });
@@ -609,7 +607,7 @@ careRouter.post(
         pet: normalizePetForClient(updatedPet ?? pet),
       });
     } catch (error) {
-      console.error("[care/dev/runaway] failed", error);
+      logger.error("[care/dev/runaway] failed", error);
 
       return res.status(500).json({
         error:
@@ -664,7 +662,7 @@ careRouter.post(
         pet: normalizePetForClient(updatedPet ?? pet),
       });
     } catch (error) {
-      console.error("[care/dev/reset] failed", error);
+      logger.error("[care/dev/reset] failed", error);
 
       return res.status(500).json({
         error:

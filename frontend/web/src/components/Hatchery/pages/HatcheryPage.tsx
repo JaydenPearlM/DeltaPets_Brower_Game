@@ -7,7 +7,7 @@ import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";
 import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 
-import goldEggPng from "../../../Pets_Creation/assets/eggs/goldEgg.png";
+import goldEggPng from "@/Pets_Creation/assets/eggs/goldEgg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
 import "./HatcheryPage.css";
 

@@ -1,0 +1,379 @@
+.kithnaMapPage {
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(103, 232, 249, 0.16),
+      transparent 34rem
+    ),
+    var(--dp-bg, #151827);
+  color: var(--dp-text, #f8f4df);
+}
+
+.kithnaMapFrame {
+  position: relative;
+  max-width: 1120px;
+  margin: 0 auto;
+  border: 3px solid var(--dp-cyan, #67e8f9);
+  border-radius: 22px;
+  padding: 16px;
+  background: rgba(18, 22, 38, 0.94);
+  box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.18);
+}
+
+.kithnaIsland {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 48%, #d8c27b 0 9%, transparent 10%),
+    radial-gradient(circle at 50% 50%, #83b85a 0 58%, transparent 59%), #38a8d8;
+  border: 3px solid rgba(0, 0, 0, 0.55);
+}
+
+.kithnaWater {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 0 60%,
+      rgba(45, 172, 220, 0.9) 61%
+    ),
+    repeating-linear-gradient(
+      -20deg,
+      transparent 0 48px,
+      rgba(255, 255, 255, 0.26) 49px 52px,
+      transparent 53px 92px
+    );
+  pointer-events: none;
+}
+
+.kithnaPath {
+  position: absolute;
+  background: #d7bd7a;
+  border: 2px solid rgba(104, 80, 35, 0.28);
+  pointer-events: none;
+}
+
+.kithnaPathMain {
+  left: 48%;
+  top: 12%;
+  width: 5%;
+  height: 70%;
+  border-radius: 999px;
+  transform: rotate(2deg);
+}
+
+.kithnaPathLeft {
+  left: 20%;
+  top: 35%;
+  width: 62%;
+  height: 5%;
+  border-radius: 999px;
+  transform: rotate(-8deg);
+}
+
+.kithnaPathRight {
+  left: 36%;
+  top: 42%;
+  width: 45%;
+  height: 5%;
+  border-radius: 999px;
+  transform: rotate(18deg);
+}
+
+.kithnaPathBottom {
+  left: 24%;
+  top: 68%;
+  width: 52%;
+  height: 5%;
+  border-radius: 999px;
+  transform: rotate(-3deg);
+}
+
+.kithnaMapTarget {
+  position: absolute;
+  width: 16%;
+  height: 16%;
+  border: 3px solid #1b1a18;
+  border-radius: 12px;
+  color: #20160d;
+  background: #ecd493;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  font-weight: 900;
+  text-align: center;
+  transition:
+    outline-color 140ms ease,
+    transform 140ms ease,
+    filter 140ms ease;
+}
+
+.kithnaMapTarget::before {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: -26%;
+  height: 42%;
+  background: #2f6fae;
+  border: 3px solid #1b1a18;
+  transform: skewX(-12deg);
+  z-index: 0;
+}
+
+.kithnaMapTarget:hover,
+.kithnaMapTarget:focus-visible {
+  outline: 4px solid var(--dp-cyan, #67e8f9);
+  outline-offset: 4px;
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.kithnaBuildingIcon,
+.kithnaBuildingLabel {
+  position: relative;
+  z-index: 1;
+}
+
+.kithnaBuildingIcon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  margin-bottom: 4px;
+  border: 2px solid #1b1a18;
+  border-radius: 8px;
+  background: #f8f4df;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.kithnaBuildingLabel {
+  font-size: clamp(0.64rem, 1vw, 0.9rem);
+  line-height: 1.05;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.kithnaTargetDungeon {
+  left: 72%;
+  top: 8%;
+  background: #6d6274;
+  color: #fff4d6;
+}
+
+.kithnaTargetDungeon::before {
+  background: #34303a;
+}
+
+.kithnaTargetHealth {
+  left: 13%;
+  top: 21%;
+}
+
+.kithnaTargetHealth::before {
+  background: #4b9a55;
+}
+
+.kithnaTargetHatchery {
+  left: 42%;
+  top: 13%;
+}
+
+.kithnaTargetHatchery::before {
+  background: #2f78bf;
+}
+
+.kithnaTargetArmor {
+  left: 66%;
+  top: 23%;
+}
+
+.kithnaTargetArmor::before {
+  background: #b65337;
+}
+
+.kithnaTargetWeapons {
+  left: 11%;
+  top: 55%;
+}
+
+.kithnaTargetWeapons::before {
+  background: #3d668b;
+}
+
+.kithnaTargetFoodShop {
+  left: 25%;
+  top: 73%;
+}
+
+.kithnaTargetFoodShop::before {
+  background: #c8463d;
+}
+
+.kithnaTargetPetCare {
+  left: 43%;
+  top: 75%;
+}
+
+.kithnaTargetPetCare::before {
+  background: #2f78bf;
+}
+
+.kithnaTargetGym {
+  left: 62%;
+  top: 70%;
+}
+
+.kithnaTargetGym::before {
+  background: #df962c;
+}
+
+.kithnaTargetFarm {
+  left: 79%;
+  top: 69%;
+}
+
+.kithnaTargetFarm::before {
+  background: #4b9a55;
+}
+
+.kithnaTargetProfile {
+  left: 44%;
+  top: 43%;
+  width: 12%;
+  height: 12%;
+  border-radius: 999px;
+  background: #c8e9f1;
+}
+
+.kithnaTargetProfile::before {
+  display: none;
+}
+
+.kithnaEggFountain {
+  position: absolute;
+  left: 45%;
+  top: 43%;
+  width: 10%;
+  height: 12%;
+  pointer-events: none;
+}
+
+.kithnaFountainBowl {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 0;
+  height: 38%;
+  border: 3px solid #1b1a18;
+  border-radius: 999px;
+  background: #72c9df;
+}
+
+.kithnaFountainEgg {
+  position: absolute;
+  left: 34%;
+  top: 0;
+  width: 32%;
+  height: 54%;
+  border: 3px solid #1b1a18;
+  border-radius: 50% 50% 45% 45%;
+  background: #d9c19a;
+}
+
+.kithnaNpc {
+  position: absolute;
+  width: 22px;
+  height: 34px;
+  border: 2px solid #1b1a18;
+  border-radius: 999px 999px 8px 8px;
+  background: #4b6fb7;
+  pointer-events: none;
+}
+
+.kithnaNpc::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: -12px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #1b1a18;
+  border-radius: 50%;
+  background: #d49b66;
+}
+
+.kithnaNpcOne {
+  left: 32%;
+  top: 42%;
+}
+
+.kithnaNpcTwo {
+  left: 58%;
+  top: 34%;
+  background: #7d4bb7;
+}
+
+.kithnaNpcThree {
+  left: 34%;
+  top: 68%;
+  background: #3c8c66;
+}
+
+.kithnaNpcFour {
+  left: 73%;
+  top: 62%;
+  background: #b78438;
+}
+
+.kithnaToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.kithnaToolbarButton {
+  border: 2px solid var(--dp-cyan, #67e8f9);
+  border-radius: 999px;
+  background: rgba(18, 22, 38, 0.88);
+  color: var(--dp-gold, #f4d36b);
+  padding: 8px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.kithnaToolbarButton:hover,
+.kithnaToolbarButton:focus-visible {
+  background: rgba(103, 232, 249, 0.18);
+}
+
+@media (max-width: 760px) {
+  .kithnaMapPage {
+    padding: 12px;
+  }
+
+  .kithnaMapTarget {
+    width: 18%;
+    height: 15%;
+    padding: 4px;
+  }
+
+  .kithnaBuildingIcon {
+    width: 26px;
+    height: 24px;
+    font-size: 14px;
+  }
+
+  .kithnaBuildingLabel {
+    font-size: 0.58rem;
+  }
+}

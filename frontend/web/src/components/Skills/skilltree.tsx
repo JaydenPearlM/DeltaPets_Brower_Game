@@ -17,8 +17,6 @@ type SkillTreeProps = {
 
 type TalentRanks = Partial<Record<TalentNodeId, number>>;
 
-const FERAL_PATH_TOTAL_POINTS = 53;
-
 const ROW_UNLOCK_THRESHOLDS: Record<number, number> = {
   1: 0,
   2: 4,
@@ -113,12 +111,18 @@ function getTreeNodes(tree: TalentTreeKey) {
 }
 
 function getEffectsText(node: TalentNode) {
-  if (node.effects.length === 0) return "No stat effect listed";
+  if (node.effects.length === 0) return "";
 
   return node.effects
     .map((effect) => {
       const sign = effect.value > 0 ? "+" : "";
-      return `${sign}${effect.value} ${effect.type.split("_").join(" ")}`;
+      const statName = effect.type
+        .replace("_percent", "")
+        .replace("_flat", "")
+        .replaceAll("_", " ")
+        .toUpperCase();
+
+      return `${sign}${effect.value}% ${statName} per rank`;
     })
     .join(", ");
 }
@@ -227,7 +231,6 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
   function removeNodeRank(node: TalentNode) {
     setSelectedNodeId(node.id);
-
     setSaveStatus("Unsaved talent changes");
 
     setRanks((currentRanks) => {
@@ -274,12 +277,6 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
     setSaveStatus("Talents saved to this pet.");
   }
 
-  const selectedRow = selectedNode
-    ? getRowForLevel(selectedNode.requiredLevel)
-    : null;
-  const selectedRowThreshold =
-    selectedRow !== null ? (ROW_UNLOCK_THRESHOLDS[selectedRow] ?? 0) : 0;
-
   return (
     <section
       className="skillTreeModal feralPathPanel"
@@ -303,16 +300,30 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
         <div className="talentTreeHeaderActions">
           <div className="talentPointPanel">
-            <span>Points</span>
-            <strong>
-              {availablePoints} / {FERAL_PATH_TOTAL_POINTS}
-            </strong>
-          </div>
-        </div>
+            <div>
+              <span>Your Points</span>
+              <strong>{totalPoints}</strong>
+            </div>
 
-        <button type="button" className="skillPopupClose" onClick={onClose}>
-          Close
-        </button>
+            <div>
+              <span>Used Points</span>
+              <strong>{spentPoints}</strong>
+            </div>
+
+            <div>
+              <span>Unused Points</span>
+              <strong>{availablePoints}</strong>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="talentResetHeaderButton"
+            onClick={resetLocalBuild}
+          >
+            Reset Local Build
+          </button>
+        </div>
       </div>
 
       <div className="talentTreeLegend" aria-label="Talent tree paths">
@@ -395,59 +406,46 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
           {selectedNode && selectedState ? (
             <aside className="talentNodeDetails">
-              <div className="talentNodeDetailsMain">
-                <p className="skillPopupEyebrow">Selected Node</p>
+              <div className="talentNodeInfoRow">
+                <span className="talentInfoLabel">Talent Skill</span>
+                <span className="talentInfoValue">{selectedNode.name}</span>
 
-                <h4>{selectedNode.name}</h4>
-
-                <p>{selectedNode.description}</p>
-
-                {selectedNode.tradeoff ? (
-                  <p className="talentNodeTradeoff">
-                    <span>Tradeoff</span>
-                    {selectedNode.tradeoff}
-                  </p>
-                ) : null}
-
-                <p className="talentNodeRowUnlock">
-                  <span>Row Unlock</span>
-                  {selectedRowThreshold} points spent in tree
-                </p>
+                <span className="talentInfoLabel">Talent Effect</span>
+                <span className="talentInfoValue">
+                  {getEffectsText(selectedNode)}
+                  {selectedNode.tradeoff ? (
+                    <span className="talentNodeTradeoff">
+                      {selectedNode.tradeoff}
+                    </span>
+                  ) : null}
+                </span>
               </div>
 
-              <ul className="talentNodeDetailsStats">
-                <li>
-                  Rank: {selectedState.rank} / {selectedNode.maxRank}
-                </li>
-                <li>Cost: {selectedNode.costPerRank} point per rank</li>
-                <li>Requires Level: {selectedNode.requiredLevel}</li>
-                <li>
-                  Status:{" "}
-                  {selectedState.canUpgrade
-                    ? "Can upgrade"
-                    : selectedState.isMaxed
-                      ? "Maxed"
-                      : !selectedState.rowUnlocked
-                        ? `Locked (need ${selectedRowThreshold} pts spent)`
-                        : "Locked"}
-                </li>
-              </ul>
+              <div className="talentDetailsButtons">
+                <div className="talentSaveRow">
+                  {saveStatus ? (
+                    <p className="talentTreeSaveStatus">{saveStatus}</p>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    className="skillPopupClose talentSaveButton"
+                    onClick={saveLocalBuild}
+                  >
+                    Save Talents
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  className="skillPopupClose talentDetailsClose"
+                  onClick={onClose}
+                >
+                  Close
+                </button>
+              </div>
             </aside>
           ) : null}
-
-          <div className="talentTreeActions">
-            {saveStatus ? (
-              <p className="talentTreeSaveStatus">{saveStatus}</p>
-            ) : null}
-
-            <button type="button" onClick={resetLocalBuild}>
-              Reset Local Build
-            </button>
-
-            <button type="button" onClick={saveLocalBuild}>
-              Save Talents
-            </button>
-          </div>
         </>
       )}
     </section>

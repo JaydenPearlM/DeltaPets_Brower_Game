@@ -52,7 +52,7 @@ const ELEMENT_ORDER: (keyof TrainingElements)[] = [
 
 function prettyGender(g?: string) {
   if (!g) return "Unknown";
-  if (g === "null_gender") return "Void";
+  if (g === "null_gender") return "Neutral";
   return g.charAt(0).toUpperCase() + g.slice(1);
 }
 
@@ -255,7 +255,7 @@ export default function PetMainStats({ pet }: PetMainStatsProps) {
                       <div key={k} className="pet-mainstats__elementRow">
                         <span className="pet-mainstats__elementName">
                           {k === "null_element"
-                            ? "Null"
+                            ? "Voidborne"
                             : k[0].toUpperCase() + k.slice(1)}
                         </span>
                         <span className="pet-mainstats__elementVal">

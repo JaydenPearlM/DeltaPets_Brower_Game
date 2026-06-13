@@ -1,10 +1,9 @@
 .anp-panel {
   position: relative;
   min-height: 58px;
-  padding-bottom: 21.06px;
   display: flex;
-  padding-bottom: 0;
   flex-direction: column;
+  padding-bottom: 88px;
   border-radius: 24px;
   border: 2px solid var(--dp-panel-border);
   background:

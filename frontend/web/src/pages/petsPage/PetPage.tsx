@@ -10,6 +10,7 @@ import {
   titleCase,
 } from "@/lib/petUtils";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
+import Armory from "@/pages/petsPage/components/Armory/Armory";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import PetSkillsPanel from "../../components/Skills/PetSkillsInventory";
 import MainTeam from "@/components/Main_Team/mainTeam";
@@ -815,14 +816,27 @@ export default function PetPage() {
                   <div className="petRepoPassiveTraitCard">
                     <div className="petRepoPassiveTraitHeader">
                       <span>Passive Trait</span>
-                      <span className="petRepoPassiveTraitRarity">
+                      <span
+                        className="petRepoPassiveTraitRarity"
+                        data-rarity={(
+                          pet.passive_trait_rarity ?? "Common"
+                        ).toLowerCase()}
+                      >
                         {pet.passive_trait_rarity ?? "Common"}
                       </span>
                     </div>
 
-                    <h3>
-                      {pet.passive_trait_name ??
-                        titleCase(pet.passive_trait_key ?? "Unknown Trait")}
+                    <h3 className="petRepoPassiveTraitName">
+                      <span
+                        className="petRepoPassiveTraitStar"
+                        aria-hidden="true"
+                      >
+                        ★
+                      </span>
+                      <span>
+                        {pet.passive_trait_name ??
+                          titleCase(pet.passive_trait_key ?? "Unknown Trait")}
+                      </span>
                     </h3>
 
                     <p>
@@ -838,14 +852,6 @@ export default function PetPage() {
                       </span>
                     </div>
                   </div>
-
-                  <button
-                    type="button"
-                    className="petRepoSkillTreeButton skillChamberActionButton skillChamberActionButton--gold"
-                    onClick={() => setShowSkillTree(true)}
-                  >
-                    Skill Trees
-                  </button>
                 </section>
 
                 <section
@@ -872,8 +878,18 @@ export default function PetPage() {
                       );
                     })}
                   </div>
+
+                  <button
+                    type="button"
+                    className="petRepoSkillTreeButton skillChamberActionButton skillChamberActionButton--gold"
+                    onClick={() => setShowSkillTree(true)}
+                  >
+                    Skill Trees
+                  </button>
                 </section>
               </div>
+
+              <Armory />
             </article>
 
             <PetSkillsPanel pet={pet} stats={totalStats} />

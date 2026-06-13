@@ -1,9 +1,9 @@
 import { Router } from "express";
 import type { Response } from "express";
 import { randomUUID } from "crypto";
-
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
+import { logger } from "../../lib/logger";
 
 type BattleElement =
   | "fire"
@@ -519,7 +519,7 @@ battlePveRouter.post(
 
       return res.status(201).json({ battle: state });
     } catch (err) {
-      console.error("[POST /api/battle/pve/start]", err);
+      logger.error("[POST /api/battle/pve/start]", err);
       return res.status(500).json({ error: "Failed to start PVE battle." });
     }
   },
@@ -676,7 +676,7 @@ battlePveRouter.post(
 
       return res.json({ battle });
     } catch (err) {
-      console.error("[POST /api/battle/pve/:battleId/action]", err);
+      logger.error("[POST /api/battle/pve/:battleId/action]", err);
       return res
         .status(500)
         .json({ error: "Failed to perform battle action." });

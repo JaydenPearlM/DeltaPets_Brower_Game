@@ -1,20 +1,32 @@
 import { Request, Response, NextFunction } from "express";
+import { logger } from "../lib/logger";
+
+type ErrorWithDetails = {
+  status?: number;
+  statusCode?: number;
+  message?: string;
+  code?: string;
+  details?: unknown;
+  stack?: string;
+};
 
 export function errorHandler(
-  err: any,
+  err: unknown,
   _req: Request,
   res: Response,
   _next: NextFunction,
 ) {
-  console.error("[errorHandler]", err);
+  logger.error("[errorHandler]", err);
 
-  const statusCode = err.status || err.statusCode || 500;
-  const message = err.message || "Internal server error";
+  const error = err as ErrorWithDetails;
+
+  const statusCode = error.status || error.statusCode || 500;
+  const message = error.message || "Internal server error";
 
   res.status(statusCode).json({
     error: message,
-    code: err.code ?? null,
-    details: err.details ?? null,
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+    code: error.code ?? null,
+    details: error.details ?? null,
+    ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
   });
 }

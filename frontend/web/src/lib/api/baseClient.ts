@@ -5,9 +5,9 @@ import { supabase } from "../supabase/client";
 
 export class ApiError extends Error {
   status: number;
-  payload: any;
+  payload: unknown;
 
-  constructor(message: string, status: number, payload?: any) {
+  constructor(message: string, status: number, payload?: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -15,7 +15,7 @@ export class ApiError extends Error {
   }
 }
 
-async function getAccessToken(): Promise<string> {
+export async function getAccessToken(): Promise<string> {
   const { data, error } = await supabase.auth.getSession();
 
   if (error) {
@@ -66,7 +66,7 @@ async function parseMaybeJson(res: Response) {
  */
 export async function apiFetch<T>(
   path: string,
-  init?: RequestInit & { json?: any },
+  init?: RequestInit & { json?: unknown },
 ): Promise<T> {
   const headers = await getAuthHeaders({
     ...(init?.headers ?? {}),
@@ -79,7 +79,7 @@ export async function apiFetch<T>(
     body:
       init?.json !== undefined
         ? JSON.stringify(init.json)
-        : (init?.body as any),
+        : (init?.body as BodyInit | null | undefined),
   });
 
   const payload = await parseMaybeJson(res);
@@ -87,7 +87,7 @@ export async function apiFetch<T>(
   if (!res.ok) {
     const message =
       (payload && typeof payload === "object" && "error" in payload
-        ? (payload as any).error
+        ? String((payload as { error?: unknown }).error)
         : null) ??
       (typeof payload === "string" ? payload : null) ??
       `Request failed (${res.status})`;
@@ -102,14 +102,14 @@ export async function apiFetch<T>(
  * apiJson
  * Backwards-friendly helper:
  * - behaves like your old apiJson
- * - supports init.json if you pass it (since it uses apiFetch underneath)
+ * - supports init.json if you pass it because it uses apiFetch underneath
  *
  * Example:
  *   apiJson("/api/rewards/claim", { method: "POST", json: { day: 2 } })
  */
 export async function apiJson<T>(
   path: string,
-  init: RequestInit & { json?: any } = {},
+  init: RequestInit & { json?: unknown } = {},
 ): Promise<T> {
   return apiFetch<T>(path, init);
 }

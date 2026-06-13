@@ -5,6 +5,7 @@ import "./LoginMenus.css";
 import PopupWindow from "../popup_windows/popupWindow";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/app/providers/useAuth";
+import { clientLog } from "@/lib/debug/clientLogger";
 
 type AuthView = "login" | "signup";
 type ForcedAuthView = AuthView | "none";

@@ -102,7 +102,6 @@ export function log(level: LogLevel, message: string, data?: unknown): void {
   }
 
   printToConsole(entry);
-  // Stored for /api/debug/logs. Do not print app logs to the terminal.
 }
 
 export const logger = {

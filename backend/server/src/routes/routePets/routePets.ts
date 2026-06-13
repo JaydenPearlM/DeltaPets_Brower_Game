@@ -5,6 +5,7 @@
 
 import { Router, Response } from "express";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
+import { validateBody } from "../../middleware/validateRequest";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { rollIV, sumStats } from "../../lib/stats/individualValues";
 import { applyCareDecay } from "../../shared/pets/care/CareDecay";
@@ -55,6 +56,8 @@ import {
   updatePetCareStats,
 } from "../../lib/petCareHelpers";
 
+import { ensureEggSchema } from "../../lib/validation";
+
 type HatchBaseRow = {
   pet_id: string;
   base_hp: number;
@@ -102,17 +105,6 @@ type PetInsertPayload = {
   growth_weak_stat?: string | null;
 };
 
-type MinimalPetInsertPayload = {
-  user_id: string;
-  name: string;
-  line: ElementalLine;
-  stage: string;
-  energy: number;
-  hatch_ends_at: string;
-  is_active: boolean;
-  location: string;
-};
-
 type HatchAllocationPayload = {
   pet_id: string;
   level: number;
@@ -128,6 +120,37 @@ type PetLocationUpdatePayload = {
   location: string;
   is_active: boolean;
 };
+
+async function hydrateHatchedPassiveTrait(pet: Record<string, any>) {
+  if (!pet?.passive_trait_id && !pet?.passive_trait_key) return pet;
+
+  let query = supabaseAdmin
+    .from("passive_traits")
+    .select("id,key,name,rarity,description,effect_summary,effects,stat_key")
+    .eq("is_active", true);
+
+  if (pet.passive_trait_id) {
+    query = query.eq("id", pet.passive_trait_id);
+  } else {
+    query = query.eq("key", pet.passive_trait_key);
+  }
+
+  const { data, error } = await query.maybeSingle();
+
+  if (error || !data) return pet;
+
+  return {
+    ...pet,
+    passive_trait_id: data.id,
+    passive_trait_key: data.key,
+    passive_trait_name: data.name,
+    passive_trait_rarity: data.rarity,
+    passive_trait_description: data.description,
+    passive_trait_effect_summary: data.effect_summary,
+    passive_trait_effects: data.effects,
+    passive_trait_stat_key: data.stat_key,
+  };
+}
 
 async function rollPassiveTrait() {
   const { data, error } = await supabaseAdmin
@@ -277,6 +300,7 @@ petsRouter.get(
 petsRouter.post(
   "/ensure-egg",
   requireUser,
+  validateBody(ensureEggSchema),
   async (req: AuthedRequest, res: Response) => {
     const requestedLine = req.body?.line ?? null;
 
@@ -382,19 +406,6 @@ petsRouter.post(
         growth_weak_stat: weakStat,
       } as PetInsertPayload;
 
-      const fallbackInsertPayload = {
-        user_id: userId,
-        name: starter.eggName,
-        line: resolvedLine,
-        stage: "egg",
-        energy: 100,
-        hatch_ends_at: hatchEndsAt,
-        is_active: false,
-        location: "hatchery",
-      } as MinimalPetInsertPayload;
-
-      let insertedPet: EggRow | null = null;
-
       const fullInsertResult = await supabaseAdmin
         .from("pets")
         .insert(fullInsertPayload)
@@ -407,32 +418,15 @@ petsRouter.post(
           fullInsertResult.error,
         );
 
-        const fallbackInsertResult = await supabaseAdmin
-          .from("pets")
-          .insert(fallbackInsertPayload)
-          .select("*")
-          .single();
-
-        if (fallbackInsertResult.error) {
-          logger.error(
-            "[ensure-egg] fallback pets insert failed",
-            fallbackInsertResult.error,
-          );
-
-          return res.status(500).json({
-            success: false,
-            requested_line: requestedLine,
-            resolved_line: resolvedLine,
-            error: fallbackInsertResult.error.message,
-            full_insert_error: fullInsertResult.error.message,
-            fallback_insert_error: fallbackInsertResult.error.message,
-          });
-        }
-
-        insertedPet = fallbackInsertResult.data;
-      } else {
-        insertedPet = fullInsertResult.data;
+        return res.status(500).json({
+          success: false,
+          requested_line: requestedLine,
+          resolved_line: resolvedLine,
+          error: fullInsertResult.error.message,
+        });
       }
+
+      const insertedPet = fullInsertResult.data;
 
       if (!insertedPet?.id) {
         return res.status(500).json({
@@ -631,7 +625,7 @@ petsRouter.post(
         });
       }
 
-      const typedEgg = egg as any;
+      const typedEgg = egg as EggRow;
       const starter = typedEgg.species
         ? (STARTERS.find((s) => s.speciesId === typedEgg.species) ?? null)
         : (STARTERS.find((s) => s.line === typedEgg.line) ?? null);
@@ -775,17 +769,19 @@ petsRouter.post(
         storageResult,
       });
 
+      const hatchedPetForClient = await hydrateHatchedPassiveTrait({
+        ...hatched,
+        name: starter.hatchlingName,
+        location: finalLocation,
+        is_active: finalIsActive,
+        description,
+        passive_trait_id: typedEgg.passive_trait_id ?? null,
+        passive_trait_key: typedEgg.passive_trait_key ?? null,
+      });
+
       return res.json({
         server_now: nowIso,
-        pet: {
-          ...hatched,
-          name: starter.hatchlingName,
-          location: finalLocation,
-          is_active: finalIsActive,
-          description,
-          passive_trait_id: typedEgg.passive_trait_id ?? null,
-          passive_trait_key: typedEgg.passive_trait_key ?? null,
-        },
+        pet: hatchedPetForClient,
         awarded_points: HATCH_ALLOCATION_POINTS,
         iv,
         points,

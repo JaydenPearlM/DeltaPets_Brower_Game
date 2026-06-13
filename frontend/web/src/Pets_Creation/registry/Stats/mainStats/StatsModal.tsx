@@ -290,7 +290,7 @@ export function StatsModal(props: {
             <div className="statsModal__elements">
               {elementsOrdered.map((el) => (
                 <div key={el} className="elementCell">
-                  {/* titleCase from petUtils correctly renders null_element → Null Element */}
+                  {/* titleCase from petUtils correctly renders null_element → Voidborne */}
                   <div className="elementCell__label">{titleCase(el)}</div>
                   <div className="elementCell__value">
                     {getElementValue(elements, el)}
