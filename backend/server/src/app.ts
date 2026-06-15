@@ -28,14 +28,14 @@ export function createApp() {
   app.use("/api/world", apiLimiter, apiSpeedLimiter, worldRouter);
 
   if (env.NODE_ENV === "development") {
+    app.use("/api/debug", requireUser, debugRouter);
+  }
+
+  if (env.NODE_ENV === "development") {
     app.use("/api/debug", debugRouter);
   }
 
   app.use("/api", apiLimiter, apiSpeedLimiter, requireUser, apiRouter);
-
-  app.use((_req, res) => {
-    res.status(404).json({ error: "Not found" });
-  });
 
   app.use(errorHandler);
 

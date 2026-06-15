@@ -17,6 +17,8 @@ type SkillTreeProps = {
 
 type TalentRanks = Partial<Record<TalentNodeId, number>>;
 
+const ACTIVE_TALENT_TREE_KEYS: TalentTreeKey[] = ["feral", "aegis", "majo"];
+
 const ROW_UNLOCK_THRESHOLDS: Record<number, number> = {
   1: 0,
   2: 4,
@@ -111,24 +113,13 @@ function getTreeNodes(tree: TalentTreeKey) {
 }
 
 function getEffectsText(node: TalentNode) {
-  if (node.effects.length === 0) return "";
-
-  return node.effects
-    .map((effect) => {
-      const sign = effect.value > 0 ? "+" : "";
-      const statName = effect.type
-        .replace("_percent", "")
-        .replace("_flat", "")
-        .replaceAll("_", " ")
-        .toUpperCase();
-
-      return `${sign}${effect.value}% ${statName} per rank`;
-    })
-    .join(", ");
+  return node.description;
 }
 
 function getTooltipText(node: TalentNode) {
-  return getEffectsText(node);
+  return [node.description, node.tradeoff ? `Tradeoff: ${node.tradeoff}` : ""]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function getNodeState({
@@ -169,11 +160,12 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
   const petLevel = getPetLevel(pet);
   const totalPoints = Math.max(0, petLevel - 1) * TALENT_POINTS_PER_LEVEL;
 
-  const [activeTree, setActiveTree] = useState<TalentTreeKey | null>("feral");
+  const [activeTree, setActiveTree] = useState<TalentTreeKey>("feral");
   const [ranks, setRanks] = useState<TalentRanks>(() =>
     readSavedTalentRanks(pet),
   );
   const [saveStatus, setSaveStatus] = useState<string>("");
+  const [resetStatus, setResetStatus] = useState<string>("");
   const [selectedNodeId, setSelectedNodeId] = useState<TalentNodeId | null>(
     "feral-root",
   );
@@ -181,11 +173,12 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
   useEffect(() => {
     setRanks(readSavedTalentRanks(pet));
     setSaveStatus("");
+    setResetStatus("");
   }, [pet?.id]);
 
   const spentPoints = useMemo(() => getSpentPoints(ranks), [ranks]);
   const availablePoints = Math.max(0, totalPoints - spentPoints);
-  const activeTreeNodes = activeTree ? getTreeNodes(activeTree) : [];
+  const activeTreeNodes = getTreeNodes(activeTree);
 
   const selectedNode =
     selectedNodeId !== null
@@ -204,8 +197,11 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
   function openTree(tree: TalentTreeKey) {
     const nodes = getTreeNodes(tree);
+
     setActiveTree(tree);
     setSelectedNodeId(nodes[0]?.id ?? null);
+    setSaveStatus("");
+    setResetStatus("");
   }
 
   function upgradeNode(node: TalentNode) {
@@ -248,7 +244,7 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
   function resetLocalBuild() {
     setRanks({});
     setSelectedNodeId(activeTreeNodes[0]?.id ?? null);
-    setSaveStatus("Unsaved talent changes");
+    setResetStatus("Reset Successful");
   }
 
   function saveLocalBuild() {
@@ -289,13 +285,7 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
       <div className="talentTreeHeader">
         <div className="talentTreeHeaderCopy">
-          <h3 className="talentTreeTitle">
-            {activeTree ? TALENT_TREE_LABELS[activeTree] : "Choose a Path"}
-          </h3>
-
-          <p className="talentTreeSubtitle">
-            You have {availablePoints} points. Spend them wisely.
-          </p>
+          <h3 className="talentTreeTitle">{TALENT_TREE_LABELS[activeTree]}</h3>
         </div>
 
         <div className="talentTreeHeaderActions">
@@ -315,46 +305,44 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
               <strong>{availablePoints}</strong>
             </div>
           </div>
-
-          <button
-            type="button"
-            className="talentResetHeaderButton"
-            onClick={resetLocalBuild}
-          >
-            Reset Local Build
-          </button>
         </div>
       </div>
 
       <div className="talentTreeLegend" aria-label="Talent tree paths">
-        <button type="button" onClick={() => openTree("feral")}>
-          {TALENT_TREE_LABELS.feral}
-        </button>
-
-        <button type="button" disabled>
-          {TALENT_TREE_LABELS.aegis}
-        </button>
-
-        <button type="button" disabled>
-          {TALENT_TREE_LABELS.majo}
-        </button>
+        {ACTIVE_TALENT_TREE_KEYS.map((treeKey) => (
+          <button
+            key={treeKey}
+            type="button"
+            className={activeTree === treeKey ? "is-active" : ""}
+            onClick={() => openTree(treeKey)}
+          >
+            {TALENT_TREE_LABELS[treeKey]}
+          </button>
+        ))}
 
         <button type="button" disabled>
           {TALENT_TREE_LABELS.genesis}
         </button>
       </div>
 
-      {!activeTree ? (
+      {activeTreeNodes.length <= 0 ? (
         <div className="talentTreeEmptyState">
-          <h4>Select Feral Path</h4>
-          <p>
-            Feral Path is ready first. Aegis, Majo, and Genesis can be wired in
-            after this path feels good.
-          </p>
+          <h4>No talents built yet</h4>
+          <p>This path does not have battle talents wired in yet.</p>
         </div>
       ) : (
         <>
-          <div className="talentTreeBoard talentTreeBoard--feral">
+          <div className={`talentTreeBoard talentTreeBoard--${activeTree}`}>
+            <button
+              type="button"
+              className="talentResetHeaderButton talentResetBoardButton"
+              onClick={resetLocalBuild}
+            >
+              Reset Local Build
+            </button>
+
+            <p className="talentResetBoardStatus">{resetStatus}</p>
+
             {activeTreeNodes.map((node) => {
               const state = getNodeState({
                 node,
@@ -423,9 +411,7 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
               <div className="talentDetailsButtons">
                 <div className="talentSaveRow">
-                  {saveStatus ? (
-                    <p className="talentTreeSaveStatus">{saveStatus}</p>
-                  ) : null}
+                  <p className="talentTreeSaveStatus">{saveStatus}</p>
 
                   <button
                     type="button"

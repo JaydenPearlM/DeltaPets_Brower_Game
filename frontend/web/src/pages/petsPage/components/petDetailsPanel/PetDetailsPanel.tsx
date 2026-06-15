@@ -30,6 +30,12 @@ type PetRecord = {
   sprite_url?: string | null;
   portrait_url?: string | null;
   hatch_time_alignment?: string | null;
+  training_time_preference?: string | null;
+  preferred_time?: string | null;
+  preferredTime?: string | null;
+  created_at?: string | null;
+  hatch_ends_at?: string | null;
+  hatched_at?: string | null;
   passive_trait_id?: string | null;
   passive_trait_key?: string | null;
   passive_trait_name?: string | null;
@@ -146,15 +152,49 @@ function getDisplayedElement(pet: PetRecord) {
   return titleCase(value);
 }
 
-function getStablePreference(pet: PetRecord) {
-  const alignment = String(pet.hatch_time_alignment ?? "")
+function getDayNightLabel(value: unknown) {
+  const normalized = String(value ?? "")
     .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
 
-  if (alignment === "day") return "Day Pigeon";
-  if (alignment === "night") return "Night Owl";
+  if (normalized === "day" || normalized === "day_pigeon") {
+    return "Day Pigeon";
+  }
 
-  return "--";
+  if (normalized === "night" || normalized === "night_owl") {
+    return "Night Owl";
+  }
+
+  return null;
+}
+
+function getDayNightFromTimestamp(value: unknown) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return null;
+
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const hour = date.getHours();
+  return hour >= 6 && hour < 18 ? "Day Pigeon" : "Night Owl";
+}
+
+function getStablePreference(pet: PetRecord) {
+  const direct =
+    getDayNightLabel(pet.hatch_time_alignment) ??
+    getDayNightLabel(pet.training_time_preference) ??
+    getDayNightLabel(pet.preferred_time) ??
+    getDayNightLabel(pet.preferredTime);
+
+  if (direct) return direct;
+
+  const fallback =
+    getDayNightFromTimestamp(pet.hatched_at) ??
+    getDayNightFromTimestamp(pet.hatch_ends_at) ??
+    getDayNightFromTimestamp(pet.created_at);
+
+  return fallback ?? "--";
 }
 
 function getPetSpeech({

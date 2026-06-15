@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { apiFetch } from "../lib/api/baseClient";
 import "./DebugOverlay.css";
 
 type ServerLog = {
@@ -20,8 +21,7 @@ export function DebugOverlay() {
 
   async function fetchServerLogs() {
     try {
-      const res = await fetch("/api/debug/logs");
-      const data = await res.json();
+      const data = await apiFetch<{ logs: ServerLog[] }>("/api/debug/logs");
 
       setServerLogs(data.logs ?? []);
     } catch (err) {

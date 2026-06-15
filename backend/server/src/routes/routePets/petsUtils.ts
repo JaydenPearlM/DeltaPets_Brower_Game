@@ -1,4 +1,4 @@
-// frontend/web/src/lib/utils/petUtils.ts
+// backend/server/src/routes/routePets/petsUtils.ts
 
 export const VALID_ELEMENTS = [
   "null",

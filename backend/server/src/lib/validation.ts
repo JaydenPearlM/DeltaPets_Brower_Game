@@ -2,27 +2,27 @@
 
 import { z } from "zod";
 
-export const petActionSchema = z.object({
-  action: z.enum(["feed", "clean", "play", "bond"]),
+const elementLineSchema = z.enum([
+  "null_element",
+  "water",
+  "fire",
+  "earth",
+  "air",
+  "ice",
+  "storm",
+  "light",
+  "shadow",
+  "random",
+]);
+
+const worldTimeSchema = z.enum(["day", "night"]);
+
+export const ensureEggSchema = z.object({
+  line: elementLineSchema.optional().nullable(),
+  worldTime: worldTimeSchema.optional().nullable(),
+  personalityKey: z.string().trim().min(1).optional().nullable(),
 });
 
-// NEW: Validation schema for ensure-egg endpoint
-export const ensureEggSchema = z.object({
-  line: z
-    .enum([
-      "neutral",
-      "water",
-      "fire",
-      "earth",
-      "air",
-      "ice",
-      "storm",
-      "light",
-      "shadow",
-      "corruption",
-    ])
-    .optional()
-    .nullable(),
-  worldTime: z.enum(["day", "night"]).optional().nullable(),
-  personalityKey: z.string().min(1).max(50).optional().nullable(),
+export const petActionSchema = z.object({
+  action: z.enum(["feed", "clean", "play", "bond"]),
 });

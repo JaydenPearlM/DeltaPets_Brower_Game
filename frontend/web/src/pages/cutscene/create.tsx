@@ -226,7 +226,7 @@ export default function CreatePage() {
           setBusy(true);
 
           try {
-            const requestedLine = starterLine;
+            const requestedLine = "random";
 
             clientLog("create", "ensure-egg started", "info", {
               line: requestedLine,
@@ -235,7 +235,8 @@ export default function CreatePage() {
             await apiFetch("/api/pets/ensure-egg", {
               method: "POST",
               body: JSON.stringify({
-                line: requestedLine ?? "null_element",
+                line: requestedLine,
+                worldTime,
               }),
             });
 

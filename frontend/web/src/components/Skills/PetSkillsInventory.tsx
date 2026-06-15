@@ -21,13 +21,14 @@ type PetSkillsInventoryProps = {
   } | null;
 };
 
-type SkillLane = "left" | "right" | "center";
-
-type EquippedSkill = DisplaySkill & {
-  lane: SkillLane;
+type BattleSkillSlot = {
+  id: "slot-1" | "slot-2" | "slot-3" | "slot-4";
+  label: string;
+  skillId: SkillId | null;
+  unlockText: string;
 };
 
-const SLOT_CAP = 10;
+const SLOT_CAP = 4;
 
 const DEFAULT_STATS = {
   hp: 0,
@@ -49,17 +50,6 @@ const SKILL_ORDER: SkillId[] = [
   "mythic-legendary-skill",
 ];
 
-const SKILL_LANES: Record<SkillId, SkillLane> = {
-  "basic-strike": "left",
-  guard: "left",
-  mend: "left",
-  "species-skill": "right",
-  "lowform-skill": "right",
-  "highform-skill": "right",
-  "legion-skill": "right",
-  "mythic-legendary-skill": "center",
-};
-
 const STAGE_RANKS: Record<string, number> = {
   egg: 0,
   hatchling: 1,
@@ -69,10 +59,6 @@ const STAGE_RANKS: Record<string, number> = {
   mythic_legendary: 5,
   mythical_legendary: 5,
 };
-
-function getSkillLane(skillId: string): SkillLane {
-  return SKILL_LANES[skillId as SkillId] ?? "left";
-}
 
 function safeNumber(value: unknown, fallback = 0) {
   const nextValue = Number(value);
@@ -88,27 +74,39 @@ function getPetStageRank(pet?: Record<string, any> | null) {
   return STAGE_RANKS[stage] ?? 1;
 }
 
-function getPetElementLabel(pet?: Record<string, any> | null) {
-  const element = String(pet?.line ?? pet?.element ?? "Element").replace(
-    /_/g,
-    " ",
-  );
-
-  return element
+function titleCase(value: string) {
+  return value
+    .replace(/_/g, " ")
     .split(" ")
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(" ");
 }
 
+function getPetElementLabel(pet?: Record<string, any> | null) {
+  const element = String(pet?.line ?? pet?.element ?? "Element");
+  return titleCase(element);
+}
+
+function getPetSpeciesLabel(pet?: Record<string, any> | null) {
+  const species = String(pet?.species ?? pet?.species_name ?? "Species");
+  return titleCase(species);
+}
+
+function getPetName(pet?: Record<string, any> | null) {
+  return String(
+    pet?.nickname ?? pet?.name ?? pet?.species_name ?? pet?.species ?? "Kith",
+  );
+}
+
 function getDisplayName(skillId: SkillId, pet?: Record<string, any> | null) {
-  const elementLabel = getPetElementLabel(pet);
+  const speciesLabel = getPetSpeciesLabel(pet);
 
   switch (skillId) {
     case "basic-strike":
-      return `${elementLabel} Strike`;
+      return "Storm Strike";
     case "species-skill":
-      return "Hatchling Species Skill";
+      return `${speciesLabel} Skill`;
     case "lowform-skill":
       return "Lowform Species Skill";
     case "highform-skill":
@@ -130,7 +128,7 @@ function getSkillUnlock(skillId: SkillId, pet?: Record<string, any> | null) {
     case "basic-strike":
     case "guard":
     case "mend":
-      return { unlocked: level >= 2, lockText: "Unlocks at Level 2" };
+      return { unlocked: level >= 1, lockText: "Starter Skill" };
     case "species-skill":
       return { unlocked: level >= 5, lockText: "Unlocks at Level 5" };
     case "lowform-skill":
@@ -207,6 +205,21 @@ function getSkillMath(
   }
 }
 
+function getSkillType(skillId: SkillId) {
+  switch (skillId) {
+    case "basic-strike":
+      return "Attack";
+    case "guard":
+      return "Guard";
+    case "mend":
+      return "Heal";
+    case "species-skill":
+      return "Species";
+    default:
+      return "Evolution";
+  }
+}
+
 function buildDisplaySkills(
   pet?: Record<string, any> | null,
   stats?: PetSkillsInventoryProps["stats"],
@@ -242,6 +255,7 @@ export default function PetSkillsInventory({
     "basic-strike",
     "guard",
     "mend",
+    "species-skill",
   ]);
 
   const displaySkills = useMemo(
@@ -255,11 +269,10 @@ export default function PetSkillsInventory({
       .map((skill) => skill.id as SkillId);
   }, [displaySkills]);
 
-  const equippedSkills = useMemo<EquippedSkill[]>(() => {
+  const equippedSkills = useMemo(() => {
     return equippedSkillIds
       .map((skillId) => displaySkills.find((skill) => skill.id === skillId))
-      .filter((skill): skill is DisplaySkill => Boolean(skill))
-      .map((skill) => ({ ...skill, lane: getSkillLane(skill.id) }));
+      .filter((skill): skill is DisplaySkill => Boolean(skill));
   }, [displaySkills, equippedSkillIds]);
 
   const inventorySkills = useMemo(() => {
@@ -267,6 +280,38 @@ export default function PetSkillsInventory({
       return skill.unlocked && !equippedSkillIds.includes(skill.id as SkillId);
     });
   }, [displaySkills, equippedSkillIds]);
+
+  const petStats = { ...DEFAULT_STATS, ...(stats ?? {}) };
+  const petName = getPetName(pet);
+  const petLevel = getPetLevel(pet);
+  const petElement = getPetElementLabel(pet);
+
+  const battleSlots: BattleSkillSlot[] = [
+    {
+      id: "slot-1",
+      label: "Slot 1",
+      skillId: "basic-strike",
+      unlockText: "Starter Skill",
+    },
+    {
+      id: "slot-2",
+      label: "Slot 2",
+      skillId: "guard",
+      unlockText: "Starter Skill",
+    },
+    {
+      id: "slot-3",
+      label: "Slot 3",
+      skillId: "mend",
+      unlockText: "Starter Skill",
+    },
+    {
+      id: "slot-4",
+      label: "Slot 4",
+      skillId: "species-skill",
+      unlockText: "Unlocks at Level 5",
+    },
+  ];
 
   function equipSkill(skillId: SkillId) {
     if (equippedSkillIds.includes(skillId)) return;
@@ -286,50 +331,47 @@ export default function PetSkillsInventory({
     });
   }
 
-  function renderSkillCard(skill: DisplaySkill, lane: SkillLane) {
-    const cardClassName = [
-      "skillTrapezoid",
-      `skillTrapezoid--${skill.id}`,
-      `skillTrapezoid--lane-${lane}`,
-      skill.unlocked ? "is-unlocked" : "is-locked",
-    ].join(" ");
+  function getSlotSkill(slot: BattleSkillSlot) {
+    if (!slot.skillId) return null;
+    return equippedSkills.find((skill) => skill.id === slot.skillId) ?? null;
+  }
+
+  function renderSkillButton(slot: BattleSkillSlot) {
+    const skill = getSlotSkill(slot);
+    const isLocked = !skill || !skill.unlocked;
 
     return (
       <button
         type="button"
-        key={skill.id}
-        className={cardClassName}
-        onClick={() => setSelectedSkill(skill)}
+        key={slot.id}
+        className={[
+          "skillBattleAction",
+          isLocked ? "is-locked" : "is-ready",
+          skill ? `skillBattleAction--${skill.id}` : "",
+        ].join(" ")}
+        onClick={() => {
+          if (skill) setSelectedSkill(skill);
+        }}
       >
-        <span className="skillTrapezoidBorder" aria-hidden="true" />
-        <span className="skillName">{skill.displayName}</span>
-        <span className="skillValue">
-          {skill.unlocked ? (skill.value ?? "—") : "Locked"}
+        <span className="skillBattleActionSlot">{slot.label}</span>
+        <span className="skillBattleActionName">
+          {skill ? skill.displayName : "Locked Slot"}
         </span>
-        <span className="skillDescription">
-          {skill.unlocked ? skill.description : skill.lockText}
+        <span className="skillBattleActionMeta">
+          {isLocked
+            ? (skill?.lockText ?? slot.unlockText)
+            : `${getSkillType(skill.id as SkillId)} • ${skill.value ?? "—"}`}
         </span>
       </button>
     );
   }
-
-  const leftColumnSkills = displaySkills.filter((skill) => {
-    return getSkillLane(skill.id) === "left";
-  });
-
-  const rightColumnSkills = displaySkills.filter((skill) => {
-    return getSkillLane(skill.id) === "right";
-  });
-
-  const mythicalSkill = displaySkills.find((skill) => {
-    return skill.id === "mythic-legendary-skill";
-  });
 
   return (
     <section className="skillsPanel" aria-label="Skills Chamber">
       <header className="skillsPanelHeader">
         <div className="skillsHeaderTopRow">
           <div className="skillsPanelHeaderCopy">
+            <p className="skillsEyebrow">Battle Loadout</p>
             <h2 className="skillsTitle">Skills Chamber</h2>
           </div>
 
@@ -345,71 +387,83 @@ export default function PetSkillsInventory({
         </div>
 
         <p className="skillsSubtitle">
-          Equip battle skills and preview the Kith talent paths.
+          Build the four battle actions your Kith can use in combat.
         </p>
       </header>
 
-      <section className="skillInventoryPanel" aria-label="Battle skills">
-        <div className="skillInventoryHeader">
-          <h3>Battle Ready Skills</h3>
+      <section className="skillBattleHud" aria-label="Battle interface preview">
+        <div className="skillBattleHudTop">
+          <div className="skillBattlePetPlate">
+            <span className="skillBattlePetName">{petName}</span>
+            <span className="skillBattlePetMeta">
+              LV {petLevel} • {petElement}
+            </span>
+          </div>
+
+          <div className="skillBattleBars" aria-label="Health and mana">
+            <div className="skillBattleBarRow">
+              <span>HP</span>
+              <div className="skillBattleBarTrack">
+                <span
+                  className="skillBattleBarFill skillBattleBarFill--hp"
+                  style={{ width: "100%" }}
+                />
+              </div>
+              <strong>{safeNumber(petStats.hp)}</strong>
+            </div>
+
+            <div className="skillBattleBarRow">
+              <span>MP</span>
+              <div className="skillBattleBarTrack">
+                <span
+                  className="skillBattleBarFill skillBattleBarFill--mp"
+                  style={{ width: "100%" }}
+                />
+              </div>
+              <strong>{safeNumber(petStats.mana)}</strong>
+            </div>
+          </div>
         </div>
 
-        <div className="skillSlotGrid">
-          {Array.from({ length: SLOT_CAP }).map((_, index) => {
-            const skill = equippedSkills[index];
+        <div className="skillBattleStage" aria-hidden="true">
+          <div className="skillBattleEnemyMarker skillBattleEnemyMarker--one">
+            Enemy
+          </div>
+          <div className="skillBattleEnemyMarker skillBattleEnemyMarker--two">
+            Enemy
+          </div>
+          <div className="skillBattleAllyMarker skillBattleAllyMarker--one">
+            Kith
+          </div>
+          <div className="skillBattleAllyMarker skillBattleAllyMarker--two">
+            Ally
+          </div>
+        </div>
 
-            if (!skill) {
-              return (
-                <article
-                  className="skillSlotCard is-empty"
-                  key={`slot-${index + 1}`}
-                >
-                  <h4>Locked</h4>
-                </article>
-              );
-            }
+        <div className="skillBattleCommandDeck">
+          <div className="skillBattleCommandCore">
+            <span>Command</span>
+          </div>
 
-            return (
-              <article className="skillSlotCard is-filled" key={skill.id}>
-                <h4>
-                  {skill.displayName === "Basic Strike"
-                    ? "Basic"
-                    : skill.displayName}
-                </h4>
-              </article>
-            );
-          })}
+          <div className="skillBattleActions">
+            {battleSlots.map(renderSkillButton)}
+          </div>
         </div>
       </section>
 
-      <section className="skillsLadder" aria-label="Skill ladder">
-        <div className="skillExplanationBox">
+      <section className="skillLoadoutNotes" aria-label="Skill unlock notes">
+        <article>
+          <h3>Starter Skills</h3>
+          <p>Storm Strike, Guard, and Mend are available at level 1.</p>
+        </article>
+
+        <article>
+          <h3>Species Skill</h3>
           <p>
-            Battle Skills are combat actions that unlock through level and
-            evolution progress. Core skill scaling still uses your Kith stats
-            behind the scenes.
+            The fourth battle slot wakes up at level 5 for hatchling species
+            identity.
           </p>
-        </div>
-
-        <div className="skillsLadderGrid">
-          <div className="skillsLadderColumn">
-            {leftColumnSkills.map((skill) => {
-              return renderSkillCard(skill, getSkillLane(skill.id));
-            })}
-          </div>
-
-          <div className="skillsLadderColumn">
-            {rightColumnSkills.map((skill) => {
-              return renderSkillCard(skill, getSkillLane(skill.id));
-            })}
-          </div>
-        </div>
-
-        {mythicalSkill?.unlocked ? (
-          <div className="skillsMythicRow">
-            {renderSkillCard(mythicalSkill, "center")}
-          </div>
-        ) : null}
+        </article>
       </section>
 
       {selectedSkill &&

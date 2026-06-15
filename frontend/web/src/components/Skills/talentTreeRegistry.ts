@@ -1,8 +1,20 @@
 import { FERAL_NODES } from "./talentTrees/feralPath";
+import { AEGIS_NODES } from "./talentTrees/aegisPath";
+import { MAJO_NODES } from "./talentTrees/majoPath";
 
 export type TalentTreeKey = "feral" | "aegis" | "majo" | "genesis";
 export type TalentNodeTree = TalentTreeKey;
-export type TalentBranch = "bleed" | "attack" | "merge" | "capstone";
+
+export type TalentBranch =
+  | "bleed"
+  | "attack"
+  | "warrior"
+  | "sentinel"
+  | "sorcerer"
+  | "healer"
+  | "merge"
+  | "capstone";
+
 export type TalentNodeShape = "circle" | "triangle" | "square";
 export type TalentRequireMode = "all" | "any";
 
@@ -22,8 +34,34 @@ export type TalentEffectType =
   | "defense_after_hit"
   | "attack_percent"
   | "defense_percent"
+  | "hp_percent"
+  | "health_percent"
+  | "magi_percent"
+  | "mana_percent"
   | "speed_percent"
   | "dodge_chance"
+  | "damage_reduction"
+  | "reflect_damage"
+  | "shield_value"
+  | "threat_generation"
+  | "taunt_chance"
+  | "counter_attack_damage"
+  | "damage_redirect"
+  | "party_defense_aura"
+  | "party_shield_value"
+  | "low_health_hp_percent"
+  | "low_health_defense_percent"
+  | "spell_damage_percent"
+  | "burst_spell_damage"
+  | "status_effect_chance"
+  | "status_damage_percent"
+  | "spell_crit_chance"
+  | "heal_power"
+  | "party_heal_power"
+  | "heal_over_time_power"
+  | "healing_buff_power"
+  | "cleanse_chance"
+  | "mana_efficiency"
   | "bleed_on_priority"
   | "bleed_accuracy_bonus"
   | "bleed_missing_hp_scale"
@@ -44,27 +82,7 @@ export type TalentEffect = {
   value: number;
 };
 
-export type TalentNodeId =
-  | "feral-root"
-  | "feral-swift-predator"
-  | "feral-crimson-fangs"
-  | "feral-reckless-charge"
-  | "feral-blur-step"
-  | "feral-rush-synergy"
-  | "feral-blood-scent"
-  | "feral-wound-synergy"
-  | "feral-adrenaline-spike"
-  | "feral-phantom-strikes"
-  | "feral-shred-storm"
-  | "feral-savage-rend"
-  | "feral-pain-engine"
-  | "feral-deathwish-gambit"
-  | "feral-fang-over-fang"
-  | "feral-frenzy-state"
-  | "feral-blood-debt"
-  | "feral-primal-fury"
-  | "feral-extinction"
-  | "feral-last-breath";
+export type TalentNodeId = string;
 
 export type TalentNode = {
   id: TalentNodeId;
@@ -95,4 +113,8 @@ export const TALENT_TREE_LABELS: Record<TalentTreeKey, string> = {
   genesis: "Genesis Path",
 };
 
-export const TALENT_NODES: TalentNode[] = [...FERAL_NODES];
+export const TALENT_NODES: TalentNode[] = [
+  ...FERAL_NODES,
+  ...AEGIS_NODES,
+  ...MAJO_NODES,
+];

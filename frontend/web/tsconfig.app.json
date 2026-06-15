@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+
     "paths": {
       "@/*": ["./src/*"],
       "@shared/*": ["../../backend/server/src/shared/*"]

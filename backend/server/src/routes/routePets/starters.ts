@@ -1,3 +1,4 @@
+import { randomInt as cryptoRandomInt } from "node:crypto";
 import { env } from "../../env.server";
 import { logger } from "../../lib/logger";
 import {
@@ -122,16 +123,39 @@ function isSharedElementLine(value: string): value is SharedElementLine {
   ].includes(value);
 }
 
+const RANDOM_STARTER_LINES: SharedElementLine[] = [
+  "water",
+  "fire",
+  "earth",
+  "air",
+  "ice",
+  "storm",
+  "light",
+  "shadow",
+];
+
+export function rollRandomStarterLine(): SharedElementLine {
+  return RANDOM_STARTER_LINES[cryptoRandomInt(RANDOM_STARTER_LINES.length)];
+}
+
 export function normalizeStarterElementLine(
   line?: string | null,
 ): SharedElementLine {
   const candidate = (line ?? "").trim().toLowerCase();
 
+  if (!candidate || candidate === "random") {
+    return rollRandomStarterLine();
+  }
+
+  if (candidate === "neutral") {
+    return "null_element";
+  }
+
   if (isSharedElementLine(candidate)) {
     return candidate;
   }
 
-  return "water";
+  return rollRandomStarterLine();
 }
 
 export function resolveStarterLine(

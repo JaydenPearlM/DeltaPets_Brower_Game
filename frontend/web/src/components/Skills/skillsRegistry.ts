@@ -27,9 +27,10 @@ export type PetSkill = {
 export const CORE_SKILLS: PetSkill[] = [
   {
     id: "basic-strike",
-    name: "Basic Strike",
+    name: "Storm Strike",
     tree: "combat",
-    description: "A simple starter attack.",
+    description:
+      "A level 1 elemental starter attack shaped by the Kith's element.",
     sellable: false,
   },
   {
@@ -54,7 +55,7 @@ export const PROGRESSION_SKILLS: PetSkill[] = [
     name: "Hatchling Skill",
     tree: "evolution",
     description:
-      "A hatchling species skill that improves ATK or SPD based on the Kith species.",
+      "A hatchling species skill that unlocks at level 5 and gives each Kith a signature move.",
     sellable: true,
   },
 
