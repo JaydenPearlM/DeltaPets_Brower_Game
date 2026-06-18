@@ -931,7 +931,7 @@
 
 .petRepoNicknameModalTitle {
   margin: 0;
-  color: #ffffff;
+  color: var(--dp-brand-yellow) !important;
   font-family: var(--font-heading);
   font-size: clamp(1.6rem, 2.5vw, 2.1rem);
   font-weight: 700;
@@ -2109,4 +2109,90 @@
 .petRepoSkillsButton {
   transform: translateY(-2px);
   align-self: flex-end;
+}
+/* =========================================================
+   NICKNAME POPUP - GLOBAL POPUP STYLE ONLY
+   Safe override: does not touch pet care panels
+========================================================= */
+
+.petRepoNicknameModalWindow {
+  overflow: hidden;
+  border-radius: 22px;
+  border: 2px solid var(--dp-panel-border);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0) 38%
+    ),
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-bg-top) 0%,
+      var(--dp-panel-bg-mid) 52%,
+      var(--dp-panel-bg-bottom) 100%
+    );
+  background-size:
+    100% 100%,
+    22px 22px,
+    22px 22px,
+    100% 100%;
+  box-shadow:
+    0 0 18px var(--dp-panel-glow),
+    0 0 42px var(--dp-cyber-blue-soft),
+    0 20px 32px rgba(26, 40, 68, 0.22);
+  color: var(--dp-panel-text);
+}
+
+.petRepoNicknameModalWindow::before {
+  inset: 10px;
+  z-index: 1;
+  border-radius: 14px;
+  border: 3px solid var(--dp-skill-purple);
+  box-shadow: none;
+}
+
+.petRepoNicknameModalHeader,
+.petRepoNicknameModalBody {
+  position: relative;
+  z-index: 2;
+}
+
+.petRepoNicknameModalEyebrow {
+  color: var(--dp-text-gold);
+}
+
+.petRepoNicknameModalTitle,
+.petRepoNicknameModalCopy {
+  color: var(--dp-panel-text);
+}
+
+.petRepoNicknameModalCopySmall {
+  color: var(--dp-panel-muted);
+}
+
+.petRepoNicknameModalClose {
+  z-index: 3;
+  border: 1px solid rgba(255, 83, 83, 0.56);
+  background: var(--dp-gradient-red-button);
+  color: var(--text-invert);
+}
+
+.petRepoNicknameModalPrimary {
+  background: var(--dp-gradient-yellow-button);
+  color: #2b1a00;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 0 14px rgba(255, 207, 97, 0.35);
+}
+
+.petRepoNicknameModalPrimary:hover:not(:disabled) {
+  background: var(--dp-gradient-yellow-button-hover);
+}
+
+.petRepoNicknameModalSecondary {
+  background: linear-gradient(180deg, #ffffff, #f4e8cf);
+  color: #2b1a00;
+  border: 1px solid rgba(255, 238, 170, 0.72);
 }

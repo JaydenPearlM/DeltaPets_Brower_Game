@@ -16,7 +16,8 @@ import type { TalentNode } from "../talentTreeRegistry";
 //   Shared MAGI/mana pressure that supports both caster builds.
 //
 // IMPORTANT:
-// Do not move node positions. The layout spacing is already good.
+// Keep node positions aligned with the Feral board rhythm.
+// Majo has one extra core square, so the square row uses three slots.
 // ────────────────────────────────────────────────────────────
 
 export const MAJO_NODES: TalentNode[] = [
@@ -231,7 +232,7 @@ export const MAJO_NODES: TalentNode[] = [
     id: "majo-core-mana-loop",
     tree: "majo",
     branch: "merge",
-    shape: "square",
+    shape: "triangle",
     name: "Mana Loop",
     description: "+4% mana efficiency per rank.",
     tradeoff: null,
@@ -290,7 +291,7 @@ export const MAJO_NODES: TalentNode[] = [
     costPerRank: 3,
     requiredLevel: 9,
     requires: ["majo-sorcerer-starfall-surge"],
-    position: { x: 35, y: 79 },
+    position: { x: 25, y: 79 },
     effects: [
       { type: "burst_spell_damage", value: 10 },
       { type: "spell_crit_chance", value: 6 },
@@ -309,7 +310,7 @@ export const MAJO_NODES: TalentNode[] = [
     costPerRank: 3,
     requiredLevel: 9,
     requires: ["majo-healer-moonwell-grace"],
-    position: { x: 65, y: 79 },
+    position: { x: 75, y: 79 },
     effects: [
       { type: "heal_power", value: 10 },
       { type: "party_heal_power", value: 6 },

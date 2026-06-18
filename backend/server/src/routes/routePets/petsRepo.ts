@@ -80,7 +80,7 @@ export async function fetchStarterPetAnyStage(userId: string) {
 
 /**
  * Returns true if this user's hatchery slots have already been set up.
- * Falls back to false if the column is missing or profile row doesn't exist
+ * Falls back to false if the column is missing or profile row doesn't exist;
  * both cases mean we should still run ensure.
  */
 async function isHatcheryInitialized(userId: string): Promise<boolean> {
@@ -116,7 +116,7 @@ async function markHatcheryInitialized(userId: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 /**
- * Creates any missing hatchery slot rows (1â€“10) and wires the first egg
+ * Creates any missing hatchery slot rows (1-10) and wires the first egg
  * into slot 1 if it isn't already there.
  */
 async function runEnsureHatcherySlots(userId: string): Promise<void> {
@@ -147,7 +147,10 @@ async function runEnsureHatcherySlots(userId: string): Promise<void> {
   if (missingRows.length > 0) {
     const { error: insertError } = await supabaseAdmin
       .from("hatchery_slots")
-      .insert(missingRows);
+      .upsert(missingRows, {
+        onConflict: "user_id,slot_index",
+        ignoreDuplicates: true,
+      });
 
     if (insertError) throw insertError;
   }
@@ -171,7 +174,7 @@ async function runEnsureHatcherySlots(userId: string): Promise<void> {
 }
 
 /**
- * Creates any missing hatchery shelf slot rows (1â€“10).
+ * Creates any missing hatchery shelf slot rows (1-10).
  */
 async function runEnsureHatcheryShelfSlots(userId: string): Promise<void> {
   const { data: existingRows, error: existingError } = await supabaseAdmin
@@ -201,7 +204,10 @@ async function runEnsureHatcheryShelfSlots(userId: string): Promise<void> {
   if (missingRows.length > 0) {
     const { error: insertError } = await supabaseAdmin
       .from("hatchery_shelf_slots")
-      .insert(missingRows);
+      .upsert(missingRows, {
+        onConflict: "user_id,slot_index",
+        ignoreDuplicates: true,
+      });
 
     if (insertError) throw insertError;
   }
@@ -221,25 +227,33 @@ async function initializeHatcheryForUser(userId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Public fetch functions " " what routes call
+// Public fetch functions — what routes call
 // ---------------------------------------------------------------------------
 
 /**
  * Fetches all hatchery slots with their associated pet data.
  *
- * First visit:   flag=false â†’ runs both ensure functions â†’ flips flag â†’ fetches data
- * Repeat visits: flag=true  â†’ skips ensure entirely â†’ fetches data
+ * First visit:   flag=false -> runs both ensure functions -> flips flag -> fetches data
+ * Repeat visits: flag=true  -> skips ensure entirely -> fetches data
  *
  * Old cost every load:    2 ensure SELECTs + up to 20 INSERTs
  * New cost after setup:   1 flag SELECT + 1 slots SELECT + 1 optional pets SELECT
  */
-export async function fetchHatcherySlots(userId: string) {
+async function ensureHatcheryInitialized(userId: string): Promise<void> {
   const initialized = await isHatcheryInitialized(userId);
 
   if (!initialized) {
     await initializeHatcheryForUser(userId);
   }
+}
 
+export async function fetchHatcherySlots(userId: string) {
+  await ensureHatcheryInitialized(userId);
+
+  return fetchHatcherySlotsOnly(userId);
+}
+
+async function fetchHatcherySlotsOnly(userId: string) {
   const { data: slotRows, error: slotError } = await supabaseAdmin
     .from("hatchery_slots")
     .select("id, user_id, slot_index, unlocked, pet_id")
@@ -276,11 +290,21 @@ export async function fetchHatcherySlots(userId: string) {
   };
 }
 
+export async function fetchHatcherySlotGroups(userId: string) {
+  await ensureHatcheryInitialized(userId);
+
+  const [{ slots }, { shelfSlots }] = await Promise.all([
+    fetchHatcherySlotsOnly(userId),
+    fetchHatcheryShelfSlots(userId),
+  ]);
+
+  return { slots, shelfSlots };
+}
 /**
  * Fetches all hatchery shelf slots.
  *
  * The ensure step for shelf slots is handled inside fetchHatcherySlots via
- * initializeHatcheryForUser " " both tables are set up in one pass. This
+ * initializeHatcheryForUser — both tables are set up in one pass. This
  * function is now a clean read-only fetch with no ensure overhead at all.
  *
  * routePets.ts calls fetchHatcherySlots and fetchHatcheryShelfSlots in

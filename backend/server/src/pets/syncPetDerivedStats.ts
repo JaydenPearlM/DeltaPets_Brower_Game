@@ -16,6 +16,8 @@ type Points = {
   mana: number;
 };
 
+type AllocRow = Points;
+
 function addPoints(a: Points, b: Points): Points {
   return {
     hp: a.hp + b.hp,
@@ -83,7 +85,9 @@ export async function syncPetDerivedStats(
 
   if (allocRes.error) throw allocRes.error;
 
-  const allocTotal: Points = (allocRes.data ?? []).reduce<Points>(
+  const allocationRows = (allocRes.data ?? []) as AllocRow[];
+
+  const allocTotal: Points = allocationRows.reduce<Points>(
     (acc, row) =>
       addPoints(acc, {
         hp: clampNonNegative(row.hp),
@@ -91,7 +95,7 @@ export async function syncPetDerivedStats(
         magi: clampNonNegative(row.magi),
         def: clampNonNegative(row.def),
         spd: clampNonNegative(row.spd),
-        mana: clampNonNegative((row as any).mana),
+        mana: clampNonNegative(row.mana),
       }),
     { hp: 0, atk: 0, magi: 0, def: 0, spd: 0, mana: 0 },
   );

@@ -54,7 +54,9 @@
   inset: 10px;
   z-index: 0;
   pointer-events: none;
-  display: none;
+  border: 5px solid var(--dp-skilltree-purple);
+  border-radius: 16px;
+  opacity: 1;
 }
 
 .skillTreeModal > * {
@@ -92,39 +94,8 @@
   font-weight: 900;
   letter-spacing: 0.08em;
   line-height: 1.15;
-  position: relative;
-  display: inline-block;
   text-align: center;
   text-shadow: none;
-}
-
-.talentTreeTitle::before,
-.talentTreeHeader h3::before,
-.talentTreeTitle::after,
-.talentTreeHeader h3::after {
-  position: absolute;
-  top: 50%;
-  color: #ffd84c;
-  font-family: var(--font-heading, "Space Mono", monospace);
-  font-size: 0.95rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  white-space: nowrap;
-  transform: translateY(-50%);
-  opacity: 0.96;
-}
-
-.talentTreeTitle::before,
-.talentTreeHeader h3::before {
-  content: "• ───── △";
-  right: calc(100% + 28px);
-}
-
-.talentTreeTitle::after,
-.talentTreeHeader h3::after {
-  content: "△ ───── •";
-  left: calc(100% + 28px);
 }
 
 .talentTreeSubtitle,
@@ -369,8 +340,7 @@
 
 .talentTreeBoard {
   position: relative;
-  height: 820px;
-  min-height: 820px;
+  height: 560px;
   margin-top: 14px;
   overflow: hidden;
   border: 3px solid rgba(77, 234, 255, 0.92);
@@ -390,10 +360,10 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.24;
+  opacity: 0.1;
   background-image:
-    linear-gradient(rgba(77, 234, 255, 0.16) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(77, 234, 255, 0.16) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.075) 1px, transparent 1px);
   background-size: 26px 26px;
 }
 
@@ -401,10 +371,7 @@
   display: none;
 }
 
-.talentTreeBoard--feral,
-.talentTreeBoard--aegis,
-.talentTreeBoard--majo,
-.talentTreeBoard--genesis {
+.talentTreeBoard--feral {
   height: 820px;
   min-height: 820px;
   overflow: hidden;
@@ -785,13 +752,6 @@
 ================================ */
 
 @media (max-width: 760px) {
-  .talentTreeTitle::before,
-  .talentTreeHeader h3::before,
-  .talentTreeTitle::after,
-  .talentTreeHeader h3::after {
-    display: none;
-  }
-
   .skillTreeModal {
     width: min(96vw, 560px);
     padding: 24px;
@@ -894,26 +854,14 @@
     border-bottom: 0;
   }
 
-  .talentTreeBoard--feral,
-  .talentTreeBoard--aegis,
-  .talentTreeBoard--majo,
-  .talentTreeBoard--genesis {
+  .talentTreeBoard--feral {
     height: 880px;
     min-height: 880px;
   }
 
   .talentTreeBoard--feral .talentNode,
   .talentTreeBoard--feral .talentNode--branch-merge,
-  .talentTreeBoard--feral .talentNode--branch-capstone,
-  .talentTreeBoard--aegis .talentNode,
-  .talentTreeBoard--aegis .talentNode--branch-merge,
-  .talentTreeBoard--aegis .talentNode--branch-capstone,
-  .talentTreeBoard--majo .talentNode,
-  .talentTreeBoard--majo .talentNode--branch-merge,
-  .talentTreeBoard--majo .talentNode--branch-capstone,
-  .talentTreeBoard--genesis .talentNode,
-  .talentTreeBoard--genesis .talentNode--branch-merge,
-  .talentTreeBoard--genesis .talentNode--branch-capstone {
+  .talentTreeBoard--feral .talentNode--branch-capstone {
     width: 112px;
     min-height: 106px;
   }
@@ -1138,4 +1086,69 @@
   text-align: center;
   text-transform: uppercase;
   white-space: nowrap;
+}
+/* =========================================================
+   FIX: all talent paths use the same fixed board height
+   Keep Feral, Aegis, Majo, and Genesis visually identical.
+========================================================= */
+
+.skillTreeModal {
+  --talent-board-fixed-height: 800px;
+}
+
+.skillTreeModal .talentTreeBoard,
+.skillTreeModal .talentTreeBoard--feral,
+.skillTreeModal .talentTreeBoard--aegis,
+.skillTreeModal .talentTreeBoard--majo,
+.skillTreeModal .talentTreeBoard--genesis {
+  height: var(--talent-board-fixed-height) !important;
+  min-height: var(--talent-board-fixed-height) !important;
+  max-height: var(--talent-board-fixed-height) !important;
+  overflow: hidden !important;
+}
+
+/* Stop mobile/responsive rules from making one path shorter/taller. */
+@media (max-width: 760px) {
+  .skillTreeModal .talentTreeBoard,
+  .skillTreeModal .talentTreeBoard--feral,
+  .skillTreeModal .talentTreeBoard--aegis,
+  .skillTreeModal .talentTreeBoard--majo,
+  .skillTreeModal .talentTreeBoard--genesis {
+    height: var(--talent-board-fixed-height) !important;
+    min-height: var(--talent-board-fixed-height) !important;
+    max-height: var(--talent-board-fixed-height) !important;
+  }
+}
+/* Make Aegis and Majo reset button match Feral's board position only */
+/* Match Aegis/Majo Reset Local Build to Feral's position */
+.talentTreeBoard--aegis .talentResetBoardButton,
+.talentTreeBoard--majo .talentResetBoardButton {
+  position: absolute !important;
+  left: 28px !important;
+  top: 14px !important;
+  z-index: 30 !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+/* =========================================================
+   Reset Local Build: same position on every talent tree
+========================================================= */
+
+.skillTreeModal .talentTreeBoard .talentResetBoardButton {
+  position: absolute !important;
+  left: 14px !important;
+  top: 14px !important;
+  z-index: 30 !important;
+
+  grid-column: auto !important;
+  grid-row: auto !important;
+  align-self: auto !important;
+  justify-self: auto !important;
+
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.skillTreeModal .talentTreeBoard .talentResetBoardButton:hover {
+  transform: none !important;
 }

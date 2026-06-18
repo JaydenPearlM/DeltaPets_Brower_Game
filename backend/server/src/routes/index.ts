@@ -3,8 +3,6 @@
 import { Router } from "express";
 
 import { meRouter } from "./me";
-import { authRouter } from "../middleware/auth";
-import { authLimiter } from "../middleware/rateLimit";
 
 import { petsRouter } from "./routePets/routePets";
 import { petActionsRouter } from "./petActions";
@@ -22,7 +20,6 @@ const apiRouter = Router();
 =============================== */
 
 apiRouter.use(meRouter);
-apiRouter.use("/auth", authLimiter, authRouter);
 
 /* ===============================
    PET GAMEPLAY ROUTES

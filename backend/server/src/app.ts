@@ -1,4 +1,6 @@
 import express from "express";
+import fs from "node:fs";
+import path from "node:path";
 import helmet from "helmet";
 import { healthRouter } from "./routes/health";
 import { publicAuthRouter, requireUser } from "./middleware/auth";
@@ -31,11 +33,21 @@ export function createApp() {
     app.use("/api/debug", requireUser, debugRouter);
   }
 
-  if (env.NODE_ENV === "development") {
-    app.use("/api/debug", debugRouter);
-  }
-
   app.use("/api", apiLimiter, apiSpeedLimiter, requireUser, apiRouter);
+
+  const frontendDist = path.resolve(__dirname, "../../../frontend/web/dist");
+
+  if (fs.existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+
+    app.get("*", (req, res, next) => {
+      if (req.path.startsWith("/api")) {
+        return next();
+      }
+
+      return res.sendFile(path.join(frontendDist, "index.html"));
+    });
+  }
 
   app.use(errorHandler);
 

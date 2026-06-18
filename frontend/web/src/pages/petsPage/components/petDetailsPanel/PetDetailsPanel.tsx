@@ -646,12 +646,11 @@ export default function PetDetailsPanel({
               </button>
 
               <div className="petRepoNicknameModalHeader">
-                <p className="petRepoNicknameModalEyebrow">Delta Identity</p>
                 <h3
                   id="pet-nickname-title"
                   className="petRepoNicknameModalTitle"
                 >
-                  Name This Pet
+                  Name Your New Pet!
                 </h3>
                 <p className="petRepoNicknameModalCopy">
                   Create your nickname here. You can type your own or roll a

@@ -13,8 +13,7 @@ import { generatePetDescription } from "./petDescription";
 import {
   fetchActivePet,
   fetchHatcheryEgg,
-  fetchHatcheryShelfSlots,
-  fetchHatcherySlots,
+  fetchHatcherySlotGroups,
   fetchStarterPetAnyStage,
 } from "./petsRepo";
 import {
@@ -495,8 +494,7 @@ petsRouter.get(
       const userId = req.user!.id;
       const serverNowMs = Date.now();
 
-      const { slots } = await fetchHatcherySlots(userId);
-      const { shelfSlots } = await fetchHatcheryShelfSlots(userId);
+      const { slots, shelfSlots } = await fetchHatcherySlotGroups(userId);
 
       const slotMapper = (slot: any) => ({
         id: slot.id,
@@ -579,7 +577,14 @@ petsRouter.get(
         elements,
       });
     } catch (err: any) {
-      return res.status(500).json({ error: err?.message ?? "Server error" });
+      logger.error("[pets/hatchery] failed", err);
+
+      return res.status(500).json({
+        error: err?.message ?? "Failed to load hatchery.",
+        code: err?.code ?? null,
+        details: err?.details ?? null,
+        hint: err?.hint ?? null,
+      });
     }
   },
 );

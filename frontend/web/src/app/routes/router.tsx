@@ -92,32 +92,60 @@ export const router = createBrowserRouter([
       },
       {
         path: "gym",
-        element: withSuspense(<ComingSoonPage pageName="Gym" />),
+        element: withSuspense(
+          <ProtectedRoute>
+            <ComingSoonPage pageName="Gym" />
+          </ProtectedRoute>,
+        ),
       },
       {
         path: "battle-arena",
-        element: withSuspense(<ComingSoonPage pageName="Battle Arena" />),
+        element: withSuspense(
+          <ProtectedRoute>
+            <ComingSoonPage pageName="Battle Arena" />
+          </ProtectedRoute>,
+        ),
       },
       {
         path: "battle-dungeons",
-        element: withSuspense(<ComingSoonPage pageName="Battle Dungeons" />),
+        element: withSuspense(
+          <ProtectedRoute>
+            <ComingSoonPage pageName="Battle Dungeons" />
+          </ProtectedRoute>,
+        ),
       },
       {
         path: "cities",
-        element: withSuspense(<ComingSoonPage pageName="Cities" />),
+        element: withSuspense(
+          <ProtectedRoute>
+            <ComingSoonPage pageName="Cities" />
+          </ProtectedRoute>,
+        ),
       },
       {
         path: "profile",
-        element: withSuspense(<ComingSoonPage pageName="Profiles" />),
+        element: withSuspense(
+          <ProtectedRoute>
+            <ComingSoonPage pageName="Profiles" />
+          </ProtectedRoute>,
+        ),
       },
 
       {
         path: "cities/kithna",
-        element: withSuspense(<ComingSoonPage pageName="Kithna" />),
+        element: withSuspense(
+          <ProtectedRoute>
+            <ComingSoonPage pageName="Kithna" />
+          </ProtectedRoute>,
+        ),
       },
       {
         path: "cities/kath",
-        element: withSuspense(<ComingSoonPage pageName="Kath" />),
+        element: withSuspense(
+          <ProtectedRoute>
+            <ComingSoonPage pageName="Kath" />
+          </ProtectedRoute>,
+        ),
       },
     ],
   },

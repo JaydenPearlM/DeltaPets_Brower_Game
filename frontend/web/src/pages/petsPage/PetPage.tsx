@@ -12,7 +12,7 @@ import {
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
 import Armory from "@/pages/petsPage/components/Armory/Armory";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
-import PetSkillsPanel from "../../components/Skills/PetSkillsInventory";
+import SkillsChamber from "@/components/skillChamber/skillChamber";
 import MainTeam from "@/components/Main_Team/mainTeam";
 import type {
   PartySlotView,
@@ -892,7 +892,7 @@ export default function PetPage() {
               <Armory />
             </article>
 
-            <PetSkillsPanel pet={pet} stats={totalStats} />
+            <SkillsChamber pet={pet} stats={totalStats} />
           </section>
 
           {showSkillTree

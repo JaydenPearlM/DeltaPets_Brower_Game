@@ -16,7 +16,8 @@ import type { TalentNode } from "../talentTreeRegistry";
 //   Shared DEF/HP pressure that supports both tank builds.
 //
 // IMPORTANT:
-// Do not move node positions. The layout spacing is already good.
+// Keep node positions aligned with the Feral board rhythm.
+// Aegis has one extra core square, so the square row uses three slots.
 // ────────────────────────────────────────────────────────────
 
 export const AEGIS_NODES: TalentNode[] = [
@@ -234,7 +235,7 @@ export const AEGIS_NODES: TalentNode[] = [
     id: "aegis-core-unbroken-line",
     tree: "aegis",
     branch: "merge",
-    shape: "square",
+    shape: "triangle",
     name: "Unbroken Line",
     description: "+3% damage reduction per rank.",
     tradeoff: "-1% speed per rank.",
@@ -299,7 +300,7 @@ export const AEGIS_NODES: TalentNode[] = [
     costPerRank: 3,
     requiredLevel: 9,
     requires: ["aegis-warrior-retaliation"],
-    position: { x: 35, y: 79 },
+    position: { x: 25, y: 79 },
     effects: [
       { type: "taunt_chance", value: 8 },
       { type: "counter_attack_damage", value: 6 },
@@ -318,7 +319,7 @@ export const AEGIS_NODES: TalentNode[] = [
     costPerRank: 3,
     requiredLevel: 9,
     requires: ["aegis-sentinel-rallying-barrier"],
-    position: { x: 65, y: 79 },
+    position: { x: 75, y: 79 },
     effects: [
       { type: "party_shield_value", value: 8 },
       { type: "damage_redirect", value: 5 },

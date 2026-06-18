@@ -73,12 +73,13 @@ const KITHNA_TARGETS: KithnaTarget[] = [
     className: "kithnaTargetFarm",
     icon: "☘",
   },
+
   {
     id: "profile",
     label: "Profile Dashboard",
     route: "/profile",
     className: "kithnaTargetProfile",
-    icon: "🥚",
+    icon: "◉",
   },
 ];
 

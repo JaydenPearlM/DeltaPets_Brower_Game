@@ -102,8 +102,11 @@ function readSavedTalentRanks(pet?: Record<string, any> | null): TalentRanks {
   }
 }
 
-function getSpentPoints(ranks: TalentRanks) {
-  return TALENT_NODES.reduce((total, node) => {
+function getSpentPoints(
+  ranks: TalentRanks,
+  nodes: TalentNode[] = TALENT_NODES,
+) {
+  return nodes.reduce((total, node) => {
     return total + getNodeRank(ranks, node.id) * node.costPerRank;
   }, 0);
 }
@@ -176,9 +179,12 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
     setResetStatus("");
   }, [pet?.id]);
 
-  const spentPoints = useMemo(() => getSpentPoints(ranks), [ranks]);
+  const activeTreeNodes = useMemo(() => getTreeNodes(activeTree), [activeTree]);
+  const spentPoints = useMemo(
+    () => getSpentPoints(ranks, activeTreeNodes),
+    [activeTreeNodes, ranks],
+  );
   const availablePoints = Math.max(0, totalPoints - spentPoints);
-  const activeTreeNodes = getTreeNodes(activeTree);
 
   const selectedNode =
     selectedNodeId !== null
@@ -242,7 +248,15 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
   }
 
   function resetLocalBuild() {
-    setRanks({});
+    const activeTreeNodeIds = new Set(activeTreeNodes.map((node) => node.id));
+
+    setRanks((currentRanks) => {
+      return Object.fromEntries(
+        Object.entries(currentRanks).filter(([nodeId]) => {
+          return !activeTreeNodeIds.has(nodeId);
+        }),
+      ) as TalentRanks;
+    });
     setSelectedNodeId(activeTreeNodes[0]?.id ?? null);
     setResetStatus("Reset Successful");
   }
@@ -261,6 +275,7 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
       totalPoints,
       spentPoints,
       availablePoints,
+      totalSpentPoints: getSpentPoints(ranks),
       ranks,
       savedAt: new Date().toISOString(),
     };
