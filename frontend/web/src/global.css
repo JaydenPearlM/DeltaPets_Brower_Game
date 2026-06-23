@@ -152,19 +152,16 @@
 
   /* Standard panel tokens: normal page panels use cyan outside, purple inset, and no popup-only grid requirement. */
   /* Global standard non-popup panel system */
-  --dp-standard-panel-border: var(--dp-panel-border);
+  --dp-standard-panel-border: var(--dp-cyber-cyan);
   --dp-standard-panel-inner-border: var(--dp-panel-purple-border);
-  --dp-standard-panel-inset-gap: 5px;
-  --dp-standard-panel-inner-size: 5px;
-  --dp-standard-panel-bg: linear-gradient(
-    180deg,
-    var(--dp-panel-bg-top) 0%,
-    var(--dp-panel-bg-mid) 52%,
-    var(--dp-panel-bg-bottom) 100%
-  );
-  --dp-standard-panel-shadow:
-    0 0 2px var(--dp-panel-glow), 0 0 14px var(--dp-panel-glow),
-    0 0 30px var(--dp-panel-border-cyan-soft);
+  --dp-standard-panel-inset-gap: 10px;
+  --dp-standard-panel-inner-size: 10px;
+  --dp-standard-panel-title-size: 20px;
+  --dp-standard-panel-section-title-size: 1.18rem;
+  --dp-standard-panel-splash-purple: rgba(169, 105, 255, 0.42);
+  --dp-standard-panel-splash-pink: rgba(255, 84, 180, 0.32);
+  --dp-standard-panel-blue-grid: var(--dp-popup-blue-grid);
+  --dp-standard-panel-shadow: 0 0 2px var(--dp-panel-glow);
 
   /* Popup grid tokens: popup windows use cyan border, purple inset, blue grid lines, and a subtle pink corner glow. */
   /* Global popup window system */
@@ -407,7 +404,29 @@
   z-index: 0;
   border: var(--dp-standard-panel-inner-size) solid
     var(--dp-standard-panel-inner-border);
-  border-radius: 16px;
+  border-radius: 14px;
+  background-image:
+    var(--dp-standard-panel-blue-grid),
+    radial-gradient(
+      circle at 100% 100%,
+      var(--dp-standard-panel-splash-pink) 0%,
+      var(--dp-standard-panel-splash-purple) 24%,
+      transparent 48%
+    ),
+    var(--dp-standard-panel-bg);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    320px 320px,
+    auto;
+  background-position:
+    0 0,
+    0 0,
+    100% 100%,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  background-clip: padding-box;
+  background-origin: padding-box;
   pointer-events: none;
 }
 

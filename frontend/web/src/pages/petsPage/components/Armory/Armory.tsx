@@ -198,7 +198,7 @@ function ArmoryCloset({ items, onClose }: ArmoryClosetProps) {
       onMouseDown={onClose}
     >
       <section
-        className="armoryClosetModal dp-blue-grid-panel"
+        className="armoryClosetModal"
         role="dialog"
         aria-modal="true"
         aria-label="Armory Closet"
@@ -332,7 +332,7 @@ export default function Armory({ closetItems = [] }: ArmoryProps) {
 
         <button
           type="button"
-          className="petArmoryClosetButton btn-gold"
+          className="petArmoryClosetButton btn btn-gold"
           onClick={() => setShowCloset(true)}
         >
           Armory Closet
