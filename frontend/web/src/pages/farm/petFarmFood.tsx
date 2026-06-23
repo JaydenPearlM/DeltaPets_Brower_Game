@@ -656,7 +656,7 @@ export function PetFarmFood() {
       {!loadErr && pet ? (
         <section className="petRepoStage">
           <header
-            className={`petRepoHeroCard petRepoHeroCard--element-${petElementTheme}`}
+            className={`petRepoHeroCard petRepoHeroCard--element-${petElementTheme} dp-blue-grid-panel`}
           >
             <div className="petRepoHeroStatus petRepoHeroStatus--focusLeft">
               <span className="petRepoStatusLabel">Current Focus</span>
@@ -812,9 +812,11 @@ export function PetFarmFood() {
           </section>
 
           <section className="petRepoBottomGrid">
-            <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--bottomStats">
+            <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--bottomStats dp-blue-grid-panel">
               <div className="petRepoDataTwoCol">
-                <section className="petRepoInfoSection petRepoInfoSection--stats">
+                <section
+                  className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme} dp-blue-grid-panel`}
+                >
                   <SectionPill title="Stats" />
 
                   <div className="petRepoStatList">
@@ -841,7 +843,7 @@ export function PetFarmFood() {
                 </section>
 
                 <section
-                  className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme}`}
+                  className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme} dp-blue-grid-panel`}
                 >
                   <SectionPill title="Element Stats" />
 

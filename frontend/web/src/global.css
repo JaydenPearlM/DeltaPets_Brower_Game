@@ -1,4 +1,5 @@
 :root {
+  /* Font tokens: shared typefaces used by headings, body text, display logos, and accent UI text. */
   --font-heading: "Space Mono", monospace;
   --font-body: "Inter", system-ui, sans-serif;
   --font-display: "New Rocker", cursive;
@@ -52,11 +53,20 @@
   --btn-gold-2-hover: #ffdf5b;
   --btn-gold-3-hover: #f3ba22;
   --btn-gold-text: #5f3908;
+  --btn-gold-border: rgba(255, 238, 170, 0.85);
+  --btn-pearl-1: #ffffff;
+  --btn-pearl-2: #f3eee3;
+  --btn-pearl-3: #d9d1c3;
+  --btn-pearl-2-hover: #f8f4ea;
+  --btn-pearl-3-hover: #e2dbcf;
+  --btn-pearl-text: #2f435d;
+  --btn-pearl-border: rgba(255, 238, 210, 0.9);
 
   --text-main: #32537f;
   --text-invert: #fff9ea;
   --text-darkWarm: #5b3414;
 
+  /* Spacing tokens: shared small layout gaps used across reusable components. */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -65,18 +75,21 @@
   --space-6: 24px;
   --space-8: 32px;
 
+  /* Radius tokens: shared rounded corner sizes for cards, pills, panels, and buttons. */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 18px;
   --radius-xl: 26px;
   --radius-pill: 999px;
 
+  /* Shadow tokens: older soft UI shadows kept for existing light and sand themed areas. */
   --shadow-soft: 0 8px 20px rgba(71, 106, 153, 0.16);
   --shadow-panel:
     0 8px 24px rgba(54, 82, 119, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.6),
     inset 0 -1px 0 rgba(82, 120, 172, 0.22);
   --shadow-button: 0 6px 14px rgba(77, 112, 164, 0.22);
 
+  /* Layout tokens: global max widths, transitions, and page sizing. */
   --content-max: 1180px;
   --dp-page-max: 1440px;
   --transition-fast: 140ms ease;
@@ -86,6 +99,7 @@
      DELTAPETS CENTRAL COLOR SYSTEM
      Digimon-inspired cosmic sci-fi fantasy palette
      ========================================== */
+  /* Core DeltaPets palette: deep space blues, cyber cyan, gold, red, and purple brand colors. */
   --dp-space-950: #020917;
   --dp-space-925: #06142a;
   --dp-space-900: #071b38;
@@ -105,6 +119,7 @@
   --dp-skill-purple-soft: rgba(169, 105, 255, 0.28);
   --dp-skill-lavender-stroke: #d8b7ff;
 
+  /* Surface tokens: reusable dark glass and raised panel fills. */
   /* Shared surfaces */
   --dp-surface-deep: rgba(3, 12, 28, 0.94);
   --dp-surface-panel: rgba(7, 27, 56, 0.9);
@@ -118,6 +133,7 @@
   --dp-border-green: rgba(102, 255, 143, 0.9);
   --dp-border-red: rgba(255, 83, 83, 0.88);
 
+  /* Panel base tokens: the dark navy panel background and cyan/purple border reference values. */
   /* Panel base solid colors (deep navy reference palette) */
   --dp-panel-bg-top: #061f42;
   --dp-panel-bg-mid: #052b5e;
@@ -134,6 +150,62 @@
   --dp-panel-purple-border: #a969ff;
   --dp-panel-purple-glow: rgba(169, 105, 255, 0.55);
 
+  /* Standard panel tokens: normal page panels use cyan outside, purple inset, and no popup-only grid requirement. */
+  /* Global standard non-popup panel system */
+  --dp-standard-panel-border: var(--dp-panel-border);
+  --dp-standard-panel-inner-border: var(--dp-panel-purple-border);
+  --dp-standard-panel-inset-gap: 5px;
+  --dp-standard-panel-inner-size: 5px;
+  --dp-standard-panel-bg: linear-gradient(
+    180deg,
+    var(--dp-panel-bg-top) 0%,
+    var(--dp-panel-bg-mid) 52%,
+    var(--dp-panel-bg-bottom) 100%
+  );
+  --dp-standard-panel-shadow:
+    0 0 2px var(--dp-panel-glow), 0 0 14px var(--dp-panel-glow),
+    0 0 30px var(--dp-panel-border-cyan-soft);
+
+  /* Popup grid tokens: popup windows use cyan border, purple inset, blue grid lines, and a subtle pink corner glow. */
+  /* Global popup window system */
+  --dp-popup-backdrop: rgba(8, 16, 34, 0.62);
+  --dp-popup-inner-border: #c77dff;
+  --dp-popup-bg-top: var(--dp-panel-bg-top);
+  --dp-popup-bg-mid: var(--dp-panel-bg-mid);
+  --dp-popup-bg-bottom: var(--dp-panel-bg-bottom);
+  --dp-popup-border: var(--dp-panel-border);
+  --dp-popup-glow: var(--dp-panel-glow);
+  --dp-popup-glow-soft: var(--dp-cyber-blue-soft);
+  --dp-popup-text: var(--dp-panel-text);
+  --dp-popup-muted: var(--dp-panel-muted);
+  --dp-popup-grid-line: rgba(77, 234, 255, 0.8);
+  --dp-popup-grid-size: 32px;
+  --dp-popup-blue-grid:
+    linear-gradient(var(--dp-popup-grid-line) 2px, transparent 2px),
+    linear-gradient(90deg, var(--dp-popup-grid-line) 2px, transparent 2px);
+  --dp-popup-grid-base: linear-gradient(
+    180deg,
+    var(--dp-popup-bg-top) 0%,
+    var(--dp-popup-bg-mid) 52%,
+    var(--dp-popup-bg-bottom) 100%
+  );
+  --dp-popup-grid-accent: radial-gradient(
+    circle at 100% 100%,
+    var(--dp-panel-glow-pink),
+    transparent 38%
+  );
+  --dp-popup-grid-texture: var(--dp-popup-blue-grid), var(--dp-popup-grid-base);
+  --dp-popup-light-sheen: rgba(255, 255, 255, 0.08);
+  --dp-popup-cyan-wash: rgba(77, 234, 255, 0.16);
+  --dp-popup-purple-splash: rgba(169, 105, 255, 0.16);
+  --dp-popup-border-width: 2px;
+  --dp-popup-inner-border-width: 5px;
+  --dp-popup-inset-gap: 5px;
+  --dp-popup-window-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.5), 0 0 2px var(--dp-popup-glow),
+    0 0 22px var(--dp-popup-glow);
+
+  /* Legacy panel gradients: kept because older component CSS still references these values. */
   /* Panel gradient system - matches reference design */
   --dp-panel-gradient-top: rgba(34, 54, 102, 0.985);
   --dp-panel-gradient-mid: rgba(21, 34, 73, 0.992);
@@ -144,6 +216,7 @@
   --dp-panel-deep-mid: rgba(8, 16, 38, 0.94);
   --dp-panel-deep-bottom: rgba(6, 16, 39, 0.98);
 
+  /* Legacy panel borders and glows: kept for existing components until they are cleaned one file at a time. */
   /* Panel borders and glows */
   --dp-panel-border-cyan: rgba(89, 188, 255, 0.3);
   --dp-panel-border-cyan-bright: rgba(89, 188, 255, 0.56);
@@ -162,6 +235,7 @@
   --dp-panel-glow-purple: rgba(169, 105, 255, 0.18);
   --dp-panel-glow-pink: rgba(255, 84, 112, 0.12);
 
+  /* Star panel tokens: used by star backgrounds. Do not convert these to grid texture rules. */
   /* Stars and sparkle decorations */
   --dp-star-white: rgba(255, 255, 255, 0.22);
   --dp-star-white-soft: rgba(255, 255, 255, 0.16);
@@ -170,15 +244,18 @@
   --dp-star-cyan: rgba(173, 216, 255, 0.14);
   --dp-star-purple: rgba(169, 105, 255, 0.16);
 
+  /* Card surface tokens: dark card fills and deep container backgrounds. */
   /* Card and container surfaces */
   --dp-surface-card-dark: rgba(12, 22, 43, 0.3);
   --dp-surface-deep-blue: rgba(11, 11, 39, 0.98);
   --dp-surface-deep-mid: rgba(7, 14, 22, 0.99);
   --dp-surface-deep-bottom: rgba(3, 8, 14, 0.99);
 
+  /* Info row tokens: quiet borders for detail rows and stat rows. */
   /* Info rows and dividers */
   --dp-info-row-border: rgba(209, 224, 255, 0.06);
 
+  /* Text tokens: global readable text colors for dark panels and gold headings. */
   /* Shared text */
   --dp-text-primary: #f4f8ff;
   --dp-text-secondary: #cddbf0;
@@ -186,6 +263,40 @@
   --dp-text-dark: #062033;
   --dp-text-gold: #ffe882;
 
+  /* Raw color aliases: safe replacements for hard-coded component colors during cleanup. */
+  /* Shared raw color aliases for component cleanup */
+  --dp-white: #ffffff;
+  --dp-black: #000000;
+  --dp-white-02: rgba(255, 255, 255, 0.02);
+  --dp-white-03: rgba(255, 255, 255, 0.03);
+  --dp-white-035: rgba(255, 255, 255, 0.035);
+  --dp-white-04: rgba(255, 255, 255, 0.04);
+  --dp-white-06: rgba(255, 255, 255, 0.06);
+  --dp-white-08: rgba(255, 255, 255, 0.08);
+  --dp-white-10: rgba(255, 255, 255, 0.1);
+  --dp-white-12: rgba(255, 255, 255, 0.12);
+  --dp-white-14: rgba(255, 255, 255, 0.14);
+  --dp-white-16: rgba(255, 255, 255, 0.16);
+  --dp-white-18: rgba(255, 255, 255, 0.18);
+  --dp-white-22: rgba(255, 255, 255, 0.22);
+  --dp-white-88: rgba(255, 255, 255, 0.88);
+  --dp-white-90: rgba(255, 255, 255, 0.9);
+  --dp-white-92: rgba(255, 255, 255, 0.92);
+  --dp-white-98: rgba(255, 255, 255, 0.98);
+  --dp-black-18: rgba(0, 0, 0, 0.18);
+  --dp-black-22: rgba(0, 0, 0, 0.22);
+  --dp-black-28: rgba(0, 0, 0, 0.28);
+  --dp-black-50: rgba(0, 0, 0, 0.5);
+  --dp-black-55: rgba(0, 0, 0, 0.55);
+  --dp-title-gold: var(--dp-brand-yellow);
+  --dp-title-gold-soft: #ffd66b;
+  --dp-button-gold-mid: var(--btn-gold-2);
+  --dp-button-gold-border: var(--btn-gold-border);
+  --dp-cyan-line-soft: rgba(77, 234, 255, 0.12);
+  --dp-cyan-line-strong: rgba(77, 234, 255, 0.92);
+  --dp-text-panel-bright: var(--dp-panel-text);
+
+  /* Glow tokens: reusable shadows for cyan, green, red, gold, and purple emphasis. */
   /* Shared glow system */
   --dp-glow-cyan: 0 0 18px rgba(22, 183, 255, 0.28);
   --dp-glow-cyan-strong: 0 0 24px rgba(77, 234, 255, 0.42);
@@ -194,6 +305,7 @@
   --dp-glow-gold: 0 0 18px rgba(255, 217, 77, 0.32);
   --dp-glow-purple: 0 0 18px rgba(157, 92, 255, 0.32);
 
+  /* Gradient tokens: shared panel, popup, and button gradients. */
   /* Shared gradients */
   --dp-gradient-panel: linear-gradient(
     180deg,
@@ -235,12 +347,14 @@
     #b91f2f 100%
   );
 
+  /* Stat tokens: battle/stat strength and weakness colors. */
   /* Stat meaning colors */
   --dp-stat-strong: #66ff8f;
   --dp-stat-strong-bg: rgba(32, 216, 102, 0.18);
   --dp-stat-weak: #ff5353;
   --dp-stat-weak-bg: rgba(255, 83, 83, 0.15);
 
+  /* Element tokens: canonical element colors for pet UI, badges, focus areas, and detail styling. */
   /* Element color system */
   --element-null: #b9c2d6;
   --element-null-bg: rgba(185, 194, 214, 0.18);
@@ -258,6 +372,8 @@
   --element-storm-bg: rgba(245, 239, 54, 0.18);
   --element-light: #ffe46b;
   --element-light-bg: rgba(255, 228, 107, 0.18);
+  --element-light-border: var(--dp-border-gold);
+  --element-light-glow: var(--dp-glow-gold);
   --element-shadow: #8d6cff;
   --element-shadow-bg: rgba(141, 108, 255, 0.2);
   --element-voidborne: #b16cff;
@@ -268,6 +384,74 @@
    SHARED GLOBAL PANEL CLASSES
    Reusable navy/cyan sci-fi panels across the project
    ========================================== */
+/* Standard non-popup panel classes: use these for normal page panels that need cyan outer border and purple inset. */
+.dp-standard-panel,
+.dp-panel--standard,
+.dp-global-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 2px solid var(--dp-standard-panel-border);
+  border-radius: 24px;
+  background: var(--dp-standard-panel-bg);
+  box-shadow: var(--dp-standard-panel-shadow);
+  color: var(--dp-panel-text);
+}
+
+.dp-standard-panel::before,
+.dp-panel--standard::before,
+.dp-global-panel::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-standard-panel-inset-gap);
+  z-index: 0;
+  border: var(--dp-standard-panel-inner-size) solid
+    var(--dp-standard-panel-inner-border);
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.dp-standard-panel > *,
+.dp-panel--standard > *,
+.dp-global-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Popup grid panel class: use this for popup/window surfaces that need the blue grid inside the purple inset. */
+.dp-popup-grid-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: var(--dp-popup-border-width) solid var(--dp-popup-border);
+  border-radius: 24px;
+  background: var(--dp-popup-grid-base);
+  box-shadow: var(--dp-popup-window-shadow);
+  color: var(--dp-popup-text);
+}
+
+.dp-popup-grid-panel::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-popup-inset-gap);
+  z-index: 0;
+  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
+  border-radius: 14px;
+  background-image: var(--dp-popup-grid-texture);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    auto;
+  background-clip: padding-box;
+  background-origin: padding-box;
+  pointer-events: none;
+}
+
+.dp-popup-grid-panel > * {
+  position: relative;
+  z-index: 1;
+}
+/* Legacy shared panel classes: kept active because existing pages still use these selectors. Clean carefully later. */
 .dp-panel,
 .dp-surface,
 .dp-softPanel {
@@ -336,6 +520,43 @@
   z-index: 1;
 }
 
+/* Blue grid utility: adds the shared grid texture behind children without changing each component layout. */
+.dp-blue-grid-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.dp-blue-grid-panel::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--dp-popup-inset-gap) + var(--dp-popup-inner-border-width));
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image: var(--dp-popup-blue-grid);
+  background-position: 0 0;
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size);
+  opacity: 1;
+}
+
+.dp-blue-grid-panel .dp-blue-grid-panel::after,
+.dpPopupWindow.dp-blue-grid-panel::after,
+.dp-popupWindow.dp-blue-grid-panel::after,
+.dp-popup-grid-panel.dp-blue-grid-panel::after,
+.skillInventoryModal.dp-blue-grid-panel::after {
+  content: none;
+  display: none;
+}
+
+.dp-blue-grid-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Shared panel headers: title/header boxes used across homepage and panel layouts. */
 .dp-panel-header,
 .dp-panelTitle,
 .hp-panelTitle {
@@ -352,6 +573,7 @@
   color: var(--dp-panel-text);
 }
 
+/* Purple panel modifier: keeps old purple glow styling available for existing components. */
 .dp-panel-purple {
   border-color: var(--dp-panel-purple-border);
   box-shadow:
@@ -383,6 +605,7 @@ h6,
   letter-spacing: 0.02em;
 }
 
+/* Global reset: box sizing and spacing reset used by the whole app. */
 *,
 *::before,
 *::after {
@@ -391,6 +614,8 @@ h6,
   padding: 0;
 }
 
+/* Document defaults: smooth scrolling and font rendering. */
+
 html {
   min-height: 100%;
   font-size: 16px;
@@ -398,6 +623,8 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Body background: global sand texture and base text styling for the whole app shell. */
 
 body {
   min-width: 320px;
@@ -487,6 +714,7 @@ button {
   line-height: inherit;
 }
 
+/* Body texture overlay: specks and weave detail over the sand background. */
 body::before {
   content: "";
   position: fixed;
@@ -521,6 +749,7 @@ body::before {
     10px 10px;
 }
 
+/* React root: keeps the app full width and layered above body texture overlays. */
 #root {
   margin: 0;
   padding: 0;
@@ -531,6 +760,7 @@ body::before {
   z-index: 1;
 }
 
+/* Native button defaults: keep buttons consistent before component classes apply. */
 button {
   font-family: var(--font-body);
   cursor: pointer;
@@ -538,11 +768,13 @@ button {
   outline: none;
 }
 
+/* Native link defaults: links inherit component color unless a local class overrides them. */
 a {
   color: inherit;
   text-decoration: none;
 }
 
+/* App viewport helpers: core wrappers for full-height app pages. */
 .dp-viewport {
   display: flex;
   flex-direction: column;
@@ -563,6 +795,7 @@ a {
 }
 
 /* use this on your homepage wrapper for extra background depth */
+/* Page shell background helpers: optional depth layers for homepage-style pages. */
 .dp-pageShell {
   position: relative;
   min-height: 100vh;
@@ -625,6 +858,7 @@ a {
 }
 
 /* global background / layout helpers */
+/* Width helpers: shared page width containers for standard and wide layouts. */
 .dp-shell {
   width: min(calc(100% - 32px), var(--dp-page-max));
   margin: 0 auto;
@@ -653,6 +887,7 @@ a {
   margin: 0 auto;
 }
 
+/* Section helpers: simple shared spacing and divider utilities. */
 .dp-section {
   margin-bottom: 24px;
 }
@@ -698,6 +933,7 @@ a {
     0 10px 22px rgba(59, 88, 128, 0.08);
 }
 
+/* Glow zone helper: decorative warm highlights for light/sand surfaces. */
 .dp-glowZone {
   position: relative;
 }
@@ -728,6 +964,7 @@ a {
 }
 
 /* global buttons */
+/* Global button base: shared sizing, font, hover, and transition behavior. */
 .btn,
 .dp-btn {
   appearance: none;
@@ -772,13 +1009,14 @@ a {
 }
 
 /* Sign Up / Sign In */
+/* Global gold buttons: Sign In, Sign Up, Start Your Journey, Farm, Skill Inventory, Skill Trees, and Armory Closet. */
 .btn-cool,
 .btn-gold,
 .dp-btn--yellow,
 .dp-btn-yellow {
-  color: #2b1a00;
-  background: linear-gradient(180deg, #ffe58a 0%, #ffcf61 45%, #f5a93a 100%);
-  border: 2px solid rgba(255, 238, 170, 0.85);
+  color: var(--btn-gold-text);
+  background: var(--dp-gradient-yellow-button);
+  border: 2px solid var(--btn-gold-border);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.7),
     0 0 14px rgba(255, 207, 97, 0.35);
@@ -788,10 +1026,11 @@ a {
 .btn-gold:hover,
 .dp-btn--yellow:hover,
 .dp-btn-yellow:hover {
-  background: linear-gradient(180deg, #fff799 0%, #ffe15f 48%, #f6b532 100%);
+  background: var(--dp-gradient-yellow-button-hover);
 }
 
 /* Explore */
+/* Blue button variant: kept for existing explore/navigation style buttons. */
 .dp-btn--blue,
 .dp-btn-blue {
   color: #061827;
@@ -808,6 +1047,7 @@ a {
 }
 
 /* View Patches / Back To Systems */
+/* Purple/alpha button variant: kept for existing patch and system navigation buttons. */
 .dp-btn--purple,
 .dp-btn-purple,
 .alpha-button {
@@ -829,6 +1069,7 @@ a {
 }
 
 /* Logout */
+/* Red button variant: logout and danger actions only. */
 .btn-danger,
 .btn-red,
 .btn-logout {
@@ -847,6 +1088,7 @@ a {
 }
 
 /* Hatch button */
+/* Hatch button variant: hatchery-specific warm orange action styling. */
 .btn-hatch,
 .btn-hatchery {
   color: var(--text-darkWarm);
@@ -862,6 +1104,7 @@ a {
   background: linear-gradient(180deg, #f8ad3c 0%, #e78d20 100%);
 }
 
+/* Ghost button variant: low-emphasis light button styling. */
 .btn-ghost {
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.45);
@@ -874,26 +1117,7 @@ a {
 }
 
 /* Global Popup Window System */
---dp-popup-inner-border: var(--dp-skill-purple);
---dp-popup-bg-top: var(--dp-panel-bg-top);
---dp-popup-bg-mid: var(--dp-panel-bg-mid);
---dp-popup-bg-bottom: var(--dp-panel-bg-bottom);
-
---dp-popup-border: var(--dp-panel-border);
---dp-popup-inner-border: var(--dp-skill-purple);
-
---dp-popup-glow: var(--dp-panel-glow);
---dp-popup-glow-soft: var(--dp-cyber-blue-soft);
-
---dp-popup-text: var(--dp-panel-text);
---dp-popup-muted: var(--dp-panel-muted);
-
---dp-popup-grid-line: rgba(255, 255, 255, 0.022);
---dp-popup-light-sheen: rgba(255, 255, 255, 0.08);
---dp-popup-cyan-wash: rgba(77, 234, 255, 0.16);
-
---dp-popup-purple-splash: rgba(169, 105, 255, 0.16);
-
+/* Popup surface aliases: legacy popup classes that still share global popup colors. */
 .dp-window,
 .dp-popup,
 .dp-tooltip,
@@ -915,49 +1139,47 @@ a {
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* Pearl close buttons: global close button shape and pearl gradient. */
 .dp-close-button,
 .dp-btn--close {
-  color: var(--text-invert);
-  background: var(--dp-gradient-red-button);
-  border: 1px solid rgba(255, 83, 83, 0.56);
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 11px 16px 10px;
+  border-radius: 18px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 0;
+  letter-spacing: 0.02em;
+  color: var(--btn-pearl-text);
+  background: linear-gradient(
+    180deg,
+    var(--btn-pearl-1) 0%,
+    var(--btn-pearl-2) 52%,
+    var(--btn-pearl-3) 100%
+  );
+  border: 2px solid var(--btn-pearl-border);
   box-shadow:
-    inset 0 1px 0 rgba(255, 217, 217, 0.32),
-    0 8px 16px rgba(140, 26, 39, 0.24);
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 14px rgba(255, 255, 255, 0.25);
 }
 
 .dp-close-button:hover,
 .dp-btn--close:hover {
-  background: var(--dp-gradient-red-button-hover);
-}
-
-/* Hatch button */
-.btn-hatch,
-.btn-hatchery {
-  color: var(--text-darkWarm);
-  background: linear-gradient(180deg, #f3a12a 0%, #e08214 100%);
-  border: 1px solid rgba(153, 78, 11, 0.44);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 215, 166, 0.4),
-    0 8px 18px rgba(190, 110, 23, 0.22);
-}
-
-.btn-hatch:hover,
-.btn-hatchery:hover {
-  background: linear-gradient(180deg, #f8ad3c 0%, #e78d20 100%);
-}
-
-.btn-ghost {
-  color: var(--text-main);
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(89, 122, 172, 0.22);
-  box-shadow: var(--shadow-button);
-}
-
-.btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.68);
+  background: linear-gradient(
+    180deg,
+    var(--btn-pearl-1) 0%,
+    var(--btn-pearl-2-hover) 52%,
+    var(--btn-pearl-3-hover) 100%
+  );
 }
 
 /* badges */
+/* Badge system: shared small status labels used across homepage and game UI. */
 .dp-badge {
   display: inline-flex;
   align-items: center;
@@ -1021,6 +1243,7 @@ a {
 }
 
 /* bars */
+/* Bar system: shared progress/stat bar shell and fill behavior. */
 .dp-statBar {
   height: 8px;
   border-radius: var(--radius-pill);
@@ -1044,6 +1267,7 @@ a {
    only this section was updated
 ========================================================= */
 
+/* Global top banner: Aliune Signal and alert strip layout. */
 .dp-warningBanner {
   width: min(100%, calc(var(--content-max) + 32px));
   margin: 0 auto 16px;
@@ -1120,6 +1344,7 @@ a {
 }
 
 /* Aliune Signal inside the global banner */
+/* Aliune Signal banner pieces: compact status brand, dot, chips, and report text. */
 .hp-bannerSignalBrand {
   display: inline-flex;
   align-items: center;
@@ -1210,6 +1435,7 @@ a {
 }
 
 /* global top banner + footer overrides for App.css */
+/* App header overrides: current production header layout and banner positioning. */
 .dp-stageHeader--appFix {
   position: sticky;
   top: 0;
@@ -1362,6 +1588,7 @@ a {
   color: rgba(239, 246, 255, 0.9) !important;
 }
 
+/* App footer: shared footer layout, colors, links, and status dot. */
 .dp-stageFooter {
   position: relative;
   margin-top: 18px;
@@ -1439,6 +1666,7 @@ a {
   flex-wrap: wrap;
 }
 
+/* Footer animation: subtle pulse for the status dot. */
 @keyframes dpFooterPulse {
   0%,
   100% {
@@ -1451,6 +1679,7 @@ a {
   }
 }
 
+/* Responsive header/footer adjustments for tablet widths. */
 @media (max-width: 1180px) {
   .dp-headerCenterTagline--appFix,
   .dp-headerCenterTagline--appFix .hp-signalBanner {
@@ -1510,6 +1739,7 @@ a {
   }
 }
 
+/* Footer text overrides: keeps footer copy readable on the blue footer background. */
 .dp-footerBrandTitle,
 .dp-footerBrandText,
 .dp-footerStatusText,
@@ -1552,6 +1782,7 @@ a {
   box-shadow: 0 0 14px rgba(111, 217, 255, 0.15);
 }
 
+/* General app animations: reusable fade and floating motion. */
 /* animations */
 @keyframes dpFadeIn {
   from {
@@ -1574,6 +1805,7 @@ a {
   }
 }
 
+/* Scrollbar styling: global webkit scrollbar colors and rounding. */
 /* scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -1733,6 +1965,7 @@ a {
   }
 }
 
+/* Header navigation buttons: gold nav button override for the app header. */
 .dp-headerNavButton {
   color: var(--btn-gold-text) !important;
   background: linear-gradient(
@@ -1756,6 +1989,7 @@ a {
   ) !important;
 }
 
+/* Header logout button: red logout override for the app header. */
 .dp-headerLogoutButton {
   color: var(--text-invert) !important;
   background: linear-gradient(
@@ -1779,11 +2013,30 @@ a {
   ) !important;
 }
 
+/* Pearl button alias: same pearl system used by close-style secondary buttons. */
 .btn-pearl,
 .dp-btn--pearl {
-  color: #2f435d;
-  background: linear-gradient(180deg, #ffffff 0%, #f3eee3 52%, #d9d1c3 100%);
-  border: 2px solid rgba(255, 238, 210, 0.9);
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 11px 16px 10px;
+  border-radius: 18px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 0;
+  letter-spacing: 0.02em;
+  color: var(--btn-pearl-text);
+  background: linear-gradient(
+    180deg,
+    var(--btn-pearl-1) 0%,
+    var(--btn-pearl-2) 52%,
+    var(--btn-pearl-3) 100%
+  );
+  border: 2px solid var(--btn-pearl-border);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     0 0 14px rgba(255, 255, 255, 0.25);
@@ -1791,5 +2044,119 @@ a {
 
 .btn-pearl:hover,
 .dp-btn--pearl:hover {
-  background: linear-gradient(180deg, #ffffff 0%, #f8f4ea 52%, #e2dbcf 100%);
+  background: linear-gradient(
+    180deg,
+    var(--btn-pearl-1) 0%,
+    var(--btn-pearl-2-hover) 52%,
+    var(--btn-pearl-3-hover) 100%
+  );
+}
+
+.dpPopupWindowBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--dp-popup-backdrop);
+  backdrop-filter: blur(6px);
+}
+
+.dpPopupWindow {
+  position: relative;
+  z-index: 1;
+  width: min(800px, calc(100vw - 48px));
+  max-width: 800px;
+  overflow: hidden;
+  border: var(--dp-popup-border-width) solid var(--dp-popup-border);
+  border-radius: 24px;
+  background: var(--dp-popup-grid-base);
+  box-shadow: var(--dp-popup-window-shadow);
+  color: var(--dp-popup-text);
+}
+
+.dpPopupWindow::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-popup-inset-gap);
+  z-index: 0;
+  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
+  border-radius: 14px;
+  background-image: var(--dp-popup-grid-texture);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    auto;
+  background-clip: padding-box;
+  background-origin: padding-box;
+  pointer-events: none;
+}
+
+.dpPopupWindow::after {
+  content: none;
+  display: none;
+}
+
+.dpPopupWindowContent {
+  position: relative;
+  z-index: 1;
+  padding: 28px;
+}
+
+/* Global popup window shell: shared popup sizing, cyan border, purple inset, and grid texture. */
+.dp-popupWindow {
+  position: relative;
+  overflow: hidden;
+  width: min(620px, 100%);
+  padding: 26px;
+  border: var(--dp-popup-border-width) solid var(--dp-popup-border);
+  border-radius: 24px;
+  background: var(--dp-popup-grid-base);
+  box-shadow: var(--dp-popup-window-shadow);
+  color: var(--dp-panel-text);
+}
+
+.dp-popupWindow::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-popup-inset-gap);
+  z-index: 0;
+  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
+  border-radius: 14px;
+  background-image: var(--dp-popup-grid-texture);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    auto;
+  background-clip: padding-box;
+  background-origin: padding-box;
+  pointer-events: none;
+}
+
+.dp-popupWindow > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .dpPopupWindow {
+    width: min(800px, calc(100vw - 32px));
+  }
+}
+
+@media (max-width: 640px) {
+  .dpPopupWindowBackdrop {
+    padding: 16px;
+  }
+
+  .dpPopupWindow {
+    width: calc(100vw - 32px);
+    border-radius: 18px;
+  }
+
+  .dpPopupWindowContent {
+    padding: 22px 18px 18px;
+  }
 }

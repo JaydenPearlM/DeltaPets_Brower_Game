@@ -465,7 +465,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     const elements =
       elementsRow && typeof elementsRow === "object"
         ? {
-            null: (elementsRow as any).null_element ?? 0,
+            null_element: (elementsRow as any).null_element ?? 0,
             water: (elementsRow as any).water ?? 0,
             fire: (elementsRow as any).fire ?? 0,
             earth: (elementsRow as any).earth ?? 0,

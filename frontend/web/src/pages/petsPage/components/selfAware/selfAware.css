@@ -1,0 +1,47 @@
+.selfAwarePanel {
+  position: relative;
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border: 2px solid var(--dp-cyber-cyan);
+  box-shadow: 0 0 3px var(--dp-cyber-cyan);
+  background: var(--dp-panel-bg);
+  color: var(--dp-text-primary);
+}
+
+.selfAwarePanel::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  pointer-events: none;
+  border: 3px solid var(--dp-purple);
+}
+
+.selfAwareEyebrow {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--dp-gold);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.selfAwareText {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.selfAwareNextButton {
+  position: relative;
+  z-index: 1;
+  justify-self: start;
+  border: 1px solid var(--dp-gold-light);
+  background: var(--dp-gold-gradient);
+  color: var(--dp-gold-text);
+  font-weight: 700;
+  cursor: pointer;
+}

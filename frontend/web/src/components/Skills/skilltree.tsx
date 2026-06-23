@@ -290,7 +290,7 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
   return (
     <section
-      className="skillTreeModal feralPathPanel"
+      className="skillTreeModal feralPathPanel dp-blue-grid-panel"
       role="dialog"
       aria-modal="true"
       aria-label="Kith Talent System"

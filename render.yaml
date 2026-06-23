@@ -1,10 +1,17 @@
 services:
   - type: web
-    name: deltapets-backend
-    env: node
-    rootDir: backend/server
-    buildCommand: pnpm install --frozen-lockfile && pnpm build
-    startCommand: pnpm start
+    name: deltapets
+    runtime: node
+    rootDir: .
+    buildCommand: |
+      corepack enable
+      cd frontend/web
+      pnpm install
+      pnpm build
+      cd ../../backend/server
+      pnpm install
+      pnpm build
+    startCommand: cd backend/server && pnpm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -12,13 +19,6 @@ services:
         sync: false
       - key: SUPABASE_SECRET_KEY
         sync: false
-
-  - type: static
-    name: deltapets-frontend
-    rootDir: frontend/web
-    buildCommand: pnpm install --frozen-lockfile && pnpm build
-    staticPublishPath: dist
-    envVars:
       - key: VITE_SUPABASE_URL
         sync: false
       - key: VITE_SUPABASE_ANON_KEY

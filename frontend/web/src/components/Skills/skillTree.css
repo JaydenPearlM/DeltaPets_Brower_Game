@@ -52,16 +52,18 @@
   content: "";
   position: absolute;
   inset: 10px;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
-  border: 5px solid var(--dp-skilltree-purple);
+  border: 5px solid #c77dff;
   border-radius: 16px;
+  background-image: var(--dp-popup-blue-grid);
+  background-size: var(--dp-popup-grid-size) var(--dp-popup-grid-size);
   opacity: 1;
 }
 
 .skillTreeModal > * {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 /* ================================

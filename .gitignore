@@ -1,129 +1,32 @@
-# =============================================================================
 # Dependencies
-# =============================================================================
 node_modules/
-**/node_modules/
-.pnpm-store/
-**/.pnpm-store/
+frontend/web/node_modules/
+backend/server/node_modules/
 
-# =============================================================================
-# Build outputs
-# =============================================================================
+# Build output
 dist/
-**/dist/
-build/
-**/build/
-out/
-.vite/
-**/.vite/
-.vite-cache/
-.esbuild/
-.next/
-**/.next/
-.turbo/
-**/.turbo/
+frontend/web/dist/
+backend/server/dist/
 
-# =============================================================================
-# Environment / secrets
-# =============================================================================
+# Environment files
 .env
 .env.*
-.env.example
-.env.local
-.env.development
-.env.production
-.env.test
-**/.env
-**/.env.*
-**/.env.local
-**/.env.*.local
+!.env.example
+!.env_example
+frontend/web/.env
+frontend/web/.env.*
+!frontend/web/.env.example
+backend/server/.env
+backend/server/.env.*
+!backend/server/.env_example
 
-
-
-
-
-
-# =============================================================================
-# Supabase (local dev only)
-# =============================================================================
-.supabase/
-supabase/.env
+# Supabase local metadata
 supabase/.temp/
+supabase/.branches/
 
-# =============================================================================
-# Logs & caches
-# =============================================================================
-*.logs
+# Logs
 *.log
-**/*.log
-.cache/
-.tmp/
-.temp/
-coverage/
-.nyc_output/
-
-# =============================================================================
-# Testing artifacts
-# =============================================================================
-playwright-report/
-test-results/
-cypress/videos/
-cypress/screenshots/
-
-# =============================================================================
-# OS junk
-# =============================================================================
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# =============================================================================
-# Editor / IDE junk
-# =============================================================================
-.vscode/
-.idea/
-*.swp
-*.swo
-*.bak
-
-# =============================================================================
-# Misc
-# =============================================================================
-*.local
-*.lock.old
-
-# Database dumps and backups
-*dump*.txt
-*dump*.sql
-backup_*.sql
-*.backup
-supabase/.temp/
-
-# =============================================================================
-# Build
-# =============================================================================
-dist/
-node_modules/
-.env
-.env.local
-
-# =============================================================================
-# More fixes
-# =============================================================================
-node_modules
-dist
-.vite
-.env
-.env.local
-.DS_Store
-Thumbs.db
-*.log
-
-frontend/web/dist
-backend/server/dist
-supabase/.temp
-supabase/migrations.zip
-|
-#Important things:
-
-discord_backup_codes.txt
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -1,8 +1,14 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../../lib/api/baseClient";
 import { supabase } from "../../lib/supabase/client";
 
 const DEV = import.meta.env.DEV;
+
+type IntroStateResponse = {
+  intro_seen?: boolean;
+  has_hatchery_egg?: boolean;
+};
 
 function debugLog(...args: unknown[]) {
   if (DEV) {
@@ -30,22 +36,6 @@ export function useEnterGame() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const getAccessToken = useCallback(async () => {
-    const { data, error } = await supabase.auth.getSession();
-
-    if (error) {
-      throw new Error(error.message || "Failed to get session");
-    }
-
-    const token = data.session?.access_token;
-
-    if (!token) {
-      throw new Error("Missing bearer token");
-    }
-
-    return token;
-  }, []);
-
   const enterGame = useCallback(async () => {
     setLoading(true);
 
@@ -67,29 +57,9 @@ export function useEnterGame() {
         return;
       }
 
-      const token = await getAccessToken();
+      const payload = await apiFetch<IntroStateResponse>("/api/me/intro");
 
-      const res = await fetch("/api/me/intro", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const payload = (await res.json().catch(() => ({}))) as {
-        intro_seen?: boolean;
-        has_hatchery_egg?: boolean;
-        error?: string;
-        details?: string;
-      };
-
-      debugLog("[enterGame] /api/me/intro status:", res.status);
       debugLog("[enterGame] /api/me/intro payload:", payload);
-
-      if (!res.ok) {
-        throw new Error(payload?.error ?? "Intro state check failed");
-      }
 
       const introSeen = Boolean(payload.intro_seen);
       const hasEgg = Boolean(payload.has_hatchery_egg);
@@ -118,7 +88,7 @@ export function useEnterGame() {
     } finally {
       setLoading(false);
     }
-  }, [getAccessToken, navigate]);
+  }, [navigate]);
 
   return { loading, enterGame };
 }

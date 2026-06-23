@@ -459,7 +459,10 @@ export default function SkillChamber({
   }
 
   return (
-    <section className="skillsPanel" aria-label="Skills Chamber">
+    <section
+      className="skillsPanel dp-blue-grid-panel"
+      aria-label="Skills Chamber"
+    >
       <header className="skillsPanelHeader">
         <div className="skillsHeaderTopRow">
           <div className="skillsPanelHeaderCopy">
@@ -569,7 +572,7 @@ export default function SkillChamber({
             onMouseDown={() => setSelectedSkill(null)}
           >
             <section
-              className="skillPopup dp-popupWindow"
+              className="skillPopup dp-popupWindow dp-blue-grid-panel"
               role="dialog"
               aria-modal="true"
               aria-label={selectedSkill.displayName}

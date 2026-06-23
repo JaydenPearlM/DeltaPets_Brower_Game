@@ -8,12 +8,18 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: linear-gradient(
-    180deg,
-    var(--dp-panel-bg-top) 0%,
-    var(--dp-panel-bg-mid) 52%,
-    var(--dp-panel-bg-bottom) 100%
-  );
+  background:
+    var(--dp-popup-blue-grid),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-bg-top) 0%,
+      var(--dp-panel-bg-mid) 52%,
+      var(--dp-panel-bg-bottom) 100%
+    );
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    100% 100%;
   border: 2px solid var(--dp-panel-border);
 
   box-shadow:

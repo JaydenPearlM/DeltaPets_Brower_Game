@@ -189,7 +189,7 @@ pveInstabilitiesRouter.post(
       const instability = run.instability as any;
       const totalFights = instability.total_fights;
 
-      const { count: completedFights } = await supabaseAdmin
+      const { count: completedFights = 0 } = await supabaseAdmin
         .from("pve_instability_fights")
         .select("*", { count: "exact", head: true })
         .eq("run_id", runId)

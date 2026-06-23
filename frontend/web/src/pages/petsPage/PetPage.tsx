@@ -20,6 +20,7 @@ import type {
 } from "@/components/Hatchery/pages/storage/usePetStorage";
 import "./PetPage.css";
 import SkillTree from "@/components/Skills/skilltree";
+import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
 type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
@@ -725,7 +726,7 @@ export default function PetPage() {
       {!loadErr && pet ? (
         <section className="petRepoStage">
           <header
-            className={`petRepoHeroCard petRepoHeroCard--element-${petElementTheme}`}
+            className={`petRepoHeroCard petRepoHeroCard--element-${petElementTheme} dp-blue-grid-panel`}
           >
             <div className="petRepoHeroStatus petRepoHeroStatus--focusLeft">
               <span className="petRepoStatusLabel">Current Focus</span>
@@ -786,9 +787,9 @@ export default function PetPage() {
           />
 
           <section className="petRepoBottomGrid">
-            <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--bottomStats">
+            <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--bottomStats dp-blue-grid-panel">
               <div className="petRepoDataTwoCol">
-                <section className="petRepoInfoSection petRepoInfoSection--stats">
+                <section className="petRepoInfoSection petRepoInfoSection--stats dp-blue-grid-panel">
                   <SectionPill title="Stats:" />
 
                   <div className="petRepoStatList">
@@ -855,7 +856,7 @@ export default function PetPage() {
                 </section>
 
                 <section
-                  className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme}`}
+                  className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme} dp-blue-grid-panel`}
                 >
                   <SectionPill title="Element Stats:" />
 
@@ -893,6 +894,22 @@ export default function PetPage() {
             </article>
 
             <SkillsChamber pet={pet} stats={totalStats} />
+
+            <KithProgressCard
+              name={getPetLabel(pet)}
+              level={safeNum(pet.level, 1)}
+              xp={safeNum(pet.experience ?? pet.xp, 0)}
+              xpToNext={safeNum(
+                pet.experience_to_next_level ??
+                  pet.xp_to_next_level ??
+                  pet.next_level_xp,
+                100,
+              )}
+              wins={safeNum(pet.wins, 0)}
+              losses={safeNum(pet.losses, 0)}
+              hatchCount={safeNum(pet.hatch_count, 0)}
+              corruptedEggsHatched={safeNum(pet.corrupted_eggs_hatched, 0)}
+            />
           </section>
 
           {showSkillTree

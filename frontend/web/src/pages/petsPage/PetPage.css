@@ -599,20 +599,13 @@
       var(--dp-popup-light-sheen, rgba(255, 255, 255, 0.08)),
       rgba(255, 255, 255, 0) 38%
     ),
-    linear-gradient(
-      var(--dp-popup-grid-line, rgba(255, 255, 255, 0.022)) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      var(--dp-popup-grid-line, rgba(255, 255, 255, 0.022)) 1px,
-      transparent 1px
-    ),
+    linear-gradient(var(--dp-popup-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--dp-popup-grid-line) 1px, transparent 1px),
     var(--dp-gradient-popup);
   background-size:
     100% 100%,
-    22px 22px,
-    22px 22px,
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
     100% 100%;
   box-shadow:
     0 0 18px var(--dp-popup-glow, var(--dp-panel-glow)),
@@ -1482,8 +1475,8 @@
 .petRepoHeroCard {
   border: 2px solid var(--dp-panel-border-cyan-bright);
   background:
-    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(var(--dp-popup-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--dp-popup-grid-line) 1px, transparent 1px),
     linear-gradient(
       180deg,
       var(--dp-panel-bg-top) 0%,
@@ -1491,9 +1484,9 @@
       var(--dp-panel-bg-bottom) 100%
     );
   background-size:
-    22px 22px,
-    22px 22px,
-    auto;
+    16px 16px,
+    16px 16px,
+    100% 100%;
   box-shadow:
     0 0 18px var(--dp-panel-glow),
     0 0 42px var(--dp-panel-border-cyan-soft),
@@ -1503,9 +1496,15 @@
 .petRepoHeroCard::before {
   content: "";
   position: absolute;
-  inset: 5px;
+  inset: 10px;
   border-radius: 16px;
-  border: 3px solid var(--dp-panel-purple-border);
+  border: 5px solid var(--dp-panel-purple-border);
+  background-image:
+    linear-gradient(rgba(77, 234, 255, 0.9) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77, 234, 255, 0.9) 1px, transparent 1px);
+  background-size:
+    16px 16px,
+    16px 16px;
   pointer-events: none;
   box-shadow: none;
 }
@@ -1601,61 +1600,68 @@
 /* Stats + Element Stats UI fixes */
 .petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats {
   position: relative;
-  padding: 22px;
+  isolation: isolate;
+  padding: 44px 22px 22px;
   overflow: hidden;
   border-radius: 24px;
-  border: 3px solid var(--dp-panel-border-cyan-bright);
-  background:
-    radial-gradient(
-      circle at 12% 18%,
-      var(--dp-panel-glow-cyan),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 84% 78%,
-      var(--dp-panel-glow-purple),
-      transparent 32%
-    ),
-    linear-gradient(
-      180deg,
-      var(--dp-panel-gradient-top) 0%,
-      var(--dp-panel-gradient-mid) 48%,
-      var(--dp-panel-gradient-bottom) 100%
-    );
+  border: var(--dp-popup-border-width) solid var(--dp-popup-border);
+  background: var(--dp-popup-grid-base);
   box-shadow:
-    0 0 22px var(--dp-panel-glow),
-    0 0 30px var(--dp-panel-border-cyan-soft),
+    0 0 2px var(--dp-popup-glow),
     14px 18px 30px rgba(0, 0, 0, 0.28);
 }
 
 .petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats::before {
   content: "";
   position: absolute;
-  inset: 14px;
+  inset: var(--dp-popup-inset-gap);
   border-radius: 16px;
-  border: 3px solid var(--dp-panel-purple-border);
+  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
   pointer-events: none;
+  background-image:
+    linear-gradient(var(--dp-popup-grid-line) 2px, transparent 2px),
+    linear-gradient(90deg, var(--dp-popup-grid-line) 2px, transparent 2px),
+    var(--dp-popup-grid-base);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    auto;
+  background-position: 0 0;
+  background-clip: padding-box;
+  background-origin: padding-box;
   box-shadow: none;
-  z-index: 2;
+  opacity: 0.2;
+  z-index: 0;
 }
 
-.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats::after {
-  content: "";
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats::after,
+.petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats.dp-blue-grid-panel::after {
+  content: "Stats Chamber";
   position: absolute;
-  inset: 17px;
-  border-radius: 13px;
+  inset: 14px auto auto 22px;
+  z-index: 2;
   pointer-events: none;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 18px 18px;
-  z-index: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--dp-title-gold);
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 1000;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow:
+    1px 1px 0 var(--dp-brand-red),
+    0 0 12px rgba(255, 217, 77, 0.26);
+  opacity: 1;
 }
 
 .petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
   .petRepoDataTwoCol {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   gap: 14px;
   padding: 4px;
 }
@@ -1701,16 +1707,12 @@
 
 .petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
   .petRepoStatList {
+  position: relative;
+  z-index: 1;
   border-radius: 14px;
-  border: 1px solid var(--dp-panel-border-cyan-soft);
-  background: linear-gradient(
-    180deg,
-    rgba(37, 62, 108, 0.9),
-    rgba(13, 28, 58, 0.96)
-  );
-  box-shadow:
-    inset 0 1px 0 var(--dp-panel-inner-highlight),
-    inset 0 0 0 1px var(--dp-panel-inner-border);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
@@ -1724,42 +1726,15 @@
   margin-bottom: 12px;
   padding: 14px;
   overflow: hidden;
-  border: 2px solid rgba(73, 241, 255, 0.82);
+  border: 0;
   border-radius: 16px;
-  background: linear-gradient(
-    180deg,
-    rgba(43, 32, 92, 0.96) 0%,
-    rgba(18, 27, 73, 0.98) 46%,
-    rgba(8, 18, 48, 0.98) 100%
-  );
-  box-shadow:
-    0 0 18px rgba(73, 241, 255, 0.34),
-    inset 0 0 0 4px rgba(155, 86, 255, 0.42),
-    inset 0 0 22px rgba(95, 255, 240, 0.12);
+  background: transparent;
+  box-shadow: none;
 }
 
 .petRepoPassiveTraitCard::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  pointer-events: none;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    rgba(73, 241, 255, 0.95),
-    rgba(73, 241, 255, 0.08),
-    rgba(73, 241, 255, 0.72)
-  );
-  opacity: 0.45;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
-  padding: 2px;
+  content: none;
+  display: none;
 }
 
 .petRepoPassiveTraitCard::after {
@@ -1873,30 +1848,12 @@
 
 .petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
   .petRepoStatList {
+  position: relative;
+  z-index: 1;
   padding: 8px;
-  border: 3px solid #4deaff;
+  border: 0;
   border-radius: 18px;
-  background:
-    linear-gradient(
-      135deg,
-      var(--dp-popup-light-sheen, rgba(255, 255, 255, 0.08)),
-      rgba(255, 255, 255, 0) 38%
-    ),
-    linear-gradient(
-      var(--dp-popup-grid-line, rgba(255, 255, 255, 0.022)) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      var(--dp-popup-grid-line, rgba(255, 255, 255, 0.022)) 1px,
-      transparent 1px
-    ),
-    var(--dp-gradient-popup);
-  background-size:
-    100% 100%,
-    22px 22px,
-    22px 22px,
-    100% 100%;
+  background: transparent;
 }
 
 .petRepoPanel.petRepoPanel--infoShell.petRepoPanel--bottomStats
@@ -1940,29 +1897,11 @@
 }
 
 .petRepoPassiveTraitCard {
-  border: 2px solid #4deaff;
-  background:
-    linear-gradient(
-      135deg,
-      var(--dp-popup-light-sheen, rgba(255, 255, 255, 0.08)),
-      rgba(255, 255, 255, 0) 38%
-    ),
-    linear-gradient(
-      var(--dp-popup-grid-line, rgba(255, 255, 255, 0.022)) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      var(--dp-popup-grid-line, rgba(255, 255, 255, 0.022)) 1px,
-      transparent 1px
-    ),
-    var(--dp-gradient-popup);
-  background-size:
-    100% 100%,
-    22px 22px,
-    22px 22px,
-    100% 100%;
-  box-shadow: inset 0 0 0 1px #4deaff;
+  border: 1px solid var(--dp-border-gold);
+  background: var(--dp-surface-panel);
+  box-shadow:
+    inset 0 0 0 1px var(--dp-white-08),
+    0 0 12px var(--dp-black-28);
 }
 .petRepoPassiveTraitHeader,
 .petRepoPassiveTraitRarity,
@@ -1997,6 +1936,10 @@
   margin-top: auto;
   align-self: stretch;
   transform: none;
+  color: var(--btn-gold-text);
+  background: var(--dp-gradient-yellow-button);
+  border: 2px solid var(--btn-gold-border);
+  box-shadow: var(--dp-glow-gold);
 }
 
 .petRepoSkillTreeButton,
@@ -2005,4 +1948,11 @@
 .petRepoSkillTreeButton:focus,
 .petRepoSkillTreeButton:focus-visible {
   transform: translateY(-16px);
+}
+
+.petRepoSkillTreeButton:hover,
+.petRepoSkillTreeButton:active,
+.petRepoSkillTreeButton:focus,
+.petRepoSkillTreeButton:focus-visible {
+  background: var(--dp-gradient-yellow-button-hover);
 }

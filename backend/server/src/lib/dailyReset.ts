@@ -34,6 +34,10 @@ export function get_local_reset_boundary(
 
   const boundary_iso_utc = boundary_local.toUTC().toISO();
 
+  if (!boundary_iso_utc) {
+    throw new Error("Could not calculate the daily reset boundary.");
+  }
+
   return {
     zone,
     boundary_local, // Luxon DateTime
@@ -58,6 +62,11 @@ export function get_next_reset_at(
   const next_local = boundary_local.plus({ days: 1 });
 
   const next_iso_utc = next_local.toUTC().toISO();
+
+  if (!next_iso_utc) {
+    throw new Error("Could not calculate the next daily reset time.");
+  }
+
   const remaining_ms = Math.max(0, next_local.toUTC().toMillis() - now_ms);
 
   return {

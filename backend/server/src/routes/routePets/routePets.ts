@@ -173,6 +173,14 @@ petsRouter.patch(
       const petId = req.params.petId;
       const nickname = String(req.body?.nickname ?? "").trim();
 
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          petId,
+        )
+      ) {
+        return res.status(400).json({ error: "Invalid pet id." });
+      }
+
       if (!nickname) {
         return res.status(400).json({ error: "Nickname is required." });
       }

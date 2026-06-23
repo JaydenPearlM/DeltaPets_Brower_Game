@@ -433,7 +433,9 @@ export function LoginMenus({
         onClose={closeModal}
         labelledBy="auth-modal-title"
         className={
-          view === "signup" ? "auth-modal--signup" : "auth-modal--login"
+          view === "signup"
+            ? "auth-modal--signup dp-blue-grid-panel"
+            : "auth-modal--login dp-blue-grid-panel"
         }
       >
         {view === "login" ? (

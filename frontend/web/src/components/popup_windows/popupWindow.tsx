@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
-import "./popupWindow.css";
 
 type PopupWindowProps = {
   isOpen: boolean;
@@ -26,7 +25,7 @@ export function PopupWindow({
       onClick={onClose}
     >
       <section
-        className={`dpPopupWindow ${className}`}
+        className={`dpPopupWindow dp-blue-grid-panel ${className}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}

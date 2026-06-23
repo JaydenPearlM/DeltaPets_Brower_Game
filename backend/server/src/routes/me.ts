@@ -56,6 +56,7 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
               "hatched_at",
               "hatch_ends_at",
               "location",
+              "is_active",
               "hunger",
               "clean",
               "happy",
@@ -78,6 +79,7 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
               "cd_bond_ends_at",
               "neglect_hours",
               "ran_away",
+              "runaway_at",
               "created_at",
             ].join(", "),
           )

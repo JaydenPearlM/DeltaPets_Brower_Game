@@ -28,6 +28,7 @@ export type PetPointsAlloc = {
   magi: number;
   def: number;
   spd: number;
+  mana: number;
 };
 
 export type PetPointsTotal = {
@@ -44,6 +45,7 @@ export type PetPointsBundle = {
   alloc: PetPointsAlloc;
   total: PetPointsTotal;
   total_points: number;
+  hp_display: number;
 } | null;
 
 export type HatchInfo = {

@@ -28,7 +28,11 @@ petActionsRouter.post(
   requireUser,
   validateBody(petActionSchema),
   async (req: AuthedRequest, res: Response) => {
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     const nowMs = Date.now();
     const nowIso = new Date(nowMs).toISOString();
     const { action } = (req.body ?? {}) as Body;

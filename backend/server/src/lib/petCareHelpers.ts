@@ -13,7 +13,6 @@ export type PetCareStatsUpdate = {
   ran_away: boolean;
   runaway_at: string | null;
   last_care_decay_at: string;
-  last_care_update?: string;
 };
 
 const CARE_DEFAULT = 50;

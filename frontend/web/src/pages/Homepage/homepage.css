@@ -875,12 +875,8 @@
   border: 1.5px solid var(--dp-panel-inner-border);
   pointer-events: none;
   z-index: 0;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-  background-size:
-    22px 22px,
-    22px 22px;
+  background-image: var(--dp-popup-blue-grid);
+  background-size: var(--dp-popup-grid-size) var(--dp-popup-grid-size);
   box-shadow:
     inset 0 1px 0 var(--dp-panel-inner-highlight),
     0 0 0 1px rgba(140, 164, 201, 0.14);

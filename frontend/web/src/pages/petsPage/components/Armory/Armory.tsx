@@ -198,7 +198,7 @@ function ArmoryCloset({ items, onClose }: ArmoryClosetProps) {
       onMouseDown={onClose}
     >
       <section
-        className="armoryClosetModal"
+        className="armoryClosetModal dp-blue-grid-panel"
         role="dialog"
         aria-modal="true"
         aria-label="Armory Closet"

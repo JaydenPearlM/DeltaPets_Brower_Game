@@ -1,0 +1,31 @@
+.petRepoHeroCard {
+  border: 2px solid var(--dp-panel-border-cyan-bright);
+  background: linear-gradient(
+    180deg,
+    var(--dp-panel-bg-top) 0%,
+    var(--dp-panel-bg-mid) 50%,
+    var(--dp-panel-bg-bottom) 100%
+  );
+  background-size: 100% 100%;
+  box-shadow:
+    0 0 18px var(--dp-panel-glow),
+    0 0 42px var(--dp-panel-border-cyan-soft),
+    14px 18px 30px rgba(0, 0, 0, 0.28);
+}
+
+.petRepoHeroCard::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 16px;
+  border: 5px solid var(--dp-panel-purple-border);
+  background-image: var(--dp-popup-blue-grid);
+  background-size: var(--dp-popup-grid-size) var(--dp-popup-grid-size);
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.petRepoHeroCard > * {
+  position: relative;
+  z-index: 1;
+}

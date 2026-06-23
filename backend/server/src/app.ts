@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import helmet from "helmet";
 import { healthRouter } from "./routes/health";
-import { publicAuthRouter, requireUser } from "./middleware/auth";
+import { authRouter, publicAuthRouter, requireUser } from "./middleware/auth";
 import {
   apiLimiter,
   apiSpeedLimiter,
@@ -26,7 +26,7 @@ export function createApp() {
 
   app.use(healthRouter);
 
-  app.use("/api/auth", authLimiter, publicAuthRouter);
+  app.use("/api/auth", authLimiter, publicAuthRouter, authRouter);
   app.use("/api/world", apiLimiter, apiSpeedLimiter, worldRouter);
 
   if (env.NODE_ENV === "development") {
@@ -34,6 +34,10 @@ export function createApp() {
   }
 
   app.use("/api", apiLimiter, apiSpeedLimiter, requireUser, apiRouter);
+
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ error: "Not found" });
+  });
 
   const frontendDist = path.resolve(__dirname, "../../../frontend/web/dist");
 

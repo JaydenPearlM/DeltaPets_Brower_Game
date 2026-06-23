@@ -5,7 +5,7 @@ type PetStage =
   | "lowform"
   | "highform"
   | "legion"
-  | "mythic_legendary";
+  | "mythical_legendary";
 
 type PetForDescription = {
   species?: string | null;
@@ -57,7 +57,7 @@ function getStagePhrase(stage: string) {
       return "has evolved into a more imposing and experienced partner";
     case "legion":
       return "has ascended into a powerful and battle-tested form";
-    case "mythic_legendary":
+    case "mythical_legendary":
       return "has reached an extraordinary state few Deltas ever attain";
     default:
       return "still carries an air of mystery";
