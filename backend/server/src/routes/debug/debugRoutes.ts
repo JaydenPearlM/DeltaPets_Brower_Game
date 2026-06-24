@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getLogBuffer, logger } from "../../lib/logger";
+import { getLogBuffer, logger, type LogLevel } from "../../lib/logger";
 
 export const debugRouter = Router();
 
@@ -12,9 +12,10 @@ debugRouter.get("/logs", (_req, res) => {
 debugRouter.post("/client-log", (req, res) => {
   const { level = "info", tag = "client", message = "", data } = req.body ?? {};
 
-  const safeLevel =
+  const safeLevel: LogLevel =
     level === "error" || level === "warn" || level === "debug" ? level : "info";
 
+  logger[safeLevel](`[${tag}] ${message}`, data);
   logger[safeLevel](`[${tag}] ${message}`, data);
 
   res.json({ ok: true });

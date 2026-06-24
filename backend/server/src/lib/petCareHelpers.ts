@@ -12,6 +12,7 @@ export type PetCareStatsUpdate = {
   neglect_hours: number;
   ran_away: boolean;
   runaway_at: string | null;
+  last_care_update?: string;
   last_care_decay_at: string;
 };
 

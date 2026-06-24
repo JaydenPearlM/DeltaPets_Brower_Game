@@ -35,7 +35,6 @@ const ELEMENTS = [
   "storm",
   "light",
   "shadow",
-  "corruption",
 ] as const;
 
 type Element = (typeof ELEMENTS)[number];

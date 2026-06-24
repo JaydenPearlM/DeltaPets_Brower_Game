@@ -366,8 +366,8 @@ function runAiTurn(state: BattleState, actor: BattleUnit) {
     return;
   }
 
-  if (actor.magi >= actor.atk || Math.random() > 0.55) {
-    performSkill(state, actor, target, "element_strike");
+  if (actor.magi >= actor.atk && lowAlly && actor.side === "enemy") {
+    performSkill(state, actor, lowAlly, "mend");
     return;
   }
 

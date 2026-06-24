@@ -234,10 +234,10 @@ export default function CreatePage() {
 
             await apiFetch("/api/pets/ensure-egg", {
               method: "POST",
-              body: JSON.stringify({
+              json: {
                 line: requestedLine,
                 worldTime,
-              }),
+              },
             });
 
             clientLog("create", "ensure-egg success", "info", {

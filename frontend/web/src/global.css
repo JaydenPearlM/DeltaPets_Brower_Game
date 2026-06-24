@@ -159,8 +159,14 @@
   --dp-standard-panel-title-size: 20px;
   --dp-standard-panel-section-title-size: 1.18rem;
   --dp-standard-panel-splash-purple: rgba(169, 105, 255, 0.42);
-  --dp-standard-panel-splash-pink: rgba(255, 84, 180, 0.32);
+  --dp-standard-panel-splash-pink: rgba(255, 84, 180, 0.34);
   --dp-standard-panel-blue-grid: var(--dp-popup-blue-grid);
+  --dp-standard-panel-bg: linear-gradient(
+    180deg,
+    var(--dp-panel-bg-top) 0%,
+    var(--dp-panel-bg-mid) 52%,
+    var(--dp-panel-bg-bottom) 100%
+  );
   --dp-standard-panel-shadow: 0 0 2px var(--dp-panel-glow);
 
   /* Popup grid tokens: popup windows use cyan border, purple inset, blue grid lines, and a subtle pink corner glow. */
@@ -435,6 +441,34 @@
 .dp-global-panel > * {
   position: relative;
   z-index: 1;
+}
+
+.dp-standard-panel-title,
+.dp-global-panel-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--dp-standard-panel-title-size);
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  color: var(--dp-title-gold);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  text-transform: uppercase;
+}
+
+.dp-standard-panel-section-title,
+.dp-global-panel-section-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--dp-standard-panel-section-title-size);
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  color: var(--dp-title-gold);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  text-transform: uppercase;
 }
 
 /* Popup grid panel class: use this for popup/window surfaces that need the blue grid inside the purple inset. */
