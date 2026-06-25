@@ -29,7 +29,6 @@ petActionsRouter.post(
   validateBody(petActionSchema),
   async (req: AuthedRequest, res: Response) => {
     const userId = req.user?.id;
-
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -119,9 +118,7 @@ petActionsRouter.post(
       const nextHappy = clamp(happy + 2, 0, 50);
 
       patch.clean = nextClean;
-      // FIXED: Removed patch.cleanliness (doesn't exist)
       patch.happy = nextHappy;
-      // FIXED: Removed patch.happiness (doesn't exist)
     }
 
     if (action === "bond") {

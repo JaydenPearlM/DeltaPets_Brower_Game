@@ -8,7 +8,7 @@
   color: var(--dp-panel-text);
   background: none;
   box-shadow: none;
-
+}
 
 .petArmory::before,
 .petArmory::after {

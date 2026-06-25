@@ -10,9 +10,9 @@ import {
   titleCase,
 } from "@/lib/petUtils";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
-import Armory from "@/pages/petsPage/components/Armory/Armory";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
+import StatsChamber from "@/components/StatsChamber/StatsChamber";
 import MainTeam from "@/components/Main_Team/mainTeam";
 import type {
   PartySlotView,
@@ -97,15 +97,6 @@ type CareCurrentResponse = {
 };
 
 const STAT_ORDER = ["hp", "atk", "def", "spd", "magi", "mana"] as const;
-
-const STAT_LABELS: Record<(typeof STAT_ORDER)[number], string> = {
-  hp: "HP",
-  atk: "Attack",
-  def: "Defense",
-  spd: "Speed",
-  magi: "Magi",
-  mana: "Mana",
-};
 
 const ELEMENT_ORDER = [
   "null",
@@ -244,10 +235,6 @@ function getPetGrowthTraits(pet: PetRecord | null, stats: PetStatsRow | null) {
     strongStats: sortedStats.slice(0, 2),
     weakStat: sortedStats.at(-1) ?? null,
   };
-}
-
-function SectionPill({ title }: { title: string }) {
-  return <h3 className="petRepoSectionPill">{title}</h3>;
 }
 
 export default function PetPage() {
@@ -787,111 +774,14 @@ export default function PetPage() {
           />
 
           <section className="petRepoBottomGrid">
-            <article className="petRepoPanel petRepoPanel--infoShell petRepoPanel--bottomStats dp-blue-grid-panel">
-              <div className="petRepoDataTwoCol">
-                <section className="petRepoInfoSection petRepoInfoSection--stats dp-blue-grid-panel">
-                  <SectionPill title="Stats:" />
-
-                  <div className="petRepoStatList">
-                    {STAT_ORDER.map((statKey) => {
-                      const value = totalStats[statKey];
-                      const rowClassNames = ["petRepoInfoRow"];
-
-                      if (growthTraits.strongStats.includes(statKey)) {
-                        rowClassNames.push("is-strong-stat");
-                      }
-
-                      if (growthTraits.weakStat === statKey) {
-                        rowClassNames.push("is-weak-stat");
-                      }
-
-                      return (
-                        <div key={statKey} className={rowClassNames.join(" ")}>
-                          <span>{STAT_LABELS[statKey]}</span>
-                          <span>{String(value)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="petRepoPassiveTraitCard">
-                    <div className="petRepoPassiveTraitHeader">
-                      <span>Passive Trait</span>
-                      <span
-                        className="petRepoPassiveTraitRarity"
-                        data-rarity={(
-                          pet.passive_trait_rarity ?? "Common"
-                        ).toLowerCase()}
-                      >
-                        {pet.passive_trait_rarity ?? "Common"}
-                      </span>
-                    </div>
-
-                    <h3 className="petRepoPassiveTraitName">
-                      <span
-                        className="petRepoPassiveTraitStar"
-                        aria-hidden="true"
-                      >
-                        ★
-                      </span>
-                      <span>
-                        {pet.passive_trait_name ??
-                          titleCase(pet.passive_trait_key ?? "Unknown Trait")}
-                      </span>
-                    </h3>
-
-                    <p>
-                      {pet.passive_trait_description ??
-                        "Kindness isn't weakness. It's how they win."}
-                    </p>
-
-                    <div className="petRepoPassiveTraitEffects">
-                      <strong>Battle Effect:</strong>
-                      <span>
-                        {pet.passive_trait_effect_summary ??
-                          "Battle bonus will appear here once this passive is fully connected."}
-                      </span>
-                    </div>
-                  </div>
-                </section>
-
-                <section
-                  className={`petRepoInfoSection petRepoInfoSection--elements petRepoPanel--element petRepoPanel--element-${petElementTheme} dp-blue-grid-panel`}
-                >
-                  <SectionPill title="Element Stats:" />
-
-                  <div className="petRepoStatList">
-                    {elementRows.map((row) => {
-                      const rowClassNames = [
-                        "petRepoInfoRow",
-                        `petRepoInfoRow--element-${row.key}`,
-                      ];
-
-                      if (row.active) {
-                        rowClassNames.push("is-active-element");
-                      }
-
-                      return (
-                        <div key={row.key} className={rowClassNames.join(" ")}>
-                          <span>{row.label}</span>
-                          <span>{row.value}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    type="button"
-                    className="petRepoSkillTreeButton skillChamberActionButton skillChamberActionButton--gold"
-                    onClick={() => setShowSkillTree(true)}
-                  >
-                    Skill Trees
-                  </button>
-                </section>
-              </div>
-
-              <Armory />
-            </article>
+            <StatsChamber
+              pet={pet}
+              totalStats={totalStats}
+              elementRows={elementRows}
+              petElementTheme={petElementTheme}
+              growthTraits={growthTraits}
+              onOpenSkillTree={() => setShowSkillTree(true)}
+            />
 
             <SkillsChamber pet={pet} stats={totalStats} />
 

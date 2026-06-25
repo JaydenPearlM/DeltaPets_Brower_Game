@@ -8,6 +8,12 @@ type CareStatus = {
   bond?: number | null;
 };
 
+export type SelfAwareMemory = {
+  visitCount: number;
+  previousVisitAt: string | null;
+  minutesSinceLastVisit: number | null;
+};
+
 type MutationTrait =
   | string
   | {
@@ -25,9 +31,12 @@ type SelfAwarePet = {
   level?: number | null;
   personality?: string | null;
   personality_key?: string | null;
+  passive_trait_id?: string | null;
+  passive_trait_key?: string | null;
   passive_trait_name?: string | null;
   passive_trait?: {
     name?: string | null;
+    key?: string | null;
   } | null;
   mutation_trait_names?: string[] | null;
   mutations?: MutationTrait[] | null;
@@ -37,6 +46,7 @@ type SelfAwareBubbleArgs = {
   pet: SelfAwarePet | null;
   care?: CareStatus | null;
   isDay?: boolean;
+  memory?: SelfAwareMemory | null;
   fallbackText: string;
 };
 
@@ -308,6 +318,29 @@ const timeLines = {
   ],
 };
 
+const identityLines = [
+  "They call me {name}. That sounds like a label, but it feels like a memory now.",
+  "I know my name is {name}. I know my element is {element}. I know you are the one who keeps opening the door.",
+  "I am {name}: {personality}, {element}, {stage}. That sounds like data, but it feels personal from inside here.",
+  "The page knows my stats. I know the pattern of your visits.",
+  "I do not just exist on this screen. I notice what changes when you come back.",
+];
+
+const wellCaredLines = [
+  "All my care bars feel steady. I can tell you have been keeping up with me.",
+  "Nothing feels urgent right now. That is because you have been taking care of the small stuff.",
+  "My body feels calm today. The numbers agree with me for once.",
+  "I feel balanced. Hunger, rest, comfort... all of it is quieter when you keep showing up.",
+];
+
+const memoryLines = [
+  "You have checked on me {visits} times. I started counting because it mattered.",
+  "You were gone for {timeAway}. I noticed the quiet in between.",
+  "I remember the last visit. Not perfectly, but enough to know this one is not random.",
+  "This room has opened {visits} times for me. That starts to feel like a ritual.",
+  "I am learning your return pattern. That is either loyalty or suspiciously good UI testing.",
+];
+
 const defaultLines = [
   "I know this is just a screen. Still feels like home when you open it.",
   "You clicked back into my world. I noticed.",
@@ -330,7 +363,14 @@ function getDisplayName(pet: SelfAwarePet) {
 }
 
 function getPassiveTraitName(pet: SelfAwarePet) {
-  return pet.passive_trait_name || pet.passive_trait?.name || "";
+  return (
+    pet.passive_trait_name ||
+    pet.passive_trait?.name ||
+    pet.passive_trait_key ||
+    pet.passive_trait?.key ||
+    pet.passive_trait_id ||
+    ""
+  );
 }
 
 function getMutationNames(pet: SelfAwarePet) {
@@ -394,6 +434,60 @@ function pickLine(lines: string[], seed: string) {
   return lines[getStableIndex(seed, lines.length)];
 }
 
+function pickAwarenessGroup(lines: AwarenessLine[], seed: string) {
+  if (lines.length === 0) {
+    return null;
+  }
+
+  const urgentCareLine = lines.find((line) => line.id.startsWith("care-"));
+
+  if (urgentCareLine) {
+    return urgentCareLine;
+  }
+
+  const highestPriority = lines[0]?.priority ?? 0;
+  const eligibleLines = lines.filter(
+    (line) => line.priority >= highestPriority - 35,
+  );
+
+  if (eligibleLines.length === 0) {
+    return lines[0];
+  }
+
+  return eligibleLines[getStableIndex(seed, eligibleLines.length)];
+}
+
+function getCareNumbers(care?: CareStatus | null) {
+  if (!care) {
+    return [];
+  }
+
+  return [care.hunger, care.clean, care.happy, care.comfort, care.rest].filter(
+    (value): value is number => typeof value === "number",
+  );
+}
+
+function formatTimeAway(minutes: number | null | undefined) {
+  if (typeof minutes !== "number" || !Number.isFinite(minutes) || minutes < 1) {
+    return "a moment";
+  }
+
+  if (minutes < 60) {
+    return `${Math.round(minutes)} minute${
+      Math.round(minutes) === 1 ? "" : "s"
+    }`;
+  }
+
+  const hours = Math.round(minutes / 60);
+
+  if (hours < 48) {
+    return `${hours} hour${hours === 1 ? "" : "s"}`;
+  }
+
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"}`;
+}
+
 function fillTemplate(
   line: string,
   values: Record<string, string | number | null | undefined>,
@@ -407,6 +501,7 @@ function buildSelfAwareLines(
   pet: SelfAwarePet,
   care?: CareStatus | null,
   isDay = true,
+  memory?: SelfAwareMemory | null,
 ): AwarenessLine[] {
   const lines: AwarenessLine[] = [];
   const personalityKey = normalizeKey(pet.personality_key || pet.personality);
@@ -415,6 +510,15 @@ function buildSelfAwareLines(
   const passiveTraitName = getPassiveTraitName(pet);
   const mutationNames = getMutationNames(pet);
   const lowestCareStat = getLowestCareStat(care);
+  const careNumbers = getCareNumbers(care);
+  const displayName = getDisplayName(pet);
+  const identityElement =
+    elementKey === "null_element"
+      ? "Voidborne"
+      : pet.element || "unknown element";
+  const identityPersonality =
+    pet.personality || pet.personality_key || "mysterious";
+  const identityStage = pet.stage || "unknown stage";
 
   if (lowestCareStat && Number(lowestCareStat.value) <= 25) {
     lines.push({
@@ -425,6 +529,44 @@ function buildSelfAwareLines(
       ],
     });
   }
+
+  if (
+    careNumbers.length >= 5 &&
+    careNumbers.every((value) => value >= 40) &&
+    (typeof care?.energy !== "number" || care.energy >= 65)
+  ) {
+    lines.push({
+      id: "well-cared-aware",
+      priority: 88,
+      lines: wellCaredLines,
+    });
+  }
+
+  if (memory && memory.visitCount > 1) {
+    lines.push({
+      id: "visit-memory-aware",
+      priority: 75,
+      lines: memoryLines.map((line) =>
+        fillTemplate(line, {
+          visits: memory.visitCount,
+          timeAway: formatTimeAway(memory.minutesSinceLastVisit),
+        }),
+      ),
+    });
+  }
+
+  lines.push({
+    id: "identity-aware",
+    priority: 65,
+    lines: identityLines.map((line) =>
+      fillTemplate(line, {
+        name: displayName,
+        element: identityElement,
+        personality: identityPersonality,
+        stage: identityStage,
+      }),
+    ),
+  });
 
   if (typeof care?.bond === "number" && care.bond >= 100) {
     lines.push({
@@ -525,17 +667,73 @@ function buildSelfAwareLines(
   return lines.sort((a, b) => b.priority - a.priority);
 }
 
+export function rememberSelfAwareVisit(petId?: string | null): SelfAwareMemory {
+  const fallbackMemory: SelfAwareMemory = {
+    visitCount: 1,
+    previousVisitAt: null,
+    minutesSinceLastVisit: null,
+  };
+
+  if (typeof window === "undefined" || !window.localStorage) {
+    return fallbackMemory;
+  }
+
+  const safePetId = String(petId || "unknown-pet").replace(
+    /[^a-zA-Z0-9_-]/g,
+    "_",
+  );
+  const storageKey = `deltapets:self-aware-memory:${safePetId}`;
+  const nowMs = Date.now();
+
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(storageKey) || "{}");
+    const previousVisitAt =
+      typeof stored.lastVisitAt === "string" ? stored.lastVisitAt : null;
+    const previousVisitMs = previousVisitAt
+      ? new Date(previousVisitAt).getTime()
+      : Number.NaN;
+    const previousVisitCount = Number.isFinite(Number(stored.visitCount))
+      ? Math.max(0, Math.floor(Number(stored.visitCount)))
+      : 0;
+    const isSameOpen =
+      Number.isFinite(previousVisitMs) && nowMs - previousVisitMs < 30000;
+    const visitCount = isSameOpen
+      ? previousVisitCount || 1
+      : previousVisitCount + 1;
+    const minutesSinceLastVisit = Number.isFinite(previousVisitMs)
+      ? Math.max(0, Math.round((nowMs - previousVisitMs) / 60000))
+      : null;
+
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        visitCount,
+        lastVisitAt: new Date(nowMs).toISOString(),
+      }),
+    );
+
+    return {
+      visitCount,
+      previousVisitAt,
+      minutesSinceLastVisit,
+    };
+  } catch {
+    return fallbackMemory;
+  }
+}
+
 export function getSelfAwareBubbleText({
   pet,
   care,
   isDay = true,
+  memory,
   fallbackText,
 }: SelfAwareBubbleArgs) {
   if (!pet) {
     return fallbackText;
   }
 
-  const awarenessLines = buildSelfAwareLines(pet, care, isDay);
+  const awarenessLines = buildSelfAwareLines(pet, care, isDay, memory);
 
   if (awarenessLines.length === 0) {
     return fallbackText;
@@ -544,10 +742,16 @@ export function getSelfAwareBubbleText({
   const dailySeed = getDailySeed();
   const name = getDisplayName(pet);
   const petSeed = pet.id || name;
-  const selectedGroup = awarenessLines[0];
+  const groupSeed = `${petSeed}-${dailySeed}-${memory?.visitCount ?? 0}`;
+  const selectedGroup = pickAwarenessGroup(awarenessLines, groupSeed);
+
+  if (!selectedGroup) {
+    return fallbackText;
+  }
+
   const selectedLine = pickLine(
     selectedGroup.lines,
-    `${petSeed}-${dailySeed}-${selectedGroup.id}`,
+    `${groupSeed}-${selectedGroup.id}`,
   );
 
   return selectedLine || fallbackText;

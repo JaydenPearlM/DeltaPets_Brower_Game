@@ -20,7 +20,7 @@ import {
 } from "@/components/inventory/inventory";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
-import PetSkillsPanel from "@/components/Skills/PetSkillsInventory";
+import SkillsChamber from "@/components/skillChamber/skillChamber";
 import "./petFarmFood.css";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
@@ -870,7 +870,7 @@ export function PetFarmFood() {
               </div>
             </article>
 
-            <PetSkillsPanel pet={pet} stats={totalStats} />
+            <SkillsChamber pet={pet} stats={totalStats} />
           </section>
         </section>
       ) : null}

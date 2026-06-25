@@ -127,6 +127,40 @@ async function markPetAsRunaway(pet: Record<string, any>) {
   });
 }
 
+async function hydrateMutationTraits(pet: Record<string, any>) {
+  if (!pet?.id) return pet;
+
+  const { data, error } = await supabaseAdmin
+    .from("pet_mutations")
+    .select(
+      "slot_index,has_mutation,mutations:mutation_id(name,key,rarity,description)",
+    )
+    .eq("pet_id", pet.id)
+    .eq("has_mutation", true)
+    .order("slot_index", { ascending: true });
+
+  if (error || !Array.isArray(data)) return pet;
+
+  const mutations = data
+    .map((row: any) => row?.mutations)
+    .filter(Boolean)
+    .map((mutation: any) => ({
+      name: mutation.name ?? mutation.key ?? null,
+      key: mutation.key ?? null,
+      rarity: mutation.rarity ?? null,
+      description: mutation.description ?? null,
+    }))
+    .filter((mutation: any) => mutation.name || mutation.key);
+
+  return {
+    ...pet,
+    mutations,
+    mutation_trait_names: mutations
+      .map((mutation: any) => mutation.name ?? mutation.key)
+      .filter(Boolean),
+  };
+}
+
 async function hydratePassiveTrait(pet: Record<string, any>) {
   if (!pet?.passive_trait_id && !pet?.passive_trait_key) return pet;
 
@@ -157,7 +191,6 @@ async function hydratePassiveTrait(pet: Record<string, any>) {
     passive_trait_stat_key: data.stat_key,
   };
 }
-
 careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
   const userId = req.user!.id;
 
@@ -242,7 +275,9 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       }
 
       const hydratedTeamPets = await Promise.all(
-        (teamPets ?? []).map(async (row: any) => hydratePassiveTrait(row)),
+        (teamPets ?? []).map(async (row: any) =>
+          hydrateMutationTraits(await hydratePassiveTrait(row)),
+        ),
       );
 
       const petMap = new Map<string, any>(
@@ -342,7 +377,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     }
 
     activePetResolved = normalizePetForClient(
-      await hydratePassiveTrait(activePetResolved),
+      await hydrateMutationTraits(await hydratePassiveTrait(activePetResolved)),
     );
 
     let hydratedPet = activePetResolved;

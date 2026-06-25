@@ -4,6 +4,10 @@ import { Link } from "react-router-dom";
 import { safeNum, titleCase } from "@/lib/petUtils";
 import "./PetDetailsPanel.css";
 import { getPetDialogue } from "./petDialogue";
+import {
+  getSelfAwareBubbleText,
+  rememberSelfAwareVisit,
+} from "../selfAware/selfAware";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type PetRecord = {
@@ -39,6 +43,14 @@ type PetRecord = {
   passive_trait_id?: string | null;
   passive_trait_key?: string | null;
   passive_trait_name?: string | null;
+  mutation_trait_names?: string[] | null;
+  mutations?:
+    | string[]
+    | {
+        name?: string | null;
+        key?: string | null;
+      }[]
+    | null;
 };
 
 type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
@@ -178,6 +190,11 @@ function getDayNightFromTimestamp(value: unknown) {
 
   const hour = date.getHours();
   return hour >= 6 && hour < 18 ? "Day Pigeon" : "Night Owl";
+}
+
+function getIsDayNow() {
+  const hour = new Date().getHours();
+  return hour >= 6 && hour < 18;
 }
 
 function getStablePreference(pet: PetRecord) {
@@ -523,6 +540,14 @@ export default function PetDetailsPanel({
     clampedBond,
   ]);
 
+  const selfAwareMemoryRef = useRef<ReturnType<
+    typeof rememberSelfAwareVisit
+  > | null>(null);
+
+  useEffect(() => {
+    selfAwareMemoryRef.current = rememberSelfAwareVisit(pet?.id ?? null);
+  }, [pet?.id]);
+
   useEffect(() => {
     let showTimer: number | null = null;
     let hideTimer: number | null = null;
@@ -551,16 +576,33 @@ export default function PetDetailsPanel({
               bond: current.clampedBond,
             })?.trim() ?? "";
 
-          setPetSpeech(
+          const fallbackSpeech =
             dialogueText ||
-              getRandomPetSpeech({
+            getRandomPetSpeech({
+              hunger: current.hungerLevel,
+              clean: current.cleanLevel,
+              happy: current.moodLevel,
+              comfort: current.comfortLevel,
+              rest: current.restLevel,
+              energy: current.energyLevel,
+            });
+
+          setPetSpeech(
+            getSelfAwareBubbleText({
+              pet: current.pet,
+              care: {
                 hunger: current.hungerLevel,
                 clean: current.cleanLevel,
                 happy: current.moodLevel,
                 comfort: current.comfortLevel,
                 rest: current.restLevel,
                 energy: current.energyLevel,
-              }),
+                bond: current.clampedBond,
+              },
+              isDay: getIsDayNow(),
+              memory: selfAwareMemoryRef.current,
+              fallbackText: fallbackSpeech,
+            }),
           );
 
           setShowPetSpeech(true);

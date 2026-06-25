@@ -1409,7 +1409,7 @@
   align-items: start;
 }
 
-.petRepoBottomGrid > .petRepoPanel--infoShell,
+.petRepoBottomGrid > .statsChamber,
 .petRepoBottomGrid > .petSkillsPanel {
   min-height: 100%;
 }
@@ -1630,7 +1630,7 @@
   background-clip: padding-box;
   background-origin: padding-box;
   box-shadow: none;
-  opacity: 0.2;
+  opacity: 0.3;
   z-index: 0;
 }
 

@@ -56,6 +56,7 @@ import {
 } from "../../lib/petCareHelpers";
 
 import { ensureEggSchema } from "../../lib/validation";
+import { randomInt as cryptoRandomInt } from "node:crypto";
 
 type HatchBaseRow = {
   pet_id: string;
@@ -119,6 +120,93 @@ type PetLocationUpdatePayload = {
   location: string;
   is_active: boolean;
 };
+
+type AliuneHatchSignal = {
+  condition: string | null;
+  corruption: string | null;
+};
+
+const HATCH_CORRUPTION_ROLL_MAX = 1000;
+const LOW_CORRUPTION_EGG_LOSS_CHANCE = 100; // 10%
+const RISING_CORRUPTION_EGG_LOSS_CHANCE = 250; // 25%, tune later
+const HIGH_CORRUPTION_EGG_LOSS_CHANCE = 650; // 65%, tune later
+const TOO_HIGH_CORRUPTION_EGG_LOSS_CHANCE = 900; // 90%, tune later
+
+function isMysteryEggProtected(egg: EggRow): boolean {
+  const eggName = String(egg.name ?? "").toLowerCase();
+
+  if (eggName.includes("mystery")) {
+    return true;
+  }
+
+  // Alpha safety:
+  // The first "Mystery Egg" can become a starter species like Shadow Solen.
+  // Backend may store that egg as the starter egg name instead of literally "Mystery Egg".
+  return Boolean(
+    egg.species &&
+    STARTERS.some((starter) => starter.speciesId === egg.species),
+  );
+}
+
+async function fetchCurrentAliuneHatchSignal(
+  nowIso: string,
+): Promise<AliuneHatchSignal> {
+  const { data, error } = await supabaseAdmin
+    .from("aliune_signal_reports")
+    .select("condition, corruption, starts_at, ends_at, created_at")
+    .eq("enabled", true)
+    .or(`starts_at.is.null,starts_at.lte.${nowIso}`)
+    .or(`ends_at.is.null,ends_at.gte.${nowIso}`)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    logger.warn(
+      "[hatch] failed to read Aliune Signal; hatch continues safely",
+      {
+        error: error.message,
+      },
+    );
+
+    return {
+      condition: "stable",
+      corruption: "none",
+    };
+  }
+
+  return {
+    condition: data?.condition ?? "stable",
+    corruption: data?.corruption ?? "none",
+  };
+}
+
+function getEggLossChancePermille(signal: AliuneHatchSignal): number {
+  const condition = String(signal.condition ?? "stable").toLowerCase();
+  const corruption = String(signal.corruption ?? "none").toLowerCase();
+
+  const riskyCondition = condition === "unstable" || condition === "unbalanced";
+
+  if (!riskyCondition) return 0;
+
+  if (corruption === "low") {
+    return LOW_CORRUPTION_EGG_LOSS_CHANCE;
+  }
+
+  if (corruption === "rising") {
+    return RISING_CORRUPTION_EGG_LOSS_CHANCE;
+  }
+
+  if (corruption === "high") {
+    return HIGH_CORRUPTION_EGG_LOSS_CHANCE;
+  }
+
+  if (corruption === "too high" || corruption === "too_high") {
+    return TOO_HIGH_CORRUPTION_EGG_LOSS_CHANCE;
+  }
+
+  return 0;
+}
 
 async function hydrateHatchedPassiveTrait(pet: Record<string, any>) {
   if (!pet?.passive_trait_id && !pet?.passive_trait_key) return pet;
@@ -639,6 +727,71 @@ petsRouter.post(
       }
 
       const typedEgg = egg as EggRow;
+
+      const aliuneSignal = await fetchCurrentAliuneHatchSignal(nowIso);
+      const eggLossChance = isMysteryEggProtected(typedEgg)
+        ? 0
+        : getEggLossChancePermille(aliuneSignal);
+
+      const eggCorrupted =
+        eggLossChance > 0 &&
+        cryptoRandomInt(HATCH_CORRUPTION_ROLL_MAX) < eggLossChance;
+
+      if (eggCorrupted) {
+        await supabaseAdmin
+          .from("hatchery_slots")
+          .update({ pet_id: null })
+          .eq("user_id", userId)
+          .eq("pet_id", egg.id);
+
+        const { error: deleteEggError } = await supabaseAdmin
+          .from("pets")
+          .delete()
+          .eq("id", egg.id)
+          .eq("user_id", userId)
+          .eq("stage", "egg");
+
+        if (deleteEggError) {
+          logger.error("[hatch] corrupted egg delete failed", deleteEggError);
+
+          return res.status(500).json({
+            error: "The egg corrupted, but cleanup failed.",
+          });
+        }
+
+        logger.warn("[hatch] egg lost to Aliune corruption", {
+          eggId: egg.id,
+          userId,
+          condition: aliuneSignal.condition,
+          corruption: aliuneSignal.corruption,
+          eggLossChance,
+        });
+
+        return res.json({
+          server_now: nowIso,
+          pet: null,
+          awarded_points: 0,
+          iv: null,
+          points: null,
+          gender: null,
+          personality_key: null,
+          personality_id: null,
+          party_slot_assigned: null,
+          post_hatch_destination: null,
+          storage_result: null,
+          is_mystery_starter_hatch: false,
+          starter_species_id: null,
+          egg_lost: true,
+          corruption_event: {
+            outcome: "egg_lost",
+            condition: aliuneSignal.condition,
+            corruption: aliuneSignal.corruption,
+            message:
+              "Aliune Signal interference corrupted the egg. The shell fractured and the egg was lost.",
+          },
+        });
+      }
+
       const starter = typedEgg.species
         ? (STARTERS.find((s) => s.speciesId === typedEgg.species) ?? null)
         : (STARTERS.find((s) => s.line === typedEgg.line) ?? null);

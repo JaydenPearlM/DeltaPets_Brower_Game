@@ -26,7 +26,7 @@ const STARTER_TROUGH_CAPACITY = 50;
 const EGG_HATCH_MINUTES = 2;
 
 const ELEMENTS = [
-  "neutral",
+  "null_element",
   "water",
   "fire",
   "earth",
@@ -38,6 +38,12 @@ const ELEMENTS = [
 ] as const;
 
 type Element = (typeof ELEMENTS)[number];
+
+function displayElement(element: Element): string {
+  if (element === "null_element") return "Neutral";
+
+  return element.charAt(0).toUpperCase() + element.slice(1);
+}
 
 type Reward =
   | { kind: "dots"; amount: number; label: string }
@@ -97,7 +103,7 @@ function rollPostWeek1(): Reward {
   const rollPermille = cryptoRandomInt(0, 1000); // 0..999
   if (rollPermille < POST_WEEK1_EGG_CHANCE_PERMILLE) {
     const element = pickRandomElement();
-    return { kind: "egg", element, label: `Egg (${element})` };
+    return { kind: "egg", element, label: `Egg (${displayElement(element)})` };
   }
 
   // Otherwise currency: dots or crystals
@@ -244,7 +250,7 @@ async function giveEgg(user_id: string, element: Element) {
 
   const { error } = await supabaseAdmin.from("pets").insert({
     user_id,
-    name: `${element} reward egg`,
+    name: `${displayElement(element)} reward egg`,
     species: "reward_egg",
     line: element,
     stage: "egg",
