@@ -28,7 +28,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
   const [view, setView] = useState<"systems" | "patches">("systems");
 
   return (
-    <section className={`alpha-panel dp-blue-grid-panel ${className}`}>
+    <section className={`alpha-panel dp-standard-panel-purple ${className}`}>
       <div className="alpha-header">
         <h2 className="alpha-title">
           {view === "systems" ? "Alpha Current" : "Patch Notes"}

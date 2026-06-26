@@ -1,0 +1,158 @@
+diff --git a/frontend/web/src/components/AlphaSystems/AlphaSystemsPanel.css b/frontend/web/src/components/AlphaSystems/AlphaSystemsPanel.css
+index 7180f40..97232be 100644
+--- a/frontend/web/src/components/AlphaSystems/AlphaSystemsPanel.css
++++ b/frontend/web/src/components/AlphaSystems/AlphaSystemsPanel.css
+@@ -1,40 +1,13 @@
+ .alpha-panel {
+-  position: relative;
+   width: calc(100% + 100px);
+   margin-left: 56px;
+   margin-right: 0;
+-  border-radius: 20px;
+-  overflow: hidden;
+   display: flex;
+   flex-direction: column;
+   gap: 0;
+-  background:
+-    var(--dp-popup-blue-grid),
+-    linear-gradient(
+-      180deg,
+-      var(--dp-panel-bg-top) 0%,
+-      var(--dp-panel-bg-mid) 52%,
+-      var(--dp-panel-bg-bottom) 100%
+-    );
+-  background-size:
+-    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+-    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+-    100% 100%;
+-  border: 2px solid var(--dp-panel-border);
+-
+-  box-shadow:
+-    0 0 18px var(--dp-panel-glow),
+-    0 0 42px var(--dp-cyber-blue-soft),
+-    0 20px 32px rgba(26, 40, 68, 0.22);
+ }
+-.alpha-panel::before {
+-  content: "";
+-  position: absolute;
+-  inset: 10px;
++.alpha-panel.dp-standard-panel-purple::before {
+   border-radius: 14px;
+-  border: 3px solid #7fdcff;
+-  pointer-events: none;
+-  z-index: 2;
+ }
+ 
+ .alpha-panel > * {
+@@ -51,7 +24,13 @@
+   justify-content: space-between;
+   text-align: left;
+   padding: 0.9rem 1rem;
+-  margin: 10px 10px 0;
++  margin: calc(
++      var(--dp-standard-panel-inset-gap) + var(--dp-standard-panel-inner-size)
++    )
++    calc(
++      var(--dp-standard-panel-inset-gap) + var(--dp-standard-panel-inner-size)
++    )
++    0;
+   border-radius: 14px 14px 0 0;
+   overflow: hidden;
+   background:
+@@ -105,7 +84,13 @@
+   display: flex;
+   flex-direction: column;
+   gap: 0;
+-  margin: 0 10px 10px;
++  margin: 0
++    calc(
++      var(--dp-standard-panel-inset-gap) + var(--dp-standard-panel-inner-size)
++    )
++    calc(
++      var(--dp-standard-panel-inset-gap) + var(--dp-standard-panel-inner-size)
++    );
+   overflow: hidden;
+   border-radius: 0 0 13px 13px;
+   color: var(--dp-panel-text);
+diff --git a/frontend/web/src/components/AlphaSystems/AlphaSystemsPanel.tsx b/frontend/web/src/components/AlphaSystems/AlphaSystemsPanel.tsx
+index c42171a..98f3e3d 100644
+--- a/frontend/web/src/components/AlphaSystems/AlphaSystemsPanel.tsx
++++ b/frontend/web/src/components/AlphaSystems/AlphaSystemsPanel.tsx
+@@ -28,7 +28,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
+   const [view, setView] = useState<"systems" | "patches">("systems");
+ 
+   return (
+-    <section className={`alpha-panel dp-blue-grid-panel ${className}`}>
++    <section className={`alpha-panel dp-standard-panel-purple ${className}`}>
+       <div className="alpha-header">
+         <h2 className="alpha-title">
+           {view === "systems" ? "Alpha Current" : "Patch Notes"}
+diff --git a/frontend/web/src/global.css b/frontend/web/src/global.css
+index a656dac..358ef9a 100644
+--- a/frontend/web/src/global.css
++++ b/frontend/web/src/global.css
+@@ -416,14 +416,15 @@
+     radial-gradient(
+       circle at 100% 100%,
+       var(--dp-standard-panel-splash-pink) 0%,
+-      var(--dp-standard-panel-splash-purple) 24%,
+-      transparent 48%
++      var(--dp-standard-panel-splash-pink) 12%,
++      var(--dp-standard-panel-splash-purple) 38%,
++      transparent 72%
+     ),
+     var(--dp-standard-panel-bg);
+   background-size:
+     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+-    320px 320px,
++    520px 520px,
+     auto;
+   background-position:
+     0 0,
+diff --git a/frontend/web/src/pages/Homepage/homepage.css b/frontend/web/src/pages/Homepage/homepage.css
+index 28439e2..6d4599b 100644
+--- a/frontend/web/src/pages/Homepage/homepage.css
++++ b/frontend/web/src/pages/Homepage/homepage.css
+@@ -811,13 +811,6 @@
+   justify-self: start;
+   margin-left: 56px;
+   width: calc(100% + 100px);
+-  border-color: var(--dp-panel-border);
+-  outline: 3px solid #7fdcff;
+-  outline-offset: -14px;
+-  box-shadow:
+-    0 0 18px var(--dp-panel-glow),
+-    0 0 42px var(--dp-cyber-blue-soft),
+-    inset 0 0 24px var(--dp-panel-inner-shadow);
+ }
+ 
+ .hp-createdPanel {
+@@ -856,14 +849,6 @@
+ 
+ .hp-spotlightPanel--featured {
+   position: relative;
+-  overflow: hidden;
+-  isolation: isolate;
+-  background: linear-gradient(
+-    180deg,
+-    var(--dp-panel-bg-top) 0%,
+-    var(--dp-panel-bg-mid) 50%,
+-    var(--dp-panel-bg-bottom) 100%
+-  );
+ }
+ 
+ .hp-spotlightPanel--featured.hp-panel::before {
+diff --git a/frontend/web/src/pages/Homepage/homepage.tsx b/frontend/web/src/pages/Homepage/homepage.tsx
+index 1b6ef2c..fabf74e 100644
+--- a/frontend/web/src/pages/Homepage/homepage.tsx
++++ b/frontend/web/src/pages/Homepage/homepage.tsx
+@@ -149,7 +149,7 @@ export default function Homepage() {
+ 
+         <div className="hp-spotlightColumn">
+           <section
+-            className="hp-panel hp-panel--amber hp-spotlightPanel hp-spotlightPanel--featured dp-blue-grid-panel"
++            className="hp-spotlightPanel hp-spotlightPanel--featured dp-standard-panel-purple"
+             aria-label="Spotlight"
+           >
+             <div className="hp-panelHeader">

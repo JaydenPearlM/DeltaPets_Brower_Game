@@ -160,9 +160,15 @@
   --dp-standard-panel-section-title-size: 1.18rem;
   --dp-standard-panel-splash-purple: rgba(169, 105, 255, 0.56);
   --dp-standard-panel-splash-pink: rgba(255, 84, 180, 0.44);
-  --dp-standard-panel-blue-grid: var(--dp-popup-blue-grid);
+  --dp-standard-panel-grid-line: rgba(77, 234, 255, 0.6);
+  --dp-standard-panel-blue-grid:
+    linear-gradient(var(--dp-standard-panel-grid-line) 2px, transparent 2px),
+    linear-gradient(
+      90deg,
+      var(--dp-standard-panel-grid-line) 2px,
+      transparent 2px
+    );
   --dp-standard-panel-bg: linear-gradient(
-    135deg,
     var(--dp-panel-bg-top) 0%,
     var(--dp-panel-bg-mid) 54%,
     var(--dp-panel-bg-bottom) 100%
@@ -416,14 +422,15 @@
     radial-gradient(
       circle at 100% 100%,
       var(--dp-standard-panel-splash-pink) 0%,
-      var(--dp-standard-panel-splash-purple) 24%,
-      transparent 48%
+      var(--dp-standard-panel-splash-pink) 12%,
+      var(--dp-standard-panel-splash-purple) 38%,
+      transparent 72%
     ),
     var(--dp-standard-panel-bg);
   background-size:
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
-    320px 320px,
+    520px 520px,
     auto;
   background-position:
     0 0,
@@ -439,6 +446,55 @@
 .dp-standard-panel > *,
 .dp-panel--standard > *,
 .dp-global-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dp-standard-panel-purple {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 2px solid var(--dp-panel-purple-border);
+  border-radius: 24px;
+  background: var(--dp-standard-panel-bg);
+  box-shadow: 0 0 2px var(--dp-panel-purple-glow);
+  color: var(--dp-panel-text);
+}
+
+.dp-standard-panel-purple::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-standard-panel-inset-gap);
+  z-index: 0;
+  border: var(--dp-standard-panel-inner-size) solid var(--dp-cyber-cyan);
+  border-radius: 14px;
+  background-image:
+    var(--dp-standard-panel-blue-grid),
+    radial-gradient(
+      circle at 100% 100%,
+      var(--dp-standard-panel-splash-pink) 0%,
+      var(--dp-standard-panel-splash-pink) 12%,
+      var(--dp-standard-panel-splash-purple) 38%,
+      transparent 72%
+    ),
+    var(--dp-standard-panel-bg);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
+    auto;
+  background-position:
+    0 0,
+    0 0,
+    100% 100%,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  background-clip: padding-box;
+  background-origin: padding-box;
+  pointer-events: none;
+}
+
+.dp-standard-panel-purple > * {
   position: relative;
   z-index: 1;
 }

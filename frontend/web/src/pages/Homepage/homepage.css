@@ -811,13 +811,6 @@
   justify-self: start;
   margin-left: 56px;
   width: calc(100% + 100px);
-  border-color: var(--dp-panel-border);
-  outline: 3px solid #7fdcff;
-  outline-offset: -14px;
-  box-shadow:
-    0 0 18px var(--dp-panel-glow),
-    0 0 42px var(--dp-cyber-blue-soft),
-    inset 0 0 24px var(--dp-panel-inner-shadow);
 }
 
 .hp-createdPanel {
@@ -856,14 +849,6 @@
 
 .hp-spotlightPanel--featured {
   position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  background: linear-gradient(
-    180deg,
-    var(--dp-panel-bg-top) 0%,
-    var(--dp-panel-bg-mid) 50%,
-    var(--dp-panel-bg-bottom) 100%
-  );
 }
 
 .hp-spotlightPanel--featured.hp-panel::before {

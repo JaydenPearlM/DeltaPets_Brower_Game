@@ -149,7 +149,7 @@ export default function Homepage() {
 
         <div className="hp-spotlightColumn">
           <section
-            className="hp-panel hp-panel--amber hp-spotlightPanel hp-spotlightPanel--featured dp-blue-grid-panel"
+            className="hp-spotlightPanel hp-spotlightPanel--featured dp-standard-panel-purple"
             aria-label="Spotlight"
           >
             <div className="hp-panelHeader">
