@@ -4,6 +4,9 @@ import type { Response } from "express";
 
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
+import { rollGrowthTraits } from "../../pets/growthTraits";
+import { insertBaseStats } from "../routePets/petsStats";
+import { getStarterForSelection } from "../routePets/starters";
 
 export const rewardsRouter = Router();
 
@@ -248,19 +251,31 @@ async function giveEgg(user_id: string, element: Element) {
     Date.now() + EGG_HATCH_MINUTES * 60 * 1000,
   ).toISOString();
 
-  const { error } = await supabaseAdmin.from("pets").insert({
-    user_id,
-    name: `${displayElement(element)} reward egg`,
-    species: "reward_egg",
-    line: element,
-    stage: "egg",
-    energy: 100,
-    hatch_ends_at: hatchEndsAt,
-    is_active: false,
-    location: "hatchery",
-  });
+  const starter = getStarterForSelection({ line: element });
+  const { strongStats, weakStat } = rollGrowthTraits();
+
+  const { data: egg, error } = await supabaseAdmin
+    .from("pets")
+    .insert({
+      user_id,
+      name: starter.eggName,
+      species: starter.speciesId,
+      line: starter.line,
+      stage: "egg",
+      energy: 100,
+      hatch_ends_at: hatchEndsAt,
+      is_active: false,
+      location: "hatchery",
+      growth_strong_stats: strongStats,
+      growth_weak_stat: weakStat,
+    })
+    .select("id")
+    .single();
 
   if (error) throw error;
+  if (!egg?.id) throw new Error("Reward egg insert finished without an id.");
+
+  await insertBaseStats(egg.id, starter.baseStats);
 }
 
 async function applyReward(user_id: string, reward: Reward) {

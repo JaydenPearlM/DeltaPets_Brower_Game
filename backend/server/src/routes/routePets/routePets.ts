@@ -247,7 +247,7 @@ async function rollPassiveTrait() {
 
   if (error || !data?.length) return null;
 
-  return data[Math.floor(Math.random() * data.length)];
+  return data[cryptoRandomInt(0, data.length)];
 }
 
 export const petsRouter = Router();
@@ -859,6 +859,8 @@ petsRouter.post(
       });
 
       const hatchTimeAlignment = typedEgg.hatch_time_alignment ?? null;
+      const growthWeakStatForRpc = weakness ?? "";
+      const hatchTimeAlignmentForRpc = hatchTimeAlignment ?? "";
 
       const { data: hatchResult, error: hatchError } = await supabaseAdmin.rpc(
         "hatch_pet",
@@ -877,8 +879,8 @@ petsRouter.post(
           p_hatchling_name: starter.hatchlingName,
           p_description: description,
           p_growth_strong_stats: strengths,
-          p_growth_weak_stat: weakness,
-          p_hatch_time_alignment: hatchTimeAlignment,
+          p_growth_weak_stat: growthWeakStatForRpc,
+          p_hatch_time_alignment: hatchTimeAlignmentForRpc,
         },
       );
 

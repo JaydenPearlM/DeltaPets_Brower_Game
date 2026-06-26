@@ -1,6 +1,5 @@
 // backend/server/src/routes/care/care.ts
 // backend/server/src/routes/care/care.ts
-
 import { Router } from "express";
 import type { NextFunction, Response } from "express";
 import { safeNum } from "../../lib/utils";
@@ -10,6 +9,12 @@ import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
 import { fetchActivePet } from "../routePets/petsRepo";
 import { applyCareDecay } from "../../shared/pets/care/CareDecay";
+import {
+  assertCooldownReady,
+  calcNewCooldownEndsAtIso,
+  colNameForKey,
+  type CooldownKey,
+} from "../../pets/cooldowns";
 import {
   normalizePetForClient,
   updatePetCareStats,
@@ -191,6 +196,27 @@ async function hydratePassiveTrait(pet: Record<string, any>) {
     passive_trait_stat_key: data.stat_key,
   };
 }
+async function enforceCareCooldown(userId: string, action: CooldownKey) {
+  const nowMs = Date.now();
+  const { pet } = await fetchActivePet(userId);
+
+  if (!pet?.id) {
+    throw Object.assign(new Error("No active pet found"), { status: 404 });
+  }
+
+  assertCooldownReady(pet, action, nowMs);
+
+  const col = colNameForKey(action);
+  const { error } = await supabaseAdmin
+    .from("pets")
+    .update({
+      [col]: calcNewCooldownEndsAtIso(nowMs, action),
+    })
+    .eq("id", pet.id);
+
+  if (error) throw error;
+}
+
 careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
   const userId = req.user!.id;
 
@@ -540,6 +566,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
 
 careRouter.post("/feed", requireUser, async (req: AuthedRequest, res) => {
   try {
+    await enforceCareCooldown(req.user!.id, "feed");
     const amount = Math.max(1, Math.min(50, safeNum(req.body?.amount, 20)));
     const result = await applyCarePatch(req.user!.id, { hunger: amount });
     return res.json({ success: true, ...result });
@@ -552,6 +579,7 @@ careRouter.post("/feed", requireUser, async (req: AuthedRequest, res) => {
 
 careRouter.post("/clean", requireUser, async (req: AuthedRequest, res) => {
   try {
+    await enforceCareCooldown(req.user!.id, "clean");
     const amount = Math.max(1, Math.min(50, safeNum(req.body?.amount, 20)));
     const result = await applyCarePatch(req.user!.id, { clean: amount });
     return res.json({ success: true, ...result });
@@ -564,6 +592,7 @@ careRouter.post("/clean", requireUser, async (req: AuthedRequest, res) => {
 
 careRouter.post("/play", requireUser, async (req: AuthedRequest, res) => {
   try {
+    await enforceCareCooldown(req.user!.id, "play");
     const amount = Math.max(1, Math.min(50, safeNum(req.body?.amount, 20)));
     const result = await applyCarePatch(req.user!.id, { happy: amount });
     return res.json({ success: true, ...result });

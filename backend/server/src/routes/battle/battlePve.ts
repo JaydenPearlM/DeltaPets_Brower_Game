@@ -83,6 +83,7 @@ setInterval(
 );
 
 const MAX_BATTLE_LOG_ENTRIES = 50;
+const MAX_ADVANCE_BATTLE_DEPTH = 200;
 
 export const battlePveRouter = Router();
 
@@ -241,9 +242,17 @@ function checkBattleEnd(state: BattleState) {
   }
 }
 
-function advanceBattle(state: BattleState) {
+function advanceBattle(state: BattleState, depth = 0) {
   checkBattleEnd(state);
   if (state.status !== "active") return;
+
+  if (depth >= MAX_ADVANCE_BATTLE_DEPTH) {
+    state.status = "defeat";
+    state.activeUnitId = null;
+    state.updatedAt = new Date().toISOString();
+    state.log.push("Battle stopped after too many automatic turns.");
+    return;
+  }
 
   let next = pickNextUnit(state);
 
@@ -257,7 +266,7 @@ function advanceBattle(state: BattleState) {
   if (next.status.stunned && next.status.stunned > 0) {
     state.log.push(`${next.name} is stunned and loses their turn.`);
     next.status.stunned -= 1;
-    advanceBattle(state);
+    advanceBattle(state, depth + 1);
     return;
   }
 
@@ -266,7 +275,7 @@ function advanceBattle(state: BattleState) {
 
   if (next.side === "enemy" || state.autoMode) {
     runAiTurn(state, next);
-    advanceBattle(state);
+    advanceBattle(state, depth + 1);
   }
 }
 

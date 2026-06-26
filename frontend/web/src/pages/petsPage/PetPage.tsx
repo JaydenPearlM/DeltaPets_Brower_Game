@@ -674,9 +674,11 @@ export default function PetPage() {
     }
 
     if (!hasLoggedRunawayLockRef.current) {
-      console.log("[PetPage] Runaway lock active → blocking full UI", {
-        starterMerchant,
-      });
+      if (import.meta.env.DEV) {
+        console.log("[PetPage] Runaway lock active → blocking full UI", {
+          starterMerchant,
+        });
+      }
       hasLoggedRunawayLockRef.current = true;
     }
   }, [isRunawayLock, starterMerchant]);
