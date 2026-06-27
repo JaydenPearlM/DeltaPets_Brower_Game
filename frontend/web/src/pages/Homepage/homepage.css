@@ -833,9 +833,6 @@
 
 .hp-spotlightPanel .hp-panelTitle {
   font-size: 3rem;
-  color: var(--dp-spotlight-purple, #b46cff);
-  -webkit-text-fill-color: var(--dp-spotlight-purple, #b46cff);
-  -webkit-text-stroke: 0.5px var(--dp-spotlight-lavender-stroke, #e3c7ff);
   line-height: 1;
   letter-spacing: 0.025em;
   margin: 6px 0 2px;

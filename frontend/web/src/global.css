@@ -160,7 +160,9 @@
   --dp-standard-panel-section-title-size: 1.18rem;
   --dp-standard-panel-splash-purple: rgba(169, 105, 255, 0.56);
   --dp-standard-panel-splash-pink: rgba(255, 84, 180, 0.44);
-  --dp-standard-panel-grid-line: rgba(77, 234, 255, 0.6);
+  --dp-standard-panel-cyan-inset-splash-gold: rgba(255, 214, 102, 0.36);
+  --dp-standard-panel-cyan-inset-splash-orange: rgba(255, 159, 47, 0.24);
+  --dp-standard-panel-grid-line: rgba(77, 234, 255, 0.1);
   --dp-standard-panel-blue-grid:
     linear-gradient(var(--dp-standard-panel-grid-line) 2px, transparent 2px),
     linear-gradient(
@@ -200,10 +202,14 @@
   );
   --dp-popup-grid-accent: radial-gradient(
     circle at 100% 100%,
-    var(--dp-panel-glow-pink),
-    transparent 38%
+    var(--dp-standard-panel-splash-pink) 0%,
+    var(--dp-standard-panel-splash-pink) 12%,
+    var(--dp-standard-panel-splash-purple) 38%,
+    transparent 72%
   );
-  --dp-popup-grid-texture: var(--dp-popup-blue-grid), var(--dp-popup-grid-base);
+  --dp-popup-grid-texture:
+    var(--dp-popup-blue-grid), var(--dp-popup-grid-accent),
+    var(--dp-popup-grid-base);
   --dp-popup-light-sheen: rgba(255, 255, 255, 0.08);
   --dp-popup-cyan-wash: rgba(77, 234, 255, 0.16);
   --dp-popup-purple-splash: rgba(169, 105, 255, 0.16);
@@ -472,10 +478,10 @@
     var(--dp-standard-panel-blue-grid),
     radial-gradient(
       circle at 100% 100%,
-      var(--dp-standard-panel-splash-pink) 0%,
-      var(--dp-standard-panel-splash-pink) 12%,
-      var(--dp-standard-panel-splash-purple) 38%,
-      transparent 72%
+      var(--dp-standard-panel-cyan-inset-splash-gold) 0%,
+      var(--dp-standard-panel-cyan-inset-splash-gold) 18%,
+      var(--dp-standard-panel-cyan-inset-splash-orange) 46%,
+      transparent 76%
     ),
     var(--dp-standard-panel-bg);
   background-size:
@@ -527,6 +533,24 @@
   text-transform: uppercase;
 }
 
+.dp-standard-panel-purple .dp-standard-panel-title,
+.dp-standard-panel-purple .dp-global-panel-title,
+.dp-standard-panel-purple .dp-panelTitle,
+.dp-standard-panel-purple .hp-panelTitle,
+.dp-standard-panel-purple .alpha-title {
+  color: var(--dp-panel-purple-border) !important;
+  -webkit-text-fill-color: var(--dp-panel-purple-border) !important;
+  text-shadow: 0 0 12px var(--dp-panel-purple-glow) !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+.dp-standard-panel-purple .dp-standard-panel-section-title,
+.dp-standard-panel-purple .dp-global-panel-section-title {
+  color: var(--dp-cyber-cyan);
+  text-shadow: 0 0 12px var(--dp-cyber-cyan-soft);
+  -webkit-text-stroke: 0;
+}
+
 /* Popup grid panel class: use this for popup/window surfaces that need the blue grid inside the purple inset. */
 .dp-popup-grid-panel {
   position: relative;
@@ -550,6 +574,7 @@
   background-size:
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
     auto;
   background-clip: padding-box;
   background-origin: padding-box;
@@ -2197,6 +2222,7 @@ a {
   background-size:
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
     auto;
   background-clip: padding-box;
   background-origin: padding-box;
@@ -2238,6 +2264,7 @@ a {
   background-size:
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
     auto;
   background-clip: padding-box;
   background-origin: padding-box;
