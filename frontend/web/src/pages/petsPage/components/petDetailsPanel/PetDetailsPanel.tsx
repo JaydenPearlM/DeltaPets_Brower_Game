@@ -861,7 +861,7 @@ export default function PetDetailsPanel({
               </div>
             ) : null}
             <div className="petRepoFarmButtonWrap">
-              <Link to="/farm" className="btn btn-gold petRepoFarmButton">
+              <Link to="/farm" className="btn btn-gold">
                 Farm
               </Link>
             </div>

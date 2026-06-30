@@ -9,6 +9,7 @@ import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 
 import goldEggPng from "@/Pets_Creation/assets/eggs/goldEgg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
+import { SHARED_SPECIES } from "@shared/pets/species";
 import "./HatcheryPage.css";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -68,6 +69,7 @@ type HatcherySlotResponse = {
     name?: string | null;
     stage?: string | null;
     line?: string | null;
+    species?: string | null;
     growth_strong_stats?: EggStatKey[] | null;
     growth_weak_stat?: EggStatKey | null;
   } | null;
@@ -94,6 +96,7 @@ type HatcheryResponse = {
     name?: string | null;
     stage?: string | null;
     line?: string | null;
+    species?: string | null;
     growth_strong_stats?: EggStatKey[] | null;
     growth_weak_stat?: EggStatKey | null;
   } | null;
@@ -132,6 +135,7 @@ type HatchEgg = {
   name: string;
   hatch_ends_at: string;
   line?: string;
+  species?: string | null;
   growth_strong_stats?: EggStatKey[] | null;
   growth_weak_stat?: EggStatKey | null;
 };
@@ -248,6 +252,52 @@ function getEggGrowthTraits(egg: HatchEgg | null): EggGrowthTraits {
     strongStats,
     weakStat,
     flavorText: buildEggFlavorText(strongStats, weakStat),
+  };
+}
+
+function normalizeSpeciesMatch(value?: string | null) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function getSharedEggStats(egg: HatchEgg): PetStatsRow | null {
+  const eggKeys = new Set(
+    [egg.species, egg.name, egg.line]
+      .map(normalizeSpeciesMatch)
+      .filter(Boolean),
+  );
+
+  const species = SHARED_SPECIES.find((entry) => {
+    const possibleKeys = [
+      entry.id,
+      entry.line,
+      entry.evolution.egg,
+      entry.evolution.hatchling,
+      entry.evolution.lowform,
+      entry.evolution.highform,
+      entry.evolution.legion,
+      entry.evolution.mythical_legendary,
+    ]
+      .map(normalizeSpeciesMatch)
+      .filter(Boolean);
+
+    return possibleKeys.some((key) => eggKeys.has(key));
+  });
+
+  if (!species) return null;
+
+  return {
+    pet_id: egg.id,
+    hp: species.eggBaseStats.hp,
+    atk: species.eggBaseStats.atk,
+    magi: species.eggBaseStats.magi,
+    def: species.eggBaseStats.def,
+    spd: species.eggBaseStats.spd,
+    mana: species.eggBaseStats.mana,
+    base_total: species.eggBaseStats.base_total,
   };
 }
 
@@ -462,12 +512,13 @@ export default function HatcheryPage() {
         egg:
           slot.pet && slot.pet.stage === "egg" && slot.hatch?.hatch_ends_at
             ? {
-                id: slot.pet.id,
-                name: slot.pet.name?.trim() || "Mystery Egg",
-                hatch_ends_at: slot.hatch.hatch_ends_at,
-                line: slot.pet.line ?? undefined,
-                growth_strong_stats: slot.pet.growth_strong_stats ?? [],
-                growth_weak_stat: slot.pet.growth_weak_stat ?? null,
+                id: pet.id,
+                name: pet.name?.trim() || "Mystery Egg",
+                hatch_ends_at: hatchEndsAt,
+                line: pet.line ?? undefined,
+                species: pet.species ?? null,
+                growth_strong_stats: pet.growth_strong_stats ?? [],
+                growth_weak_stat: pet.growth_weak_stat ?? null,
               }
             : undefined,
       }));
@@ -549,8 +600,15 @@ export default function HatcheryPage() {
 
   const displayedStats = useMemo(() => {
     if (!selectedEgg) return EMPTY_STATS;
-    return data?.stats ?? EMPTY_STATS;
-  }, [selectedEgg, data?.stats]);
+
+    const sharedStats = getSharedEggStats(selectedEgg);
+
+    if (selectedEgg.id !== data?.pet?.id && sharedStats) {
+      return sharedStats;
+    }
+
+    return data?.stats ?? sharedStats ?? EMPTY_STATS;
+  }, [selectedEgg, data?.pet?.id, data?.stats]);
 
   const selectedEggTraits = useMemo(() => {
     return getEggGrowthTraits(selectedEgg);

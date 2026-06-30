@@ -53,6 +53,21 @@ function addCareItem(_category: CareInventoryCategory, _amount: number) {
 
 type PetRecord = Record<string, any>;
 
+function getCareCooldownRemainingMs(pet: PetRecord | null, action: CareAction) {
+  if (action === "pet") return 0;
+
+  const cooldownColumnByAction: Record<Exclude<CareAction, "pet">, string> = {
+    feed: "cd_feed_ends_at",
+    clean: "cd_clean_ends_at",
+    play: "cd_play_ends_at",
+  };
+
+  const endsAt = pet?.[cooldownColumnByAction[action]];
+  const endsMs = endsAt ? Date.parse(String(endsAt)) : NaN;
+
+  return Number.isFinite(endsMs) ? Math.max(0, endsMs - Date.now()) : 0;
+}
+
 type TeamCardPet = {
   id: string;
   name?: string | null;
@@ -266,6 +281,7 @@ export default function PetPage() {
 
   const hasLoadedOnceRef = useRef(false);
   const hasLoggedRunawayLockRef = useRef(false);
+  const careActionPendingRef = useRef(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -370,7 +386,20 @@ export default function PetPage() {
 
   const runCareAction = useCallback(
     async (action: CareAction) => {
-      if (busy || nicknameSaving) return;
+      if (careActionPendingRef.current || busy || nicknameSaving) return;
+
+      const cooldownRemainingMs = getCareCooldownRemainingMs(pet, action);
+
+      if (cooldownRemainingMs > 0) {
+        setActionMsg(
+          `${titleCase(action)} is still cooling down for ${Math.ceil(
+            cooldownRemainingMs / 1000,
+          )}s.`,
+        );
+        return;
+      }
+
+      careActionPendingRef.current = true;
 
       const inventoryCategoryByAction: Partial<
         Record<CareAction, CareInventoryCategory>
@@ -395,6 +424,7 @@ export default function PetPage() {
 
           setActionMsg(`You need ${missingLabel} in your inventory first.`);
           syncCareInventoryCounts();
+          careActionPendingRef.current = false;
           return;
         }
 
@@ -437,10 +467,11 @@ export default function PetPage() {
             : `Failed to ${action} your pet.`,
         );
       } finally {
+        careActionPendingRef.current = false;
         setBusy(false);
       }
     },
-    [busy, loadPetPage, nicknameSaving, syncCareInventoryCounts],
+    [busy, loadPetPage, nicknameSaving, pet, syncCareInventoryCounts],
   );
 
   const switchActivePet = useCallback(

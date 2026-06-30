@@ -149,7 +149,7 @@ export default function StatsChamber({
 
           <button
             type="button"
-            className="petRepoSkillTreeButton skillChamberActionButton skillChamberActionButton--gold"
+            className="petRepoSkillTreeButton btn btn-gold"
             onClick={onOpenSkillTree}
           >
             Skill Trees

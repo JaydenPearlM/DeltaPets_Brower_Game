@@ -65,7 +65,9 @@ export async function insertBaseStats(petId: string, s: BaseStatsTemplate) {
     base_total: s.base_total,
   };
 
-  const { error } = await supabaseAdmin.from("pet_stats").insert(payload);
+  const { error } = await supabaseAdmin
+    .from("pet_stats")
+    .upsert(payload, { onConflict: "pet_id" });
 
   if (error) throw error;
 }

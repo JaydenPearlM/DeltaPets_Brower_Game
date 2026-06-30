@@ -23,10 +23,13 @@ type MutationTrait =
 
 type SelfAwarePet = {
   id?: string | null;
+  name?: string | null;
   nickname?: string | null;
   species?: string | null;
   species_name?: string | null;
+  speciesName?: string | null;
   element?: string | null;
+  line?: string | null;
   stage?: string | null;
   level?: number | null;
   personality?: string | null;
@@ -358,8 +361,53 @@ function normalizeKey(value?: string | null) {
   return value?.trim().toLowerCase().replace(/\s+/g, "_") ?? "";
 }
 
+const STARTER_DISPLAY_NAMES: Record<string, string> = {
+  water_starter: "Mizu",
+  fire_starter: "Kindlekin",
+  earth_starter: "Twiglet",
+  air_starter: "Wistpip",
+  ice_starter: "Cribi",
+  storm_starter: "Volb",
+  light_starter: "Solen",
+  shadow_night_bad: "Esperon",
+  shadow_day_good: "Esperon",
+};
+
+function resolveStarterDisplayName(value?: string | null) {
+  const displayName = value?.trim() ?? "";
+
+  if (!displayName) {
+    return "";
+  }
+
+  return STARTER_DISPLAY_NAMES[normalizeKey(displayName)] || displayName;
+}
+
 function getDisplayName(pet: SelfAwarePet) {
-  return pet.nickname || pet.species_name || pet.species || "your pet";
+  return (
+    pet.nickname?.trim() ||
+    resolveStarterDisplayName(pet.name) ||
+    resolveStarterDisplayName(pet.species_name) ||
+    resolveStarterDisplayName(pet.speciesName) ||
+    resolveStarterDisplayName(pet.species) ||
+    "your pet"
+  );
+}
+
+function formatIdentityElement(value?: string | null) {
+  const elementKey = normalizeKey(value);
+
+  if (elementKey === "null" || elementKey === "null_element") {
+    return "Voidborne";
+  }
+
+  if (!value) {
+    return "unknown element";
+  }
+
+  return value
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function getPassiveTraitName(pet: SelfAwarePet) {
@@ -505,17 +553,14 @@ function buildSelfAwareLines(
 ): AwarenessLine[] {
   const lines: AwarenessLine[] = [];
   const personalityKey = normalizeKey(pet.personality_key || pet.personality);
-  const elementKey = normalizeKey(pet.element);
+  const elementKey = normalizeKey(pet.element || pet.line);
   const stageKey = normalizeKey(pet.stage);
   const passiveTraitName = getPassiveTraitName(pet);
   const mutationNames = getMutationNames(pet);
   const lowestCareStat = getLowestCareStat(care);
   const careNumbers = getCareNumbers(care);
   const displayName = getDisplayName(pet);
-  const identityElement =
-    elementKey === "null_element"
-      ? "Voidborne"
-      : pet.element || "unknown element";
+  const identityElement = formatIdentityElement(pet.element || pet.line);
   const identityPersonality =
     pet.personality || pet.personality_key || "mysterious";
   const identityStage = pet.stage || "unknown stage";

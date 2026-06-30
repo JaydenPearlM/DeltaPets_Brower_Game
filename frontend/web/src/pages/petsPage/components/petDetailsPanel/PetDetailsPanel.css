@@ -1269,22 +1269,28 @@
 
 .petRepoAction {
   position: relative;
-  min-height: 54px;
-  padding: 0 16px 0 18px;
-  border-radius: 10px;
-  border: 1px solid var(--dp-border-panel-soft);
-  background: var(--dp-gradient-panel-soft);
-  color: var(--dp-text-primary);
-  font-size: 0.88rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 11px 16px 10px;
+  border-radius: 18px;
+  border: 2px solid var(--btn-gold-border);
+  background: var(--dp-gradient-yellow-button);
+  color: var(--btn-gold-text);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  line-height: 1;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  text-align: left;
+  text-align: center;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    8px 10px 16px rgba(7, 13, 25, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 0 14px rgba(255, 207, 97, 0.35);
   transition:
     transform 0.18s ease,
+    filter 0.18s ease,
     box-shadow 0.18s ease,
     border-color 0.18s ease,
     background 0.18s ease;
@@ -1292,31 +1298,19 @@
 }
 
 .petRepoAction::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 4px;
-  border-radius: 0 4px 4px 0;
-  opacity: 0.92;
+  content: none;
+  display: none;
 }
 
 .petRepoAction::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: 9px;
-  border: 1px solid rgba(255, 255, 255, 0.02);
-  pointer-events: none;
+  content: none;
+  display: none;
 }
 
 .petRepoAction:hover:not(:disabled) {
   transform: translateY(-1px);
-  border-color: var(--dp-panel-border-cyan-bright);
-  box-shadow:
-    inset 0 1px 0 var(--dp-panel-inner-highlight),
-    var(--dp-glow-cyan);
+  filter: brightness(1.08);
+  background: var(--dp-gradient-yellow-button-hover);
 }
 
 .petRepoAction:disabled {
@@ -2077,10 +2071,8 @@
 }
 
 .petRepoFarmButton {
-  min-width: 180px;
-  background: linear-gradient(180deg, #ffc56f 0%, #9f2f1f 100%);
-  box-shadow: none;
-  text-shadow: none;
+  width: fit-content;
+  min-width: 150px;
 }
 
 /* =========================================================

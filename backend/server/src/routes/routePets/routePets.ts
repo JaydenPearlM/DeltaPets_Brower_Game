@@ -806,7 +806,20 @@ petsRouter.post(
         return res.status(500).json({ error: "Invalid egg species or line" });
       }
 
+      await insertBaseStats(egg.id, starter.baseStats);
+
       const iv = rollIV(HATCH_ALLOCATION_POINTS);
+
+      if (sumStats(iv) !== HATCH_ALLOCATION_POINTS) {
+        logger.error("[hatch] invalid hatch allocation total", {
+          eggId: egg.id,
+          iv,
+          expected: HATCH_ALLOCATION_POINTS,
+        });
+
+        return res.status(500).json({ error: "Invalid hatch stat roll" });
+      }
+
       const gender = rollGender();
 
       let personalityId = egg.personality_id ?? null;

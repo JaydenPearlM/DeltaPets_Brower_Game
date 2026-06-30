@@ -131,41 +131,44 @@ export function AnnouncementPanel({
       {selected
         ? createPortal(
             <div
-              className="anp-modalBackdrop"
+              className="dpPopupWindowBackdrop"
               role="presentation"
               onClick={() => setSelected(null)}
             >
-              <div
-                className="anp-modal dp-popup dp-modal-window"
+              <section
+                className="dpPopupWindow"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="aliune-news-modal-title"
                 onClick={(event) => event.stopPropagation()}
               >
-                <button
-                  type="button"
-                  className="anp-modalClose"
-                  aria-label="Close announcement"
-                  onClick={() => setSelected(null)}
-                >
-                  ×
-                </button>
+                <div className="dpPopupWindowContent anp-modalContent">
+                  <h3 id="aliune-news-modal-title" className="anp-modalTitle">
+                    News and Events
+                  </h3>
+                  <hr className="anp-modalRule" />
 
-                <h3 id="aliune-news-modal-title" className="anp-modalTitle">
-                  News and Events
-                </h3>
-                <hr className="anp-modalRule" />
+                  <h4 className="anp-modalTitle anp-modalEntryTitle">
+                    {selected.title}
+                  </h4>
+                  <p className="anp-modalDate">
+                    {formatDate(selected.created_at)}
+                  </p>
+                  <p className="anp-modalBody">
+                    {selected.body || "No message."}
+                  </p>
 
-                <h4 className="anp-modalTitle anp-modalEntryTitle">
-                  {selected.title}
-                </h4>
-                <p className="anp-modalDate">
-                  {formatDate(selected.created_at)}
-                </p>
-                <p className="anp-modalBody">
-                  {selected.body || "No message."}
-                </p>
-              </div>
+                  <div className="anp-modalActions">
+                    <button
+                      type="button"
+                      className="btn btn-pearl anp-modalClose"
+                      onClick={() => setSelected(null)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </section>
             </div>,
             document.body,
           )

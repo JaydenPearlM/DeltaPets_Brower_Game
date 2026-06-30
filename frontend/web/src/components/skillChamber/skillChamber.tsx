@@ -228,7 +228,14 @@ function getCommandButtonStyle(
 }
 
 function getPetName(pet?: Record<string, any> | null) {
-  return String(pet?.nickname ?? pet?.species ?? pet?.name ?? "Wistpip");
+  return String(
+    pet?.nickname?.trim?.() ||
+      pet?.species_name?.trim?.() ||
+      pet?.speciesName?.trim?.() ||
+      pet?.name?.trim?.() ||
+      pet?.species?.replace?.(/_/g, " ") ||
+      "Wistpip",
+  );
 }
 
 function getSkillDescription(skillId: SkillId, fallback: string) {
@@ -244,7 +251,7 @@ function getDisplayName(skillId: SkillId, pet?: Record<string, any> | null) {
 
   switch (skillId) {
     case "basic-strike":
-      return `${elementLabel} Starter Skill`;
+      return `${elementLabel} Strike`;
     case "species-skill":
       return "Hatchling Species Skill";
     case "lowform-skill":
@@ -439,7 +446,6 @@ export default function SkillChamber({
 
   const petName = getPetName(pet);
   const petLevel = getPetLevel(pet);
-  const petElement = getPetElementLabel(pet);
 
   function equipSkill(skillId: SkillId) {
     if (!LOADOUT_SKILL_IDS.includes(skillId)) return;
@@ -460,7 +466,7 @@ export default function SkillChamber({
 
   return (
     <section
-      className="skillsPanel dp-blue-grid-panel"
+      className="skillsPanel dp-standard-panel"
       aria-label="Skills Chamber"
     >
       <header className="skillsPanelHeader">
@@ -468,33 +474,35 @@ export default function SkillChamber({
           <div className="skillsPanelHeaderCopy">
             <h2 className="skillsTitle">Skills Chamber</h2>
           </div>
-
-          <div className="skillCenterActionRow">
-            <button
-              type="button"
-              className="skillChamberActionButton skillChamberActionButton--gold"
-              onClick={() => setShowInventory(true)}
-            >
-              Skill Inventory
-            </button>
-          </div>
         </div>
       </header>
 
-      <div className="skillChamberCommandGrid" aria-label="Starter commands">
-        {commandSkills.map((skill) => {
-          return (
-            <button
-              type="button"
-              key={skill.id}
-              className={`skillChamberCommand skillChamberCommand--${skill.id}`}
-              style={getCommandButtonStyle(skill.id as SkillId, pet)}
-              onClick={() => setSelectedSkill(skill)}
-            >
-              <span>{skill.displayName}</span>
-            </button>
-          );
-        })}
+      <div className="skillChamberControlsRow">
+        <div className="skillChamberCommandGrid" aria-label="Starter commands">
+          {commandSkills.map((skill) => {
+            return (
+              <button
+                type="button"
+                key={skill.id}
+                className={`skillChamberCommand skillChamberCommand--${skill.id}`}
+                style={getCommandButtonStyle(skill.id as SkillId, pet)}
+                onClick={() => setSelectedSkill(skill)}
+              >
+                <span>{skill.displayName}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="skillCenterActionRow">
+          <button
+            type="button"
+            className="btn btn-gold"
+            onClick={() => setShowInventory(true)}
+          >
+            Skill Inventory
+          </button>
+        </div>
       </div>
 
       <section className="skillInventoryPanel" aria-label="Battle skills">
@@ -509,9 +517,7 @@ export default function SkillChamber({
             >
               {petName.toUpperCase()}
             </strong>
-            <span>
-              LV {petLevel} * {petElement}
-            </span>
+            <span>LV {petLevel}</span>
           </div>
 
           <div className="skillChamberBars" aria-label="Pet battle vitals">
@@ -534,6 +540,7 @@ export default function SkillChamber({
         <div className="skillChamberCommandPanel">
           <div
             className="skillChamberCommandOrb"
+            style={getCommandButtonStyle("basic-strike", pet)}
             aria-label="Pet battle image slot"
           />
 

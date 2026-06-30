@@ -2,12 +2,13 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border: 0px solid var(--dp-panel-border-cyan-bright);
+  border: 0 px solid var(--dp-panel-border-cyan-bright);
   border-radius: 24px;
   padding: 10px;
   color: var(--dp-panel-text);
   background: none;
   box-shadow: none;
+  transform: translateY(-10px);
 }
 
 .petArmory::before,
@@ -29,22 +30,36 @@
 }
 
 .petArmoryTitle {
+  grid-column: 1;
+  grid-row: 1;
   margin: 0;
-  color: var(--dp-title-gold, #ffd84d);
+  color: var(--dp-title-gold, var(--dp-brand-yellow-bright));
   font-family: var(--dp-font-display, inherit);
-  font-size: 1.35rem;
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
   letter-spacing: 0.08em;
+  transform: translateX(4px);
   text-transform: uppercase;
 }
 
 .petArmoryClosetButton {
-  margin-left: auto;
+  position: relative;
+  top: -7.5px;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  margin-left: 0;
 }
 
 .petArmoryHeaderAccent {
-  display: flex;
+  position: relative;
+  top: -7px;
+  grid-column: 3;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px;
+  justify-self: stretch;
+  gap: 10px;
   color: var(--dp-title-gold, #ffd84d);
 }
 
@@ -57,15 +72,15 @@
 }
 
 .petArmoryHeaderLine {
-  width: 38px;
-  height: 2px;
+  width: 160px;
+  height: 3px;
   border-radius: 999px;
   background: currentColor;
   opacity: 0.8;
 }
 
 .petArmoryHeaderDelta {
-  font-size: 1rem;
+  font-size: 3rem;
   line-height: 1;
 }
 
@@ -90,7 +105,7 @@
   align-items: center;
   min-height: 82px;
   padding: 12px;
-  border: 1px solid var(--dp-border-gold);
+  border: 1px solid var(--pet-armory-slot-border, var(--dp-border-gold));
   border-radius: 14px;
   background: linear-gradient(
     180deg,
@@ -98,6 +113,46 @@
     var(--dp-panel-bg-bottom) 100%
   );
   box-shadow: inset 0 0 0 1px var(--dp-white-08);
+}
+
+.statsChamber:has(.petRepoPanel--element-fire) .petArmorySlot {
+  --pet-armory-slot-border: var(--element-fire);
+}
+
+.statsChamber:has(.petRepoPanel--element-water) .petArmorySlot {
+  --pet-armory-slot-border: var(--element-water);
+}
+
+.statsChamber:has(.petRepoPanel--element-earth) .petArmorySlot {
+  --pet-armory-slot-border: var(--element-earth);
+}
+
+.statsChamber:has(.petRepoPanel--element-air) .petArmorySlot {
+  --pet-armory-slot-border: var(--element-air);
+}
+
+.statsChamber:has(.petRepoPanel--element-ice) .petArmorySlot {
+  --pet-armory-slot-border: var(--element-ice);
+}
+
+.statsChamber:has(.petRepoPanel--element-storm) .petArmorySlot {
+  --pet-armory-slot-border: var(--element-storm);
+}
+
+.statsChamber:has(.petRepoPanel--element-light) .petArmorySlot {
+  --pet-armory-slot-border: var(--element-light);
+}
+
+.statsChamber:has(.petRepoPanel--element-shadow) .petArmorySlot {
+  --pet-armory-slot-border: var(--element-shadow);
+}
+
+.statsChamber:has(.petRepoPanel--element-void) .petArmorySlot,
+.statsChamber:has(.petRepoPanel--element-voidborne) .petArmorySlot,
+.statsChamber:has(.petRepoPanel--element-neutral) .petArmorySlot,
+.statsChamber:has(.petRepoPanel--element-silver) .petArmorySlot,
+.statsChamber:has(.petRepoPanel--element-null) .petArmorySlot {
+  --pet-armory-slot-border: var(--element-null);
 }
 
 .petArmoryIcon {

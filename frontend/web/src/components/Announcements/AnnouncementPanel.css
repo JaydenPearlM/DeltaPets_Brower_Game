@@ -347,20 +347,14 @@
   pointer-events: none;
 }
 
+.anp-modalActions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-start;
+}
+
 .anp-modalClose {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 2;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  border: 1px solid var(--dp-panel-border-cyan-soft);
-  background: var(--dp-surface-glass-light);
-  color: var(--dp-panel-text);
-  font-size: 1.4rem;
-  font-weight: 900;
-  cursor: pointer;
+  min-width: 116px;
 }
 
 .anp-modalTitle {

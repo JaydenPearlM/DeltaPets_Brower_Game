@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import "./LoginMenus.css";
-import PopupWindow from "../popup_windows/popupWindow";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/app/providers/useAuth";
 
@@ -426,175 +426,189 @@ export function LoginMenus({
   }
 
   const modalMarkup =
-    mounted && isOpen ? (
-      <PopupWindow
-        isOpen={isOpen}
-        onClose={closeModal}
-        labelledBy="auth-modal-title"
-        className={
-          view === "signup"
-            ? "auth-modal--signup dp-blue-grid-panel"
-            : "auth-modal--login dp-blue-grid-panel"
-        }
-      >
-        {view === "login" ? (
-          <>
-            <div className="auth-modal-header auth-modal-header--login">
-              <div className="auth-modal-headerText auth-modal-headerText--loginBrand">
-                <h3 id="auth-modal-title" className="auth-loginBrandTitle">
-                  Welcome to{" "}
-                  <span className="auth-brandDeltaPets">DeltaPets</span>.
-                </h3>
-              </div>
-            </div>
-
-            <form onSubmit={handleLoginSubmit} className="dp-form">
-              <div className="dp-field">
-                <label className="dp-label">Username or Email</label>
-                <input
-                  className="dp-input"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  autoComplete="username"
-                  placeholder="Username or email"
-                  required
-                />
-              </div>
-
-              <PasswordField
-                label="Password"
-                value={loginPassword}
-                onChange={setLoginPassword}
-                autoComplete="current-password"
-                placeholder="Enter your password"
-              />
-
-              <div className="auth-actions auth-actions--bottomLeft">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-gold auth-submitButton"
-                >
-                  {loading ? "Signing in..." : "Sign in"}
-                </button>
-
-                <button
-                  type="button"
-                  className="btn btn-pearl auth-submitButton"
-                  onClick={closeModal}
-                >
-                  Close
-                </button>
-              </div>
-            </form>
-          </>
-        ) : (
-          <>
-            <div className="auth-signupBrandBlock">
-              <p className="auth-signupIntro">
-                Start your Journey into{" "}
-                <span className="auth-brandAliune">Aliune</span>!
-              </p>
-
-              <h3 id="auth-modal-title" className="auth-signupTitle">
-                Create your{" "}
-                <span className="auth-brandDeltaPets">DeltaPets △</span>{" "}
-                Account.
-              </h3>
-            </div>
-
-            <form
-              onSubmit={handleSignupSubmit}
-              className="dp-form dp-form--signupCompact"
-            >
-              <div className="dp-field">
-                <label className="dp-label">Name</label>
-                <input
-                  className="dp-input"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  autoComplete="name"
-                  placeholder="First and Last Legal"
-                  required
-                />
-              </div>
-
-              <div className="dp-field">
-                <label className="dp-label">Nickname</label>
-                <input
-                  className="dp-input"
-                  value={nickname}
-                  onChange={(event) => setNickname(event.target.value)}
-                  autoComplete="nickname"
-                  placeholder="Pick a unique Nickname"
-                  required
-                />
-                <div className="auth-hint"></div>
-              </div>
-
-              <div className="dp-field">
-                <label className="dp-label">Email</label>
-                <input
-                  className="dp-input"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  autoComplete="email"
-                  inputMode="email"
-                  placeholder="you@example.com"
-                  required
-                />
-              </div>
-
-              <PasswordField
-                label="Password"
-                value={signupPassword}
-                onChange={setSignupPassword}
-                autoComplete="new-password"
-                placeholder="At least 8 characters"
-              />
-
-              <PasswordField
-                label="Confirm Password"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                autoComplete="new-password"
-                placeholder="Repeat password"
-              />
-
-              <div className="auth-actions auth-actions--bottomLeft auth-actions--signup">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-gold auth-submitButton"
-                >
-                  {loading ? "Signing up..." : "Sign Up"}
-                </button>
-
-                <button
-                  type="button"
-                  className="btn btn-pearl auth-submitButton"
-                  onClick={closeModal}
-                >
-                  Close
-                </button>
-              </div>
-            </form>
-          </>
-        )}
-
-        {message ? (
-          <p
-            className={`auth-message ${
-              message.type === "error"
-                ? "auth-message--error"
-                : "auth-message--success"
-            }`}
+    mounted && isOpen
+      ? createPortal(
+          <div
+            className="dpPopupWindowBackdrop"
+            role="presentation"
+            onClick={closeModal}
           >
-            {message.text}
-          </p>
-        ) : null}
-      </PopupWindow>
-    ) : null;
+            <section
+              className={`dpPopupWindow ${
+                view === "signup" ? "auth-modal--signup" : "auth-modal--login"
+              }`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="auth-modal-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="dpPopupWindowContent">
+                {view === "login" ? (
+                  <>
+                    <div className="auth-modal-header auth-modal-header--login">
+                      <div className="auth-modal-headerText auth-modal-headerText--loginBrand">
+                        <h3
+                          id="auth-modal-title"
+                          className="auth-loginBrandTitle"
+                        >
+                          Welcome to{" "}
+                          <span className="auth-brandDeltaPets">DeltaPets</span>
+                          .
+                        </h3>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleLoginSubmit} className="dp-form">
+                      <div className="dp-field">
+                        <label className="dp-label">Username or Email</label>
+                        <input
+                          className="dp-input"
+                          value={email}
+                          onChange={(event) => setEmail(event.target.value)}
+                          autoComplete="username"
+                          placeholder="Username or email"
+                          required
+                        />
+                      </div>
+
+                      <PasswordField
+                        label="Password"
+                        value={loginPassword}
+                        onChange={setLoginPassword}
+                        autoComplete="current-password"
+                        placeholder="Enter your password"
+                      />
+
+                      <div className="auth-actions auth-actions--bottomLeft">
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="btn btn-gold auth-submitButton"
+                        >
+                          {loading ? "Signing in..." : "Sign in"}
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-pearl auth-submitButton"
+                          onClick={closeModal}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <div className="auth-signupBrandBlock">
+                      <p className="auth-signupIntro">
+                        Start your Journey into{" "}
+                        <span className="auth-brandAliune">Aliune</span>!
+                      </p>
+
+                      <h3 id="auth-modal-title" className="auth-signupTitle">
+                        Create your{" "}
+                        <span className="auth-brandDeltaPets">DeltaPets △</span>{" "}
+                        Account.
+                      </h3>
+                    </div>
+
+                    <form
+                      onSubmit={handleSignupSubmit}
+                      className="dp-form dp-form--signupCompact"
+                    >
+                      <div className="dp-field">
+                        <label className="dp-label">Name</label>
+                        <input
+                          className="dp-input"
+                          value={name}
+                          onChange={(event) => setName(event.target.value)}
+                          autoComplete="name"
+                          placeholder="First and Last Legal"
+                          required
+                        />
+                      </div>
+
+                      <div className="dp-field">
+                        <label className="dp-label">Nickname</label>
+                        <input
+                          className="dp-input"
+                          value={nickname}
+                          onChange={(event) => setNickname(event.target.value)}
+                          autoComplete="nickname"
+                          placeholder="Pick a unique Nickname"
+                          required
+                        />
+                        <div className="auth-hint"></div>
+                      </div>
+
+                      <div className="dp-field">
+                        <label className="dp-label">Email</label>
+                        <input
+                          className="dp-input"
+                          value={email}
+                          onChange={(event) => setEmail(event.target.value)}
+                          autoComplete="email"
+                          inputMode="email"
+                          placeholder="you@example.com"
+                          required
+                        />
+                      </div>
+
+                      <PasswordField
+                        label="Password"
+                        value={signupPassword}
+                        onChange={setSignupPassword}
+                        autoComplete="new-password"
+                        placeholder="At least 8 characters"
+                      />
+
+                      <PasswordField
+                        label="Confirm Password"
+                        value={confirmPassword}
+                        onChange={setConfirmPassword}
+                        autoComplete="new-password"
+                        placeholder="Repeat password"
+                      />
+
+                      <div className="auth-actions auth-actions--bottomLeft auth-actions--signup">
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="btn btn-gold auth-submitButton"
+                        >
+                          {loading ? "Signing up..." : "Sign Up"}
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-pearl auth-submitButton"
+                          onClick={closeModal}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                )}
+
+                {message ? (
+                  <p
+                    className={`auth-message ${
+                      message.type === "error"
+                        ? "auth-message--error"
+                        : "auth-message--success"
+                    }`}
+                  >
+                    {message.text}
+                  </p>
+                ) : null}
+              </div>
+            </section>
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <>

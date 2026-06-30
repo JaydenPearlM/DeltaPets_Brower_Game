@@ -52,8 +52,9 @@
   --btn-gold-1-hover: #fff990;
   --btn-gold-2-hover: #ffdf5b;
   --btn-gold-3-hover: #f3ba22;
-  --btn-gold-text: #5f3908;
+  --btn-gold-text: #3c2505;
   --btn-gold-border: rgba(255, 238, 170, 0.85);
+  --btn-gold-font-size: 20px;
   --btn-pearl-1: #ffffff;
   --btn-pearl-2: #f3eee3;
   --btn-pearl-3: #d9d1c3;
@@ -147,8 +148,8 @@
   --dp-panel-text: #eef8ff;
   --dp-panel-muted: #a8c8df;
 
-  --dp-panel-purple-border: #a969ff;
-  --dp-panel-purple-glow: rgba(169, 105, 255, 0.55);
+  --dp-panel-purple-border: #c77dff;
+  //--dp-panel-purple-glow: rgba(199, 125, 255, 0.42);
 
   /* Standard panel tokens: normal page panels use cyan outside, purple inset, and no popup-only grid requirement. */
   /* Global standard non-popup panel system */
@@ -160,8 +161,8 @@
   --dp-standard-panel-section-title-size: 1.18rem;
   --dp-standard-panel-splash-purple: rgba(169, 105, 255, 0.56);
   --dp-standard-panel-splash-pink: rgba(255, 84, 180, 0.44);
-  --dp-standard-panel-cyan-inset-splash-gold: rgba(255, 214, 102, 0.36);
-  --dp-standard-panel-cyan-inset-splash-orange: rgba(255, 159, 47, 0.24);
+  --dp-standard-panel-cyan-inset-splash-gold: rgba(184, 255, 239, 0.3);
+  --dp-standard-panel-cyan-inset-splash-orange: rgba(126, 224, 255, 0.16);
   --dp-standard-panel-grid-line: rgba(77, 234, 255, 0.1);
   --dp-standard-panel-blue-grid:
     linear-gradient(var(--dp-standard-panel-grid-line) 2px, transparent 2px),
@@ -202,10 +203,10 @@
   );
   --dp-popup-grid-accent: radial-gradient(
     circle at 100% 100%,
-    var(--dp-standard-panel-splash-pink) 0%,
-    var(--dp-standard-panel-splash-pink) 12%,
-    var(--dp-standard-panel-splash-purple) 38%,
-    transparent 72%
+    var(--dp-standard-panel-cyan-inset-splash-gold) 0%,
+    var(--dp-standard-panel-cyan-inset-splash-gold) 18%,
+    var(--dp-standard-panel-cyan-inset-splash-orange) 46%,
+    transparent 76%
   );
   --dp-popup-grid-texture:
     var(--dp-popup-blue-grid), var(--dp-popup-grid-accent),
@@ -215,7 +216,7 @@
   --dp-popup-purple-splash: rgba(169, 105, 255, 0.16);
   --dp-popup-border-width: 2px;
   --dp-popup-inner-border-width: 5px;
-  --dp-popup-inset-gap: 5px;
+  --dp-popup-inset-gap: 10px;
   --dp-popup-window-shadow:
     0 30px 90px rgba(0, 0, 0, 0.5), 0 0 2px var(--dp-popup-glow),
     0 0 22px var(--dp-popup-glow);
@@ -385,10 +386,10 @@
   --element-ice-bg: rgba(114, 236, 255, 0.19);
   --element-storm: #f5ef36;
   --element-storm-bg: rgba(245, 239, 54, 0.18);
-  --element-light: #ffe46b;
-  --element-light-bg: rgba(255, 228, 107, 0.18);
-  --element-light-border: var(--dp-border-gold);
-  --element-light-glow: var(--dp-glow-gold);
+  --element-light: #d9b7ff;
+  --element-light-bg: rgba(217, 183, 255, 0.18);
+  --element-light-border: rgba(217, 183, 255, 0.86);
+  --element-light-glow: rgba(217, 183, 255, 0.55);
   --element-shadow: #8d6cff;
   --element-shadow-bg: rgba(141, 108, 255, 0.2);
   --element-voidborne: #b16cff;
@@ -1149,13 +1150,24 @@ a {
 .dp-btn--yellow,
 .dp-btn-yellow {
   color: var(--btn-gold-text);
+  font-size: var(--btn-gold-font-size);
+  line-height: 1;
+  text-align: center;
   background: var(--dp-gradient-yellow-button);
   border: 2px solid var(--btn-gold-border);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 0 14px rgba(255, 207, 97, 0.35);
 }
 
+.btn-cool,
+.btn-gold,
+.dp-btn--yellow,
+.dp-btn-yellow {
+  color: var(--btn-gold-text);
+  font-size: var(--btn-gold-font-size);
+  line-height: 1;
+  padding: 9px 16px 12px;
+  background: var(--dp-gradient-yellow-button);
+  border: 2px solid var(--btn-gold-border);
+}
 .btn-cool:hover,
 .btn-gold:hover,
 .dp-btn--yellow:hover,
@@ -2200,11 +2212,12 @@ a {
 
 .dpPopupWindow {
   position: relative;
-  z-index: 1;
+  isolation: isolate;
   width: min(800px, calc(100vw - 48px));
   max-width: 800px;
+  max-height: min(760px, calc(100vh - 48px));
   overflow: hidden;
-  border: var(--dp-popup-border-width) solid var(--dp-popup-border);
+  border: var(--dp-popup-border-width) solid var(--dp-popup-inner-border);
   border-radius: 24px;
   background: var(--dp-popup-grid-base);
   box-shadow: var(--dp-popup-window-shadow);
@@ -2216,68 +2229,149 @@ a {
   position: absolute;
   inset: var(--dp-popup-inset-gap);
   z-index: 0;
-  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
+  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-border);
   border-radius: 14px;
-  background-image: var(--dp-popup-grid-texture);
+  background-image:
+    var(--dp-standard-panel-blue-grid),
+    radial-gradient(
+      circle at 100% 100%,
+      var(--dp-standard-panel-cyan-inset-splash-gold) 0%,
+      var(--dp-standard-panel-cyan-inset-splash-gold) 18%,
+      var(--dp-standard-panel-cyan-inset-splash-orange) 46%,
+      transparent 76%
+    ),
+    var(--dp-standard-panel-bg);
   background-size:
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
     520px 520px,
     auto;
+  background-position:
+    0 0,
+    0 0,
+    100% 100%,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
   background-clip: padding-box;
   background-origin: padding-box;
   pointer-events: none;
 }
 
 .dpPopupWindow::after {
-  content: none;
-  display: none;
+  content: "";
+  position: absolute;
+  inset: calc(var(--dp-popup-inset-gap) + var(--dp-popup-inner-border-width));
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 10px;
+  background: var(--dp-popup-grid-accent);
 }
 
 .dpPopupWindowContent {
   position: relative;
   z-index: 1;
+  max-height: min(700px, calc(100vh - 88px));
+  overflow-y: auto;
   padding: 28px;
 }
 
-/* Global popup window shell: shared popup sizing, cyan border, purple inset, and grid texture. */
-.dp-popupWindow {
-  position: relative;
-  overflow: hidden;
-  width: min(620px, 100%);
-  padding: 26px;
-  border: var(--dp-popup-border-width) solid var(--dp-popup-border);
-  border-radius: 24px;
-  background: var(--dp-popup-grid-base);
-  box-shadow: var(--dp-popup-window-shadow);
-  color: var(--dp-panel-text);
+.dpPopupWindow--compact {
+  width: min(620px, calc(100vw - 48px));
+  max-width: 620px;
 }
 
-.dp-popupWindow::before {
-  content: "";
-  position: absolute;
-  inset: var(--dp-popup-inset-gap);
-  z-index: 0;
-  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
-  border-radius: 14px;
-  background-image: var(--dp-popup-grid-texture);
-  background-size:
-    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
-    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
-    520px 520px,
-    auto;
-  background-clip: padding-box;
-  background-origin: padding-box;
-  pointer-events: none;
+.dpPopupWindow--large {
+  width: min(940px, calc(100vw - 48px));
+  max-width: 940px;
 }
 
-.dp-popupWindow > * {
+.dpPopupWindow--wide {
+  width: min(1240px, calc(100vw - 28px));
+  max-width: 1240px;
+}
+
+.dpPopupWindowContent.skillPopup,
+.dpPopupWindowContent.skillInventoryModal,
+.dpPopupWindowContent.skillTreeModal,
+.dpPopupWindowContent.armoryClosetModal,
+.dpPopupWindowContent.anp-modal,
+.dpPopupWindowContent.patchModal,
+.dpPopupWindowContent.petRepoRunawayModalWindow,
+.dpPopupWindowContent.petRepoNicknameModalWindow,
+.dpPopupWindowContent.statsModal__panel,
+.dpPopupWindowContent.achievement-panel,
+.dpPopupWindowContent.dp-modal {
+  isolation: auto;
+  width: 100%;
+  max-width: none;
+  max-height: min(700px, calc(100vh - 88px));
+  overflow-y: auto;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: inherit;
+  transform: none;
+}
+
+.dpPopupWindowContent.skillPopup,
+.dpPopupWindowContent.skillInventoryModal,
+.dpPopupWindowContent.armoryClosetModal,
+.dpPopupWindowContent.anp-modal,
+.dpPopupWindowContent.patchModal,
+.dpPopupWindowContent.petRepoRunawayModalWindow,
+.dpPopupWindowContent.petRepoNicknameModalWindow,
+.dpPopupWindowContent.statsModal__panel,
+.dpPopupWindowContent.achievement-panel,
+.dpPopupWindowContent.dp-modal {
+  padding: 0 !important;
+}
+
+.dpPopupWindowContent.skillTreeModal {
+  max-height: none;
+  overflow: visible;
+  padding: 0 !important;
+}
+
+.dpPopupWindow--wide {
+  max-height: calc(100vh - 28px);
+  overflow-y: auto;
+}
+
+.dpPopupWindowContent.skillPopup::before,
+.dpPopupWindowContent.skillPopup::after,
+.dpPopupWindowContent.skillInventoryModal::before,
+.dpPopupWindowContent.skillInventoryModal::after,
+.dpPopupWindowContent.skillTreeModal::before,
+.dpPopupWindowContent.skillTreeModal::after,
+.dpPopupWindowContent.armoryClosetModal::before,
+.dpPopupWindowContent.armoryClosetModal::after,
+.dpPopupWindowContent.anp-modal::before,
+.dpPopupWindowContent.anp-modal::after,
+.dpPopupWindowContent.patchModal::before,
+.dpPopupWindowContent.patchModal::after,
+.dpPopupWindowContent.petRepoRunawayModalWindow::before,
+.dpPopupWindowContent.petRepoRunawayModalWindow::after,
+.dpPopupWindowContent.petRepoNicknameModalWindow::before,
+.dpPopupWindowContent.petRepoNicknameModalWindow::after,
+.dpPopupWindowContent.statsModal__panel::before,
+.dpPopupWindowContent.statsModal__panel::after,
+.dpPopupWindowContent.achievement-panel::before,
+.dpPopupWindowContent.achievement-panel::after,
+.dpPopupWindowContent.dp-modal::before,
+.dpPopupWindowContent.dp-modal::after {
+  content: none !important;
+  display: none !important;
+}
+
+.dpPopupWindowContent > * {
   position: relative;
   z-index: 1;
 }
 
 @media (max-width: 900px) {
-  .dpPopupWindow {
+  .dpPopupWindow,
+  .dpPopupWindow--large,
+  .dpPopupWindow--wide {
     width: min(800px, calc(100vw - 32px));
   }
 }
@@ -2287,7 +2381,10 @@ a {
     padding: 16px;
   }
 
-  .dpPopupWindow {
+  .dpPopupWindow,
+  .dpPopupWindow--compact,
+  .dpPopupWindow--large,
+  .dpPopupWindow--wide {
     width: calc(100vw - 32px);
     border-radius: 18px;
   }
