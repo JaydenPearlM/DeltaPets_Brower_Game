@@ -636,23 +636,12 @@
   overflow: hidden;
   width: min(620px, 100%);
   padding: 26px;
-  border: 2px solid var(--dp-panel-border);
+  border: var(--dp-popup-border-width) solid var(--dp-popup-border);
   border-radius: 24px;
-  background:
-    radial-gradient(circle at top, rgba(89, 188, 255, 0.17), transparent 42%),
-    linear-gradient(
-      180deg,
-      var(--dp-panel-bg-top, rgba(6, 31, 66, 0.98)) 0%,
-      var(--dp-panel-bg-mid, rgba(5, 43, 94, 0.98)) 52%,
-      var(--dp-panel-bg-bottom, rgba(3, 20, 38, 0.98)) 100%
-    );
-  background-size:
-    100% 100%,
-    100% 100%;
-  box-shadow:
-    0 30px 90px rgba(0, 0, 0, 0.5),
-    0 0 22px rgba(77, 234, 255, 0.24);
-  color: #eef8ff;
+  background: var(--dp-popup-grid-base);
+  background-size: 100% 100%;
+  box-shadow: var(--dp-popup-window-shadow);
+  color: var(--dp-popup-text);
 }
 
 .skillPopup::before {
@@ -660,271 +649,264 @@
   position: absolute;
   inset: 10px;
   z-index: 1;
-  border: 5px solid #c77dff;
+  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
   border-radius: 14px;
-  background:
-    var(--dp-popup-blue-grid),
-    linear-gradient(
-      180deg,
-      rgba(8, 34, 78, 0.95) 0%,
-      rgba(7, 22, 58, 0.95) 54%,
-      rgba(4, 13, 35, 0.95) 100%
-    );
+  background-image: var(--dp-popup-blue-grid);
   background-size:
     var(--dp-popup-grid-size) var(--dp-popup-grid-size),
-    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
-    100% 100%;
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size);
+  background-position: 0 0;
+  background-repeat: repeat, repeat;
   pointer-events: none;
-}
 
-.skillPopup > * {
-  position: relative;
-  z-index: 2;
-}
+  .skillPopup > * {
+    position: relative;
+    z-index: 2;
+  }
 
-.skillTreeModal,
-.skillInventoryModal {
-  width: min(820px, 100%);
-}
+  .skillTreeModal,
+  .skillInventoryModal {
+    width: min(820px, 100%);
+  }
 
-/* ROGUE PANEL FIX: The group rule above gives .skillTreeModal a blue
+  /* ROGUE PANEL FIX: The group rule above gives .skillTreeModal a blue
    background/border/shadow. skillTree.css draws its own green panel via ::before.
    Wipe the shared styles so only the ::before green panel shows. */
-.skillTreeModal {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  padding: 18px 22px 22px !important;
-}
-
-.skillPopupClose {
-  appearance: none;
-  min-width: 116px;
-  min-height: 44px;
-  border: 1px solid rgba(248, 246, 240, 0.88);
-  border-radius: 12px;
-  padding: 0 18px;
-  background: linear-gradient(
-    180deg,
-    #fcfbf8 0%,
-    #f1ede4 38%,
-    #e3ddd2 68%,
-    #c5bdaf 100%
-  );
-  color: #516789;
-  font-family: var(--font-heading, "Space Mono", monospace);
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.98),
-    0 6px 14px rgba(12, 22, 40, 0.18);
-}
-
-.skillPopupEyebrow {
-  margin: 0 0 8px;
-  color: #8fd0ff;
-  font-family: "Space Mono", monospace;
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.skillPopup h3,
-.skillTreeModal h3,
-.skillInventoryModal h3 {
-  margin: 0;
-  max-width: 520px;
-  color: #ffd65a;
-  font-family: "Space Mono", monospace;
-  font-size: 1.72rem;
-  line-height: 1.2;
-  letter-spacing: 0.06em;
-}
-
-.skillPopupDescription {
-  margin: 14px 0 0;
-  color: rgba(238, 248, 255, 0.75);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.coreSkillPopupNote {
-  margin: 14px 0 0;
-  padding: 12px 14px;
-  border: 1px solid rgba(255, 214, 90, 0.2);
-  border-radius: 14px;
-  background: rgba(255, 214, 90, 0.08);
-  color: rgba(238, 248, 255, 0.76);
-  font-size: 0.84rem;
-  line-height: 1.5;
-}
-
-.skillFormulaBox {
-  margin-top: 18px;
-  padding: 14px;
-  border: 0;
-  border-radius: 16px;
-  background: linear-gradient(
-    180deg,
-    rgba(18, 39, 82, 0.8) 0%,
-    rgba(11, 28, 64, 0.8) 52%,
-    rgba(5, 15, 38, 0.8) 100%
-  );
-  box-shadow: inset 0 0 0 3px var(--dp-panel-purple-border);
-}
-
-.skillFormulaRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 8px 10px;
-  border-bottom: 1px solid rgba(169, 105, 255, 0.22);
-}
-
-.skillFormulaRow:last-child {
-  border-bottom: 0;
-}
-
-.skillFormulaRow span {
-  color: #ffd65a;
-  font-family: "Space Mono", monospace;
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.skillFormulaRow strong {
-  color: #eef8ff;
-  font-size: 1rem;
-  line-height: 1.5;
-  text-align: right;
-}
-
-.skillFormulaRow--power strong {
-  color: #ffd65a;
-  font-size: 1.22rem;
-}
-
-.skillPopupActions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 14px;
-}
-
-.skillInventoryGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.skillInventoryCard {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 13px 14px;
-  border: 1px solid rgba(143, 208, 255, 0.16);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.045);
-}
-
-.skillInventoryCard h4 {
-  margin: 0;
-  color: #ffe69b;
-  font-size: 0.92rem;
-}
-
-.skillInventoryCard p,
-.skillInventoryEmpty {
-  margin: 6px 0 0;
-  color: rgba(238, 248, 255, 0.68);
-  font-size: 0.8rem;
-  line-height: 1.45;
-}
-
-.skillInventoryActions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.skillInventoryActions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.42;
-}
-
-.skillTreePreviewGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 20px;
-}
-
-.skillTreePreviewCard {
-  padding: 16px;
-  border: 1px solid rgba(143, 208, 255, 0.18);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.skillTreePreviewCard h4 {
-  margin: 0;
-  color: #8fd0ff;
-  font-family: "Space Mono", monospace;
-  font-size: 0.86rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.skillTreePreviewCard p {
-  margin: 9px 0 0;
-  color: rgba(238, 248, 255, 0.68);
-  font-size: 0.84rem;
-  line-height: 1.5;
-}
-
-@media (max-width: 920px) {
-  .skillsHeaderTopRow {
-    flex-wrap: wrap;
+  .skillTreeModal {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 18px 22px 22px !important;
   }
 
-  .skillCenterActionRow {
-    justify-content: flex-start;
+  .skillPopupClose {
+    appearance: none;
+    min-width: 116px;
+    min-height: 44px;
+    border: 1px solid rgba(248, 246, 240, 0.88);
+    border-radius: 12px;
+    padding: 0 18px;
+    background: linear-gradient(
+      180deg,
+      #fcfbf8 0%,
+      #f1ede4 38%,
+      #e3ddd2 68%,
+      #c5bdaf 100%
+    );
+    color: #516789;
+    font-family: var(--font-heading, "Space Mono", monospace);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.98),
+      0 6px 14px rgba(12, 22, 40, 0.18);
   }
 
-  .skillSlotGrid {
-    grid-template-columns: repeat(2, minmax(132px, 1fr));
+  .skillPopupEyebrow {
+    margin: 0 0 8px;
+    color: #8fd0ff;
+    font-family: "Space Mono", monospace;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
-  .skillInventoryGrid,
-  .skillsLadderRow {
-    grid-template-columns: 1fr;
+  .skillPopup h3,
+  .skillTreeModal h3,
+  .skillInventoryModal h3 {
+    margin: 0;
+    max-width: 520px;
+    color: #ffd65a;
+    font-family: "Space Mono", monospace;
+    font-size: 1.72rem;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
   }
 
-  .skillEmptySlot {
-    display: none;
+  .skillPopupDescription {
+    margin: 14px 0 0;
+    color: rgba(238, 248, 255, 0.75);
+    font-size: 1rem;
+    line-height: 1.6;
   }
 
-  .skillTrapezoid,
-  .skillTrapezoid--lane-left,
-  .skillTrapezoid--lane-right,
-  .skillTrapezoid--lane-center {
+  .coreSkillPopupNote {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 214, 90, 0.2);
+    border-radius: 14px;
+    background: rgba(255, 214, 90, 0.08);
+    color: rgba(238, 248, 255, 0.76);
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  .skillFormulaBox {
+    margin-top: 18px;
+    padding: 14px;
+    border: 0;
+    border-radius: 16px;
+    background: linear-gradient(
+      180deg,
+      rgba(18, 39, 82, 0.8) 0%,
+      rgba(11, 28, 64, 0.8) 52%,
+      rgba(5, 15, 38, 0.8) 100%
+    );
+    box-shadow: inset 0 0 0 3px var(--dp-panel-purple-border);
+  }
+
+  .skillFormulaRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(169, 105, 255, 0.22);
+  }
+
+  .skillFormulaRow:last-child {
+    border-bottom: 0;
+  }
+
+  .skillFormulaRow span {
+    color: #ffd65a;
+    font-family: "Space Mono", monospace;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .skillFormulaRow strong {
+    color: #eef8ff;
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: right;
+  }
+
+  .skillFormulaRow--power strong {
+    color: #ffd65a;
+    font-size: 1.22rem;
+  }
+
+  .skillPopupActions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+
+  .skillInventoryGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .skillInventoryCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 14px;
+    border: 1px solid rgba(143, 208, 255, 0.16);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.045);
+  }
+
+  .skillInventoryCard h4 {
+    margin: 0;
+    color: #ffe69b;
+    font-size: 0.92rem;
+  }
+
+  .skillInventoryCard p,
+  .skillInventoryEmpty {
+    margin: 6px 0 0;
+    color: rgba(238, 248, 255, 0.68);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .skillInventoryActions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .skillInventoryActions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+
+  .skillTreePreviewGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .skillTreePreviewCard {
+    padding: 16px;
+    border: 1px solid rgba(143, 208, 255, 0.18);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .skillTreePreviewCard h4 {
+    margin: 0;
+    color: #8fd0ff;
+    font-family: "Space Mono", monospace;
+    font-size: 0.86rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .skillTreePreviewCard p {
+    margin: 9px 0 0;
+    color: rgba(238, 248, 255, 0.68);
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 920px) {
+    .skillsHeaderTopRow {
+      flex-wrap: wrap;
+    }
+
+    .skillCenterActionRow {
+      justify-content: flex-start;
+    }
+
+    .skillSlotGrid {
+      grid-template-columns: repeat(2, minmax(132px, 1fr));
+    }
+
+    .skillInventoryGrid,
+    .skillsLadderRow {
+      grid-template-columns: 1fr;
+    }
+
+    .skillEmptySlot {
+      display: none;
+    }
+
+    .skillTrapezoid,
+    .skillTrapezoid--lane-left,
+    .skillTrapezoid--lane-right,
+    .skillTrapezoid--lane-center {
+      width: 100%;
+      clip-path: none;
+    }
+  }
+
+  .skillsPanel {
     width: 100%;
-    clip-path: none;
+    padding: 30px;
   }
-}
-
-.skillsPanel {
-  width: 100%;
-  padding:30px;
-}
 
   .skillCenterActionRow,
   .skillInventoryHeader,
@@ -956,6 +938,26 @@
     width: 100%;
     min-height: 50px;
   }
+}
+
+.skillPopup::before {
+  background-image: var(--dp-popup-grid-texture);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
+    auto;
+  background-position:
+    0 0,
+    0 0,
+    100% 100%,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+}
+
+.skillPopup > * {
+  position: relative;
+  z-index: 2;
 }
 
 /* Skill badge colors stay the same. These rules only add metallic inset depth and the green comet. */

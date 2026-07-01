@@ -579,7 +579,7 @@ export default function SkillChamber({
             onMouseDown={() => setSelectedSkill(null)}
           >
             <section
-              className="skillPopup dp-popupWindow dp-blue-grid-panel"
+              className="skillPopup dpPopupWindow dp-blue-grid-panel"
               role="dialog"
               aria-modal="true"
               aria-label={selectedSkill.displayName}
@@ -631,7 +631,7 @@ export default function SkillChamber({
               <div className="skillPopupActions">
                 <button
                   type="button"
-                  className="skillPopupClose"
+                  className="skillPopupClose dp-btn--close"
                   onClick={() => setSelectedSkill(null)}
                 >
                   Close

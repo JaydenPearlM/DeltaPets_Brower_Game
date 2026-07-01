@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createPortal } from "react-dom";
+import DpPopupWindow from "../DpPopupWindow";
 import "./Armory.css";
 
 export type ArmoryGearType =
@@ -191,19 +191,15 @@ function ArmoryCloset({ items, onClose }: ArmoryClosetProps) {
     );
   }, [sortedItems]);
 
-  return createPortal(
-    <div
-      className="armoryClosetBackdrop"
-      role="presentation"
-      onMouseDown={onClose}
+  return (
+    <DpPopupWindow
+      open
+      onClose={onClose}
+      label="Armory Closet"
+      size="large"
+      className="dp-blue-grid-panel armoryClosetWindow"
     >
-      <section
-        className="armoryClosetModal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Armory Closet"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
+      <section className="armoryClosetModal">
         <h3 className="armoryClosetTitle">Armory Closet</h3>
 
         {items.length === 0 ? (
@@ -311,8 +307,7 @@ function ArmoryCloset({ items, onClose }: ArmoryClosetProps) {
           </button>
         </div>
       </section>
-    </div>,
-    document.body,
+    </DpPopupWindow>
   );
 }
 

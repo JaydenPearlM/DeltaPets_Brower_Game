@@ -506,22 +506,27 @@ export default function HatcheryPage() {
 
   const slots: HatchSlot[] = useMemo(() => {
     if (data?.slots && data.slots.length > 0) {
-      return data.slots.map((slot) => ({
-        index: slot.slot_index,
-        locked: !slot.unlocked,
-        egg:
-          slot.pet && slot.pet.stage === "egg" && slot.hatch?.hatch_ends_at
-            ? {
-                id: pet.id,
-                name: pet.name?.trim() || "Mystery Egg",
-                hatch_ends_at: hatchEndsAt,
-                line: pet.line ?? undefined,
-                species: pet.species ?? null,
-                growth_strong_stats: pet.growth_strong_stats ?? [],
-                growth_weak_stat: pet.growth_weak_stat ?? null,
-              }
-            : undefined,
-      }));
+      return data.slots.map((slot) => {
+        const pet = slot.pet;
+        const hatchEndsAt = slot.hatch?.hatch_ends_at ?? null;
+
+        return {
+          index: slot.slot_index,
+          locked: !slot.unlocked,
+          egg:
+            pet && pet.stage === "egg" && hatchEndsAt
+              ? {
+                  id: pet.id,
+                  name: pet.name?.trim() || "Mystery Egg",
+                  hatch_ends_at: hatchEndsAt,
+                  line: pet.line ?? undefined,
+                  species: pet.species ?? null,
+                  growth_strong_stats: pet.growth_strong_stats ?? [],
+                  growth_weak_stat: pet.growth_weak_stat ?? null,
+                }
+              : undefined,
+        };
+      });
     }
 
     const pet = data?.pet;

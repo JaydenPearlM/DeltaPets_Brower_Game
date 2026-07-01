@@ -290,7 +290,7 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
   return (
     <section
-      className="skillTreeModal feralPathPanel dp-blue-grid-panel"
+      className="skillTreeModal feralPathPanel dpPopupWindow dp-blue-grid-panel"
       role="dialog"
       aria-modal="true"
       aria-label="Kith Talent System"
@@ -439,7 +439,7 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
 
                 <button
                   type="button"
-                  className="skillPopupClose talentDetailsClose"
+                  className="skillPopupClose talentDetailsClose dp-btn--close"
                   onClick={onClose}
                 >
                   Close

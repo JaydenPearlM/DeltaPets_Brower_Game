@@ -452,7 +452,9 @@ export function LoginMenus({
                           className="auth-loginBrandTitle"
                         >
                           Welcome to{" "}
-                          <span className="auth-brandDeltaPets">DeltaPets</span>
+                          <span className="auth-brandDeltaPets">
+                            DeltaPets △
+                          </span>
                           .
                         </h3>
                       </div>

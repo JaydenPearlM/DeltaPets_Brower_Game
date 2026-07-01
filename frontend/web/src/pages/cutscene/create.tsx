@@ -1,4 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../lib/api/baseClient";
 
@@ -33,27 +40,27 @@ import { apiFetch } from "../../lib/api/baseClient";
 const TIMING = {
   fadeInMs: 700,
 
-  glitch1RevealMs: 1500,
-  glitch1HoldMs: 1100,
-  glitch2RevealMs: 1200,
-  glitch2HoldMs: 1000,
+  glitch1RevealMs: 2200,
+  glitch1HoldMs: 1600,
+  glitch2RevealMs: 1800,
+  glitch2HoldMs: 1500,
 
-  loreTypeMsPerChar: 52,
-  lorePauseMs: 650,
+  loreTypeMsPerChar: 70,
+  lorePauseMs: 900,
   gridFadeInMs: 1300,
-  loreDeleteMsPerChar: 28,
+  loreDeleteMsPerChar: 35,
 
-  triangleDrawMs: 1100,
-  trianglePulseMs: 650,
-  morphMs: 1600, // triangle -> wireframe egg
-  wireHoldMs: 1500, // egg sits as digital wireframe
+  triangleDrawMs: 1400,
+  trianglePulseMs: 900,
+  morphMs: 1900, // triangle -> wireframe egg
+  wireHoldMs: 2000, // egg sits as digital wireframe
 
   shockEggFlashMs: 320,
-  shockMs: 1900, // grid pushed away
-  solidMs: 1300, // wireframe -> solid rainbow egg
+  shockMs: 2200, // grid pushed away
+  solidMs: 1500, // wireframe -> solid rainbow egg
 
-  typeGoodluckMsPerChar: 55,
-  holdMs: 2400,
+  typeGoodluckMsPerChar: 75,
+  holdMs: 3000,
   fadeOutMs: 1700,
 };
 
@@ -62,7 +69,6 @@ const TIMING = {
 ========================================================= */
 const GLITCH_1 = `...wait. you weren't supposed to find this screen.`;
 const GLITCH_2 = `but it seems the signal found you.`;
-const LORE = `The skys are becomming like a forerver night, and it seems something is taking shape.`;
 const WIRE_LINE = `...Oh look, an egg, how quaint.`;
 
 /* =========================================================
@@ -76,12 +82,12 @@ const C = {
 
 /* egg + grid geometry (all tweakable) */
 const EGG = {
-  H: 250, // egg height (px)
-  R: 96, // egg half-width (px)
+  H: 305, // egg height (px)
+  R: 118, // egg half-width (px)
   latTilt: 0.22, // how "flat" the latitude rings look (3D feel)
   meridians: [-1, -0.66, -0.33, 0, 0.33, 0.66, 1],
   latitudes: [0.14, 0.32, 0.5, 0.68, 0.86],
-  triSize: 132, // delta triangle size before morph
+  triSize: 165, // delta triangle size before morph
 };
 const GRIDCFG = {
   spacing: 56,
@@ -96,13 +102,48 @@ const GLITCH_CHARS = "!<>-_/[]{}=+*?#ΔΞΛ█▓▒░01";
 /* =========================================================
    helpers
 ========================================================= */
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const lerp = (a, b, t) => a + (b - a) * t;
-const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-const easeInOutCubic = (t) =>
+type Point = [number, number];
+type AliveCheck = () => boolean;
+type TextSetter = Dispatch<SetStateAction<string>>;
+type TimelinePhase =
+  | "fadeInBlack"
+  | "glitchBoot"
+  | "lore"
+  | "gridFadeIn"
+  | "triangle"
+  | "morph"
+  | "wireHold"
+  | "shock"
+  | "goodluck"
+  | "hold"
+  | "fadeOut"
+  | "done";
+type VisualState = {
+  gridAlpha: number;
+  shock: number;
+  triProg: number;
+  triDropY: number;
+  triSquash: number;
+  morphProg: number;
+  wireAlpha: number;
+  solidProg: number;
+  eggScale: number;
+  eggGlow: number;
+};
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+const easeInCubic = (t: number) => t * t * t;
+const easeInOutCubic = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-async function typeText(full, set, msPerChar, alive) {
+async function typeText(
+  full: string,
+  set: TextSetter,
+  msPerChar: number,
+  alive: AliveCheck,
+) {
   set("");
   for (let i = 1; i <= full.length; i++) {
     if (!alive()) return;
@@ -110,7 +151,12 @@ async function typeText(full, set, msPerChar, alive) {
     await sleep(msPerChar);
   }
 }
-async function deleteText(current, set, msPerChar, alive) {
+async function deleteText(
+  current: string,
+  set: TextSetter,
+  msPerChar: number,
+  alive: AliveCheck,
+) {
   for (let i = current.length; i >= 0; i--) {
     if (!alive()) return;
     set(current.slice(0, i));
@@ -119,10 +165,15 @@ async function deleteText(current, set, msPerChar, alive) {
 }
 
 /* glitch reveal: scrambles, locks in left-to-right, then steadies */
-function glitchReveal(target, set, totalMs, alive) {
+function glitchReveal(
+  target: string,
+  set: TextSetter,
+  totalMs: number,
+  alive: AliveCheck,
+) {
   const start = performance.now();
-  return new Promise((resolve) => {
-    function frame(now) {
+  return new Promise<void>((resolve) => {
+    function frame(now: number) {
       if (!alive()) {
         resolve();
         return;
@@ -153,10 +204,15 @@ function glitchReveal(target, set, totalMs, alive) {
 }
 
 /* tween 0..1 over duration; resolves on done or when alive() is false */
-function tween(durationMs, onUpdate, alive, ease = (t) => t) {
-  return new Promise((resolve) => {
+function tween(
+  durationMs: number,
+  onUpdate: (eased: number, raw: number) => void,
+  alive: AliveCheck,
+  ease: (t: number) => number = (t: number) => t,
+) {
+  return new Promise<void>((resolve) => {
     const start = performance.now();
-    function step(now) {
+    function step(now: number) {
       if (!alive()) {
         resolve();
         return;
@@ -174,8 +230,8 @@ function tween(durationMs, onUpdate, alive, ease = (t) => t) {
 }
 
 /* resample a closed point loop to N evenly spaced points (by arc length) */
-function resampleClosed(pts, N) {
-  const segLen = [];
+function resampleClosed(pts: Point[], N: number) {
+  const segLen: number[] = [];
   let total = 0;
   for (let i = 0; i < pts.length; i++) {
     const a = pts[i];
@@ -184,7 +240,7 @@ function resampleClosed(pts, N) {
     segLen.push(d);
     total += d;
   }
-  const out = [];
+  const out: Point[] = [];
   const step = total / N;
   let seg = 0;
   let segStart = 0;
@@ -210,15 +266,17 @@ export default function DeltaPetsCutscene() {
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState("Jayden");
 
-  const [phase, setPhase] = useState("fadeInBlack");
+  const [phase, setPhase] = useState<TimelinePhase>("fadeInBlack");
   const [centerText, setCenterText] = useState("");
   const [glitching, setGlitching] = useState(false);
 
-  const canvasRef = useRef(null);
-  const visualRef = useRef({
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const visualRef = useRef<VisualState>({
     gridAlpha: 0,
     shock: -1, // -1 inactive, else 0..1
     triProg: 0, // triangle fade/scale in
+    triDropY: 0, // triangle fall-in offset (negative = above final position)
+    triSquash: 0, // squash/stretch punch: negative = stretch, positive = squash
     morphProg: 0, // 0 triangle -> 1 egg outline
     wireAlpha: 0, // interior wireframe opacity
     solidProg: 0, // wireframe -> solid rainbow
@@ -234,6 +292,10 @@ export default function DeltaPetsCutscene() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const canvasEl = canvas;
+    const renderCtx = ctx;
+
     let raf = 0;
     let alive = true;
     let w = 0;
@@ -241,28 +303,29 @@ export default function DeltaPetsCutscene() {
 
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = canvas.clientWidth;
-      h = canvas.clientHeight;
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      w = canvasEl.clientWidth;
+      h = canvasEl.clientHeight;
+      canvasEl.width = Math.floor(w * dpr);
+      canvasEl.height = Math.floor(h * dpr);
+      renderCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     resize();
     window.addEventListener("resize", resize);
 
-    const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+    const rgba = (c: readonly number[], a: number) =>
+      `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
     /* egg geometry around a center */
-    function halfW(t, scale) {
+    function halfW(t: number, scale: number) {
       const y = t * 2 - 1; // -1 top .. 1 bottom
       const base = Math.sqrt(Math.max(0, 1 - y * y));
       return EGG.R * scale * base * (1 + 0.3 * y); // skew: fatter bottom
     }
-    function yAt(t, cy, scale) {
+    function yAt(t: number, cy: number, scale: number) {
       return cy + (t - 0.5) * EGG.H * scale;
     }
-    function eggOutlineRaw(cx, cy, scale) {
-      const raw = [];
+    function eggOutlineRaw(cx: number, cy: number, scale: number) {
+      const raw: Point[] = [];
       const M = 80;
       for (let i = 0; i <= M; i++) {
         const t = i / M;
@@ -274,13 +337,20 @@ export default function DeltaPetsCutscene() {
       }
       return raw;
     }
-    function triOutlineRaw(cx, cy, scale, sizeMul) {
+    function triOutlineRaw(
+      cx: number,
+      cy: number,
+      scale: number,
+      sizeMul: number,
+      squashX = 1,
+      squashY = 1,
+    ) {
       const s = EGG.triSize * scale * sizeMul;
-      const apex = [cx, cy - s * 0.62];
-      const br = [cx + s * 0.95, cy + s * 0.46];
-      const bl = [cx - s * 0.95, cy + s * 0.46];
-      const verts = [apex, br, bl];
-      const dense = [];
+      const apex: Point = [cx, cy - s * 0.62 * squashY];
+      const br: Point = [cx + s * 0.95 * squashX, cy + s * 0.46 * squashY];
+      const bl: Point = [cx - s * 0.95 * squashX, cy + s * 0.46 * squashY];
+      const verts: Point[] = [apex, br, bl];
+      const dense: Point[] = [];
       const STEPS = 28;
       for (let v = 0; v < verts.length; v++) {
         const a = verts[v];
@@ -293,47 +363,60 @@ export default function DeltaPetsCutscene() {
       return dense;
     }
 
-    function strokeRainbowPath(points, time, hueBase, alpha, lw, glow) {
+    function strokeRainbowPath(
+      points: Point[],
+      time: number,
+      hueBase: number,
+      alpha: number,
+      lw: number,
+      glow: boolean,
+    ) {
       const N = points.length;
-      ctx.lineWidth = lw;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+      renderCtx.lineWidth = lw;
+      renderCtx.lineCap = "round";
+      renderCtx.lineJoin = "round";
       for (let i = 0; i < N; i++) {
         const a = points[i];
         const b = points[(i + 1) % N];
         const hue = (hueBase + (i / N) * 320 + time * 40) % 360;
-        ctx.strokeStyle = `hsla(${hue},90%,62%,${alpha})`;
-        ctx.shadowColor = `hsla(${hue},90%,62%,${alpha * (glow ? 0.8 : 0.4)})`;
-        ctx.shadowBlur = glow ? 14 : 6;
-        ctx.beginPath();
-        ctx.moveTo(a[0], a[1]);
-        ctx.lineTo(b[0], b[1]);
-        ctx.stroke();
+        renderCtx.strokeStyle = `hsla(${hue},90%,62%,${alpha})`;
+        renderCtx.shadowColor = `hsla(${hue},90%,62%,${alpha * (glow ? 0.8 : 0.4)})`;
+        renderCtx.shadowBlur = glow ? 14 : 6;
+        renderCtx.beginPath();
+        renderCtx.moveTo(a[0], a[1]);
+        renderCtx.lineTo(b[0], b[1]);
+        renderCtx.stroke();
       }
-      ctx.shadowBlur = 0;
+      renderCtx.shadowBlur = 0;
     }
 
-    function drawWire(cx, cy, scale, time, alpha) {
+    function drawWire(
+      cx: number,
+      cy: number,
+      scale: number,
+      time: number,
+      alpha: number,
+    ) {
       if (alpha <= 0.01) return;
       EGG.meridians.forEach((f, mi) => {
-        const pts = [];
+        const pts: Point[] = [];
         const M = 44;
         for (let i = 0; i <= M; i++) {
           const t = i / M;
           pts.push([cx + f * halfW(t, scale), yAt(t, cy, scale)]);
         }
         const hueBase = (mi / EGG.meridians.length) * 320;
-        ctx.lineWidth = 1.8;
-        ctx.lineCap = "round";
+        renderCtx.lineWidth = 1.8;
+        renderCtx.lineCap = "round";
         for (let i = 0; i < pts.length - 1; i++) {
           const hue = (hueBase + (i / pts.length) * 90 + time * 40) % 360;
-          ctx.strokeStyle = `hsla(${hue},90%,63%,${alpha})`;
-          ctx.shadowColor = `hsla(${hue},90%,63%,${alpha * 0.6})`;
-          ctx.shadowBlur = 10;
-          ctx.beginPath();
-          ctx.moveTo(pts[i][0], pts[i][1]);
-          ctx.lineTo(pts[i + 1][0], pts[i + 1][1]);
-          ctx.stroke();
+          renderCtx.strokeStyle = `hsla(${hue},90%,63%,${alpha})`;
+          renderCtx.shadowColor = `hsla(${hue},90%,63%,${alpha * 0.6})`;
+          renderCtx.shadowBlur = 10;
+          renderCtx.beginPath();
+          renderCtx.moveTo(pts[i][0], pts[i][1]);
+          renderCtx.lineTo(pts[i + 1][0], pts[i + 1][1]);
+          renderCtx.stroke();
         }
       });
       EGG.latitudes.forEach((t, li) => {
@@ -341,25 +424,31 @@ export default function DeltaPetsCutscene() {
         const ry = rx * EGG.latTilt;
         const cyl = yAt(t, cy, scale);
         const hue = (200 + li * 26 + time * 40) % 360;
-        ctx.strokeStyle = `hsla(${hue},88%,64%,${alpha * 0.9})`;
-        ctx.shadowColor = `hsla(${hue},88%,64%,${alpha * 0.5})`;
-        ctx.shadowBlur = 10;
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.ellipse(cx, cyl, rx, ry, 0, 0, Math.PI * 2);
-        ctx.stroke();
+        renderCtx.strokeStyle = `hsla(${hue},88%,64%,${alpha * 0.9})`;
+        renderCtx.shadowColor = `hsla(${hue},88%,64%,${alpha * 0.5})`;
+        renderCtx.shadowBlur = 10;
+        renderCtx.lineWidth = 1.6;
+        renderCtx.beginPath();
+        renderCtx.ellipse(cx, cyl, rx, ry, 0, 0, Math.PI * 2);
+        renderCtx.stroke();
       });
-      ctx.shadowBlur = 0;
+      renderCtx.shadowBlur = 0;
     }
 
-    function drawEggSolid(cx, cy, scale, time, prog) {
+    function drawEggSolid(
+      cx: number,
+      cy: number,
+      scale: number,
+      time: number,
+      prog: number,
+    ) {
       if (prog <= 0.01) return;
       // [PORT] To use your own art instead of this code-drawn egg:
       //   draw your sprite here with globalAlpha = prog, centered at (cx,cy),
       //   and delete the gradient block below.
       const outline = eggOutlineRaw(cx, cy, scale);
-      ctx.save();
-      ctx.globalAlpha = prog;
+      renderCtx.save();
+      renderCtx.globalAlpha = prog;
 
       const path = new Path2D();
       path.moveTo(outline[0][0], outline[0][1]);
@@ -369,7 +458,7 @@ export default function DeltaPetsCutscene() {
 
       const top = yAt(0, cy, scale);
       const bot = yAt(1, cy, scale);
-      const g = ctx.createLinearGradient(
+      const g = renderCtx.createLinearGradient(
         cx - EGG.R * scale,
         top,
         cx + EGG.R * scale,
@@ -379,15 +468,15 @@ export default function DeltaPetsCutscene() {
         const hue = (time * 38 + k * 56) % 360;
         g.addColorStop(k / 6, `hsl(${hue},88%,62%)`);
       }
-      ctx.fillStyle = g;
-      ctx.shadowColor = `hsla(${(time * 38) % 360},90%,60%,${0.6 * prog})`;
-      ctx.shadowBlur = 50 * prog;
-      ctx.fill(path);
-      ctx.shadowBlur = 0;
+      renderCtx.fillStyle = g;
+      renderCtx.shadowColor = `hsla(${(time * 38) % 360},90%,60%,${0.6 * prog})`;
+      renderCtx.shadowBlur = 50 * prog;
+      renderCtx.fill(path);
+      renderCtx.shadowBlur = 0;
 
-      ctx.save();
-      ctx.clip(path);
-      const rg = ctx.createRadialGradient(
+      renderCtx.save();
+      renderCtx.clip(path);
+      const rg = renderCtx.createRadialGradient(
         cx - EGG.R * scale * 0.3,
         top + EGG.H * scale * 0.28,
         10,
@@ -398,15 +487,15 @@ export default function DeltaPetsCutscene() {
       rg.addColorStop(0, "rgba(255,255,255,0.35)");
       rg.addColorStop(0.5, "rgba(255,255,255,0)");
       rg.addColorStop(1, "rgba(0,0,0,0.4)");
-      ctx.fillStyle = rg;
-      ctx.fillRect(cx - 300, top - 50, 600, EGG.H * scale + 120);
-      ctx.restore();
+      renderCtx.fillStyle = rg;
+      renderCtx.fillRect(cx - 300, top - 50, 600, EGG.H * scale + 120);
+      renderCtx.restore();
 
       drawWire(cx, cy, scale, time, 0.16 * prog);
 
-      ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.beginPath();
-      ctx.ellipse(
+      renderCtx.fillStyle = "rgba(255,255,255,0.5)";
+      renderCtx.beginPath();
+      renderCtx.ellipse(
         cx - EGG.R * scale * 0.34,
         top + EGG.H * scale * 0.26,
         EGG.R * scale * 0.16,
@@ -415,13 +504,13 @@ export default function DeltaPetsCutscene() {
         0,
         Math.PI * 2,
       );
-      ctx.fill();
-      ctx.restore();
+      renderCtx.fill();
+      renderCtx.restore();
     }
 
-    function draw(now) {
+    function draw(now: number) {
       if (!alive) return;
-      ctx.clearRect(0, 0, w, h);
+      renderCtx.clearRect(0, 0, w, h);
       const v = visualRef.current;
       const cx = w / 2;
       const cy = h / 2;
@@ -481,9 +570,9 @@ export default function DeltaPetsCutscene() {
           }
         }
 
-        ctx.lineWidth = GRIDCFG.lineWidth;
-        ctx.lineCap = "round";
-        const drawSeg = (i, j) => {
+        renderCtx.lineWidth = GRIDCFG.lineWidth;
+        renderCtx.lineCap = "round";
+        const drawSeg = (i: number, j: number) => {
           const a = Math.min(pa[i], pa[j]) * v.gridAlpha;
           if (a <= 0.01) return;
           const goldMix = (pg[i] + pg[j]) * 0.5;
@@ -492,13 +581,13 @@ export default function DeltaPetsCutscene() {
             Math.round(lerp(C.gridGreen[1], 240, goldMix)),
             Math.round(lerp(C.gridGreen[2], 200, goldMix)),
           ];
-          ctx.strokeStyle = rgba(col, a);
-          ctx.shadowColor = rgba(col, a * 0.6);
-          ctx.shadowBlur = goldMix > 0.05 ? 12 : 6;
-          ctx.beginPath();
-          ctx.moveTo(px[i], py[i]);
-          ctx.lineTo(px[j], py[j]);
-          ctx.stroke();
+          renderCtx.strokeStyle = rgba(col, a);
+          renderCtx.shadowColor = rgba(col, a * 0.6);
+          renderCtx.shadowBlur = goldMix > 0.05 ? 12 : 6;
+          renderCtx.beginPath();
+          renderCtx.moveTo(px[i], py[i]);
+          renderCtx.lineTo(px[j], py[j]);
+          renderCtx.stroke();
         };
         for (let r = 0; r < rows; r++)
           for (let c = 0; c < cols - 1; c++)
@@ -506,7 +595,7 @@ export default function DeltaPetsCutscene() {
         for (let c = 0; c < cols; c++)
           for (let r = 0; r < rows - 1; r++)
             drawSeg(r * cols + c, (r + 1) * cols + c);
-        ctx.shadowBlur = 0;
+        renderCtx.shadowBlur = 0;
       }
 
       /* ---- triangle -> wireframe egg -> solid egg ---- */
@@ -520,16 +609,27 @@ export default function DeltaPetsCutscene() {
       if ((v.triProg > 0.01 || v.wireAlpha > 0.01) && wireFade > 0.01) {
         if (v.morphProg < 0.999) {
           const triScaleIn = lerp(0.55, 1, Math.min(1, v.triProg));
+          const squashX = 1 + v.triSquash * 0.3;
+          const squashY = 1 - v.triSquash * 0.4;
           const N = 120;
           const tri = resampleClosed(
-            triOutlineRaw(cx, cy, scale, triScaleIn),
+            triOutlineRaw(
+              cx,
+              cy + v.triDropY,
+              scale,
+              triScaleIn,
+              squashX,
+              squashY,
+            ),
             N,
           );
           const egg = resampleClosed(eggOutlineRaw(cx, cy, scale), N);
-          const pts = tri.map((p, i) => [
-            lerp(p[0], egg[i][0], v.morphProg),
-            lerp(p[1], egg[i][1], v.morphProg),
-          ]);
+          const pts: Point[] = tri.map(
+            (p, i): Point => [
+              lerp(p[0], egg[i][0], v.morphProg),
+              lerp(p[1], egg[i][1], v.morphProg),
+            ],
+          );
           const outlineAlpha = Math.min(1, v.triProg) * wireFade;
           strokeRainbowPath(pts, time, 0, outlineAlpha, 2.4, true);
           drawWire(cx, cy, scale, time, v.wireAlpha * wireFade);
@@ -560,6 +660,8 @@ export default function DeltaPetsCutscene() {
       gridAlpha: 0,
       shock: -1,
       triProg: 0,
+      triDropY: 0,
+      triSquash: 0,
       morphProg: 0,
       wireAlpha: 0,
       solidProg: 0,
@@ -578,6 +680,18 @@ export default function DeltaPetsCutscene() {
 
       setPhase("fadeInBlack");
       await sleep(reduce ? 150 : TIMING.fadeInMs);
+      if (!alive()) return;
+
+      // grid blooms in first, low opacity, ambient backdrop for the glitch text
+      setPhase("gridFadeIn");
+      await tween(
+        TIMING.gridFadeInMs,
+        (e) => {
+          V.gridAlpha = e * 0.4; // low opacity, not full grid
+        },
+        alive,
+        easeOutCubic,
+      );
       if (!alive()) return;
 
       // wrong-screen glitch boot (subtle)
@@ -609,28 +723,9 @@ export default function DeltaPetsCutscene() {
       await sleep(280);
       if (!alive()) return;
 
-      // lore + grid bloom
-      setPhase("lore");
-      await typeText(LORE, setCenterText, TIMING.loreTypeMsPerChar, alive);
-      if (!alive()) return;
-      setPhase("gridFadeIn");
-      await tween(
-        TIMING.gridFadeInMs,
-        (e) => {
-          V.gridAlpha = e;
-        },
-        alive,
-        easeOutCubic,
-      );
-      if (!alive()) return;
-      await sleep(TIMING.lorePauseMs);
-      if (!alive()) return;
-      await deleteText(LORE, setCenterText, TIMING.loreDeleteMsPerChar, alive);
-      if (!alive()) return;
-
-      // rainbow Delta triangle
+      // rainbow Delta triangle falls in with a squash-and-stretch landing
       setPhase("triangle");
-      await tween(
+      tween(
         reduce ? 200 : TIMING.triangleDrawMs,
         (e) => {
           V.triProg = e;
@@ -638,6 +733,24 @@ export default function DeltaPetsCutscene() {
         alive,
         easeOutCubic,
       );
+      await tween(
+        reduce ? 200 : TIMING.triangleDrawMs,
+        (e) => {
+          V.triDropY = lerp(-220, 0, e); // falls from above into place
+          V.triSquash = e < 0.7 ? lerp(-0.3, 0, e / 0.7) : 0; // slight stretch while falling
+        },
+        alive,
+        easeInCubic, // gravity: slow start, fast landing
+      );
+      if (!alive()) return;
+      await tween(
+        reduce ? 120 : 260,
+        (e) => {
+          V.triSquash = Math.sin(e * Math.PI) * 0.55; // squash on impact, rebound to normal
+        },
+        alive,
+      );
+      V.triSquash = 0;
       if (!alive()) return;
       await sleep(TIMING.trianglePulseMs);
       if (!alive()) return;
@@ -703,15 +816,17 @@ export default function DeltaPetsCutscene() {
       V.gridAlpha = 0;
       V.shock = -1;
 
-      // good luck
+      // good luck (uses the same glitch effect as the intro lines)
       setPhase("goodluck");
-      await typeText(
+      setGlitching(true);
+      await glitchReveal(
         GOODLUCK,
         setCenterText,
-        TIMING.typeGoodluckMsPerChar,
+        GOODLUCK.length * TIMING.typeGoodluckMsPerChar,
         alive,
       );
       if (!alive()) return;
+      setGlitching(false);
       setPhase("hold");
       await sleep(TIMING.holdMs);
       if (!alive()) return;
@@ -773,7 +888,9 @@ export default function DeltaPetsCutscene() {
         <input
           className="dpc-input"
           value={playerName}
-          onChange={(e) => setPlayerName(e.target.value || "Traveler")}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setPlayerName(e.target.value || "Traveler")
+          }
           aria-label="Preview player name"
         />
         <button
@@ -816,8 +933,11 @@ const css = `
 .dpc-text{
   position:absolute; left:50%; top:50%;
   transform:translate(-50%, calc(-50% + 175px));
-  color:${C.text}; font-size:19px; letter-spacing:.3px; text-align:center;
-  max-width:760px; text-shadow:0 0 18px rgba(70,220,255,0.28);
+  width:100%; max-width:780px; height:86px;
+  display:flex; align-items:center; justify-content:center;
+  overflow:visible;
+  color:${C.text}; font-size:22px; letter-spacing:.3px; text-align:center;
+  text-shadow:0 0 18px rgba(70,220,255,0.28);
 }
 .dpc-text.glitch span{
   text-shadow: 2px 0 rgba(255,60,120,0.6), -2px 0 rgba(60,200,255,0.6), 0 0 18px rgba(120,230,255,0.4);

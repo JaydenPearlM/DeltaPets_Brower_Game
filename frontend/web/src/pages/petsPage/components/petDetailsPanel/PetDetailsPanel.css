@@ -175,47 +175,43 @@
 }
 
 .petRepoElement-fire {
-  --pet-element-solid: var(--element-fire);
-  --pet-element-rgb: 255, 106, 99;
+  --pet-element-solid: rgb(255, 61, 61);
+  --pet-element-rgb: 255, 61, 61;
   --scene-ring-bond: #d7a45a;
   --scene-ring-energy: #45cf6f;
-  --scene-core-glow: rgba(255, 148, 91, 0.22);
   --scene-inner-top: rgba(66, 71, 130, 0.98);
   --scene-inner-mid: rgba(110, 42, 48, 0.97);
   --scene-inner-bottom: rgba(74, 19, 26, 0.99);
-  border-color: rgba(255, 123, 118, 0.98);
+  border-color: rgba(255, 61, 61, 0.98);
 }
 
 .petRepoElement-water {
-  --pet-element-solid: var(--element-water);
-  --pet-element-rgb: 105, 183, 255;
+  --pet-element-solid: rgb(53, 200, 255);
+  --pet-element-rgb: 53, 200, 255;
   --scene-ring-bond: #d2b166;
   --scene-ring-energy: #45cf6f;
-  --scene-core-glow: rgba(108, 195, 255, 0.2);
   --scene-inner-top: rgba(37, 79, 127, 0.99);
   --scene-inner-mid: rgba(80, 36, 51, 0.94);
   --scene-inner-bottom: rgba(51, 20, 33, 0.98);
-  border-color: rgba(124, 198, 255, 0.96);
+  border-color: rgba(53, 200, 255, 0.96);
 }
 
 .petRepoElement-earth {
-  --pet-element-solid: var(--element-earth);
-  --pet-element-rgb: 115, 208, 127;
+  --pet-element-solid: rgb(142, 211, 93);
+  --pet-element-rgb: 142, 211, 93;
   --scene-ring-bond: #d2b166;
   --scene-ring-energy: #45cf6f;
-  --scene-core-glow: rgba(125, 216, 129, 0.18);
   --scene-inner-top: rgba(43, 75, 112, 0.99);
   --scene-inner-mid: rgba(83, 43, 39, 0.95);
   --scene-inner-bottom: rgba(58, 27, 23, 0.98);
-  border-color: rgba(138, 230, 150, 0.96);
+  border-color: rgba(142, 211, 93, 0.96);
 }
 
 .petRepoElement-air {
-  --pet-element-solid: var(--element-air);
+  --pet-element-solid: rgb(255, 255, 255);
   --pet-element-rgb: 255, 255, 255;
   --scene-ring-bond: #dcc57a;
   --scene-ring-energy: #4ed97b;
-  --scene-core-glow: rgba(221, 244, 255, 0.18);
   --scene-inner-top: rgba(77, 98, 140, 0.98);
   --scene-inner-mid: rgba(83, 44, 55, 0.92);
   --scene-inner-bottom: rgba(57, 24, 35, 0.98);
@@ -223,74 +219,68 @@
 }
 
 .petRepoElement-ice {
-  --pet-element-solid: var(--element-ice);
-  --pet-element-rgb: 184, 242, 255;
+  --pet-element-solid: rgb(114, 236, 255);
+  --pet-element-rgb: 114, 236, 255;
   --scene-ring-bond: #d3b56d;
   --scene-ring-energy: #49d574;
-  --scene-core-glow: rgba(186, 238, 255, 0.18);
   --scene-inner-top: rgba(55, 94, 138, 0.98);
   --scene-inner-mid: rgba(81, 40, 54, 0.92);
   --scene-inner-bottom: rgba(54, 22, 36, 0.98);
-  border-color: rgba(204, 248, 255, 0.98);
+  border-color: rgba(114, 236, 255, 0.98);
 }
 
 .petRepoElement-storm {
-  --pet-element-solid: var(--element-storm);
-  --pet-element-rgb: 255, 224, 103;
+  --pet-element-solid: rgb(245, 239, 54);
+  --pet-element-rgb: 245, 239, 54;
   --scene-ring-bond: #d9b866;
   --scene-ring-energy: #4bd776;
-  --scene-core-glow: rgba(255, 224, 118, 0.18);
   --scene-inner-top: rgba(57, 83, 138, 0.98);
   --scene-inner-mid: rgba(95, 46, 51, 0.95);
   --scene-inner-bottom: rgba(65, 24, 28, 0.99);
-  border-color: rgba(255, 232, 132, 0.98);
+  border-color: rgba(245, 239, 54, 0.98);
 }
 
 .petRepoElement-light {
-  --pet-element-solid: var(--element-light);
-  --pet-element-rgb: 255, 240, 191;
+  --pet-element-solid: rgb(255, 204, 64);
+  --pet-element-rgb: 255, 204, 64;
   --scene-ring-bond: #e2c984;
   --scene-ring-energy: #53dc7f;
-  --scene-core-glow: rgba(255, 245, 194, 0.18);
   --scene-inner-top: rgba(68, 91, 134, 0.98);
   --scene-inner-mid: rgba(91, 50, 56, 0.92);
   --scene-inner-bottom: rgba(63, 27, 34, 0.98);
-  border-color: rgba(255, 244, 210, 0.98);
+  border-color: rgba(255, 204, 64, 0.98);
 }
 
 .petRepoElement-shadow {
-  --pet-element-solid: var(--element-shadow);
-  --pet-element-rgb: 155, 134, 255;
+  --pet-element-solid: rgb(115, 73, 214);
+  --pet-element-rgb: 115, 73, 214;
   --scene-ring-bond: #d0b66d;
   --scene-ring-energy: #49d776;
-  --scene-core-glow: rgba(157, 135, 255, 0.18);
   --scene-inner-top: rgba(58, 66, 128, 0.99);
   --scene-inner-mid: rgba(79, 34, 67, 0.98);
   --scene-inner-bottom: rgba(44, 12, 40, 0.99);
-  border-color: rgba(181, 162, 255, 0.98);
+  border-color: rgba(115, 73, 214, 0.98);
 }
 
 .petRepoElement-voidborne {
-  --pet-element-solid: var(--element-voidborne);
-  --pet-element-rgb: 177, 108, 255;
+  --pet-element-solid: rgb(185, 194, 214);
+  --pet-element-rgb: 185, 194, 214;
   --scene-ring-bond: #d0b66d;
   --scene-ring-energy: #49d776;
-  --scene-core-glow: rgba(177, 108, 255, 0.18);
   --scene-inner-top: rgba(58, 66, 128, 0.99);
   --scene-inner-mid: rgba(79, 34, 67, 0.98);
   --scene-inner-bottom: rgba(44, 12, 40, 0.99);
-  border-color: var(--element-voidborne);
+  border-color: rgba(185, 194, 214, 0.98);
 }
 .petRepoElement-null {
-  --pet-element-solid: var(--element-null);
-  --pet-element-rgb: 217, 226, 235;
+  --pet-element-solid: rgb(185, 194, 214);
+  --pet-element-rgb: 185, 194, 214;
   --scene-ring-bond: #d0b86c;
   --scene-ring-energy: #47d371;
-  --scene-core-glow: rgba(215, 224, 232, 0.15);
   --scene-inner-top: rgba(57, 74, 113, 0.98);
   --scene-inner-mid: rgba(84, 45, 50, 0.92);
   --scene-inner-bottom: rgba(57, 27, 31, 0.98);
-  border-color: rgba(232, 238, 245, 0.98);
+  border-color: rgba(185, 194, 214, 0.98);
 }
 
 .petRepoSectionHeader--careDetails {

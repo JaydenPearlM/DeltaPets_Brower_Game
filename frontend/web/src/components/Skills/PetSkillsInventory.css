@@ -31,30 +31,31 @@
   inset: var(--dp-popup-inset-gap);
   z-index: 1;
   border-radius: 14px;
-  border: 5px solid var(--dp-popup-inner-border);
-  background:
-    radial-gradient(
-      circle at 100% 100%,
-      var(--dp-panel-glow-pink),
-      transparent 38%
-    ),
-    linear-gradient(var(--dp-cyber-cyan) 2px, transparent 2px),
-    linear-gradient(90deg, var(--dp-cyber-cyan) 2px, transparent 2px),
-    var(--dp-popup-grid-base);
+  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
+  background-image: var(--dp-popup-grid-texture);
   background-size:
-    auto,
-    calc(var(--dp-popup-grid-size) * 2) calc(var(--dp-popup-grid-size) * 2),
-    calc(var(--dp-popup-grid-size) * 2) calc(var(--dp-popup-grid-size) * 2),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
     auto;
-  background-position: 0 0;
-  background-blend-mode: normal, screen, screen, normal;
-  opacity: 0.8;
-  pointer-events: none;
+  background-position:
+    0 0,
+    0 0,
+    100% 100%,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  opacity: 1;
 }
 
 .skillInventoryModal::after {
-  content: none;
-  display: none;
+  content: "";
+  position: absolute;
+  inset: calc(var(--dp-popup-inset-gap) + var(--dp-popup-inner-border-width));
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 10px;
+  background: var(--dp-popup-grid-accent);
+  display: block;
 }
 
 .skillInventoryModal > * {

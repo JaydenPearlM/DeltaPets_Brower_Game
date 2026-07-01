@@ -78,11 +78,17 @@
 }
 
 .auth-brandDeltaPets {
-  color: var(--dp-brand-yellow);
+  color: var(--dp-brand-yellow) !important;
+  -webkit-text-fill-color: var(--dp-brand-yellow) !important;
   -webkit-text-stroke: 0;
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.18),
-    0 0 10px rgba(255, 217, 77, 0.14);
+  text-shadow: none;
+}
+
+.dpPopupWindow .auth-loginBrandTitle,
+.dpPopupWindow .auth-signupTitle {
+  color: #f7f6f2 !important;
+  -webkit-text-fill-color: #f7f6f2 !important;
+  text-shadow: none !important;
 }
 
 .dp-form {

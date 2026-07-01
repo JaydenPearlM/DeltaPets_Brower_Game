@@ -20,6 +20,7 @@ import type {
 } from "@/components/Hatchery/pages/storage/usePetStorage";
 import "./PetPage.css";
 import SkillTree from "@/components/Skills/skilltree";
+import DpPopupWindow from "./components/DpPopupWindow";
 import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
@@ -835,21 +836,17 @@ export default function PetPage() {
             />
           </section>
 
-          {showSkillTree
-            ? createPortal(
-                <div
-                  className="skillPopupBackdrop"
-                  role="presentation"
-                  onMouseDown={() => setShowSkillTree(false)}
-                >
-                  <SkillTree
-                    pet={pet}
-                    onClose={() => setShowSkillTree(false)}
-                  />
-                </div>,
-                document.body,
-              )
-            : null}
+          {showSkillTree ? (
+            <DpPopupWindow
+              open
+              onClose={() => setShowSkillTree(false)}
+              label="Kith Talent System"
+              size="wide"
+              className="dp-blue-grid-panel"
+            >
+              <SkillTree pet={pet} onClose={() => setShowSkillTree(false)} />
+            </DpPopupWindow>
+          ) : null}
         </section>
       ) : null}
     </div>

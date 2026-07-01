@@ -103,7 +103,7 @@ export default function PetSkillsInventory({
     <section
       className={
         mode === "modal"
-          ? "skillInventoryModal dp-blue-grid-panel"
+          ? "skillInventoryModal dpPopupWindow dp-blue-grid-panel"
           : "skillInventoryModal skillInventoryModal--inline dp-blue-grid-panel"
       }
       role={mode === "modal" ? "dialog" : undefined}
