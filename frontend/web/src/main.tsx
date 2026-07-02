@@ -5,6 +5,7 @@ import { router } from "./app/routes/router";
 import { AppProviders } from "./app/providers/AppProviders";
 import { ErrorBoundary } from "./app/ErrorBoundary";
 import "./global.css";
+import "./mobile.css";
 
 const DebugOverlay = import.meta.env.DEV
   ? React.lazy(() =>
