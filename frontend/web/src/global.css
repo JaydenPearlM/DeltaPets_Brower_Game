@@ -2203,8 +2203,7 @@ a {
 .dpPopupWindow {
   position: relative;
   isolation: isolate;
-  width: min(800px, calc(100vw - 48px));
-  max-width: 800px;
+
   max-height: min(760px, calc(100vh - 48px));
   overflow: hidden;
   border: var(--dp-popup-border-width) solid var(--dp-popup-border);

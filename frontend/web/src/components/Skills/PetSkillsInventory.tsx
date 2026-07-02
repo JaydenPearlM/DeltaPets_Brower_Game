@@ -260,7 +260,7 @@ export default function PetSkillsInventory({
       role="presentation"
       onMouseDown={onClose}
     >
-      {content}
+      <div className="skillInventoryScrollShell">{content}</div>
     </div>
   );
 }

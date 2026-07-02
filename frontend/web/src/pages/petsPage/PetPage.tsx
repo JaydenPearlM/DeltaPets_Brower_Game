@@ -842,7 +842,7 @@ export default function PetPage() {
               onClose={() => setShowSkillTree(false)}
               label="Kith Talent System"
               size="wide"
-              className="dp-blue-grid-panel"
+              className="skillTreePopupShell"
             >
               <SkillTree pet={pet} onClose={() => setShowSkillTree(false)} />
             </DpPopupWindow>

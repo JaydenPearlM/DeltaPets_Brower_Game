@@ -1,0 +1,47 @@
+.dp-arena-page {
+  --dp-arena-bg: #12131c;
+  --dp-arena-panel-bg: #1a1c29;
+  --dp-arena-border: #2c2f42;
+  --dp-arena-text: #e8e8f0;
+  --dp-arena-muted: #9497ad;
+  --dp-arena-accent: #3a86ff;
+
+  background: var(--dp-arena-bg);
+  color: var(--dp-arena-text);
+  min-height: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dp-arena-subtitle {
+  color: var(--dp-arena-muted);
+  margin: 0;
+}
+
+.dp-arena-panel {
+  background: var(--dp-arena-panel-bg);
+  border: 1px solid var(--dp-arena-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.dp-arena-slot {
+  padding: 10px;
+  border: 1px dashed var(--dp-arena-border);
+  border-radius: 6px;
+  margin-top: 8px;
+  color: var(--dp-arena-muted);
+}
+
+.dp-arena-start-btn {
+  background: var(--dp-arena-accent);
+  color: var(--dp-arena-text);
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { safeNum, titleCase } from "@/lib/petUtils";
+import DpPopupWindow from "../DpPopupWindow";
 import "./PetDetailsPanel.css";
 import { getPetDialogue } from "./petDialogue";
 import {
@@ -151,6 +151,29 @@ function getDisplayedPassiveTrait(
     null;
 
   return direct ? titleCase(direct) : "None";
+}
+
+function getDisplayedMutationTraits(
+  pet: Pick<PetRecord, "mutation_trait_names" | "mutations"> | null,
+) {
+  const directNames = pet?.mutation_trait_names ?? [];
+
+  const nestedNames =
+    pet?.mutations?.map((mutation) => {
+      if (typeof mutation === "string") {
+        return mutation;
+      }
+
+      return mutation.name ?? mutation.key ?? "";
+    }) ?? [];
+
+  const names = Array.from(
+    new Set([...directNames, ...nestedNames].filter(Boolean)),
+  );
+
+  return names.length
+    ? names.map((name) => titleCase(name)).join(", ")
+    : "None";
 }
 
 function getPreviewUrl(pet: PetRecord) {
@@ -661,99 +684,86 @@ export default function PetDetailsPanel({
   }, [showNicknameEditor, nicknameSaving, setShowNicknameEditor]);
 
   const nicknameModal =
-    showNicknameEditor && canRenameNickname
-      ? createPortal(
-          <div
-            className="petRepoNicknameModalBackdrop"
-            onClick={() => {
-              if (nicknameSaving) return;
-              setShowNicknameEditor(false);
+    showNicknameEditor && canRenameNickname ? (
+      <DpPopupWindow
+        open
+        onClose={() => {
+          if (nicknameSaving) return;
+          setShowNicknameEditor(false);
+        }}
+        label="Name Your New Pet"
+        size="compact"
+        contentClassName="petRepoNicknamePopupContent"
+      >
+        <button
+          type="button"
+          className="petRepoNicknameModalClose"
+          onClick={() => setShowNicknameEditor(false)}
+          disabled={nicknameSaving}
+          aria-label="Close nickname window"
+        >
+          ×
+        </button>
+
+        <div className="petRepoNicknameModalHeader">
+          <h3 id="pet-nickname-title" className="petRepoNicknameModalTitle">
+            Name Your New Pet!
+          </h3>
+          <p className="petRepoNicknameModalCopy">
+            Create your nickname here. You can type your own or roll a random
+            one.
+          </p>
+          <p className="petRepoNicknameModalCopy petRepoNicknameModalCopySmall">
+            Once saved, it cannot be changed again.
+          </p>
+        </div>
+
+        <div className="petRepoNicknameModalBody">
+          <label htmlFor="pet-nickname" className="petRepoInputLabel">
+            Nickname
+          </label>
+
+          <input
+            id="pet-nickname"
+            className="petRepoInput petRepoInputModal"
+            type="text"
+            maxLength={32}
+            value={nicknameDraft}
+            onChange={(event) => setNicknameDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && canSaveNickname) {
+                event.preventDefault();
+                void saveNickname();
+              }
             }}
-          >
-            <div
-              className="petRepoNicknameModalWindow"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="pet-nickname-title"
-              onClick={(event) => event.stopPropagation()}
+            placeholder="Enter a nickname"
+            autoFocus
+          />
+
+          <div className="petRepoNicknameModalActions">
+            <button
+              type="button"
+              className="petRepoNicknameModalSecondary"
+              onClick={() =>
+                setNicknameDraft(randomNickname(pet?.name?.trim() || "Delta"))
+              }
+              disabled={nicknameSaving}
             >
-              <button
-                type="button"
-                className="petRepoNicknameModalClose"
-                onClick={() => setShowNicknameEditor(false)}
-                disabled={nicknameSaving}
-                aria-label="Close nickname window"
-              >
-                ×
-              </button>
+              Random Name
+            </button>
 
-              <div className="petRepoNicknameModalHeader">
-                <h3
-                  id="pet-nickname-title"
-                  className="petRepoNicknameModalTitle"
-                >
-                  Name Your New Pet!
-                </h3>
-                <p className="petRepoNicknameModalCopy">
-                  Create your nickname here. You can type your own or roll a
-                  random one.
-                </p>
-                <p className="petRepoNicknameModalCopy petRepoNicknameModalCopySmall">
-                  Once saved, it cannot be changed again.
-                </p>
-              </div>
-
-              <div className="petRepoNicknameModalBody">
-                <label htmlFor="pet-nickname" className="petRepoInputLabel">
-                  Nickname
-                </label>
-
-                <input
-                  id="pet-nickname"
-                  className="petRepoInput petRepoInputModal"
-                  type="text"
-                  maxLength={32}
-                  value={nicknameDraft}
-                  onChange={(event) => setNicknameDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && canSaveNickname) {
-                      event.preventDefault();
-                      void saveNickname();
-                    }
-                  }}
-                  placeholder="Enter a nickname"
-                  autoFocus
-                />
-
-                <div className="petRepoNicknameModalActions">
-                  <button
-                    type="button"
-                    className="petRepoNicknameModalSecondary"
-                    onClick={() =>
-                      setNicknameDraft(
-                        randomNickname(pet?.name?.trim() || "Delta"),
-                      )
-                    }
-                    disabled={nicknameSaving}
-                  >
-                    Random Name
-                  </button>
-
-                  <button
-                    type="button"
-                    className="petRepoNicknameModalPrimary"
-                    onClick={() => void saveNickname()}
-                    disabled={!canSaveNickname}
-                  >
-                    {nicknameSaving ? "Saving..." : "Save Nickname"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )
-      : null;
+            <button
+              type="button"
+              className="petRepoNicknameModalPrimary"
+              onClick={() => void saveNickname()}
+              disabled={!canSaveNickname}
+            >
+              {nicknameSaving ? "Saving..." : "Save Nickname"}
+            </button>
+          </div>
+        </div>
+      </DpPopupWindow>
+    ) : null;
 
   return (
     <>
@@ -900,6 +910,10 @@ export default function PetDetailsPanel({
                 <InfoRow
                   label="Passive Trait"
                   value={getDisplayedPassiveTrait(pet)}
+                />
+                <InfoRow
+                  label="Mutation Trait"
+                  value={getDisplayedMutationTraits(pet)}
                 />
               </div>
             </div>

@@ -32,6 +32,11 @@ export default function DpPopupWindow({
   children,
 }: DpPopupWindowProps) {
   const windowRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open || typeof document === "undefined") return;
@@ -50,7 +55,7 @@ export default function DpPopupWindow({
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -90,7 +95,7 @@ export default function DpPopupWindow({
         previousActiveElement.focus();
       }
     };
-  }, [onClose, open]);
+  }, [open]);
 
   if (!open || typeof document === "undefined") return null;
 

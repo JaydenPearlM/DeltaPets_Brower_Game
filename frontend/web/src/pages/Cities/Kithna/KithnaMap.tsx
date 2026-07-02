@@ -69,7 +69,7 @@ const KITHNA_TARGETS: KithnaTarget[] = [
   {
     id: "farm",
     label: "Farm Merchant",
-    route: "/kithna/farm",
+    route: "/farm",
     className: "kithnaTargetFarm",
     icon: "☘",
   },

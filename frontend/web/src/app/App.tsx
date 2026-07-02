@@ -20,6 +20,7 @@ const PET_LINKS: MenuLink[] = [
   { label: "Pets", to: "/pet" },
   { label: "Hatchery", to: "/hatchery" },
   { label: "Gym", to: "/gym" },
+  { label: "Park", to: "/park" },
 ];
 
 const BATTLE_LINKS: MenuLink[] = [
@@ -265,17 +266,12 @@ export default function App() {
                       <div className="hamburgerMenuGlow" aria-hidden="true" />
 
                       <div className="hamburgerMenuHeader">
+                        <h3 className="hamburgerMenuTitle">Menu</h3>
+
                         <p className="hamburgerMenuIntro">
                           Explore the world of{" "}
                           <span className="hamburgerMenuAliune">Aliune</span>
                         </p>
-
-                        <h3 className="hamburgerMenuTitle">
-                          <span className="hamburgerMenuDeltaPets">
-                            DeltaPets
-                          </span>{" "}
-                          Menu
-                        </h3>
                       </div>
 
                       <div className="hamburgerMenuSection hamburgerMenuSection--profile">

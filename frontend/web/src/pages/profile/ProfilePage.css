@@ -1,0 +1,45 @@
+.dp-profile-page {
+  --dp-profile-bg: #12131c;
+  --dp-profile-panel-bg: #1a1c29;
+  --dp-profile-border: #2c2f42;
+  --dp-profile-text: #e8e8f0;
+  --dp-profile-muted: #9497ad;
+
+  background: var(--dp-profile-bg);
+  color: var(--dp-profile-text);
+  min-height: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dp-profile-header h1 {
+  margin: 0;
+}
+
+.dp-profile-subtitle {
+  color: var(--dp-profile-muted);
+  margin: 4px 0 0;
+}
+
+.dp-profile-panel {
+  background: var(--dp-profile-panel-bg);
+  border: 1px solid var(--dp-profile-border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dp-profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--dp-profile-border);
+}
+
+.dp-profile-info p {
+  margin: 4px 0;
+}

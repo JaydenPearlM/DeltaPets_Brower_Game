@@ -3,13 +3,24 @@ import { createBrowserRouter, Navigate, useLocation } from "react-router-dom";
 import App from "../App";
 import { useAuth } from "../providers/useAuth";
 import AuthCallback from "./AuthCallback";
-
+const ParkPage = lazy(() => import("../../pages/park/park"));
+const KithnaMap = lazy(() => import("../../pages/Cities/Kithna/KithnaMap"));
 const Homepage = lazy(() => import("../../pages/Homepage/homepage"));
 const CreatePage = lazy(() => import("../../pages/cutscene/create"));
 const PetPage = lazy(() => import("../../pages/petsPage/PetPage"));
+const FarmPage = lazy(() => import("../../pages/farm/petFarmFood"));
 const HatcheryPage = lazy(
   () => import("../../components/Hatchery/pages/HatcheryPage"),
 );
+
+const ProfilePage = lazy(() => import("../../pages/profile/ProfilePage"));
+const BattleArenaPage = lazy(
+  () => import("../../pages/battleArena/BattleArenaPage"),
+);
+const BattleDungeonsPage = lazy(
+  () => import("../../pages/battleDungeons/BattleDungeonsPage"),
+);
+const GymPage = lazy(() => import("../../pages/gym/gym"));
 
 const ComingSoonPage = lazy(() =>
   import("../../pages/Soon/ComingSoonPage").then((module) => ({
@@ -86,7 +97,7 @@ export const router = createBrowserRouter([
         path: "farm",
         element: withSuspense(
           <ProtectedRoute>
-            <ComingSoonPage pageName="Pet Farm" />
+            <FarmPage />
           </ProtectedRoute>,
         ),
       },
@@ -94,7 +105,7 @@ export const router = createBrowserRouter([
         path: "gym",
         element: withSuspense(
           <ProtectedRoute>
-            <ComingSoonPage pageName="Gym" />
+            <GymPage />
           </ProtectedRoute>,
         ),
       },
@@ -102,7 +113,7 @@ export const router = createBrowserRouter([
         path: "battle-arena",
         element: withSuspense(
           <ProtectedRoute>
-            <ComingSoonPage pageName="Battle Arena" />
+            <BattleArenaPage />
           </ProtectedRoute>,
         ),
       },
@@ -110,10 +121,19 @@ export const router = createBrowserRouter([
         path: "battle-dungeons",
         element: withSuspense(
           <ProtectedRoute>
-            <ComingSoonPage pageName="Battle Dungeons" />
+            <BattleDungeonsPage />
           </ProtectedRoute>,
         ),
       },
+      {
+        path: "park",
+        element: withSuspense(
+          <ProtectedRoute>
+            <ParkPage />
+          </ProtectedRoute>,
+        ),
+      },
+
       {
         path: "cities",
         element: withSuspense(
@@ -126,7 +146,7 @@ export const router = createBrowserRouter([
         path: "profile",
         element: withSuspense(
           <ProtectedRoute>
-            <ComingSoonPage pageName="Profiles" />
+            <ProfilePage />
           </ProtectedRoute>,
         ),
       },
@@ -135,7 +155,7 @@ export const router = createBrowserRouter([
         path: "cities/kithna",
         element: withSuspense(
           <ProtectedRoute>
-            <ComingSoonPage pageName="Kithna" />
+            <KithnaMap />
           </ProtectedRoute>,
         ),
       },

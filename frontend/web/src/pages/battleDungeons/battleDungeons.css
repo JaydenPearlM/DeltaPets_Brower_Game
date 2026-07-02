@@ -1,0 +1,48 @@
+.dp-dungeons-page {
+  --dp-dungeons-bg: #12131c;
+  --dp-dungeons-panel-bg: #1a1c29;
+  --dp-dungeons-border: #2c2f42;
+  --dp-dungeons-text: #e8e8f0;
+  --dp-dungeons-muted: #9497ad;
+  --dp-dungeons-accent: #6f3aff;
+
+  background: var(--dp-dungeons-bg);
+  color: var(--dp-dungeons-text);
+  min-height: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dp-dungeons-subtitle {
+  color: var(--dp-dungeons-muted);
+  margin: 0;
+}
+
+.dp-dungeons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dp-dungeons-card {
+  background: var(--dp-dungeons-panel-bg);
+  border: 1px solid var(--dp-dungeons-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.dp-dungeons-card h2 {
+  margin: 0 0 4px;
+}
+
+.dp-dungeons-enter-btn {
+  margin-top: 8px;
+  background: var(--dp-dungeons-accent);
+  color: var(--dp-dungeons-text);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+}

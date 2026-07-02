@@ -3,16 +3,28 @@
  */
 
 /* Modal panel */
+.skillInventoryScrollShell {
+  position: relative;
+  z-index: 1;
+  width: min(800px, calc(100vw - 48px));
+  max-width: 800px;
+  max-height: min(760px, calc(100vh - 48px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 24px;
+}
+
 .skillPopupBackdrop .skillInventoryModal,
 .skillInventoryModal {
   position: relative;
   isolation: isolate;
   z-index: 1;
-  width: min(800px, calc(100vw - 48px));
-  max-width: 800px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
   max-height: none;
-  overflow-y: visible;
-  padding: 30px 24px 0px;
+  overflow: visible;
+  padding: 30px 24px 24px;
   border-radius: 24px;
 
   border: var(--dp-popup-border-width) solid var(--dp-popup-border);
@@ -187,12 +199,14 @@
   cursor: pointer;
 }
 
-/* Grid */
 .skillInventoryGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 5px;
   margin-top: 16px;
+  padding-top: 18px;
+  padding-right: 4px;
+  padding-bottom: 12px;
 }
 
 /* Cards */
@@ -411,7 +425,7 @@
 
 .skillInventoryCloseBtn {
   appearance: none;
-  transform: translateY(-6.5px);
+  transform: none;
   min-width: 116px;
   min-height: 44px;
   padding: 0 18px;

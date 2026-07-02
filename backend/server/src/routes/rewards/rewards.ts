@@ -12,20 +12,15 @@ export const rewardsRouter = Router();
 
 /* =============================================================================
    Rewards: Daily Login / Weekly Streak
-   - Week 1 (streak 1..7): fixed rewards (includes ONE trough on Sunday)
-   - After Week 1: randomized rewards (NO trough)
+   - Week 1 (streak 1..7): fixed rewards (Sunday grants the Alpha Tester ribbon)
+   - After Week 1: random pick from POST_WEEK1_POOL, plus a rare egg chance
+   - Any streak that completes a full 7-day block (14, 21, 28...) also attempts
+     to award the Alpha Tester ribbon, in case it wasn't earned in Week 1
 ============================================================================= */
 
 /** ---- Config ------------------------------------------------------------- */
 
 const POST_WEEK1_EGG_CHANCE_PERMILLE = 10; // 10 / 1000 = 1%
-const POST_WEEK1_DOTS_CHANCE_PERCENT = 75; // 75% dots, 25% crystals
-const POST_WEEK1_DOTS_MIN = 100;
-const POST_WEEK1_DOTS_MAX = 500;
-const POST_WEEK1_CRYSTALS_MIN = 1;
-const POST_WEEK1_CRYSTALS_MAX = 6;
-
-const STARTER_TROUGH_CAPACITY = 50;
 const EGG_HATCH_MINUTES = 2;
 
 const ELEMENTS = [
@@ -53,7 +48,7 @@ type Reward =
   | { kind: "crystals"; amount: number; label: string }
   | { kind: "item"; slug: string; qty: number; label: string }
   | { kind: "xp"; amount: number; label: string }
-  | { kind: "trough"; capacity: number; label: string }
+  | { kind: "ribbon"; label: string }
   | { kind: "egg"; element: Element; label: string };
 
 type Week1Reward =
@@ -61,9 +56,9 @@ type Week1Reward =
   | { kind: "crystals"; amount: number; label: string }
   | { kind: "item"; slug: string; qty: number; label: string }
   | { kind: "xp"; amount: number; label: string }
-  | { kind: "trough"; capacity: number; label: string };
+  | { kind: "ribbon"; label: string };
 
-/** Week 1 fixed rewards (Mon..Sun, mapped by streak dayIndex 0..6) */
+/** Week 1 fixed rewards (Mon..Sun, mapped by streak dayIndex 0..6). Unchanged. */
 const WEEK1: readonly Week1Reward[] = [
   { kind: "dots", amount: 300, label: "300 Dots" }, // Mon
   { kind: "crystals", amount: 5, label: "5 Crystals" }, // Tue
@@ -76,19 +71,32 @@ const WEEK1: readonly Week1Reward[] = [
   { kind: "item", slug: "potion_small", qty: 3, label: "Potions x3" }, // Thu
   { kind: "xp", amount: 50, label: "Extra EXP +50" }, // Fri
   { kind: "dots", amount: 500, label: "500 Dots" }, // Sat
-  // Sunday (ONLY Week 1): starter trough (50 cap), starts full.
+  { kind: "ribbon", label: "Alpha Tester Ribbon" }, // Sun
+] as const;
+
+/** Post-Week-1 random pool. Rolled after the rare egg-chance check misses. */
+type PostWeek1PoolReward =
+  | { kind: "dots"; amount: number; label: string }
+  | { kind: "item"; slug: string; qty: number; label: string }
+  | { kind: "xp"; amount: number; label: string };
+
+const POST_WEEK1_POOL: readonly PostWeek1PoolReward[] = [
+  { kind: "dots", amount: 300, label: "300 Dots" },
+  { kind: "dots", amount: 200, label: "200 Dots" },
+  { kind: "dots", amount: 100, label: "100 Dots" },
+  { kind: "dots", amount: 600, label: "600 Dots" },
   {
-    kind: "trough",
-    capacity: STARTER_TROUGH_CAPACITY,
-    label: "Feeding Trough (50 cap)",
-  }, // Sun
+    kind: "item",
+    slug: "starter_equipment",
+    qty: 1,
+    label: "Starter Equipment",
+  },
+  { kind: "item", slug: "potion_small", qty: 3, label: "Potions x3" },
+  { kind: "xp", amount: 100, label: "Extra EXP +100" },
+  { kind: "xp", amount: 200, label: "Extra EXP +200" },
 ] as const;
 
 /** ---- Date helpers ------------------------------------------------------- */
-/**
- * Safer “days between” in UTC (avoids DST weirdness).
- * Returns whole-day difference between two instants using UTC calendar days.
- */
 function daysBetweenUTC(a: Date, b: Date): number {
   const aDay = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate());
   const bDay = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
@@ -109,19 +117,8 @@ function rollPostWeek1(): Reward {
     return { kind: "egg", element, label: `Egg (${displayElement(element)})` };
   }
 
-  // Otherwise currency: dots or crystals
-  const rollPercent = cryptoRandomInt(0, 100); // 0..99
-  if (rollPercent < POST_WEEK1_DOTS_CHANCE_PERCENT) {
-    const amt =
-      POST_WEEK1_DOTS_MIN +
-      cryptoRandomInt(0, POST_WEEK1_DOTS_MAX - POST_WEEK1_DOTS_MIN + 1);
-    return { kind: "dots", amount: amt, label: `${amt} Dots` };
-  }
-
-  const amt =
-    POST_WEEK1_CRYSTALS_MIN +
-    cryptoRandomInt(0, POST_WEEK1_CRYSTALS_MAX - POST_WEEK1_CRYSTALS_MIN + 1);
-  return { kind: "crystals", amount: amt, label: `${amt} Crystals` };
+  const pick = POST_WEEK1_POOL[cryptoRandomInt(0, POST_WEEK1_POOL.length)];
+  return pick;
 }
 
 /** ---- Supabase write helpers -------------------------------------------- */
@@ -218,32 +215,43 @@ async function giveXPToActivePet(user_id: string, amount: number) {
 }
 
 /**
- * One trough only:
- * - Only grant if user has NO trough yet (capacity <= 0)
- * - Set capacity = 50 and fill = 50 when granted
- * - Never upgrade, never refill, never grant again
+ * Awards the Alpha Tester ribbon once, ever, per trainer.
+ * Trainer-scoped (trainer_awards), not pet-scoped, so it survives
+ * pet loss, pet swaps, or a pets-table reset. Safe to call repeatedly,
+ * the unique(user_id, award_id) constraint makes it a no-op after the
+ * first successful award.
  */
-async function giveTroughOnce(user_id: string, capacity: number) {
-  const { data: resRow, error } = await supabaseAdmin
-    .from("user_resources")
-    .select("trough_capacity, trough_fill")
-    .eq("user_id", user_id)
-    .maybeSingle();
-  if (error) throw error;
+async function awardAlphaTesterRibbon(user_id: string, earnedAtIso: string) {
+  const { data: award, error: awardErr } = await supabaseAdmin
+    .from("awards")
+    .upsert(
+      {
+        key: "alpha_tester",
+        name: "Alpha Tester",
+        type: "ribbon",
+        rarity: "special",
+        description:
+          "Awarded for participating in the Alpha deployment testing.",
+      },
+      { onConflict: "key" },
+    )
+    .select("id")
+    .single();
 
-  const currentCap = resRow?.trough_capacity ?? 0;
-  if (currentCap > 0) return; // already owned
+  if (awardErr) throw new Error(awardErr.message);
+  if (!award?.id) throw new Error("Failed to resolve award id.");
 
-  const { error: e2 } = await supabaseAdmin.from("user_resources").upsert(
+  const { error: taErr } = await supabaseAdmin.from("trainer_awards").upsert(
     {
       user_id,
-      trough_capacity: capacity,
-      trough_fill: capacity,
-      updated_at: new Date().toISOString(),
+      award_id: award.id,
+      earned_at: earnedAtIso,
+      context: { source: "daily_login_rewards", deployment: "alpha" },
     },
-    { onConflict: "user_id" },
+    { onConflict: "user_id,award_id" },
   );
-  if (e2) throw e2;
+
+  if (taErr) throw new Error(taErr.message);
 }
 
 async function giveEgg(user_id: string, element: Element) {
@@ -288,12 +296,11 @@ async function applyReward(user_id: string, reward: Reward) {
       return giveItem(user_id, reward.slug, reward.qty);
     case "xp":
       return giveXPToActivePet(user_id, reward.amount);
-    case "trough":
-      return giveTroughOnce(user_id, reward.capacity);
+    case "ribbon":
+      return awardAlphaTesterRibbon(user_id, new Date().toISOString());
     case "egg":
       return giveEgg(user_id, reward.element);
     default: {
-      // Exhaustive safety (should never happen)
       const _never: never = reward;
       return _never;
     }
@@ -305,10 +312,8 @@ async function applyReward(user_id: string, reward: Reward) {
 function rewardForStreak(nextStreak: number): Reward {
   const dayIndex = (nextStreak - 1) % 7;
 
-  // Week 1: fixed list (includes trough on dayIndex 6)
   if (nextStreak <= 7) {
     const r = WEEK1[dayIndex];
-    // Normalize to Reward union (same fields, just typed)
     if (r.kind === "dots")
       return { kind: "dots", amount: r.amount, label: r.label };
     if (r.kind === "crystals")
@@ -317,16 +322,14 @@ function rewardForStreak(nextStreak: number): Reward {
       return { kind: "item", slug: r.slug, qty: r.qty, label: r.label };
     if (r.kind === "xp")
       return { kind: "xp", amount: r.amount, label: r.label };
-    return { kind: "trough", capacity: r.capacity, label: r.label };
+    return { kind: "ribbon", label: r.label };
   }
 
-  // After Week 1: randomized (NO trough)
   return rollPostWeek1();
 }
 
 /** ---- Routes ------------------------------------------------------------- */
 
-/** Returns current UI status for the bar */
 rewardsRouter.get(
   "/status",
   requireUser,
@@ -348,10 +351,8 @@ rewardsRouter.get(
     const diffDays = last ? daysBetweenUTC(last, now) : 999;
     const claimedToday = diffDays === 0;
 
-    // If they disappear 4+ days, reset (matches existing behavior)
     const resetIfClaiming = diffDays >= 4;
 
-    // Miss rules: you “have” 2 misses; after diffDays 2 => used 1, diffDays 3 => used 2, diffDays 4+ => reset anyway.
     const missesUsed = last ? Math.max(0, diffDays - 1) : 0;
     const missesRemaining = Math.max(0, 2 - missesUsed);
 
@@ -374,7 +375,6 @@ rewardsRouter.get(
   },
 );
 
-/** Claims today's reward */
 rewardsRouter.post(
   "/claim",
   requireUser,
@@ -414,6 +414,21 @@ rewardsRouter.post(
         .json({ error: err?.message ?? "Failed to apply reward" });
     }
 
+    // Bonus: completing any full 7-day block (14, 21, 28...) also attempts
+    // the ribbon award, in case it wasn't picked up during Week 1.
+    // Idempotent, so this only ever does something the first time it hits.
+    let ribbonBonusAwarded = false;
+    const completedFullWeek = nextStreak % 7 === 0;
+
+    if (completedFullWeek && reward.kind !== "ribbon") {
+      try {
+        await awardAlphaTesterRibbon(user_id, now.toISOString());
+        ribbonBonusAwarded = true;
+      } catch (e) {
+        console.warn("[rewards] bonus ribbon award attempt failed:", e);
+      }
+    }
+
     const { error: e2 } = await supabaseAdmin
       .from("daily_login_rewards")
       .upsert(
@@ -429,6 +444,7 @@ rewardsRouter.post(
       streak: nextStreak,
       dayIndex,
       reset,
+      ribbon_bonus_awarded: ribbonBonusAwarded,
     });
   },
 );
