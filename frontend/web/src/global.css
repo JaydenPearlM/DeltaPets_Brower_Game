@@ -149,7 +149,7 @@
   --dp-panel-muted: #a8c8df;
 
   --dp-panel-purple-border: #c77dff;
-  //--dp-panel-purple-glow: rgba(199, 125, 255, 0.42);
+  --dp-panel-purple-glow: rgba(199, 125, 255, 0.42);
 
   /* Standard panel tokens: normal page panels use cyan outside, purple inset, and no popup-only grid requirement. */
   /* Global standard non-popup panel system */
