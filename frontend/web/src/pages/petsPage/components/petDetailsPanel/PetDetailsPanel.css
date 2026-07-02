@@ -721,7 +721,7 @@
       var(--scene-ring-bond, #c8a84a) 0% calc(var(--bond, 0) * 1%),
       transparent calc(var(--bond, 0) * 1%) 100%
     )
-    border-box;
+        box-sizing: border-box;
   mask:
     linear-gradient(#000 0 0) padding-box,
     linear-gradient(#000 0 0);
@@ -740,7 +740,7 @@
       var(--scene-ring-energy, #43cf6e) 0% calc(var(--energy, 100) * 1%),
       transparent calc(var(--energy, 100) * 1%) 100%
     )
-    border-box;
+    box-sizing: border-box;
   mask:
     linear-gradient(#000 0 0) padding-box,
     linear-gradient(#000 0 0);

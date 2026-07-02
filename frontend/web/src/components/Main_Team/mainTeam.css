@@ -563,8 +563,8 @@
       var(--main-team-bond, 0%),
     rgba(168, 200, 223, 0.24) var(--main-team-bond, 0%) 100%
   )
-  border-box;
-    border-box;
+   box-sizing: border-box;
+    box-sizing: border-box;
   mask:
     linear-gradient(#000 0 0) padding-box,
     linear-gradient(#000 0 0);
