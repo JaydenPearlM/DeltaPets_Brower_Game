@@ -11,6 +11,7 @@ import {
 } from "./middleware/rateLimit";
 import { apiRouter } from "./routes";
 import { worldRouter } from "./routes/world/world";
+import { alphaAccessRouter } from "./routes/alphaAccess/alphaAccess";
 import { errorHandler } from "./middleware/errorHandler";
 import { debugRouter } from "./routes/debug/debugRoutes";
 import { env } from "./env.server";
@@ -38,6 +39,7 @@ export function createApp() {
 
   app.use(healthRouter);
 
+  app.use("/api/alpha-access", authLimiter, alphaAccessRouter);
   app.use("/api/auth", authLimiter, publicAuthRouter, authRouter);
   app.use("/api/world", apiLimiter, apiSpeedLimiter, worldRouter);
 

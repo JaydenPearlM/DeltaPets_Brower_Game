@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate, useLocation } from "react-router-dom";
 import App from "../App";
 import { useAuth } from "../providers/useAuth";
 import AuthCallback from "./AuthCallback";
+import { AlphaAccessGate } from "../../components/AlphaAccess_temp/AlphaAccessGate";
 const ParkPage = lazy(() => import("../../pages/park/park"));
 const KithnaMap = lazy(() => import("../../pages/Cities/Kithna/KithnaMap"));
 const Homepage = lazy(() => import("../../pages/Homepage/homepage"));
@@ -58,7 +59,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: (
+      <AlphaAccessGate>
+        <App />
+      </AlphaAccessGate>
+    ),
     children: [
       { index: true, element: withSuspense(<Homepage />) },
       { path: "home", element: withSuspense(<Homepage />) },

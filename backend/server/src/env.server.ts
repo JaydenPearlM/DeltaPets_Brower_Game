@@ -34,7 +34,7 @@ export const env = {
   // ---------------------------------------------------------------------------
   SUPABASE_URL: required("SUPABASE_URL"),
   SUPABASE_SECRET_KEY: required("SUPABASE_SECRET_KEY"),
-
+  ALPHA_ACCESS_PASSWORD: optional("ALPHA_ACCESS_PASSWORD", ""),
   // ---------------------------------------------------------------------------
   // Rate limiting / request shaping
   // ---------------------------------------------------------------------------
