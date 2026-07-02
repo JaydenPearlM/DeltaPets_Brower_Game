@@ -20,7 +20,19 @@ export function createApp() {
 
   app.set("trust proxy", 1);
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          "connect-src": [
+            "'self'",
+            env.SUPABASE_URL,
+            env.SUPABASE_URL.replace(/^https:/, "wss:"),
+          ],
+        },
+      },
+    }),
+  );
 
   app.use(express.json());
 
