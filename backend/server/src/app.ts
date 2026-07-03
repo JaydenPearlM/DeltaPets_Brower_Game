@@ -63,6 +63,10 @@ export function createApp() {
         return next();
       }
 
+      if (path.extname(req.path)) {
+        return res.status(404).end();
+      }
+
       return res.sendFile(path.join(frontendDist, "index.html"));
     });
   }

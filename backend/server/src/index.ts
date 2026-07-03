@@ -3,6 +3,16 @@ import { env } from "./env.server";
 import { logger } from "./lib/logger";
 import { setCareDecayLogger } from "./shared/pets/care/CareDecay";
 
+process.on("uncaughtException", (error) => {
+  logger.error("[process] uncaughtException", error);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  logger.error("[process] unhandledRejection", reason);
+  process.exit(1);
+});
+
 setCareDecayLogger((kind, payload) => {
   logger.debug(`[care/decay] ${kind}`, payload);
 });

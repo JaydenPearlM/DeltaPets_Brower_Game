@@ -1440,8 +1440,8 @@
 }
 
 .hp-banner--yellow {
-  background: linear-gradient(180deg, #7a5a00, #c49a00);
-  border: 2px solid rgba(255, 215, 100, 0.6);
+  background: linear-gradient(180deg, #fff36a 0%, #ffd736 52%, #f5bd18 100%);
+  border: 2px solid rgba(255, 246, 140, 0.9);
 }
 
 .hp-banner--green {
