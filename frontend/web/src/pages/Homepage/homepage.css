@@ -1332,16 +1332,24 @@
     font-weight: 250;
     position: relative;
     margin-left: 0;
-    color: #f3d63f;
-    -webkit-text-stroke: 2px #b23a24;
-    text-shadow:
-      0 1px 0 rgba(255, 250, 217, 0.95),
-      0 2px 0 #b23a24,
-      0 3px 0 #b23a24,
-      0 4px 0 #8d2b1d,
-      0 8px 14px rgba(44, 25, 10, 0.2);
-    filter: drop-shadow(0 8px 18px rgba(52, 71, 116, 0.18));
-    animation: hpDeltaTopSpinY 7.5s linear infinite;
+    background: linear-gradient(
+      135deg,
+      #ff5a5f 0%,
+      #ff9f1c 18%,
+      #ffe95c 34%,
+      #63e77d 50%,
+      #4fc3ff 68%,
+      #8f7cff 84%,
+      #ff66c4 100%
+    );
+    background-size: 240% 240%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 0 rgba(255, 255, 255, 0.18))
+      drop-shadow(0 8px 18px rgba(52, 71, 116, 0.18));
+    animation:
+      hpDeltaTopSpinY 7.5s linear infinite,
+      hpDeltaRainbowShift 8s ease-in-out infinite;
   }
 
   .hp-heroBrandRow {

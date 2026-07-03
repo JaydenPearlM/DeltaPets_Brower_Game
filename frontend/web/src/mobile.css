@@ -359,7 +359,20 @@
 }
 
 /* ---------------------------------------------------------
-   10. GALAXY S22 ULTRA HARD TARGET (384 x 824 CSS viewport, DPR 3.75)
+   11. DELTA CLOCK (header time/phase box)
+   The phase label (NIGHT, DAY, DUSK, etc) was sitting right up
+   against the inner decorative border on mobile. This file had
+   no mobile coverage for the clock at all before this. Just
+   adding a bit of bottom breathing room, nothing else touched.
+   --------------------------------------------------------- */
+@media (max-width: 900px) {
+  .deltaClock {
+    padding-bottom: 18px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   12. GALAXY S22 ULTRA HARD TARGET (384 x 824 CSS viewport, DPR 3.75)
    Everything above already covers this width through the 420 and
    480 tiers. This block is a final safety net: nothing in the
    game should ever force a horizontal scrollbar under 400px.
