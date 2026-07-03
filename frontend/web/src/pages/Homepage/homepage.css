@@ -1265,7 +1265,7 @@
   .hp-banner {
     width: 100%;
     max-width: none;
-    margin: 0 0 140px 0;
+    margin: 0 0 18px 0;
   }
 
   .hp-heroCard {
@@ -1323,7 +1323,7 @@
   }
 
   .hp-heroCrest {
-    justify-self: start;
+    justify-self: center;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1331,7 +1331,7 @@
     line-height: 1;
     font-weight: 250;
     position: relative;
-    margin-left: -420px;
+    margin-left: 0;
     color: #f3d63f;
     -webkit-text-stroke: 2px #b23a24;
     text-shadow:
@@ -1344,12 +1344,22 @@
     animation: hpDeltaTopSpinY 7.5s linear infinite;
   }
 
+  .hp-heroBrandRow {
+    row-gap: 2px;
+  }
+
+  .hp-heroTagline {
+    margin-top: 2px;
+  }
+
   .hp-heroSubtitle {
     font-size: 1rem;
+    margin-top: 2px;
   }
 
   .hp-primaryBtn {
-    width: 100%;
+    width: calc(100% - 16px);
+    margin: 0 auto;
   }
 
   .hp-heroFeatureRow {
@@ -1386,6 +1396,16 @@
   .hp-spotlightText {
     font-size: 0.98rem;
     line-height: 1.7;
+  }
+
+  .hp-heroDisclaimer {
+    padding: 0 18px;
+  }
+
+  .hp-newsColumn {
+    margin-left: 0;
+    width: 100%;
+    transform: none;
   }
 }
 

@@ -741,9 +741,29 @@ h6,
 
 /* Document defaults: smooth scrolling and font rendering. */
 
+/*
+  Root font-size controls the whole site's scale, since most components
+  size text and spacing in rem, which is relative to this value.
+  Dropped from 16px to 14px (87.5%) to fix the "everything is huge at
+  100% zoom in production" issue. This shrinks anything sized in rem
+  automatically, no need to touch individual component files.
+
+  What this WILL shrink: font sizes, and any padding, gap, or width
+  written in rem across the site (most panels and text do this).
+
+  What this WILL NOT shrink: anything hardcoded in raw px, for example
+  hp-spotlightPanel's 56px offset, the header's 240px/300px grid
+  columns, or the talent tree's fixed 430px panel. Those stay exactly
+  the same size regardless of this value, since px is not relative to
+  font-size.
+
+  If 14px still looks too large, drop it further in steps of 1px and
+  reload, this is the one line to tune. If it looks too small or text
+  gets hard to read anywhere, raise it back toward 16px.
+*/
 html {
   min-height: 100%;
-  font-size: 16px;
+  font-size: 14px;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
