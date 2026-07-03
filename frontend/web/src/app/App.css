@@ -843,6 +843,7 @@
   .aliuneSignal {
     flex-wrap: wrap;
     justify-content: center;
+    row-gap: 4px;
   }
 
   .exploreThoughtBubble {

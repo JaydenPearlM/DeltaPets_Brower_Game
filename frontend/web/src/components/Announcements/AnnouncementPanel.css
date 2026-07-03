@@ -389,3 +389,20 @@
   font-weight: 700;
   line-height: 1.6;
 }
+
+/* MOBILE ONLY: the base .anp-archiveHeading rule above sets
+   position: relative + top: -30px, which pulls "Past Announcements"
+   up on top of the featured announcement's bottom border. That base
+   rule is left untouched here since it also affects desktop. This
+   override only fires under 720px and puts the heading back into
+   normal flow with real spacing below the featured card instead. */
+@media (max-width: 720px) {
+  .anp-archiveWrap {
+    margin-top: 18px;
+  }
+
+  .anp-archiveHeading {
+    top: 0;
+    margin: 0 0 10px;
+  }
+}
