@@ -320,25 +320,41 @@
       "content" !important;
     justify-items: center !important;
     text-align: center !important;
-    padding: 1rem 1rem 1.25rem !important;
+    /* the locked blue-grid inner border sits 18px inset from the
+       panel edge and is 6px thick, so content needs at least 24px
+       of clearance to clear it, not touch or cross it. Left/right
+       bumped to 26px, this is the fix for the description text
+       overflowing into the inset border. Nothing about the border
+       itself, .dp-standard-panel-purple, is touched. */
+    padding: 1rem 26px 1.25rem !important;
     transform: none !important;
   }
 
+  .hp-spotlightTop,
   .hp-spotlightIdentity {
-    align-items: center !important;
+    justify-self: start !important;
+    text-align: left !important;
   }
 
-  .hp-spotlightName {
-    text-align: center !important;
+  .hp-spotlightPanel .hp-panelBody.hp-spotlightBody {
+    padding: 1rem 28px 20px !important;
   }
 
-  .hp-spotlightMetaRow {
-    justify-content: center !important;
+  .hp-spotlightPanel .hp-spotlightContent {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-top: 8px !important;
   }
 
-  .hp-spotlightMetaItem,
-  .hp-spotlightPersonalityRow {
-    text-align: center !important;
+  .hp-spotlightText {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    font-size: 0.94rem !important;
+    line-height: 1.5 !important;
   }
 }
 
