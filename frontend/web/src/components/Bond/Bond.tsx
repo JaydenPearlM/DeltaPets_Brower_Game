@@ -70,7 +70,10 @@ export default function Bond({
         <strong>{safeBond}/100</strong>
       </div>
 
-      <div className="bondMeter" aria-label={`Bond level ${safeBond} out of 100`}>
+      <div
+        className="bondMeter"
+        aria-label={`Bond level ${safeBond} out of 100`}
+      >
         <span style={{ width: `${safeBond}%` }} />
       </div>
 
