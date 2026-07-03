@@ -372,7 +372,29 @@
 }
 
 /* ---------------------------------------------------------
-   12. GALAXY S22 ULTRA HARD TARGET (384 x 824 CSS viewport, DPR 3.75)
+   13. PETS PAGE ROOT OFFSET (the whole page was pushed right)
+   .petRepoStage sets a 145px left offset for a desktop "Care
+   Room redesign" layout. That rule sits outside any media
+   query near the bottom of PetPage.css, after the file's own
+   mobile breakpoints that reset it to 0, so it silently wins
+   and re-applies the 150px push at every screen width,
+   including phones. This is the confirmed cause of the large
+   blank strip on the left of the entire pets page on mobile,
+   with every panel squeezed into the remaining width and
+   clipping on the right edge as a result. Nothing about the
+   desktop "Care Room" offset is touched, this only fires
+   under 920px, matching the breakpoint already used elsewhere
+   in that file for this exact class.
+   --------------------------------------------------------- */
+@media (max-width: 920px) {
+  .petRepoStage {
+    padding-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   14. GALAXY S22 ULTRA HARD TARGET (384 x 824 CSS viewport, DPR 3.75)
    Everything above already covers this width through the 420 and
    480 tiers. This block is a final safety net: nothing in the
    game should ever force a horizontal scrollbar under 400px.
