@@ -337,14 +337,14 @@
   }
 
   .hp-spotlightPanel .hp-panelBody.hp-spotlightBody {
-    padding: 1rem 28px 20px !important;
+    padding: 1rem 28px 30px !important;
   }
 
   .hp-spotlightPanel .hp-spotlightContent {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    margin-top: 8px !important;
+    margin-top: 1px !important;
   }
 
   .hp-spotlightText {
