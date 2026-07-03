@@ -285,7 +285,65 @@
 }
 
 /* ---------------------------------------------------------
-   9. GALAXY S22 ULTRA HARD TARGET (384 x 824 CSS viewport, DPR 3.75)
+   9. HOMEPAGE SPOTLIGHT PANEL (the featured pet card)
+   .hp-spotlightPanel is deliberately set wider than its own
+   column on purpose, width: calc(100% + 100px) plus a 56px
+   left shift, to create a desktop bleed/shadow effect. None
+   of the file's four existing media queries ever reset this,
+   so on a phone the whole card renders 100px too wide and
+   shifted right, which is why stat text runs off the right
+   edge of the screen instead of wrapping. The internal grid
+   reflow at 980px was already correct, it just never had a
+   correctly sized box to reflow inside of.
+   --------------------------------------------------------- */
+@media (max-width: 980px) {
+  .hp-spotlightPanel {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .hp-spotlightPanel .hp-panelHeader {
+    padding-left: 0;
+  }
+
+  .hp-spotlightPanel .hp-panelTitle {
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hp-spotlightBody {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "top"
+      "visual"
+      "content";
+    justify-items: center;
+    text-align: center;
+    padding: 1rem 1rem 1.25rem;
+    transform: none;
+  }
+
+  .hp-spotlightIdentity {
+    align-items: center;
+  }
+
+  .hp-spotlightName {
+    text-align: center;
+  }
+
+  .hp-spotlightMetaRow {
+    justify-content: center;
+  }
+
+  .hp-spotlightMetaItem,
+  .hp-spotlightPersonalityRow {
+    text-align: center;
+  }
+}
+
+/* ---------------------------------------------------------
+   10. GALAXY S22 ULTRA HARD TARGET (384 x 824 CSS viewport, DPR 3.75)
    Everything above already covers this width through the 420 and
    480 tiers. This block is a final safety net: nothing in the
    game should ever force a horizontal scrollbar under 400px.

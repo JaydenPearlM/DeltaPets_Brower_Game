@@ -1,25 +1,55 @@
 services:
   - type: web
     name: deltapets
-    runtime: node
-    rootDir: .
-    buildCommand: |
-      corepack enable
-      cd frontend/web
-      pnpm install
-      pnpm build
-      cd ../../backend/server
-      pnpm install
-      pnpm build
-    startCommand: cd backend/server && pnpm start
+    env: node
+    plan: starter
+    autoDeploy: true
+
+    # Same-origin architecture: this builds the frontend, then builds
+    # and starts the backend, which serves frontend/web/dist itself
+    # (see backend/server/src/app.ts, express.static + catch-all route).
+    # There is no separate frontend service and no CORS layer, on purpose.
+    buildCommand: >
+      cd frontend/web && npm install && npm run build &&
+      cd ../../backend/server && npm install && npm run build
+
+    startCommand: node backend/server/dist/index.js
+
     envVars:
+      # env.server.ts defaults NODE_ENV to "development" when this is
+      # unset, which turns on /api/debug (see requireUser gate in app.ts).
+      # That default is backwards for a public deploy, it fails open
+      # instead of closed. Setting it here is the actual fix until the
+      # default in env.server.ts itself is flipped.
       - key: NODE_ENV
         value: production
+
+      - key: PORT
+        value: "4000"
+
       - key: SUPABASE_URL
         sync: false
+
       - key: SUPABASE_SECRET_KEY
         sync: false
-      - key: VITE_SUPABASE_URL
-        sync: false
-      - key: VITE_SUPABASE_ANON_KEY
-        sync: false
+
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "60000"
+
+      - key: RATE_LIMIT_MAX
+        value: "120"
+
+      - key: SLOW_DOWN_WINDOW_MS
+        value: "60000"
+
+      - key: SLOW_DOWN_AFTER
+        value: "60"
+
+      - key: SLOW_DOWN_DELAY_MS
+        value: "250"
+
+      - key: AUTH_RATE_LIMIT_WINDOW_MS
+        value: "60000"
+
+      - key: AUTH_RATE_LIMIT_MAX
+        value: "20"
