@@ -1,0 +1,303 @@
+/* =========================================================
+   DELTAPETS - MOBILE LAYER
+   =========================================================
+   How this works:
+   This is NOT a separate "mobile page" or JS device check.
+   It is a CSS layer that activates automatically based on
+   real viewport width, using @media queries. That is the
+   correct way to do this in a browser game, it reacts live
+   to screen size (phones, small tablets, resized windows,
+   rotation) instead of guessing from user-agent strings,
+   which break constantly and lag behind new devices.
+
+   Import this file LAST, after global.css, so it wins the
+   cascade without needing !important everywhere:
+
+     // main.tsx
+     import "./global.css";
+     import "./mobile.css";   // add this line
+
+   Breakpoints used sitewide (kept consistent with the ones
+   already in App.css so nothing double-fires):
+     900px  -> tablet / narrow desktop
+     640px  -> phone landscape / small tablet
+     420px  -> phone portrait
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   1. BASE SAFETY NET (applies to every page)
+   --------------------------------------------------------- */
+@media (max-width: 900px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  #root {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .appShell {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .appContent {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* keep any decorative canvas/art from forcing horizontal scroll */
+  img,
+  canvas,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* touch targets: anything acting as a button gets a real tap size */
+  button,
+  .dp-btn,
+  .exploreButton,
+  a[role="button"] {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 640px) {
+  .appShell {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* ---------------------------------------------------------
+   2. MAIN TEAM PANEL (Homepage / dashboard team strip)
+   Current: fixed 4-column grid, min 165px each (~660px min).
+   That is wider than most phones, so it was overflowing
+   or forcing a squeeze. Step it down instead.
+   --------------------------------------------------------- */
+@media (max-width: 900px) {
+  .mainTeamGrid {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .mainTeamGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mainTeamHeader {
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .mainTeamTitle {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+
+/* ---------------------------------------------------------
+   3. KITHNA MAP (percentage-positioned world map)
+   Already uses %-based positioning, which scales, but the
+   frame itself needs to give up its desktop max-width and
+   the building labels need to stay legible at small sizes.
+   --------------------------------------------------------- */
+@media (max-width: 640px) {
+  .kithnaMapFrame {
+    max-width: 100%;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .kithnaBuildingLabel {
+    font-size: 10px;
+  }
+
+  .kithnaBuildingIcon {
+    width: 26px;
+  }
+}
+
+/* ---------------------------------------------------------
+   4. PROFILE PAGE
+   Already a single flex column, just needs tighter spacing
+   and a smaller avatar so it doesn't feel oversized on phones.
+   --------------------------------------------------------- */
+@media (max-width: 640px) {
+  .dp-profile-page {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .dp-profile-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .dp-profile-panel {
+    padding: 12px;
+  }
+}
+
+/* ---------------------------------------------------------
+   5. STATS CHAMBER
+   The two-column stat grid is already fluid (minmax(0,1fr)),
+   so it survives narrow screens on its own. Only the text
+   sizing needs to come down so rows do not wrap awkwardly.
+   --------------------------------------------------------- */
+@media (max-width: 420px) {
+  .statsChamber .petRepoInfoRow {
+    font-size: 0.85rem;
+  }
+}
+
+/* ---------------------------------------------------------
+   6. GENERIC TWO-COLUMN / ROW LAYOUTS + HATCHERY WORKBENCH
+   A lot of panels across Hatchery, PetPage, and Skills reuse
+   the "left column + right column" pattern via flex/grid on
+   a handful of shared class names. hatcheryWorkbenchLayout is
+   a fixed 500px + 300px + 320px 3-column grid (~1070px min)
+   that neither this file nor Hatchery's own 8 media queries
+   ever collapsed. Force a stack past 900px.
+   --------------------------------------------------------- */
+@media (max-width: 900px) {
+  .hatcheryWorkbenchLayout,
+  .hatcheryBottomRowInner {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* this 149px offset is a desktop-only spacing hack, kills mobile layout */
+  .hatcheryLeftColumn {
+    margin-left: 0 !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   7. TALENT TREE DETAILS PANEL (Skills Chamber)
+   The "locked" bottom panel (talentNodeInfoRow, talentDetailsButtons,
+   talentSaveRow, talentTreeSaveStatus, talentNodeTradeoff,
+   talentDetailsClose) is absolute-positioned pixel math built
+   for a wide desktop card (up to 430px wide, positioned by
+   right-edge offsets). None of it was covered by the file's
+   own 760px media query, so on a phone it overflows the talent
+   tree modal instead of resizing. This does not change the
+   locked desktop behavior above 480px, it only adds a mobile
+   fallback that stacks the same pieces in normal document flow.
+   --------------------------------------------------------- */
+@media (max-width: 480px) {
+  .talentNodeDetails {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .talentNodeInfoRow {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: none !important;
+    row-gap: 10px !important;
+  }
+
+  .talentInfoValue:nth-child(2) {
+    max-width: 100% !important;
+  }
+
+  .talentNodeTradeoff {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    margin-top: 4px !important;
+    white-space: normal !important;
+  }
+
+  .talentDetailsButtons {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .talentSaveRow {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .talentTreeSaveStatus {
+    width: auto !important;
+    max-width: 60% !important;
+    white-space: normal !important;
+  }
+
+  .talentDetailsClose {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    width: 100% !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   8. PET TALK BUBBLE + ENERGY PANEL (Pet detail scene)
+   Both are fixed at 390px wide and centered with a hardcoded
+   translateX(-196px), which only works if the element is
+   exactly 390px. On a 384px-wide screen (Galaxy S22 Ultra and
+   similar) that math pushes the bubble off-screen on one side.
+   Swap to a real center transform and cap the width to the
+   viewport so it centers correctly at any size.
+   --------------------------------------------------------- */
+@media (max-width: 480px) {
+  .petRepoTalkBubble {
+    width: min(390px, calc(100vw - 32px)) !important;
+    transform: translateX(-50%) !important;
+    padding: 8px 18px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .petRepoEnergyPanel {
+    width: min(390px, calc(100vw - 32px)) !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   9. GALAXY S22 ULTRA HARD TARGET (384 x 824 CSS viewport, DPR 3.75)
+   Everything above already covers this width through the 420 and
+   480 tiers. This block is a final safety net: nothing in the
+   game should ever force a horizontal scrollbar under 400px.
+   --------------------------------------------------------- */
+@media (max-width: 400px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .appShell {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
