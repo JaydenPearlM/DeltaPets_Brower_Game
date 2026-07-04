@@ -87,6 +87,12 @@ const MAX_ADVANCE_BATTLE_DEPTH = 200;
 
 export const battlePveRouter = Router();
 
+// Single named alpha enemy. Placeholder name, plain string, safe to rename
+// anytime. Replaces the previous random "Wild Kith N" generic placeholder
+// so PVE battles have one real, consistent opponent for alpha.
+const ALPHA_ENEMY_NAME = "Rustfang";
+const ALPHA_ENEMY_ELEMENT: BattleElement = "shadow";
+
 const ELEMENTS: BattleElement[] = [
   "fire",
   "water",
@@ -384,18 +390,16 @@ function runAiTurn(state: BattleState, actor: BattleUnit) {
 }
 
 function createEnemyTeam(playerLevelAverage: number): BattleUnit[] {
-  return Array.from({ length: 4 }).map((_, index) => {
-    const level = Math.max(
-      1,
-      playerLevelAverage + Math.floor(Math.random() * 3) - 1,
-    );
-    const element = ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)];
+  // Alpha scope: exactly one named enemy per battle, not a randomized
+  // team of four. See ALPHA_ENEMY_NAME / ALPHA_ENEMY_ELEMENT above.
+  const level = Math.max(1, playerLevelAverage);
 
-    return {
-      id: `enemy-${index + 1}-${randomUUID()}`,
+  return [
+    {
+      id: `enemy-1-${randomUUID()}`,
       side: "enemy",
-      name: `Wild Kith ${index + 1}`,
-      element,
+      name: ALPHA_ENEMY_NAME,
+      element: ALPHA_ENEMY_ELEMENT,
       level,
       hpMax: 24 + level * 6,
       hpCur: 24 + level * 6,
@@ -406,8 +410,8 @@ function createEnemyTeam(playerLevelAverage: number): BattleUnit[] {
       turnMeter: 0,
       guarding: false,
       status: {},
-    };
-  });
+    },
+  ];
 }
 
 function normalizePetToBattleUnit(pet: any, index: number): BattleUnit {

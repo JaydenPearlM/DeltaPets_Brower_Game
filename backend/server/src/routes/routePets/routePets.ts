@@ -36,6 +36,8 @@ import {
   getStarterForSelection,
 } from "./starters";
 
+import { getKithnaNonStarterSpecies } from "../../shared/pets/KithnaSpecies";
+
 import {
   BASIC_EGG_HATCH_MINUTES,
   HATCH_ALLOCATION_POINTS,
@@ -796,6 +798,32 @@ petsRouter.post(
         ? (STARTERS.find((s) => s.speciesId === typedEgg.species) ?? null)
         : (STARTERS.find((s) => s.line === typedEgg.line) ?? null);
 
+      const kithnaSpecies = typedEgg.species
+        ? (getKithnaNonStarterSpecies().find(
+            (species) => species.id === typedEgg.species,
+          ) ?? null)
+        : null;
+
+      const hatchlingName =
+        starter?.hatchlingName ?? kithnaSpecies?.evolution.hatchling ?? null;
+      const hatchBaseStats =
+        starter?.baseStats ?? kithnaSpecies?.eggBaseStats ?? null;
+      const hatchSpeciesId = starter?.speciesId ?? kithnaSpecies?.id ?? null;
+      const hatchLine =
+        typedEgg.line ?? starter?.line ?? kithnaSpecies?.line ?? null;
+
+      if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId) {
+        logger.error("[hatch] no hatch species matched egg", {
+          egg_id: egg.id,
+          egg_species: typedEgg.species,
+          egg_line: typedEgg.line,
+        });
+
+        return res.status(500).json({ error: "Invalid egg species or line" });
+      }
+
+      await insertBaseStats(egg.id, hatchBaseStats);
+
       if (!starter) {
         logger.error("[hatch] no starter matched egg", {
           egg_id: egg.id,
@@ -859,13 +887,12 @@ petsRouter.post(
           : (fallbackTraits?.strongStats ?? []);
 
       const weakness = savedWeakStat ?? fallbackTraits?.weakStat ?? null;
-
       const description = generatePetDescription({
-        species: starter.hatchlingName,
-        name: starter.hatchlingName,
+        species: hatchlingName,
+        name: hatchlingName,
         nickname: null,
         stage: "hatchling",
-        element: typedEgg.line ?? starter.line ?? null,
+        element: hatchLine,
         personality_name: personalityKey,
         strengths,
         weakness,

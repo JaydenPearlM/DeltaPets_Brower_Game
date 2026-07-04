@@ -33,11 +33,16 @@ export type KithnaNonStarterSpecies = {
   findXpReward: typeof EGG_FIND_XP_REWARD;
 };
 
+// NOTE: eggName values here are deliberately NOT "Water Egg" / "Earth Egg" /
+// "Ice Egg" etc, those already belong to the starter system in species.ts.
+// fetchStarterPetAnyStage() matches pets by name across every starter stage
+// name, so reusing those names would make a roaming-found egg get mistaken
+// for the player's starter egg. Kept distinct on purpose.
 export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   null_element: {
     element: "null_element",
     displayName: "Voidborne",
-    eggName: "Voidborne Egg",
+    eggName: "Kithna Void Egg",
     shellColor: "silver",
     markingColor: "pearl",
     glowColor: "soft silver",
@@ -45,7 +50,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   water: {
     element: "water",
     displayName: "Water",
-    eggName: "Water Egg",
+    eggName: "Kithna Tide Egg",
     shellColor: "blue",
     markingColor: "aqua",
     glowColor: "soft blue",
@@ -53,7 +58,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   fire: {
     element: "fire",
     displayName: "Fire",
-    eggName: "Fire Egg",
+    eggName: "Kithna Ember Egg",
     shellColor: "red",
     markingColor: "orange",
     glowColor: "warm gold",
@@ -61,7 +66,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   earth: {
     element: "earth",
     displayName: "Earth",
-    eggName: "Earth Egg",
+    eggName: "Kithna Root Egg",
     shellColor: "brown",
     markingColor: "green",
     glowColor: "soft moss",
@@ -69,7 +74,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   air: {
     element: "air",
     displayName: "Air",
-    eggName: "Air Egg",
+    eggName: "Kithna Gale Egg",
     shellColor: "sky blue",
     markingColor: "white",
     glowColor: "pale cyan",
@@ -77,7 +82,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   ice: {
     element: "ice",
     displayName: "Ice",
-    eggName: "Ice Egg",
+    eggName: "Kithna Frost Egg",
     shellColor: "ice blue",
     markingColor: "white",
     glowColor: "frost blue",
@@ -85,7 +90,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   storm: {
     element: "storm",
     displayName: "Storm",
-    eggName: "Storm Egg",
+    eggName: "Kithna Spark Egg",
     shellColor: "violet",
     markingColor: "yellow",
     glowColor: "electric purple",
@@ -93,7 +98,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   light: {
     element: "light",
     displayName: "Light",
-    eggName: "Light Egg",
+    eggName: "Kithna Glow Egg",
     shellColor: "gold",
     markingColor: "cream",
     glowColor: "soft gold",
@@ -101,7 +106,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   shadow: {
     element: "shadow",
     displayName: "Shadow",
-    eggName: "Shadow Egg",
+    eggName: "Kithna Dusk Egg",
     shellColor: "deep purple",
     markingColor: "black",
     glowColor: "violet",
@@ -118,6 +123,10 @@ const BALANCED_EGG_STATS: SharedBaseStats = {
   base_total: 10,
 };
 
+// PLACEHOLDER NAMES: every hatchling/lowform/highform/legion name below is a
+// placeholder, picked only to be distinct from existing species and to ship
+// today. Swap any of these anytime, they are plain strings, nothing else in
+// the codebase reads or depends on the specific text.
 export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
   {
     id: "kithna_day_pet_01",
@@ -127,11 +136,11 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
     preferredTime: "day",
     eggPool: "day",
     evolution: {
-      egg: "Water Egg",
-      hatchling: "Day Hatchling 01",
-      lowform: "Day Lowform 01",
-      highform: "Day Highform 01",
-      legion: "Day Legion 01",
+      egg: KITHNA_EGG_VISUALS.water.eggName,
+      hatchling: "Ripplin",
+      lowform: "Ripplume",
+      highform: "Tidelume",
+      legion: "Tidalyn",
       mythical_legendary: null,
     },
     eggBaseStats: BALANCED_EGG_STATS,
@@ -148,11 +157,11 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
     preferredTime: "day",
     eggPool: "day",
     evolution: {
-      egg: "Earth Egg",
-      hatchling: "Day Hatchling 02",
-      lowform: "Day Lowform 02",
-      highform: "Day Highform 02",
-      legion: "Day Legion 02",
+      egg: KITHNA_EGG_VISUALS.earth.eggName,
+      hatchling: "Peblin",
+      lowform: "Peblorn",
+      highform: "Boulderin",
+      legion: "Terralith",
       mythical_legendary: null,
     },
     eggBaseStats: BALANCED_EGG_STATS,
@@ -169,11 +178,11 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
     preferredTime: "day",
     eggPool: "day",
     evolution: {
-      egg: "Light Egg",
-      hatchling: "Day Hatchling 03",
-      lowform: "Day Lowform 03",
-      highform: "Day Highform 03",
-      legion: "Day Legion 03",
+      egg: KITHNA_EGG_VISUALS.light.eggName,
+      hatchling: "Glimmet",
+      lowform: "Glimmeryn",
+      highform: "Lumeryn",
+      legion: "Lumaris",
       mythical_legendary: null,
     },
     eggBaseStats: BALANCED_EGG_STATS,
@@ -190,11 +199,11 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
     preferredTime: "night",
     eggPool: "night",
     evolution: {
-      egg: "Ice Egg",
-      hatchling: "Night Hatchling 01",
-      lowform: "Night Lowform 01",
-      highform: "Night Highform 01",
-      legion: "Night Legion 01",
+      egg: KITHNA_EGG_VISUALS.ice.eggName,
+      hatchling: "Frilo",
+      lowform: "Frilyn",
+      highform: "Glacilyn",
+      legion: "Glaciaris",
       mythical_legendary: null,
     },
     eggBaseStats: BALANCED_EGG_STATS,
@@ -211,11 +220,11 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
     preferredTime: "night",
     eggPool: "night",
     evolution: {
-      egg: "Storm Egg",
-      hatchling: "Night Hatchling 02",
-      lowform: "Night Lowform 02",
-      highform: "Night Highform 02",
-      legion: "Night Legion 02",
+      egg: KITHNA_EGG_VISUALS.storm.eggName,
+      hatchling: "Fulgus",
+      lowform: "Fulgorn",
+      highform: "Fulgarin",
+      legion: "Fulgurex",
       mythical_legendary: null,
     },
     eggBaseStats: BALANCED_EGG_STATS,
@@ -232,11 +241,11 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
     preferredTime: "night",
     eggPool: "night",
     evolution: {
-      egg: "Shadow Egg",
-      hatchling: "Night Hatchling 03",
-      lowform: "Night Lowform 03",
-      highform: "Night Highform 03",
-      legion: "Night Legion 03",
+      egg: KITHNA_EGG_VISUALS.shadow.eggName,
+      hatchling: "Murklin",
+      lowform: "Murkrin",
+      highform: "Duskarin",
+      legion: "Duskavus",
       mythical_legendary: null,
     },
     eggBaseStats: BALANCED_EGG_STATS,

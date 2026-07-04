@@ -12,6 +12,7 @@ import { dailyCareRouter } from "./care/dailyCare";
 import { careRouter } from "./care/care";
 
 import { battleRouter } from "./battle";
+import { kithnaRouter } from "./cities/kithna/kithnaEncounter";
 
 const apiRouter = Router();
 
@@ -28,6 +29,12 @@ apiRouter.use(meRouter);
 apiRouter.use("/pets/actions", petActionsRouter);
 apiRouter.use("/pets", petsRouter);
 apiRouter.use("/battle", battleRouter);
+
+/* ===============================
+   KITHNA ROAM ENCOUNTER
+=============================== */
+
+apiRouter.use("/kithna", kithnaRouter);
 
 /* ===============================
    CARE ROOM SYSTEM 

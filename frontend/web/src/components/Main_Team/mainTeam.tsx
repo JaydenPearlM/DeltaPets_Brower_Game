@@ -4,6 +4,7 @@ import type {
   StoragePet,
 } from "../Hatchery/pages/storage/usePetStorage";
 import { SHARED_SPECIES } from "@shared/pets/species";
+import { STARTER_DISPLAY_NAMES } from "@/Pets_Creation/registry/starterDisplayNames";
 import "./mainTeam.css";
 
 type MainTeamProps = {
@@ -50,18 +51,6 @@ type PetStats = StoragePet & {
   mana?: number | null;
   spd?: number | null;
   personality_key?: string | null;
-};
-
-const STARTER_DISPLAY_NAMES: Record<string, string> = {
-  water_starter: "Mizu",
-  fire_starter: "Kindlekin",
-  earth_starter: "Twiglet",
-  air_starter: "Wistpip",
-  ice_starter: "Cribi",
-  storm_starter: "Volb",
-  light_starter: "Solen",
-  shadow_night_bad: "Esperon",
-  shadow_day_good: "Esperon",
 };
 
 function resolveSpeciesLabel(value?: string | null) {

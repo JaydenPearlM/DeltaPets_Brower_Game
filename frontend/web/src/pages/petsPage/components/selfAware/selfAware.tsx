@@ -1,3 +1,5 @@
+import { STARTER_DISPLAY_NAMES } from "@/Pets_Creation/registry/starterDisplayNames";
+
 type CareStatus = {
   hunger?: number | null;
   clean?: number | null;
@@ -360,18 +362,6 @@ const defaultLines = [
 function normalizeKey(value?: string | null) {
   return value?.trim().toLowerCase().replace(/\s+/g, "_") ?? "";
 }
-
-const STARTER_DISPLAY_NAMES: Record<string, string> = {
-  water_starter: "Mizu",
-  fire_starter: "Kindlekin",
-  earth_starter: "Twiglet",
-  air_starter: "Wistpip",
-  ice_starter: "Cribi",
-  storm_starter: "Volb",
-  light_starter: "Solen",
-  shadow_night_bad: "Esperon",
-  shadow_day_good: "Esperon",
-};
 
 function resolveStarterDisplayName(value?: string | null) {
   const displayName = value?.trim() ?? "";

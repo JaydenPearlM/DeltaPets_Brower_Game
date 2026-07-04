@@ -5,6 +5,8 @@ import { LoginMenus } from "../components/Authentication/LoginMenus";
 import { useAliuneSignal } from "../pages/Homepage/useAliuneSignal";
 import { DeltaClock } from "../lib/timers/deltaClock";
 import { useAuth } from "./providers/useAuth";
+import { useRoamEncounter } from "../lib/kithna/useRoamEncounter";
+import { RoamEncounterToast } from "../components/RoamEncounterToast/RoamEncounterToast";
 import "./App.css";
 
 const APP_VERSION = __APP_VERSION__;
@@ -38,6 +40,9 @@ export default function App() {
   const location = useLocation();
   const { signal } = useAliuneSignal();
   const { user, loading } = useAuth();
+  const { result: roamResult, clearResult: clearRoamResult } = useRoamEncounter(
+    Boolean(user) && !loading,
+  );
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [exploreHintOpen, setExploreHintOpen] = useState(false);
@@ -375,6 +380,8 @@ export default function App() {
       </main>
 
       <LoginMenus forcedView={forcedAuthView} showLaunchers={false} />
+
+      <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
     </div>
   );
 }
