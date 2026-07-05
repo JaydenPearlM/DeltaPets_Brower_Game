@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { LogoutButton } from "../components/Authentication/LogoutButton";
 import { LoginMenus } from "../components/Authentication/LoginMenus";
+import Inventory from "../components/inventory/inventory";
 import { useAliuneSignal } from "../pages/Homepage/useAliuneSignal";
 import { DeltaClock } from "../lib/timers/deltaClock";
 import { useAuth } from "./providers/useAuth";
+import { useUI } from "./providers/UIProvider";
 import { useRoamEncounter } from "../lib/kithna/useRoamEncounter";
 import { RoamEncounterToast } from "../components/RoamEncounterToast/RoamEncounterToast";
 import "./App.css";
@@ -40,6 +42,7 @@ export default function App() {
   const location = useLocation();
   const { signal } = useAliuneSignal();
   const { user, loading } = useAuth();
+  const { inventoryOpen, closeInventory } = useUI();
   const { result: roamResult, clearResult: clearRoamResult } = useRoamEncounter(
     Boolean(user) && !loading && location.pathname === "/cities/kithna",
   );
@@ -378,8 +381,33 @@ export default function App() {
       <main className="appContent">
         <Outlet />
       </main>
-
       <LoginMenus forcedView={forcedAuthView} showLaunchers={false} />
+
+      {inventoryOpen && user && (
+        <div
+          className="dpPopupWindowBackdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Inventory"
+        >
+          <section className="dpPopupWindow dpPopupWindow--compact">
+            <div className="dpPopupWindowContent inventoryModal">
+              <button
+                type="button"
+                className="inventoryModalClose dp-btn--close"
+                onClick={closeInventory}
+                aria-label="Close inventory"
+              >
+                ×
+              </button>
+
+              <Inventory />
+            </div>
+          </section>
+        </div>
+      )}
+
+      <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
 
       <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
     </div>
