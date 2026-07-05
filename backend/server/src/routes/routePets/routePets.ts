@@ -104,6 +104,7 @@ type PetInsertPayload = {
   passive_trait_key?: string | null;
   hatch_time_alignment?: string | null;
   growth_strong_stats?: string[] | null;
+  mutation_capacity?: number;
   growth_weak_stat?: string | null;
 };
 
@@ -501,6 +502,7 @@ petsRouter.post(
         hatch_time_alignment: worldTime ?? null,
         growth_strong_stats: strongStats,
         growth_weak_stat: weakStat,
+        mutation_capacity: 1,
       } as PetInsertPayload;
 
       const fullInsertResult = await supabaseAdmin
@@ -859,6 +861,34 @@ petsRouter.post(
         personalityId = rolled.id;
       }
 
+      let passiveTraitId = typedEgg.passive_trait_id ?? null;
+      let passiveTraitKey = typedEgg.passive_trait_key ?? null;
+
+      if (!passiveTraitId && !passiveTraitKey) {
+        const rolledPassiveTrait = await rollPassiveTrait();
+        passiveTraitId = rolledPassiveTrait?.id ?? null;
+        passiveTraitKey = rolledPassiveTrait?.key ?? null;
+
+        if (passiveTraitId || passiveTraitKey) {
+          const { error: passiveTraitUpdateError } = await supabaseAdmin
+            .from("pets")
+            .update({
+              passive_trait_id: passiveTraitId,
+              passive_trait_key: passiveTraitKey,
+            })
+            .eq("id", egg.id)
+            .eq("user_id", userId)
+            .eq("stage", "egg");
+
+          if (passiveTraitUpdateError) {
+            logger.error(
+              "[hatch] passive trait fallback failed",
+              passiveTraitUpdateError,
+            );
+          }
+        }
+      }
+
       const savedStrongStats = sanitizeGrowthStrongStats(
         typedEgg.growth_strong_stats,
       );
@@ -971,8 +1001,8 @@ petsRouter.post(
         location: finalLocation,
         is_active: finalIsActive,
         description,
-        passive_trait_id: typedEgg.passive_trait_id ?? null,
-        passive_trait_key: typedEgg.passive_trait_key ?? null,
+        passive_trait_id: passiveTraitId,
+        passive_trait_key: passiveTraitKey,
       });
 
       return res.json({

@@ -10,12 +10,12 @@ import { requireUser, type AuthedRequest } from "../../../middleware/auth";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { logger } from "../../../lib/logger";
 import { getDeltaTime } from "../../../lib/deltaTime";
-import { BASIC_EGG_HATCH_MINUTES } from "../../routePets/petsType";
 import { insertBaseStats } from "../../routePets/petsStats";
 import {
   getKithnaEggsForTime,
   type KithnaNonStarterSpecies,
 } from "../../../shared/pets/KithnaSpecies";
+import { rollNonStarterEggQuality } from "../../../shared/pets/eggQualityRoll";
 
 export const kithnaRouter = Router();
 
@@ -120,8 +120,9 @@ kithnaRouter.post(
       }
 
       const species = pickRandomSpecies(pool);
+      const eggQuality = await rollNonStarterEggQuality();
       const hatchEndsAt = new Date(
-        now + BASIC_EGG_HATCH_MINUTES * 60 * 1000,
+        now + eggQuality.hatch_minutes * 60 * 1000,
       ).toISOString();
 
       const { data: insertedPet, error: insertError } = await supabaseAdmin
@@ -136,6 +137,7 @@ kithnaRouter.post(
           hatch_ends_at: hatchEndsAt,
           is_active: false,
           location: "hatchery",
+          hatch_time_alignment: species.preferredTime,
         })
         .select("*")
         .single();
@@ -145,7 +147,19 @@ kithnaRouter.post(
         return res.status(500).json({ error: insertError.message });
       }
 
-      await insertBaseStats(insertedPet.id, species.eggBaseStats);
+      try {
+        await insertBaseStats(insertedPet.id, species.eggBaseStats);
+      } catch (statsError: any) {
+        logger.error("[kithna/roam] insertBaseStats failed", statsError);
+        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+
+        return res.status(500).json({
+          error:
+            statsError?.message ??
+            statsError?.details ??
+            "Failed to insert egg base stats",
+        });
+      }
 
       const { error: slotError } = await supabaseAdmin
         .from("hatchery_slots")

@@ -33,6 +33,17 @@ export type KithnaNonStarterSpecies = {
   findXpReward: typeof EGG_FIND_XP_REWARD;
 };
 
+export type KithnaPetTemplate = {
+  id: string;
+  line: SharedElementLine;
+  preferredTime: WorldTimeState;
+  hatchling: string;
+  lowform: string;
+  highform: string;
+  legion: string;
+  mythical_legendary?: string | null;
+};
+
 // NOTE: eggName values here are deliberately NOT "Water Egg" / "Earth Egg" /
 // "Ice Egg" etc, those already belong to the starter system in species.ts.
 // fetchStarterPetAnyStage() matches pets by name across every starter stage
@@ -41,11 +52,11 @@ export type KithnaNonStarterSpecies = {
 export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   null_element: {
     element: "null_element",
-    displayName: "Voidborne",
-    eggName: "Kithna Silvervoid Egg",
-    shellColor: "silver",
+    displayName: "Neutral",
+    eggName: "Kithna Bronzeheart Egg",
+    shellColor: "bronze",
     markingColor: "pearl",
-    glowColor: "soft silver",
+    glowColor: "soft bronze",
   },
   water: {
     element: "water",
@@ -123,6 +134,104 @@ const BALANCED_EGG_STATS: SharedBaseStats = {
   base_total: 10,
 };
 
+export function createKithnaNonStarterSpecies(
+  template: KithnaPetTemplate,
+): KithnaNonStarterSpecies {
+  const eggVisual = KITHNA_EGG_VISUALS[template.line];
+
+  return {
+    id: template.id,
+    region: "kithna",
+    tutorialLocked: true,
+    line: template.line,
+    preferredTime: template.preferredTime,
+    eggPool: template.preferredTime,
+    evolution: {
+      egg: eggVisual.eggName,
+      hatchling: template.hatchling,
+      lowform: template.lowform,
+      highform: template.highform,
+      legion: template.legion,
+      mythical_legendary: template.mythical_legendary ?? null,
+    },
+    eggBaseStats: BALANCED_EGG_STATS,
+    eggVisual,
+    canRollAliuneCorruption: true,
+    corruptedImage: null,
+    findXpReward: EGG_FIND_XP_REWARD,
+  };
+}
+
+// KITHNA EGG NAME / ELEMENT QUICK LIST
+// null_element: KITHNA_EGG_VISUALS.null_element.eggName // "Kithna Bronzeheart Egg" / Neutral / bronze egg
+// water: KITHNA_EGG_VISUALS.water.eggName // "Kithna Tideheart Egg"
+// fire: KITHNA_EGG_VISUALS.fire.eggName // "Kithna Embercore Egg"
+// earth: KITHNA_EGG_VISUALS.earth.eggName // "Kithna Rootbound Egg"
+// air: KITHNA_EGG_VISUALS.air.eggName // "Kithna Skywhorl Egg"
+// ice: KITHNA_EGG_VISUALS.ice.eggName // "Kithna Frostveil Egg"
+// storm: KITHNA_EGG_VISUALS.storm.eggName // "Kithna Thundercrest Egg"
+// light: KITHNA_EGG_VISUALS.light.eggName // "Kithna Dawnshard Egg"
+// shadow: KITHNA_EGG_VISUALS.shadow.eggName // "Kithna Duskmire Egg"
+//
+// COPY/PASTE PET TEMPLATE
+// Paste this inside KITHNA_NON_STARTER_SPECIES after filling every blank.
+// This only asks for the character identity. The egg name, egg visuals,
+// egg stats, region, find XP, and corruption settings are filled by code.
+//
+// createKithnaNonStarterSpecies({
+//   id: "kithna_day_pet_00",
+//   line: "water",
+//   preferredTime: "day",
+//   hatchling: "",
+//   lowform: "",
+//   highform: "",
+//   legion: "",
+//   mythical_legendary: null,
+// }),
+//
+// PLACEHOLDER NAMES: every hatchling/lowform/highform/legion name below is a
+// placeholder, picked only to be distinct from existing species and to ship
+// today. Swap any of these anytime, they are plain strings, nothing else in
+// the codebase reads or depends on the specific text.
+
+// KITHNA EGG NAME / ELEMENT QUICK LIST
+// null_element: KITHNA_EGG_VISUALS.null_element.eggName // "Kithna Silvervoid Egg"
+// water: KITHNA_EGG_VISUALS.water.eggName // "Kithna Tideheart Egg"
+// fire: KITHNA_EGG_VISUALS.fire.eggName // "Kithna Embercore Egg"
+// earth: KITHNA_EGG_VISUALS.earth.eggName // "Kithna Rootbound Egg"
+// air: KITHNA_EGG_VISUALS.air.eggName // "Kithna Skywhorl Egg"
+// ice: KITHNA_EGG_VISUALS.ice.eggName // "Kithna Frostveil Egg"
+// storm: KITHNA_EGG_VISUALS.storm.eggName // "Kithna Thundercrest Egg"
+// light: KITHNA_EGG_VISUALS.light.eggName // "Kithna Dawnshard Egg"
+// shadow: KITHNA_EGG_VISUALS.shadow.eggName // "Kithna Duskmire Egg"
+//
+// COPY/PASTE PET TEMPLATE
+// Paste this inside KITHNA_NON_STARTER_SPECIES after filling every blank.
+// Keep line and eggVisual using the same element.
+// Keep preferredTime and eggPool matching: day/day or night/night.
+//
+// {
+//   id: "kithna_day_pet_00",
+//   region: "kithna",
+//   tutorialLocked: true,
+//   line: "water",
+//   preferredTime: "day",
+//   eggPool: "day",
+//   evolution: {
+//     egg: KITHNA_EGG_VISUALS.water.eggName,
+//     hatchling: "",
+//     lowform: "",
+//     highform: "",
+//     legion: "",
+//     mythical_legendary: null,
+//   },
+//   eggBaseStats: BALANCED_EGG_STATS,
+//   eggVisual: KITHNA_EGG_VISUALS.water,
+//   canRollAliuneCorruption: true,
+//   corruptedImage: null,
+//   findXpReward: EGG_FIND_XP_REWARD,
+// },
+//
 // PLACEHOLDER NAMES: every hatchling/lowform/highform/legion name below is a
 // placeholder, picked only to be distinct from existing species and to ship
 // today. Swap any of these anytime, they are plain strings, nothing else in

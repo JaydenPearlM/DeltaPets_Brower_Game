@@ -1,0 +1,164 @@
+.kithProgressCard {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 14px;
+  grid-column: 2;
+  padding: calc(
+      var(--dp-popup-inset-gap) + var(--dp-popup-inner-border-width) + 18px
+    )
+    20px 20px;
+  overflow: hidden;
+  border: var(--dp-popup-border-width) solid var(--dp-popup-border);
+  border-radius: 24px;
+  background: var(--dp-popup-grid-base);
+  box-shadow:
+    0 0 18px var(--dp-popup-glow),
+    0 0 34px var(--dp-popup-glow-soft),
+    14px 18px 30px rgba(0, 0, 0, 0.28);
+  color: var(--dp-popup-text);
+}
+
+.kithProgressCard::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-popup-inset-gap);
+  z-index: 0;
+  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
+  border-radius: 14px;
+  background-image: var(--dp-popup-grid-texture);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
+    auto;
+  background-position:
+    0 0,
+    0 0,
+    100% 100%,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  background-clip: padding-box;
+  background-origin: padding-box;
+  pointer-events: none;
+}
+
+.kithProgressCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.kithProgressCard__header {
+  display: grid;
+  gap: 4px;
+}
+
+.kithProgressCard__eyebrow {
+  margin: 0;
+  color: var(--dp-cyber-cyan);
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 1000;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.kithProgressCard__title {
+  margin: 0;
+  color: var(--dp-title-gold, var(--dp-brand-yellow-bright));
+  font-family: var(--font-heading);
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(255, 217, 77, 0.28);
+}
+
+.kithProgressCard__levelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(239, 244, 255, 0.96);
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.kithProgressCard__xpBar {
+  position: relative;
+  height: 18px;
+  overflow: hidden;
+  border: 1px solid var(--dp-panel-border-cyan-soft);
+  border-radius: 999px;
+  background: rgba(9, 23, 45, 0.82);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 14px rgba(77, 234, 255, 0.14);
+}
+
+.kithProgressCard__xpFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--dp-cyber-cyan),
+    var(--dp-title-gold, var(--dp-brand-yellow-bright))
+  );
+  box-shadow: 0 0 18px rgba(77, 234, 255, 0.28);
+}
+
+.kithProgressCard__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.kithProgressCard__stats div {
+  display: grid;
+  gap: 4px;
+  min-height: 72px;
+  padding: 10px 12px;
+  border: 1px solid rgba(77, 234, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(9, 23, 45, 0.58);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.kithProgressCard__stats dt {
+  color: rgba(239, 244, 255, 0.78);
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.kithProgressCard__stats dd {
+  margin: 0;
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+@media (max-width: 1280px) {
+  .kithProgressCard {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .kithProgressCard__levelRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .kithProgressCard__stats {
+    grid-template-columns: 1fr;
+  }
+}
