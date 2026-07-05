@@ -41,7 +41,7 @@ export default function App() {
   const { signal } = useAliuneSignal();
   const { user, loading } = useAuth();
   const { result: roamResult, clearResult: clearRoamResult } = useRoamEncounter(
-    Boolean(user) && !loading,
+    Boolean(user) && !loading && location.pathname === "/cities/kithna",
   );
 
   const [menuOpen, setMenuOpen] = useState(false);
