@@ -42,7 +42,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   null_element: {
     element: "null_element",
     displayName: "Voidborne",
-    eggName: "Kithna Void Egg",
+    eggName: "Kithna Silvervoid Egg",
     shellColor: "silver",
     markingColor: "pearl",
     glowColor: "soft silver",
@@ -50,7 +50,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   water: {
     element: "water",
     displayName: "Water",
-    eggName: "Kithna Tide Egg",
+    eggName: "Kithna Tideheart Egg",
     shellColor: "blue",
     markingColor: "aqua",
     glowColor: "soft blue",
@@ -58,7 +58,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   fire: {
     element: "fire",
     displayName: "Fire",
-    eggName: "Kithna Ember Egg",
+    eggName: "Kithna Embercore Egg",
     shellColor: "red",
     markingColor: "orange",
     glowColor: "warm gold",
@@ -66,7 +66,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   earth: {
     element: "earth",
     displayName: "Earth",
-    eggName: "Kithna Root Egg",
+    eggName: "Kithna Rootbound Egg",
     shellColor: "brown",
     markingColor: "green",
     glowColor: "soft moss",
@@ -74,7 +74,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   air: {
     element: "air",
     displayName: "Air",
-    eggName: "Kithna Gale Egg",
+    eggName: "Kithna Skywhorl Egg",
     shellColor: "sky blue",
     markingColor: "white",
     glowColor: "pale cyan",
@@ -82,7 +82,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   ice: {
     element: "ice",
     displayName: "Ice",
-    eggName: "Kithna Frost Egg",
+    eggName: "Kithna Frostveil Egg",
     shellColor: "ice blue",
     markingColor: "white",
     glowColor: "frost blue",
@@ -90,7 +90,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   storm: {
     element: "storm",
     displayName: "Storm",
-    eggName: "Kithna Spark Egg",
+    eggName: "Kithna Thundercrest Egg",
     shellColor: "violet",
     markingColor: "yellow",
     glowColor: "electric purple",
@@ -98,7 +98,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   light: {
     element: "light",
     displayName: "Light",
-    eggName: "Kithna Glow Egg",
+    eggName: "Kithna Dawnshard Egg",
     shellColor: "gold",
     markingColor: "cream",
     glowColor: "soft gold",
@@ -106,7 +106,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   shadow: {
     element: "shadow",
     displayName: "Shadow",
-    eggName: "Kithna Dusk Egg",
+    eggName: "Kithna Duskmire Egg",
     shellColor: "deep purple",
     markingColor: "black",
     glowColor: "violet",

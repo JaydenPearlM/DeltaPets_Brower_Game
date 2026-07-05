@@ -11,8 +11,9 @@ import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { logger } from "../../../lib/logger";
 import { getDeltaTime } from "../../../lib/deltaTime";
 import { BASIC_EGG_HATCH_MINUTES } from "../../routePets/petsType";
+import { insertBaseStats } from "../../routePets/petsStats";
 import {
-  getKithnaNonStarterSpecies,
+  getKithnaEggsForTime,
   type KithnaNonStarterSpecies,
 } from "../../../shared/pets/KithnaSpecies";
 
@@ -104,7 +105,7 @@ kithnaRouter.post(
       }
 
       const timeOfDay = getDeltaTime(new Date(now)).timeOfDay;
-      const pool = getKithnaNonStarterSpecies();
+      const pool = getKithnaEggsForTime(timeOfDay);
 
       if (!pool.length) {
         logger.error("[kithna/roam] no species configured for time", {
@@ -143,6 +144,8 @@ kithnaRouter.post(
         logger.error("[kithna/roam] pet insert failed", insertError);
         return res.status(500).json({ error: insertError.message });
       }
+
+      await insertBaseStats(insertedPet.id, species.eggBaseStats);
 
       const { error: slotError } = await supabaseAdmin
         .from("hatchery_slots")

@@ -824,18 +824,6 @@ petsRouter.post(
 
       await insertBaseStats(egg.id, hatchBaseStats);
 
-      if (!starter) {
-        logger.error("[hatch] no starter matched egg", {
-          egg_id: egg.id,
-          egg_species: typedEgg.species,
-          egg_line: typedEgg.line,
-        });
-
-        return res.status(500).json({ error: "Invalid egg species or line" });
-      }
-
-      await insertBaseStats(egg.id, starter.baseStats);
-
       const iv = rollIV(HATCH_ALLOCATION_POINTS);
 
       if (sumStats(iv) !== HATCH_ALLOCATION_POINTS) {
@@ -916,7 +904,7 @@ petsRouter.post(
           p_gender: gender,
           p_personality_id: personalityId,
           p_personality_key: personalityKey,
-          p_hatchling_name: starter.hatchlingName,
+          p_hatchling_name: hatchlingName,
           p_description: description,
           p_growth_strong_stats: strengths,
           p_growth_weak_stat: growthWeakStatForRpc,
@@ -972,14 +960,14 @@ petsRouter.post(
 
       logger.info("[hatch] pet hatched", {
         petId: egg.id,
-        speciesId: starter.speciesId,
-        line: typedEgg.line ?? starter.line ?? null,
+        speciesId: hatchSpeciesId,
+        line: hatchLine,
         storageResult,
       });
 
       const hatchedPetForClient = await hydrateHatchedPassiveTrait({
         ...hatched,
-        name: starter.hatchlingName,
+        name: hatchlingName,
         location: finalLocation,
         is_active: finalIsActive,
         description,
@@ -999,8 +987,8 @@ petsRouter.post(
         party_slot_assigned: assignedPartySlot,
         post_hatch_destination: postHatchDestination,
         storage_result: storageResult,
-        is_mystery_starter_hatch: true,
-        starter_species_id: starter.speciesId,
+        is_mystery_starter_hatch: Boolean(starter),
+        starter_species_id: starter?.speciesId ?? null,
       });
     } catch (err: any) {
       logger.error("[POST /api/pets/hatch] crash", err);
