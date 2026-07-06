@@ -1474,19 +1474,13 @@
 }
 .petRepoHeroCard {
   border: 2px solid var(--dp-panel-border-cyan-bright);
-  background:
-    linear-gradient(var(--dp-popup-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--dp-popup-grid-line) 1px, transparent 1px),
-    linear-gradient(
-      180deg,
-      var(--dp-panel-bg-top) 0%,
-      var(--dp-panel-bg-mid) 50%,
-      var(--dp-panel-bg-bottom) 100%
-    );
-  background-size:
-    16px 16px,
-    16px 16px,
-    100% 100%;
+  background: linear-gradient(
+    180deg,
+    var(--dp-panel-bg-top) 0%,
+    var(--dp-panel-bg-mid) 50%,
+    var(--dp-panel-bg-bottom) 100%
+  );
+  background-size: 100% 100%;
   box-shadow:
     0 0 18px var(--dp-panel-glow),
     0 0 42px var(--dp-panel-border-cyan-soft),
@@ -1500,18 +1494,53 @@
   border-radius: 16px;
   border: 5px solid var(--dp-panel-purple-border);
   background-image:
-    linear-gradient(rgba(77, 234, 255, 0.9) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(77, 234, 255, 0.9) 1px, transparent 1px);
+    radial-gradient(
+      circle at 14% 20%,
+      var(--dp-star-white) 1px,
+      transparent 1.6px
+    ),
+    radial-gradient(
+      circle at 72% 28%,
+      var(--dp-star-cyan) 1px,
+      transparent 1.6px
+    ),
+    radial-gradient(
+      circle at 42% 78%,
+      var(--dp-star-white-soft) 1px,
+      transparent 1.6px
+    ),
+    linear-gradient(rgba(77, 234, 255, 0.2) 0.5px, transparent 0.2px),
+    linear-gradient(90deg, rgba(77, 234, 255, 0.5) 0.5px, transparent 0.2px);
   background-size:
+    170px 130px,
+    220px 160px,
+    260px 190px,
     16px 16px,
     16px 16px;
+  background-position:
+    12px 18px,
+    30px 6px,
+    0 40px,
+    0 0,
+    0 0;
+  background-clip: padding-box;
   pointer-events: none;
   box-shadow: none;
 }
 
 .petRepoHeroCard::after {
-  content: none;
-  display: none;
+  content: "";
+  position: absolute;
+  inset: calc(var(--dp-popup-inset-gap) + var(--dp-popup-inner-border-width));
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 0;
+  background-image: var(--dp-popup-blue-grid);
+  background-position: 0 0;
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size);
+  opacity: 1;
 }
 
 .petRepoHeroStatus {
@@ -1535,11 +1564,17 @@
       rgba(255, 255, 255, 0.45) 1px,
       transparent 1.8px
     ),
-    linear-gradient(180deg, var(--pet-focus-element-bg), rgba(10, 24, 50, 0.99));
+    linear-gradient(
+      180deg,
+      var(--pet-focus-element-bg),
+      rgba(10, 24, 50, 0.99)
+    ),
+    linear-gradient(180deg, rgba(10, 24, 50, 0.99), rgba(10, 24, 50, 0.99));
   background-size:
     120px 90px,
     160px 120px,
     210px 150px,
+    auto,
     auto;
   box-shadow:
     inset 0 0 0 1px
@@ -1594,6 +1629,24 @@
 .petRepoHeroCard--element-shadow {
   --pet-focus-element-color: var(--element-shadow);
   --pet-focus-element-bg: var(--element-shadow-bg);
+}
+
+@media (max-width: 920px) {
+  .petRepoHeroCard {
+    grid-template-columns: 1fr;
+  }
+
+  .petRepoHeroTextShifted {
+    transform: none;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .petRepoHeroStatus {
+    justify-self: center;
+    width: min(100%, 220px);
+    max-width: 100%;
+  }
 }
 
 /* Stats + Element Stats UI fixes */

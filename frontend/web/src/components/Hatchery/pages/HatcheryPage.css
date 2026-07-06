@@ -57,6 +57,27 @@
   display: flex;
   flex-direction: column;
 }
+.storageIncubatorNotice {
+  border: 1px solid rgba(194, 211, 236, 0.46);
+  border-radius: 12px;
+  padding: 0.72rem 0.8rem;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 18, 42, 0.94),
+    rgba(4, 10, 26, 0.96)
+  );
+  color: #f6f8ff;
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.35;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.storageIncubatorNotice strong {
+  color: var(--hatch-gold, #f3d63f);
+}
 
 .panelHeader {
   display: flex;
@@ -1753,5 +1774,193 @@ textarea {
 @media (max-width: 640px) {
   .eggGridCompact {
     grid-template-columns: repeat(2, minmax(110px, 1fr));
+  }
+}
+/* =========================================================
+   Hatchery mobile fit pass
+   Pixel 10 / Galaxy S22 / Galaxy S22 Ultra
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .hatcheryPage {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .hatcheryWorkbenchLayout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .hatcheryLeftColumn,
+  .storagePanel,
+  .rackPanelSide {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .storagePanel {
+    overflow: hidden;
+  }
+
+  .storageTopSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .storageHeroCard {
+    min-width: 0;
+    padding: 8px;
+  }
+
+  .storageHeroLabel {
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
+  .storageHeroValue {
+    font-size: 18px;
+  }
+
+  .storageSearchInput {
+    min-width: 0;
+    font-size: 0.8rem;
+  }
+
+  .storageSearchInput::placeholder {
+    font-size: 0.72rem;
+  }
+
+  .storageGridScroll {
+    min-height: 300px;
+    max-height: 58vh;
+  }
+
+  .storageEmptyState {
+    min-height: 180px;
+    padding: 16px 12px;
+  }
+
+  .storageEmptyTitle {
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+
+  .storageEmptyText {
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .storageBottomFilters {
+    gap: 6px;
+  }
+
+  .storageFilterChip {
+    min-height: 30px;
+    padding: 0 9px;
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .storageTopSummary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .storageGridScroll {
+    max-height: 52vh;
+  }
+}
+/* =========================================================
+   Hatchery mobile fit pass
+   Pixel 10 / Galaxy S22 / Galaxy S22 Ultra
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .hatcheryPage {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .hatcheryWorkbenchLayout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .hatcheryLeftColumn,
+  .storagePanel,
+  .rackPanelSide {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .storagePanel {
+    overflow: hidden;
+  }
+
+  .storageTopSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .storageHeroCard {
+    min-width: 0;
+    padding: 8px;
+  }
+
+  .storageHeroLabel {
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
+  .storageHeroValue {
+    font-size: 18px;
+  }
+
+  .storageSearchInput {
+    min-width: 0;
+    font-size: 0.8rem;
+  }
+
+  .storageSearchInput::placeholder {
+    font-size: 0.72rem;
+  }
+
+  .storageGridScroll {
+    min-height: 300px;
+    max-height: 58vh;
+  }
+
+  .storageEmptyState {
+    min-height: 180px;
+    padding: 16px 12px;
+  }
+
+  .storageEmptyTitle {
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+
+  .storageEmptyText {
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .storageBottomFilters {
+    gap: 6px;
+  }
+
+  .storageFilterChip {
+    min-height: 30px;
+    padding: 0 9px;
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .storageTopSummary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .storageGridScroll {
+    max-height: 52vh;
   }
 }

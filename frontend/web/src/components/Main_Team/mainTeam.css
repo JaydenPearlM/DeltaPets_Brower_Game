@@ -807,3 +807,257 @@
   position: relative;
   z-index: 2;
 }
+/* =========================================================
+   Mobile Kith Team title correction
+   Keeps KITH △ TEAM on one row instead of stacking.
+   Pixel 10 / Galaxy S22 / Galaxy S22 Ultra
+   ========================================================= */
+
+@media (max-width: 560px) {
+  .mainTeamHeaderLine,
+  .mainTeamHeaderLineRight,
+  .mainTeamHeaderDot,
+  .mainTeamHeaderDash {
+    display: none;
+  }
+
+  .mainTeamTitleShell {
+    width: min(100%, 390px);
+    min-width: 0;
+    max-width: 100%;
+    height: 82px;
+    padding: 12px 34px;
+    display: grid;
+    align-items: center;
+  }
+
+  .mainTeamTitleRow {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mainTeamTitle {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 56px;
+    font-size: clamp(1.55rem, 7.2vw, 2rem);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .mainTeamTitle span:first-child,
+  .mainTeamTitle span:last-child {
+    transform: none;
+    text-align: center;
+  }
+
+  .mainTeamRainbowOrb {
+    top: 50%;
+    width: 48px;
+    height: 42px;
+    transform: translate(-50%, -50%);
+    opacity: 0.68;
+  }
+
+  .mainTeamSubtitle {
+    margin: -13px auto 0;
+    width: fit-content;
+    max-width: calc(100% - 40px);
+    padding: 5px 18px;
+    font-size: 0.58rem;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 380px) {
+  .mainTeamTitleShell {
+    height: 76px;
+    padding-left: 26px;
+    padding-right: 26px;
+  }
+
+  .mainTeamTitle {
+    gap: 44px;
+    font-size: clamp(1.35rem, 7vw, 1.7rem);
+  }
+
+  .mainTeamRainbowOrb {
+    width: 42px;
+    height: 37px;
+  }
+
+  .mainTeamSubtitle {
+    max-width: calc(100% - 24px);
+    padding-left: 14px;
+    padding-right: 14px;
+    font-size: 0.52rem;
+  }
+}
+/* =========================================================
+   FINAL mobile Kith Team header layout
+   Applies to /pet and Hatchery mobile only.
+   Desktop/app layout stays untouched.
+
+   Goal:
+   KITH   rainbow △   TEAM
+   centered inside the purple inset border.
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .mainTeamPanel,
+  .mainPartyInlineSection .mainTeamPanel {
+    padding: 28px 20px 54px !important;
+    overflow: hidden !important;
+  }
+
+  .mainTeamHeader,
+  .mainPartyInlineSection .mainTeamHeader {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "title"
+      "subtitle" !important;
+    justify-items: center !important;
+    gap: 0 !important;
+    width: 100% !important;
+    margin-bottom: 24px !important;
+    padding-top: 0 !important;
+  }
+
+  /* Hide only the extra gold side decorations on mobile. */
+  .mainTeamHeaderLine,
+  .mainTeamHeaderLineRight,
+  .mainPartyInlineSection .mainTeamHeaderLine,
+  .mainPartyInlineSection .mainTeamHeaderLineRight {
+    display: none !important;
+  }
+
+  .mainTeamTitleShell,
+  .mainPartyInlineSection .mainTeamTitleShell {
+    width: min(100%, 390px) !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: 78px !important;
+    box-sizing: border-box !important;
+    padding: 10px 22px !important;
+    display: grid !important;
+    place-items: center !important;
+    overflow: visible !important;
+  }
+
+  .mainTeamTitleRow,
+  .mainPartyInlineSection .mainTeamTitleRow {
+    width: 100% !important;
+    min-width: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  .mainTeamTitle,
+  .mainPartyInlineSection .mainTeamTitle {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: clamp(2.6rem, 13vw, 3.6rem) !important;
+    font-size: clamp(1.45rem, 7vw, 1.8rem) !important;
+    line-height: 1 !important;
+    letter-spacing: 0.075em !important;
+    white-space: nowrap !important;
+  }
+
+  .mainTeamTitle span:first-child,
+  .mainPartyInlineSection .mainTeamTitle span:first-child {
+    transform: none !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  .mainTeamTitle span:last-child,
+  .mainPartyInlineSection .mainTeamTitle span:last-child {
+    transform: none !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  /* Keep the rainbow Delta triangle and center it between KITH and TEAM. */
+  .mainTeamRainbowOrb,
+  .mainPartyInlineSection .mainTeamRainbowOrb {
+    display: block !important;
+    left: 50% !important;
+    top: 50% !important;
+    width: 40px !important;
+    height: 35px !important;
+    transform: translate(-50%, -50%) !important;
+    opacity: 0.78 !important;
+    pointer-events: none !important;
+  }
+
+  .mainTeamRainbowOrb::after,
+  .mainPartyInlineSection .mainTeamRainbowOrb::after {
+    inset: 8px !important;
+  }
+
+  .mainTeamSubtitle,
+  .mainPartyInlineSection .mainTeamSubtitle {
+    margin: -12px auto 0 !important;
+    max-width: calc(100% - 36px) !important;
+    box-sizing: border-box !important;
+    padding: 5px 16px !important;
+    font-size: 0.54rem !important;
+    line-height: 1 !important;
+    letter-spacing: 0.1em !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .mainTeamPanel,
+  .mainPartyInlineSection .mainTeamPanel {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .mainTeamTitleShell,
+  .mainPartyInlineSection .mainTeamTitleShell {
+    height: 72px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .mainTeamTitle,
+  .mainPartyInlineSection .mainTeamTitle {
+    gap: clamp(2.15rem, 12vw, 2.8rem) !important;
+    font-size: clamp(1.28rem, 6.8vw, 1.52rem) !important;
+    letter-spacing: 0.055em !important;
+  }
+
+  .mainTeamRainbowOrb,
+  .mainPartyInlineSection .mainTeamRainbowOrb {
+    width: 34px !important;
+    height: 30px !important;
+  }
+
+  .mainTeamRainbowOrb::after,
+  .mainPartyInlineSection .mainTeamRainbowOrb::after {
+    inset: 7px !important;
+  }
+
+  .mainTeamSubtitle,
+  .mainPartyInlineSection .mainTeamSubtitle {
+    max-width: calc(100% - 24px) !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    font-size: 0.48rem !important;
+  }
+}

@@ -1970,13 +1970,90 @@
       "topPanel"
       "info"
       "pet"
+      "message"
       "status"
-      "actions"
-      "message";
+      "actions";
+  }
+
+  .petRepoInlineMessage {
+    width: 100%;
+    max-width: none;
+    margin: -30px auto 0;
+    padding: 0 10px;
+    box-sizing: border-box;
+    white-space: normal;
   }
 
   .petRepoTalkBubble {
-    transform: translate(-18px, -18px);
+    position: relative !important;
+    left: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: min(340px, calc(100% - 24px)) !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    padding: 9px 16px !important;
+    font-size: 0.74rem !important;
+    line-height: 1.15 !important;
+    z-index: 5 !important;
+  }
+
+  .petRepoEnergyPanel {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 35px !important;
+    transform: none !important;
+    width: auto !important;
+    box-sizing: border-box;
+  }
+}
+
+@media (min-width: 390px) and (max-width: 430px) {
+  .petRepoCareCard {
+    box-sizing: border-box;
+    padding-inline: 10px;
+    overflow: hidden;
+  }
+
+  .petRepoCareCard > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .petRepoDetailsHeaderBlock {
+    padding-inline: 10px;
+  }
+
+  .petRepoTalkBubble {
+    width: min(320px, calc(100% - 20px)) !important;
+    padding: 8px 14px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .petRepoEnergyPanel {
+    left: 20px !important;
+    right: 20px !important;
+    bottom: 34px !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .petRepoEnergyTitle {
+    font-size: 1.15rem;
+    letter-spacing: 0.12em;
+    color: var(--dp-brand-yellow);
+    -webkit-text-stroke: 0;
+    text-shadow: var(--dp-glow-gold);
+  }
+
+  .petRepoEnergyTrack {
+    min-width: 0;
+    height: 14px;
   }
 }
 
@@ -1992,10 +2069,12 @@
   display: grid;
   gap: 8px;
   width: 100%;
+  box-sizing: border-box;
+  padding-inline: 10px;
 }
 
 .petRepoDetailsHeaderBlock .petRepoDeltaDetailsTitle {
-  margin: 0;
+  margin: 6px 0 0;
 }
 
 .petRepoBondPanel {
@@ -2177,4 +2256,35 @@
   background: linear-gradient(180deg, #ffffff, #f4e8cf);
   color: #2b1a00;
   border: 1px solid rgba(255, 238, 170, 0.72);
+}
+@media (max-width: 430px) {
+  .petRepoDetailsHeaderBlock {
+    box-sizing: border-box;
+    padding-inline: 10px;
+  }
+
+  .petRepoDetailsHeaderBlock .petRepoDeltaDetailsTitle {
+    margin: 6px 0 0;
+  }
+
+  .petRepoEnergyPanel {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 34px !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+    box-sizing: border-box;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .petRepoEnergyTitle {
+    color: var(--dp-brand-yellow);
+    -webkit-text-stroke: 0;
+    text-shadow: var(--dp-glow-gold);
+  }
+
+  .petRepoEnergyTrack {
+    min-width: 0;
+  }
 }
