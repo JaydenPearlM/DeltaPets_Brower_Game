@@ -11,7 +11,6 @@ import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { logger } from "../../../lib/logger";
 import { getDeltaTime } from "../../../lib/deltaTime";
 import { insertBaseStats, fetchTotalPoints } from "../../routePets/petsStats";
-import { assignPetToMainParty } from "../../../pets/partySlots";
 import {
   getKithnaEggsForTime,
   type KithnaNonStarterSpecies,
@@ -384,16 +383,14 @@ kithnaRouter.post(
         throw updateError;
       }
 
-      const slotIndex = await assignPetToMainParty(userId, petId).catch(
-        () => null,
-      );
-
+      // Deliberately not auto-assigning a party slot here. The pet lands
+      // in storage as "recovered but benched", the player adds it to
+      // their team through the normal MainTeam UI when they're ready.
       logger.info("[kithna/lost-registry] pet recovered", {
         userId,
         petId,
         currency,
         amount,
-        slotIndex,
       });
 
       return res.json({
@@ -401,7 +398,6 @@ kithnaRouter.post(
         pet_id: petId,
         currency,
         amount,
-        placed_in_party: slotIndex !== null,
       });
     } catch (err: any) {
       logger.error("[kithna/lost-registry/recover] failed", err);

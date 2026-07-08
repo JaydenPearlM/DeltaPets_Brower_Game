@@ -84,6 +84,19 @@ export async function updatePetCareStats(
     .eq("id", petId);
 
   if (error) throw error;
+
+  // A runaway pet needs to actually vacate the party, not just get flagged.
+  // party_slots has no ran_away awareness of its own, so without this the
+  // pet keeps occupying its slot forever: it still shows up in the team
+  // list, and the slot can never be reassigned to a recovered or new pet.
+  if (updates.ran_away) {
+    const { error: slotError } = await supabaseAdmin
+      .from("party_slots")
+      .delete()
+      .eq("pet_id", petId);
+
+    if (slotError) throw slotError;
+  }
 }
 
 /**

@@ -557,7 +557,7 @@ export default function PetPage() {
 
     try {
       await apiFetch("/api/pets/rescue-egg", { method: "POST" });
-      navigate("/hatchery");
+      navigate("/rescue-reveal");
     } catch (error) {
       setRescueEggError(
         error instanceof Error
