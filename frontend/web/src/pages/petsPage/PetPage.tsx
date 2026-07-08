@@ -11,7 +11,7 @@ import {
   titleCase,
 } from "@/lib/petUtils";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
-import LostKithRegistry from "@/pages/petsPage/components/lostKithRegistry/LostKithRegistry";
+import LostKithRegistry from "@/pages/petsPage/components/LostKithRegistry/LostKithRegistry";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
 import StatsChamber from "@/components/StatsChamber/StatsChamber";
