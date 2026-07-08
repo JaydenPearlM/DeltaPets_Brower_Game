@@ -6,7 +6,7 @@ import { apiFetch } from "@/lib/api/baseClient";
 import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";
 import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
-
+import { useDeltaTime } from "@/lib/timers/useDeltaTime";
 import goldEggPng from "@/Pets_Creation/assets/eggs/goldEgg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
 import { SHARED_SPECIES } from "@shared/pets/species";
@@ -414,6 +414,7 @@ function ItemSlotButton(props: { slot: ShelfSlot }) {
 // ─── Page component ───────────────────────────────────────────────────────────
 
 export default function HatcheryPage() {
+  const { phase } = useDeltaTime();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -661,7 +662,7 @@ export default function HatcheryPage() {
   if (authLoading) return null;
 
   return (
-    <div className="hatcheryPage">
+    <div className="hatcheryPage" data-phase={phase}>
       <div className="hatcheryWorkbenchLayout">
         <div className="hatcheryLeftColumn">
           <section className="selectedEggPanel selectedEggPanelMain">

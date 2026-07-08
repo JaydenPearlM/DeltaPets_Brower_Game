@@ -5,7 +5,7 @@
   --dp-profile-text: #e8e8f0;
   --dp-profile-muted: #9497ad;
 
-  background: var(--dp-profile-bg);
+  background: transparent;
   color: var(--dp-profile-text);
   min-height: 100%;
   padding: 24px;

@@ -6,7 +6,7 @@
   --dp-park-muted: #9497ad;
   --dp-park-accent: #4ade80;
 
-  background: var(--dp-park-bg);
+  background: transparent;
   color: var(--dp-park-text);
   min-height: 100%;
   padding: 24px;

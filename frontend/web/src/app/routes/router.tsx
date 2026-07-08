@@ -8,6 +8,9 @@ const ParkPage = lazy(() => import("../../pages/park/park"));
 const KithnaMap = lazy(() => import("../../pages/Cities/Kithna/KithnaMap"));
 const Homepage = lazy(() => import("../../pages/Homepage/homepage"));
 const CreatePage = lazy(() => import("../../pages/cutscene/create"));
+const RescueEggReveal = lazy(
+  () => import("../../pages/cutscene/rescueEggReveal"),
+);
 const PetPage = lazy(() => import("../../pages/petsPage/PetPage"));
 const FarmPage = lazy(() => import("../../pages/farm/petFarmFood"));
 const HatcheryPage = lazy(
@@ -78,6 +81,14 @@ export const router = createBrowserRouter([
         element: withSuspense(
           <ProtectedRoute>
             <CreatePage />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "rescue-reveal",
+        element: withSuspense(
+          <ProtectedRoute>
+            <RescueEggReveal />
           </ProtectedRoute>,
         ),
       },

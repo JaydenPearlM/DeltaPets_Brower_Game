@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
+import { useDeltaTime } from "@/lib/timers/useDeltaTime";
 import {
   clampPercent,
   normalizeElement,
@@ -10,6 +11,7 @@ import {
   titleCase,
 } from "@/lib/petUtils";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
+import LostKithRegistry from "@/pages/petsPage/components/lostKithRegistry/LostKithRegistry";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
 import StatsChamber from "@/components/StatsChamber/StatsChamber";
@@ -256,7 +258,7 @@ function getPetGrowthTraits(pet: PetRecord | null, stats: PetStatsRow | null) {
 export default function PetPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-
+  const { phase } = useDeltaTime();
   const [pet, setPet] = useState<PetRecord | null>(null);
   const [stats, setStats] = useState<PetStatsRow | null>(null);
   const [elements, setElements] = useState<PetElementsRow | null>(null);
@@ -269,6 +271,9 @@ export default function PetPage() {
   const [personalityName, setPersonalityName] = useState<string | null>(null);
   const [starterMerchant, setStarterMerchant] =
     useState<StarterMerchantState | null>(null);
+  const [showLostRegistry, setShowLostRegistry] = useState(false);
+  const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
+  const [rescueEggError, setRescueEggError] = useState<string | null>(null);
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [showNicknameEditor, setShowNicknameEditor] = useState(false);
@@ -544,6 +549,26 @@ export default function PetPage() {
     }
   }, [loadPetPage, nicknameDraft, pet?.id, pet?.nickname, user?.id]);
 
+  const claimRescueEgg = useCallback(async () => {
+    if (claimingRescueEgg) return;
+
+    setClaimingRescueEgg(true);
+    setRescueEggError(null);
+
+    try {
+      await apiFetch("/api/pets/rescue-egg", { method: "POST" });
+      navigate("/rescue-reveal");
+    } catch (error) {
+      setRescueEggError(
+        error instanceof Error
+          ? error.message
+          : "Could not claim the rescue egg. Try again.",
+      );
+    } finally {
+      setClaimingRescueEgg(false);
+    }
+  }, [claimingRescueEgg, navigate]);
+
   const hunger = clampPercent(pet?.hunger);
   const clean = clampPercent(pet?.clean);
   const happy = clampPercent(pet?.happy);
@@ -686,12 +711,19 @@ export default function PetPage() {
             </div>
 
             <div className="petRepoRunawayModalActions">
-              <a
+              <button
+                type="button"
                 className="petRepoRunawayModalPrimary"
-                href={starterMerchant?.href || "/cities/kithna"}
+                disabled={claimingRescueEgg}
+                onClick={claimRescueEgg}
               >
-                {starterMerchant?.ctaLabel || "Visit the Kithna Merchant"}
-              </a>
+                {claimingRescueEgg
+                  ? "Summoning egg..."
+                  : starterMerchant?.ctaLabel || "Accept the Egg"}
+              </button>
+              {rescueEggError ? (
+                <p className="petRepoRunawayModalError">{rescueEggError}</p>
+              ) : null}
             </div>
           </div>
         </div>,
@@ -717,7 +749,7 @@ export default function PetPage() {
 
   if (authLoading || (!hasLoadedOnceRef.current && loadingPage)) {
     return (
-      <div className="petRepoPage">
+      <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
         {runawayEmergencyModal}
         <div className="petRepoStateCard">Loading Delta Room…</div>
       </div>
@@ -725,11 +757,15 @@ export default function PetPage() {
   }
 
   if (isRunawayLock) {
-    return <div className="petRepoPage">{runawayEmergencyModal}</div>;
+    return (
+      <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
+        {runawayEmergencyModal}
+      </div>
+    );
   }
 
   return (
-    <div className="petRepoPage">
+    <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
       {loadErr ? (
         <div className="petRepoStateCard petRepoStateCardError">
           <h2>Pet page load error</h2>
@@ -762,7 +798,24 @@ export default function PetPage() {
                 real condition.
               </p>
             </div>
+
+            <button
+              type="button"
+              className="lostKithRegistryOpenButton"
+              onClick={() => setShowLostRegistry(true)}
+            >
+              Lost Kith Registry
+            </button>
           </header>
+
+          <LostKithRegistry
+            open={showLostRegistry}
+            onClose={() => setShowLostRegistry(false)}
+            onRecovered={() => {
+              setShowLostRegistry(false);
+              void loadPetPage(false);
+            }}
+          />
 
           <PetDetailsPanel
             pet={pet}

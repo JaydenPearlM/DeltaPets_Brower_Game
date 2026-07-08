@@ -1,4 +1,5 @@
 .kithnaMapPage {
+  --kithna-map-page-bg: var(--dp-bg, #151827);
   min-height: 100vh;
   padding: 24px;
   background:
@@ -7,8 +8,32 @@
       rgba(103, 232, 249, 0.16),
       transparent 34rem
     ),
-    var(--dp-bg, #151827);
+    var(--kithna-map-page-bg);
   color: var(--dp-text, #f8f4df);
+}
+
+.kithnaMapPage[data-phase="day"] {
+  --kithna-map-page-bg: #2f6f96;
+}
+
+.kithnaMapPage[data-phase="dawn"] {
+  --kithna-map-page-bg: #6e5d8e;
+}
+
+.kithnaMapPage[data-phase="dusk"] {
+  --kithna-map-page-bg: #594469;
+}
+
+.kithnaMapPage[data-phase="night"] {
+  --kithna-map-page-bg: #182342;
+}
+
+.kithnaMapPage[data-phase="deep_night"] {
+  --kithna-map-page-bg: #10152f;
+}
+
+.kithnaMapPage[data-phase="twilight"] {
+  --kithna-map-page-bg: #23355f;
 }
 
 .kithnaMapFrame {
