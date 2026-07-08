@@ -5,6 +5,7 @@ import { LoginMenus } from "../components/Authentication/LoginMenus";
 import Inventory from "../components/inventory/inventory";
 import { useAliuneSignal } from "../pages/Homepage/useAliuneSignal";
 import { DeltaClock } from "../lib/timers/deltaClock";
+import { useDeltaTime } from "../lib/timers/useDeltaTime";
 import { useAuth } from "./providers/useAuth";
 import { useUI } from "./providers/UIProvider";
 import { useRoamEncounter } from "../lib/kithna/useRoamEncounter";
@@ -40,6 +41,7 @@ const CITY_LINKS: MenuLink[] = [
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { phase } = useDeltaTime();
   const { signal } = useAliuneSignal();
   const { user, loading } = useAuth();
   const { inventoryOpen, closeInventory } = useUI();
@@ -71,6 +73,34 @@ export default function App() {
     if (location.pathname === "/signin") return "login";
     if (location.pathname === "/signup") return "signup";
     return "none";
+  }, [location.pathname]);
+
+  const hasTimeRoomBackground = useMemo(() => {
+    const timeRoomPaths = [
+      "/profile",
+      "/pet",
+      "/hatchery",
+      "/farm",
+      "/gym",
+      "/park",
+      "/battle-arena",
+      "/battle-dungeons",
+      "/armor",
+      "/armory",
+      "/armor-merchant",
+      "/health-merchant",
+      "/weapon-merchant",
+      "/food-shop",
+      "/pet-care",
+      "/farm-merchant",
+      "/cities/kithna",
+      "/kithna",
+    ];
+
+    return timeRoomPaths.some(
+      (path) =>
+        location.pathname === path || location.pathname.startsWith(`${path}/`),
+    );
   }, [location.pathname]);
 
   const conditionText = signal.conditionLabel;
@@ -188,7 +218,10 @@ export default function App() {
   const hideHeader = location.pathname.startsWith("/create");
 
   return (
-    <div className="appRoot">
+    <div
+      className={`appRoot ${hasTimeRoomBackground ? "dpTimeApp" : ""}`}
+      data-phase={hasTimeRoomBackground ? phase : undefined}
+    >
       {!hideHeader && (
         <header className="appHeader">
           <div
@@ -406,8 +439,6 @@ export default function App() {
           </section>
         </div>
       )}
-
-      <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
 
       <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
     </div>

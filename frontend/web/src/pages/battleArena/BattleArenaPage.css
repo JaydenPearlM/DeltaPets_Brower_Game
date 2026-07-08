@@ -1,47 +1,83 @@
 .dp-arena-page {
-  --dp-arena-bg: #12131c;
-  --dp-arena-panel-bg: #1a1c29;
-  --dp-arena-border: #2c2f42;
-  --dp-arena-text: #e8e8f0;
-  --dp-arena-muted: #9497ad;
-  --dp-arena-accent: #3a86ff;
+  --dp-arena-bg: var(--dp-bg, #151827);
+  --dp-arena-panel-bg: rgba(18, 22, 38, 0.85);
+  --dp-arena-border: var(--dp-cyan, #67e8f9);
+  --dp-arena-text: var(--dp-text, #f8f4df);
+  --dp-arena-muted: rgba(248, 244, 223, 0.65);
+  --dp-arena-accent: #c0392b;
 
-  background: var(--dp-arena-bg);
+  background:
+    radial-gradient(circle at top, rgba(192, 57, 43, 0.14), transparent 34rem),
+    var(--dp-arena-bg);
   color: var(--dp-arena-text);
   min-height: 100%;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.dp-arena-page h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--dp-gold, #f4d36b);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
 }
 
 .dp-arena-subtitle {
+  margin: 0 0 4px;
   color: var(--dp-arena-muted);
-  margin: 0;
+  font-size: 13px;
 }
 
 .dp-arena-panel {
   background: var(--dp-arena-panel-bg);
-  border: 1px solid var(--dp-arena-border);
-  border-radius: 8px;
-  padding: 16px;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.dp-arena-panel h2 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--dp-arena-border);
+}
+
+.dp-arena-panel p {
+  margin: 0;
+  color: var(--dp-arena-muted);
+  font-size: 14px;
 }
 
 .dp-arena-slot {
-  padding: 10px;
-  border: 1px dashed var(--dp-arena-border);
-  border-radius: 6px;
+  border: 1px dashed rgba(248, 244, 223, 0.25);
+  border-radius: 10px;
+  padding: 10px 12px;
   margin-top: 8px;
+  font-size: 13px;
   color: var(--dp-arena-muted);
 }
 
+.dp-arena-slot:first-of-type {
+  margin-top: 10px;
+}
+
 .dp-arena-start-btn {
-  background: var(--dp-arena-accent);
-  color: var(--dp-arena-text);
-  border: none;
-  border-radius: 6px;
-  padding: 12px;
-  font-weight: 600;
-  cursor: pointer;
   align-self: flex-start;
+  margin-top: 4px;
+  background: var(--dp-arena-accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dp-arena-start-btn:hover {
+  filter: brightness(1.1);
 }

@@ -833,6 +833,90 @@ body {
   background-attachment: fixed;
 }
 
+body:has(.appRoot.dpTimeApp[data-phase="day"]) {
+  --dp-bg-sand-0: #fff1c0;
+  --dp-bg-sand-1: #f0d889;
+  --dp-bg-sand-2: #dfbd64;
+  --dp-bg-sand-3: #cfa54d;
+  --bg-page: #f3dc99;
+  --bg-page-2: #e7c878;
+  --bg-page-3: #d6ad58;
+  --dp-bg-light: rgba(255, 245, 184, 0.82);
+  --dp-bg-gold-glow: rgba(255, 221, 89, 0.32);
+  --dp-bg-blue-glow: rgba(116, 165, 232, 0.08);
+  --bg-speck: rgba(165, 117, 35, 0.2);
+}
+
+body:has(.appRoot.dpTimeApp[data-phase="dawn"]) {
+  --dp-bg-sand-0: #ffe2bd;
+  --dp-bg-sand-1: #f0c08d;
+  --dp-bg-sand-2: #dc9d68;
+  --dp-bg-sand-3: #bd7b4f;
+  --bg-page: #efc696;
+  --bg-page-2: #dda36f;
+  --bg-page-3: #c38158;
+  --dp-bg-light: rgba(255, 225, 186, 0.84);
+  --dp-bg-gold-glow: rgba(255, 178, 87, 0.34);
+  --dp-bg-blue-glow: rgba(116, 165, 232, 0.07);
+  --bg-speck: rgba(153, 87, 39, 0.2);
+}
+
+body:has(.appRoot.dpTimeApp[data-phase="dusk"]) {
+  --dp-bg-sand-0: #efd0c6;
+  --dp-bg-sand-1: #dba5a0;
+  --dp-bg-sand-2: #bd7c82;
+  --dp-bg-sand-3: #925d72;
+  --bg-page: #d8aaa2;
+  --bg-page-2: #bc7d83;
+  --bg-page-3: #8f5c73;
+  --dp-bg-light: rgba(255, 218, 205, 0.72);
+  --dp-bg-gold-glow: rgba(255, 167, 104, 0.22);
+  --dp-bg-blue-glow: rgba(150, 114, 214, 0.18);
+  --bg-speck: rgba(115, 58, 72, 0.2);
+}
+
+body:has(.appRoot.dpTimeApp[data-phase="night"]) {
+  --dp-bg-sand-0: #c8d2f0;
+  --dp-bg-sand-1: #94a6dc;
+  --dp-bg-sand-2: #6579bc;
+  --dp-bg-sand-3: #40538d;
+  --bg-page: #a8b5df;
+  --bg-page-2: #7589c7;
+  --bg-page-3: #485d9d;
+  --dp-bg-light: rgba(203, 215, 255, 0.5);
+  --dp-bg-gold-glow: rgba(255, 226, 138, 0.12);
+  --dp-bg-blue-glow: rgba(111, 140, 255, 0.38);
+  --bg-speck: rgba(53, 69, 122, 0.22);
+}
+
+body:has(.appRoot.dpTimeApp[data-phase="deep_night"]) {
+  --dp-bg-sand-0: #bdb2e7;
+  --dp-bg-sand-1: #8f80c9;
+  --dp-bg-sand-2: #6658a8;
+  --dp-bg-sand-3: #42346f;
+  --bg-page: #9b8bd2;
+  --bg-page-2: #7160b4;
+  --bg-page-3: #473979;
+  --dp-bg-light: rgba(219, 207, 255, 0.44);
+  --dp-bg-gold-glow: rgba(255, 226, 138, 0.1);
+  --dp-bg-blue-glow: rgba(141, 107, 255, 0.42);
+  --bg-speck: rgba(62, 45, 112, 0.24);
+}
+
+body:has(.appRoot.dpTimeApp[data-phase="twilight"]) {
+  --dp-bg-sand-0: #c2c7e8;
+  --dp-bg-sand-1: #8d99cf;
+  --dp-bg-sand-2: #5f70b0;
+  --dp-bg-sand-3: #394983;
+  --bg-page: #9ba6d4;
+  --bg-page-2: #6c7abd;
+  --bg-page-3: #41518e;
+  --dp-bg-light: rgba(211, 219, 255, 0.42);
+  --dp-bg-gold-glow: rgba(255, 226, 138, 0.1);
+  --dp-bg-blue-glow: rgba(92, 127, 216, 0.4);
+  --bg-speck: rgba(49, 63, 113, 0.22);
+}
+
 /* global body text defaults */
 body,
 p,

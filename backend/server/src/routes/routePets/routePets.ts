@@ -37,6 +37,7 @@ import {
 } from "./starters";
 
 import { getKithnaNonStarterSpecies } from "../../shared/pets/KithnaSpecies";
+import { getWorldTimeOfDay } from "../../lib/deltaTime";
 
 import {
   BASIC_EGG_HATCH_MINUTES,
@@ -578,6 +579,126 @@ petsRouter.post(
         resolved_line: null,
         error:
           err?.message ?? err?.details ?? err?.hint ?? "Failed to ensure egg",
+      });
+    }
+  },
+);
+
+// ============================================================
+// POST /api/pets/rescue-egg
+//
+// The "Lost Kith" rescue flow. Only usable when the user currently has
+// zero healthy pets (everything they own has run away). Grants one
+// fresh random-line starter egg, same 2-minute hatch timer as a normal
+// starter, so the player isn't locked out of the game entirely.
+//
+// Gated server-side on healthy pet count so this can't be spammed for
+// free eggs while pets are still alive, the Lost Kith Registry is the
+// path for that case instead.
+// ============================================================
+petsRouter.post(
+  "/rescue-egg",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+
+      const { data: existingPets, error: existingPetsError } =
+        await supabaseAdmin
+          .from("pets")
+          .select("id, ran_away")
+          .eq("user_id", userId);
+
+      if (existingPetsError) throw existingPetsError;
+
+      const healthyCount = (existingPets ?? []).filter(
+        (row: any) => !row?.ran_away,
+      ).length;
+
+      if (healthyCount > 0) {
+        return res.status(400).json({
+          success: false,
+          error:
+            "You still have a Delta. The rescue egg is only for when every Delta has run away.",
+        });
+      }
+
+      const worldTime = getWorldTimeOfDay();
+      const starter = getStarterForSelection({
+        line: "random",
+        worldTime,
+        personalityKey: null,
+      });
+
+      const now = new Date();
+      const hatchEndsAt = new Date(
+        now.getTime() + BASIC_EGG_HATCH_MINUTES * 60 * 1000,
+      ).toISOString();
+
+      const { strongStats, weakStat } = rollGrowthTraits();
+      const passiveTrait = await rollPassiveTrait();
+
+      const { data: insertedPet, error: insertError } = await supabaseAdmin
+        .from("pets")
+        .insert({
+          user_id: userId,
+          name: starter.eggName,
+          species: starter.speciesId,
+          line: starter.line,
+          stage: "egg",
+          energy: 100,
+          hatch_ends_at: hatchEndsAt,
+          is_active: false,
+          location: "hatchery",
+          passive_trait_id: passiveTrait?.id ?? null,
+          passive_trait_key: passiveTrait?.key ?? null,
+          hatch_time_alignment: worldTime,
+          growth_strong_stats: strongStats,
+          growth_weak_stat: weakStat,
+          mutation_capacity: 1,
+        })
+        .select("*")
+        .single();
+
+      if (insertError) {
+        logger.error("[rescue-egg] pet insert failed", insertError);
+        return res.status(500).json({
+          success: false,
+          error: insertError.message,
+        });
+      }
+
+      try {
+        await insertBaseStats(insertedPet.id, starter.baseStats);
+      } catch (statsError: any) {
+        logger.error("[rescue-egg] insertBaseStats failed", statsError);
+        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+
+        return res.status(500).json({
+          success: false,
+          error:
+            statsError?.message ??
+            statsError?.details ??
+            "Failed to insert egg base stats",
+        });
+      }
+
+      logger.info("[rescue-egg] rescue egg granted", {
+        userId,
+        petId: insertedPet.id,
+        speciesId: starter.speciesId,
+      });
+
+      return res.status(200).json({
+        success: true,
+        pet: insertedPet,
+      });
+    } catch (err: any) {
+      logger.error("[rescue-egg] failed", err);
+
+      return res.status(500).json({
+        success: false,
+        error: err?.message ?? "Failed to grant rescue egg.",
       });
     }
   },

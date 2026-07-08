@@ -31,7 +31,7 @@ function devOnly(_req: AuthedRequest, res: Response, next: NextFunction) {
   next();
 }
 
-const STARTER_MERCHANT_HREF = "/cities/kithna?merchant=starter-rescue";
+const STARTER_MERCHANT_HREF = "/pet";
 
 type StarterMerchantState = {
   show: boolean;
@@ -61,9 +61,9 @@ async function getStarterMerchantState(
     return {
       show: true,
       href: STARTER_MERCHANT_HREF,
-      title: "Pet Ran Away",
-      body: "All of your Kith are gone. A quiet merchant has opened inside Kithna's tutorial market with lower-tier starter rescues so you can rebuild.",
-      ctaLabel: "Visit the Kithna Merchant",
+      title: "You Lost Your Last Delta",
+      body: 'Every Delta you had has run off. A hunched spellcaster with a fuzzy, half-hidden face steps out from a hidden lair. "Take care of them more often, or buy items to help." He holds out a new egg.',
+      ctaLabel: "Accept the Egg",
     };
   }
 

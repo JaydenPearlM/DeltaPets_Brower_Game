@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useDeltaTime } from "../../../lib/timers/useDeltaTime";
 import "./KithnaMap.css";
 
 type KithnaTarget = {
@@ -97,9 +98,10 @@ const KITHNA_TOOLBAR = [
 
 export default function KithnaMap() {
   const navigate = useNavigate();
+  const { phase } = useDeltaTime();
 
   return (
-    <main className="kithnaMapPage">
+    <main className="kithnaMapPage" data-phase={phase}>
       <section className="kithnaMapFrame" aria-label="Kithna town map">
         <div className="kithnaIsland">
           <div className="kithnaWater" />

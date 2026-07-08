@@ -26,6 +26,36 @@
   gap: 18px;
   padding-left: var(--petRepo-left-offset);
 }
+
+.petRepoPage[data-phase="dawn"] .petRepoStage {
+  --pet-home-shell-top: #93a3c9;
+  --pet-home-shell-mid: #7f88ad;
+  --pet-home-shell-bottom: #5f6a90;
+}
+
+.petRepoPage[data-phase="dusk"] .petRepoStage {
+  --pet-home-shell-top: #8a749c;
+  --pet-home-shell-mid: #6b5c8c;
+  --pet-home-shell-bottom: #4a4270;
+}
+
+.petRepoPage[data-phase="night"] .petRepoStage {
+  --pet-home-shell-top: #3c4a6e;
+  --pet-home-shell-mid: #2c3958;
+  --pet-home-shell-bottom: #1c2740;
+}
+
+.petRepoPage[data-phase="deep_night"] .petRepoStage {
+  --pet-home-shell-top: #262f4c;
+  --pet-home-shell-mid: #1a2138;
+  --pet-home-shell-bottom: #10162a;
+}
+
+.petRepoPage[data-phase="twilight"] .petRepoStage {
+  --pet-home-shell-top: #313a5e;
+  --pet-home-shell-mid: #232b48;
+  --pet-home-shell-bottom: #161c34;
+}
 .hp-mainShell {
   width: calc(100% + 140px);
   margin-right: -140px;
@@ -1955,4 +1985,23 @@
 .petRepoSkillTreeButton:focus,
 .petRepoSkillTreeButton:focus-visible {
   background: var(--dp-gradient-yellow-button-hover);
+}
+
+.lostKithRegistryOpenButton {
+  align-self: flex-start;
+  margin-top: 8px;
+  border: 1px solid var(--dp-cyan, #67e8f9);
+  background: rgba(103, 232, 249, 0.1);
+  color: inherit;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.petRepoRunawayModalError {
+  margin: 10px 0 0;
+  color: #f28b82;
+  font-size: 13px;
+  text-align: center;
 }
