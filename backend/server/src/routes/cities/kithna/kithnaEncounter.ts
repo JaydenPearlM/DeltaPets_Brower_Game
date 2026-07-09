@@ -21,7 +21,7 @@ export const kithnaRouter = Router();
 
 // Alpha tuning. Move to game_config later if this needs to be adjustable
 // without a redeploy.
-const ROAM_FIND_CHANCE_PERCENT = 20; // 1 in 5 navigations
+const ROAM_FIND_CHANCE_PERCENT = 80; // alpha testing: easier Kithna egg finds
 const ROAM_COOLDOWN_MS = 60_000; // 60 seconds between rolls per user
 
 // Lost Kith Registry tuning.

@@ -23,6 +23,8 @@ export type StoragePet = {
   level: number | null;
   location: string | null;
   is_active: boolean | null;
+  runaway_at?: string | null;
+  ran_away?: boolean | null;
   created_at: string | null;
   hatched_at: string | null;
   hatch_ends_at?: string | null;
@@ -90,8 +92,14 @@ function isEggStage(stage?: string | null) {
   return normalizeStageInternal(stage) === "egg";
 }
 
+function isRunawayPet(pet?: StoragePet | null) {
+  if (!pet) return false;
+  return Boolean(pet.runaway_at ?? pet.ran_away);
+}
+
 function isUsableActivePet(pet?: StoragePet | null) {
   if (!pet) return false;
+  if (isRunawayPet(pet)) return false;
   return !isEggStage(pet.stage);
 }
 
@@ -178,6 +186,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
     level,
     location,
     is_active,
+    runaway_at,
     created_at,
     hatched_at,
     hatch_ends_at
@@ -220,6 +229,8 @@ export function usePetStorage(options: UsePetStorageOptions) {
           level: pet.level,
           location: pet.location,
           is_active: pet.is_active,
+          runaway_at: pet.runaway_at ?? null,
+          ran_away: pet.ran_away ?? null,
           created_at: pet.created_at,
           hatched_at: pet.hatched_at,
           hatch_ends_at: pet.hatch_ends_at,
@@ -266,12 +277,13 @@ export function usePetStorage(options: UsePetStorageOptions) {
     return Array.from({ length: PARTY_SLOT_COUNT }, (_, idx) => {
       const slotIndex = idx + 1;
       const row = rowsByIndex.get(slotIndex) ?? null;
-      const pet = row ? (petsById.get(row.pet_id) ?? null) : null;
+      const rawPet = row ? (petsById.get(row.pet_id) ?? null) : null;
+      const pet = isUsableActivePet(rawPet) ? rawPet : null;
 
       return {
         slotIndex,
-        entryId: row?.id ?? null,
-        petId: row?.pet_id ?? null,
+        entryId: pet ? (row?.id ?? null) : null,
+        petId: pet ? (row?.pet_id ?? null) : null,
         pet,
       };
     });
@@ -454,6 +466,10 @@ export function usePetStorage(options: UsePetStorageOptions) {
         if (!pet) throw new Error("Pet not found.");
         if (isEggStage(pet.stage)) {
           throw new Error("Eggs cannot join the Main Team.");
+        }
+
+        if (isRunawayPet(pet)) {
+          throw new Error("Runaway pets cannot join the Main Team.");
         }
 
         const currentSlotForPet =
@@ -705,6 +721,22 @@ export function usePetStorage(options: UsePetStorageOptions) {
           );
         }
 
+        const { data: openSlot, error: openSlotError } = await supabase
+          .from("hatchery_slots")
+          .select("id, slot_index")
+          .eq("user_id", userId)
+          .eq("unlocked", true)
+          .is("pet_id", null)
+          .order("slot_index", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (openSlotError) throw openSlotError;
+
+        if (!openSlot) {
+          throw new Error("No open hatchery slot is available right now.");
+        }
+
         const { error } = await supabase
           .from("pets")
           .update({
@@ -715,6 +747,23 @@ export function usePetStorage(options: UsePetStorageOptions) {
           .eq("id", petId);
 
         if (error) throw error;
+
+        const { error: slotError } = await supabase
+          .from("hatchery_slots")
+          .update({ pet_id: petId })
+          .eq("id", openSlot.id)
+          .eq("user_id", userId);
+
+        if (slotError) {
+          // Roll back the location change so we don't leave an orphaned
+          // egg with no slot, better to fail the whole move than half-do it.
+          await supabase
+            .from("pets")
+            .update({ location: "storage" })
+            .eq("user_id", userId)
+            .eq("id", petId);
+          throw slotError;
+        }
       });
     },
     [pets, userId],
@@ -745,6 +794,14 @@ export function usePetStorage(options: UsePetStorageOptions) {
           .eq("id", petId);
 
         if (error) throw error;
+
+        const { error: slotError } = await supabase
+          .from("hatchery_slots")
+          .update({ pet_id: null })
+          .eq("user_id", userId)
+          .eq("pet_id", petId);
+
+        if (slotError) throw slotError;
       });
     },
     [pets, storageCounts, userId],

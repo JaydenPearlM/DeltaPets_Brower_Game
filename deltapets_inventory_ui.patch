@@ -1,0 +1,4558 @@
+diff --git a/delta_original2/frontend/web/src/components/inventory/inventory.tsx b/delta_work/frontend/web/src/components/inventory/inventory.tsx
+index dec3e9b..e7b1f2f 100644
+--- a/delta_original2/frontend/web/src/components/inventory/inventory.tsx
++++ b/delta_work/frontend/web/src/components/inventory/inventory.tsx
+@@ -1,99 +1,309 @@
+-export type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
+-
+-const INVENTORY_STORAGE_KEY = "deltapets:care-inventory";
+-const INVENTORY_CHANGE_EVENT = "deltapets:care-inventory-change";
+-
+-type CareInventoryCounts = Record<CareInventoryCategory, number>;
+-
+-const STARTER_INVENTORY: CareInventoryCounts = {
+-  food: 5,
+-  soap: 5,
+-  toy: 5,
+-  bed: 1,
+-};
+-
+-function readCareInventory(): CareInventoryCounts {
+-  try {
+-    const raw = window.localStorage.getItem(INVENTORY_STORAGE_KEY);
+-
+-    if (!raw) {
+-      return { ...STARTER_INVENTORY };
+-    }
+-
+-    const parsed = JSON.parse(raw) as Partial<CareInventoryCounts>;
+-
+-    return {
+-      food: Number(parsed.food ?? 0),
+-      soap: Number(parsed.soap ?? 0),
+-      toy: Number(parsed.toy ?? 0),
+-      bed: Number(parsed.bed ?? 0),
+-    };
+-  } catch {
+-    return { ...STARTER_INVENTORY };
+-  }
+-}
+-
+-function writeCareInventory(nextInventory: CareInventoryCounts) {
+-  window.localStorage.setItem(
+-    INVENTORY_STORAGE_KEY,
+-    JSON.stringify(nextInventory),
+-  );
+-
+-  window.dispatchEvent(new Event(INVENTORY_CHANGE_EVENT));
+-}
+-
+-export function getInventoryChangeEventName() {
+-  return INVENTORY_CHANGE_EVENT;
+-}
+-
+-export function ensureStarterCareInventory() {
+-  const existing = window.localStorage.getItem(INVENTORY_STORAGE_KEY);
+-
+-  if (existing) return;
+-
+-  writeCareInventory({ ...STARTER_INVENTORY });
+-}
+-
+-export function getCareItemCount(category: CareInventoryCategory) {
+-  const inventory = readCareInventory();
+-  return inventory[category] ?? 0;
+-}
+-
+-export function addCareItem(category: CareInventoryCategory, amount = 1) {
+-  const inventory = readCareInventory();
+-
+-  writeCareInventory({
+-    ...inventory,
+-    [category]: Math.max(0, (inventory[category] ?? 0) + amount),
+-  });
+-}
+-
+-export function consumeCareItem(category: CareInventoryCategory, amount = 1) {
+-  const inventory = readCareInventory();
+-  const current = inventory[category] ?? 0;
+-
+-  if (current < amount) {
+-    return false;
+-  }
+-
+-  writeCareInventory({
+-    ...inventory,
+-    [category]: current - amount,
+-  });
+-
+-  return true;
+-}
+-
+-export default function Inventory() {
+-  const inventory = readCareInventory();
+-
+-  return (
+-    <section>
+-      <h2>Inventory</h2>
+-      <p>Food: {inventory.food}</p>
+-      <p>Soap: {inventory.soap}</p>
+-      <p>Toy: {inventory.toy}</p>
+-      <p>Bed: {inventory.bed}</p>
+-    </section>
+-  );
+-}
++import { useEffect, useMemo, useState } from "react";
++import "./inventory.css";
++
++export type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
++export type InventoryItemType = "food" | "seed" | "care" | "armor" | "skill" | "misc";
++
++export type InventoryItemDefinition = {
++  slug: string;
++  name: string;
++  type: InventoryItemType;
++  description: string;
++  rarity?: string;
++  stackLimit?: number;
++  careCategory?: CareInventoryCategory;
++};
++
++type CareInventoryCounts = Record<CareInventoryCategory, number>;
++
++type InventoryItemRecord = InventoryItemDefinition & {
++  qty: number;
++};
++
++type InventoryStorageState = {
++  items: Record<string, InventoryItemRecord>;
++};
++
++const INVENTORY_STORAGE_KEY = "deltapets:care-inventory";
++const INVENTORY_CHANGE_EVENT = "deltapets:care-inventory-change";
++
++const EMPTY_CARE_INVENTORY: CareInventoryCounts = {
++  food: 0,
++  soap: 0,
++  toy: 0,
++  bed: 0,
++};
++
++const CARE_ITEM_DEFINITIONS: Record<CareInventoryCategory, InventoryItemDefinition> = {
++  food: {
++    slug: "kithna-food-pack",
++    name: "Kithna Food Pack",
++    type: "food",
++    description: "A simple meal for restoring hunger.",
++    rarity: "common",
++    stackLimit: 99,
++    careCategory: "food",
++  },
++  soap: {
++    slug: "soft-cleaning-brush",
++    name: "Soft Cleaning Brush",
++    type: "care",
++    description: "A gentle brush for restoring clean.",
++    rarity: "common",
++    stackLimit: 99,
++    careCategory: "soap",
++  },
++  toy: {
++    slug: "spark-jingle-toy",
++    name: "Spark Jingle Toy",
++    type: "care",
++    description: "A tiny toy for restoring mood.",
++    rarity: "common",
++    stackLimit: 99,
++    careCategory: "toy",
++  },
++  bed: {
++    slug: "moon-nap-pillow",
++    name: "Moon Nap Pillow",
++    type: "care",
++    description: "A soft pillow for restoring comfort.",
++    rarity: "common",
++    stackLimit: 99,
++    careCategory: "bed",
++  },
++};
++
++function emptyInventoryState(): InventoryStorageState {
++  return { items: {} };
++}
++
++function normalizeInventoryItem(
++  item: Partial<InventoryItemRecord>,
++): InventoryItemRecord | null {
++  const slug = typeof item.slug === "string" ? item.slug.trim() : "";
++  const name = typeof item.name === "string" ? item.name.trim() : "";
++  const description =
++    typeof item.description === "string" ? item.description.trim() : "";
++  const qty = Math.max(0, Math.floor(Number(item.qty ?? 0)));
++
++  if (!slug || !name || qty <= 0) return null;
++
++  return {
++    slug,
++    name,
++    type: item.type ?? "misc",
++    description,
++    rarity: item.rarity ?? "common",
++    stackLimit: Math.max(1, Math.floor(Number(item.stackLimit ?? 99))),
++    careCategory: item.careCategory,
++    qty,
++  };
++}
++
++function readInventoryState(): InventoryStorageState {
++  try {
++    const raw = window.localStorage.getItem(INVENTORY_STORAGE_KEY);
++
++    if (!raw) {
++      return emptyInventoryState();
++    }
++
++    const parsed = JSON.parse(raw) as Partial<InventoryStorageState>;
++
++    if (parsed.items && typeof parsed.items === "object") {
++      const nextState = emptyInventoryState();
++
++      Object.values(parsed.items).forEach((item) => {
++        const normalizedItem = normalizeInventoryItem(item);
++
++        if (!normalizedItem) return;
++
++        nextState.items[normalizedItem.slug] = normalizedItem;
++      });
++
++      return nextState;
++    }
++
++    return emptyInventoryState();
++  } catch {
++    return emptyInventoryState();
++  }
++}
++
++function writeInventoryState(nextInventory: InventoryStorageState) {
++  window.localStorage.setItem(
++    INVENTORY_STORAGE_KEY,
++    JSON.stringify(nextInventory),
++  );
++
++  window.dispatchEvent(new Event(INVENTORY_CHANGE_EVENT));
++}
++
++function dispatchInventoryChange() {
++  window.dispatchEvent(new Event(INVENTORY_CHANGE_EVENT));
++}
++
++export function getInventoryChangeEventName() {
++  return INVENTORY_CHANGE_EVENT;
++}
++
++export function ensureStarterCareInventory() {
++  if (window.localStorage.getItem(INVENTORY_STORAGE_KEY)) return;
++
++  writeInventoryState(emptyInventoryState());
++}
++
++export function getInventoryItems() {
++  return Object.values(readInventoryState().items);
++}
++
++export function getCareInventoryCounts() {
++  return getInventoryItems().reduce<CareInventoryCounts>(
++    (counts, item) => {
++      if (item.careCategory) {
++        counts[item.careCategory] += item.qty;
++      }
++
++      return counts;
++    },
++    { ...EMPTY_CARE_INVENTORY },
++  );
++}
++
++export function getCareItemCount(category: CareInventoryCategory) {
++  return getCareInventoryCounts()[category] ?? 0;
++}
++
++export function addInventoryItem(item: InventoryItemDefinition, amount = 1) {
++  const nextAmount = Math.max(0, Math.floor(Number(amount)));
++
++  if (nextAmount <= 0) return;
++
++  const nextInventory = readInventoryState();
++  const existingItem = nextInventory.items[item.slug];
++  const stackLimit = Math.max(1, Math.floor(Number(item.stackLimit ?? 99)));
++  const nextQty = Math.min(stackLimit, (existingItem?.qty ?? 0) + nextAmount);
++
++  nextInventory.items[item.slug] = {
++    ...existingItem,
++    ...item,
++    stackLimit,
++    qty: nextQty,
++  };
++
++  writeInventoryState(nextInventory);
++}
++
++export function addCareItem(category: CareInventoryCategory, amount = 1) {
++  addInventoryItem(CARE_ITEM_DEFINITIONS[category], amount);
++}
++
++export function consumeInventoryItem(slug: string, amount = 1) {
++  const nextAmount = Math.max(0, Math.floor(Number(amount)));
++
++  if (nextAmount <= 0) return true;
++
++  const nextInventory = readInventoryState();
++  const existingItem = nextInventory.items[slug];
++
++  if (!existingItem || existingItem.qty < nextAmount) {
++    return false;
++  }
++
++  const nextQty = existingItem.qty - nextAmount;
++
++  if (nextQty <= 0) {
++    delete nextInventory.items[slug];
++  } else {
++    nextInventory.items[slug] = {
++      ...existingItem,
++      qty: nextQty,
++    };
++  }
++
++  writeInventoryState(nextInventory);
++
++  return true;
++}
++
++export function consumeCareItem(category: CareInventoryCategory, amount = 1) {
++  const item = getInventoryItems().find(
++    (inventoryItem) => inventoryItem.careCategory === category,
++  );
++
++  if (!item) return false;
++
++  return consumeInventoryItem(item.slug, amount);
++}
++
++export default function Inventory() {
++  const [inventoryItems, setInventoryItems] = useState(() => getInventoryItems());
++
++  useEffect(() => {
++    const handleInventoryChange = () => {
++      setInventoryItems(getInventoryItems());
++    };
++
++    window.addEventListener(INVENTORY_CHANGE_EVENT, handleInventoryChange);
++    window.addEventListener("storage", handleInventoryChange);
++
++    dispatchInventoryChange();
++
++    return () => {
++      window.removeEventListener(INVENTORY_CHANGE_EVENT, handleInventoryChange);
++      window.removeEventListener("storage", handleInventoryChange);
++    };
++  }, []);
++
++  const sortedInventoryItems = useMemo(
++    () =>
++      [...inventoryItems].sort((firstItem, secondItem) =>
++        firstItem.name.localeCompare(secondItem.name),
++      ),
++    [inventoryItems],
++  );
++
++  return (
++    <section className="inventoryPanel" aria-label="Inventory">
++      <header className="inventoryHeader">
++        <p className="inventoryEyebrow">DeltaPets Pack</p>
++        <h2>Inventory</h2>
++        <p className="inventoryIntro">
++          Care items, food, seeds, armor, and skills live here before they move
++          into their specialty storage.
++        </p>
++      </header>
++
++      {sortedInventoryItems.length > 0 ? (
++        <div className="inventoryGrid" aria-label="Inventory items">
++          {sortedInventoryItems.map((item) => (
++            <article className="inventoryItemCard" key={item.slug}>
++              <div className="inventoryItemCardHeader">
++                <div>
++                  <p className="inventoryItemType">{item.type}</p>
++                  <h3>{item.name}</h3>
++                </div>
++                <span className="inventoryItemQty">×{item.qty}</span>
++              </div>
++
++              <p className="inventoryItemDescription">{item.description}</p>
++
++              {item.careCategory ? (
++                <p className="inventoryItemMeta">
++                  Care target: {item.careCategory}
++                </p>
++              ) : null}
++            </article>
++          ))}
++        </div>
++      ) : (
++        <div className="inventoryEmpty" role="status">
++          <p className="inventoryEmptyTitle">No items yet.</p>
++          <p>
++            Merchant purchases will show here once Kithna shops are connected.
++          </p>
++        </div>
++      )}
++    </section>
++  );
++}
+diff --git a/delta_original2/frontend/web/src/components/inventory/inventory.css b/delta_work/frontend/web/src/components/inventory/inventory.css
+index e69de29..bb1d54d 100644
+--- a/delta_original2/frontend/web/src/components/inventory/inventory.css
++++ b/delta_work/frontend/web/src/components/inventory/inventory.css
+@@ -0,0 +1,143 @@
++.inventoryModal {
++  color: var(--dp-popup-text, var(--dp-panel-text));
++}
++
++.inventoryPanel {
++  display: grid;
++  gap: 18px;
++}
++
++.inventoryHeader {
++  display: grid;
++  gap: 8px;
++  padding-right: 38px;
++}
++
++.inventoryEyebrow,
++.inventoryItemType,
++.inventoryItemMeta {
++  margin: 0;
++  color: var(--dp-cyber-cyan, #4deaff);
++  font-size: 0.76rem;
++  font-weight: 900;
++  letter-spacing: 0.12em;
++  text-transform: uppercase;
++}
++
++.inventoryHeader h2 {
++  margin: 0;
++  color: var(--dp-title-gold, var(--dp-brand-yellow));
++  font-size: clamp(1.7rem, 4vw, 2.45rem);
++  line-height: 1;
++  -webkit-text-stroke: 0;
++  text-shadow: none;
++}
++
++.inventoryIntro {
++  max-width: 46rem;
++  margin: 0;
++  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
++  font-weight: 700;
++  line-height: 1.45;
++}
++
++.inventoryGrid {
++  display: grid;
++  gap: 12px;
++  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
++}
++
++.inventoryItemCard,
++.inventoryEmpty {
++  position: relative;
++  overflow: hidden;
++  border: 2px solid var(--dp-cyber-cyan, #4deaff);
++  border-radius: 16px;
++  background:
++    radial-gradient(
++      circle at 100% 0%,
++      rgba(255, 217, 77, 0.16),
++      transparent 34%
++    ),
++    rgba(3, 12, 28, 0.66);
++  box-shadow:
++    inset 0 0 0 1px rgba(199, 125, 255, 0.32),
++    0 0 18px rgba(77, 234, 255, 0.12);
++}
++
++.inventoryItemCard {
++  display: grid;
++  gap: 10px;
++  min-height: 144px;
++  padding: 14px;
++}
++
++.inventoryItemCardHeader {
++  display: flex;
++  align-items: flex-start;
++  justify-content: space-between;
++  gap: 12px;
++}
++
++.inventoryItemCard h3 {
++  margin: 4px 0 0;
++  color: var(--dp-title-gold, var(--dp-brand-yellow));
++  font-size: 1.04rem;
++  line-height: 1.15;
++  -webkit-text-stroke: 0;
++  text-shadow: none;
++}
++
++.inventoryItemQty {
++  flex: 0 0 auto;
++  min-width: 44px;
++  border: 1px solid var(--dp-border-gold, rgba(255, 217, 77, 0.78));
++  border-radius: 999px;
++  padding: 5px 9px;
++  background: rgba(255, 217, 77, 0.12);
++  color: var(--dp-title-gold, var(--dp-brand-yellow));
++  font-weight: 950;
++  text-align: center;
++}
++
++.inventoryItemDescription,
++.inventoryEmpty p {
++  margin: 0;
++  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
++  font-weight: 700;
++  line-height: 1.4;
++}
++
++.inventoryItemMeta {
++  align-self: end;
++  color: var(--dp-panel-muted, #a8c8df);
++  letter-spacing: 0.08em;
++}
++
++.inventoryEmpty {
++  display: grid;
++  gap: 8px;
++  padding: 22px;
++  text-align: center;
++}
++
++.inventoryEmptyTitle {
++  color: var(--dp-title-gold, var(--dp-brand-yellow)) !important;
++  font-size: 1.2rem;
++  font-weight: 950;
++}
++
++@media (max-width: 640px) {
++  .inventoryGrid {
++    grid-template-columns: 1fr;
++  }
++
++  .inventoryItemCardHeader {
++    align-items: stretch;
++    flex-direction: column;
++  }
++
++  .inventoryItemQty {
++    width: fit-content;
++  }
++}
+diff --git a/delta_original2/frontend/web/src/pages/petsPage/PetPage.tsx b/delta_work/frontend/web/src/pages/petsPage/PetPage.tsx
+index 3e27460..ede6011 100644
+--- a/delta_original2/frontend/web/src/pages/petsPage/PetPage.tsx
++++ b/delta_work/frontend/web/src/pages/petsPage/PetPage.tsx
+@@ -1,907 +1,891 @@
+-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+-import { createPortal } from "react-dom";
+-import { useNavigate } from "react-router-dom";
+-import { useAuth } from "@/app/providers/useAuth";
+-import { apiFetch } from "@/lib/api/baseClient";
+-import { useDeltaTime } from "@/lib/timers/useDeltaTime";
+-import {
+-  clampPercent,
+-  normalizeElement,
+-  safeNum,
+-  titleCase,
+-} from "@/lib/petUtils";
+-import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
+-import LostKithRegistry from "@/pages/petsPage/components/LostKithRegistry/LostKithRegistry";
+-import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
+-import SkillsChamber from "@/components/skillChamber/skillChamber";
+-import StatsChamber from "@/components/StatsChamber/StatsChamber";
+-import MainTeam from "@/components/Main_Team/mainTeam";
+-import type {
+-  PartySlotView,
+-  StoragePet,
+-} from "@/components/Hatchery/pages/storage/usePetStorage";
+-import "./PetPage.css";
+-import SkillTree from "@/components/Skills/skilltree";
+-import DpPopupWindow from "./components/DpPopupWindow";
+-import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
+-
+-type CareAction = "feed" | "clean" | "play" | "pet";
+-type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
+-
+-const TEMP_DISABLED_CARE_INVENTORY_COUNTS: Record<
+-  CareInventoryCategory,
+-  number
+-> = {
+-  food: 999,
+-  soap: 999,
+-  toy: 999,
+-  bed: 999,
+-};
+-
+-function ensureStarterCareInventory() {
+-  // Inventory is temporarily disabled.
+-}
+-
+-function getInventoryChangeEventName() {
+-  return "deltapets:inventory-disabled";
+-}
+-
+-function consumeCareItem(_category: CareInventoryCategory, _amount: number) {
+-  return true;
+-}
+-
+-function addCareItem(_category: CareInventoryCategory, _amount: number) {
+-  // Inventory is temporarily disabled.
+-}
+-
+-type PetRecord = Record<string, any>;
+-
+-function getCareCooldownRemainingMs(pet: PetRecord | null, action: CareAction) {
+-  if (action === "pet") return 0;
+-
+-  const cooldownColumnByAction: Record<Exclude<CareAction, "pet">, string> = {
+-    feed: "cd_feed_ends_at",
+-    clean: "cd_clean_ends_at",
+-    play: "cd_play_ends_at",
+-  };
+-
+-  const endsAt = pet?.[cooldownColumnByAction[action]];
+-  const endsMs = endsAt ? Date.parse(String(endsAt)) : NaN;
+-
+-  return Number.isFinite(endsMs) ? Math.max(0, endsMs - Date.now()) : 0;
+-}
+-
+-type TeamCardPet = {
+-  id: string;
+-  name?: string | null;
+-  nickname?: string | null;
+-  species?: string | null;
+-  stage?: string | null;
+-  element?: string | null;
+-  elementKey?: string | null;
+-  line?: string | null;
+-  level?: number | null;
+-  energy?: number | null;
+-  bond?: number | null;
+-  isActive?: boolean | null;
+-  slotIndex?: number | null;
+-  previewUrl?: string | null;
+-  hp?: number | null;
+-  current_hp?: number | null;
+-  max_hp?: number | null;
+-  atk?: number | null;
+-  def?: number | null;
+-  magi?: number | null;
+-  mana?: number | null;
+-  spd?: number | null;
+-  personality?: string | null;
+-  personality_key?: string | null;
+-};
+-
+-type StarterMerchantState = {
+-  show?: boolean;
+-  href?: string;
+-  title?: string;
+-  body?: string;
+-  ctaLabel?: string;
+-};
+-
+-type CareCurrentResponse = {
+-  pet: PetRecord | null;
+-  stats: PetStatsRow | null;
+-  elements: PetElementsRow | null;
+-  team?: TeamCardPet[];
+-  starter_merchant?: StarterMerchantState | null;
+-};
+-
+-const STAT_ORDER = ["hp", "atk", "def", "spd", "magi", "mana"] as const;
+-
+-const ELEMENT_ORDER = [
+-  "null",
+-  "water",
+-  "fire",
+-  "earth",
+-  "air",
+-  "ice",
+-  "storm",
+-  "light",
+-  "shadow",
+-] as const;
+-
+-type StatKey = (typeof STAT_ORDER)[number];
+-type ElementKey = (typeof ELEMENT_ORDER)[number];
+-type ElementThemeKey = ElementKey | "void" | "voidborne" | "neutral" | "silver";
+-
+-function getPetLabel(pet: PetRecord | null) {
+-  return pet?.nickname?.trim?.() || pet?.name?.trim?.() || "Your Delta";
+-}
+-
+-function getElementThemeKey(
+-  petOrElement?: PetRecord | string | null,
+-): ElementThemeKey {
+-  const raw =
+-    typeof petOrElement === "string"
+-      ? petOrElement
+-      : petOrElement?.element || petOrElement?.line || "null";
+-
+-  const normalized = normalizeElement(raw);
+-
+-  if (!normalized) return "neutral";
+-  if (normalized === "null") return "voidborne";
+-
+-  return normalized as ElementThemeKey;
+-}
+-
+-function getElementValue(elements: PetElementsRow | null, key: string) {
+-  if (!elements) return 0;
+-
+-  if (key === "null") {
+-    return safeNum((elements as any).null_element ?? (elements as any).null);
+-  }
+-
+-  return safeNum((elements as any)[key]);
+-}
+-
+-function getPetPageDescription(pet: PetRecord | null) {
+-  if (!pet) return "No Delta data available yet.";
+-
+-  const displayName = getPetLabel(pet);
+-
+-  const fallbackNames = [
+-    pet.species_name,
+-    pet.speciesName,
+-    pet.species,
+-    pet.name,
+-  ]
+-    .map((value) => (typeof value === "string" ? value.trim() : ""))
+-    .filter(Boolean);
+-
+-  if (pet.description?.trim?.()) {
+-    let description = pet.description.trim();
+-
+-    if (displayName && displayName !== "Your Delta") {
+-      for (const fallbackName of fallbackNames) {
+-        if (!fallbackName || fallbackName === displayName) continue;
+-
+-        const escapedFallbackName = fallbackName.replace(
+-          /[.*+?^${}()|[\]\\]/g,
+-          "\\$&",
+-        );
+-
+-        description = description.replace(
+-          new RegExp(`^${escapedFallbackName}\\b`, "i"),
+-          displayName,
+-        );
+-      }
+-    }
+-
+-    return description;
+-  }
+-
+-  const normalizedElement = normalizeElement(pet.element || pet.line);
+-  const element = titleCase(
+-    normalizedElement === "null" ? "Voidborne" : normalizedElement,
+-  );
+-  const stage = titleCase(pet.stage || "unknown stage");
+-  const trait = titleCase(
+-    pet.personality_name ||
+-      pet.personality ||
+-      pet.personality_key ||
+-      "mysterious",
+-  );
+-
+-  return `${displayName} is a ${trait} ${element} Delta in the ${stage} stage. Its bond is still forming, but the spark is there.`;
+-}
+-
+-function getPetGrowthTraits(pet: PetRecord | null, stats: PetStatsRow | null) {
+-  const rawStrong =
+-    pet?.growth_strong_stats ??
+-    pet?.growthStrongStats ??
+-    pet?.strong_stats ??
+-    [];
+-
+-  const rawWeak =
+-    pet?.growth_weak_stat ??
+-    pet?.growth_weak_stats ??
+-    pet?.growthWeakStat ??
+-    pet?.weak_stat ??
+-    null;
+-
+-  const strongStats = Array.isArray(rawStrong)
+-    ? rawStrong.filter((key): key is StatKey =>
+-        STAT_ORDER.includes(key as StatKey),
+-      )
+-    : [];
+-
+-  const weakStat = Array.isArray(rawWeak)
+-    ? (rawWeak.find((key) => STAT_ORDER.includes(key as StatKey)) ?? null)
+-    : STAT_ORDER.includes(rawWeak as StatKey)
+-      ? (rawWeak as StatKey)
+-      : null;
+-
+-  if (strongStats.length || weakStat) {
+-    return { strongStats, weakStat };
+-  }
+-
+-  if (!stats) return { strongStats: [], weakStat: null };
+-
+-  const sortedStats = [...STAT_ORDER].sort(
+-    (a, b) => safeNum((stats as any)[b]) - safeNum((stats as any)[a]),
+-  );
+-
+-  return {
+-    strongStats: sortedStats.slice(0, 2),
+-    weakStat: sortedStats.at(-1) ?? null,
+-  };
+-}
+-
+-export default function PetPage() {
+-  const navigate = useNavigate();
+-  const { user, loading: authLoading } = useAuth();
+-  const { phase } = useDeltaTime();
+-  const [pet, setPet] = useState<PetRecord | null>(null);
+-  const [stats, setStats] = useState<PetStatsRow | null>(null);
+-  const [elements, setElements] = useState<PetElementsRow | null>(null);
+-  const [team, setTeam] = useState<TeamCardPet[]>([]);
+-  const [showSkillTree, setShowSkillTree] = useState(false);
+-  const [busy, setBusy] = useState(false);
+-  const [loadingPage, setLoadingPage] = useState(true);
+-  const [loadErr, setLoadErr] = useState<string | null>(null);
+-  const [actionMsg, setActionMsg] = useState<string | null>(null);
+-  const [personalityName, setPersonalityName] = useState<string | null>(null);
+-  const [starterMerchant, setStarterMerchant] =
+-    useState<StarterMerchantState | null>(null);
+-  const [showLostRegistry, setShowLostRegistry] = useState(false);
+-  const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
+-  const [rescueEggError, setRescueEggError] = useState<string | null>(null);
+-  const [nicknameDraft, setNicknameDraft] = useState("");
+-  const [nicknameSaving, setNicknameSaving] = useState(false);
+-  const [showNicknameEditor, setShowNicknameEditor] = useState(false);
+-  const [careInventoryCounts, setCareInventoryCounts] = useState(
+-    TEMP_DISABLED_CARE_INVENTORY_COUNTS,
+-  );
+-
+-  const syncCareInventoryCounts = useCallback(() => {
+-    setCareInventoryCounts(TEMP_DISABLED_CARE_INVENTORY_COUNTS);
+-  }, []);
+-
+-  const hasLoadedOnceRef = useRef(false);
+-  const hasLoggedRunawayLockRef = useRef(false);
+-  const careActionPendingRef = useRef(false);
+-
+-  useEffect(() => {
+-    if (!authLoading && !user) {
+-      navigate("/", { replace: true });
+-    }
+-  }, [authLoading, user, navigate]);
+-
+-  useEffect(() => {
+-    ensureStarterCareInventory();
+-  }, []);
+-
+-  const loadPetPage = useCallback(
+-    async (showSpinner: boolean) => {
+-      if (!user) return;
+-
+-      if (showSpinner) setLoadingPage(true);
+-      setLoadErr(null);
+-
+-      try {
+-        const json = await apiFetch<CareCurrentResponse>("/api/care/current");
+-
+-        const nextPet = json.pet ?? null;
+-        const nextStats = json.stats ?? null;
+-        const nextElements = json.elements ?? null;
+-        const nextTeam = json.team ?? [];
+-
+-        setPet(nextPet);
+-        setStats(nextStats);
+-        setElements(nextElements);
+-        setTeam(nextTeam);
+-        setStarterMerchant(json.starter_merchant ?? null);
+-        setNicknameDraft(nextPet?.nickname?.trim() || "");
+-        setShowNicknameEditor(false);
+-
+-        const directPersonality =
+-          nextPet?.personality_name ??
+-          nextPet?.personality ??
+-          nextPet?.personality_key ??
+-          null;
+-
+-        setPersonalityName(
+-          directPersonality ? titleCase(directPersonality) : null,
+-        );
+-
+-        hasLoadedOnceRef.current = true;
+-      } catch (error) {
+-        const message =
+-          error instanceof Error ? error.message : "Failed to load pet page.";
+-
+-        setLoadErr(message);
+-        setPet(null);
+-        setStarterMerchant(null);
+-        setStats(null);
+-        setElements(null);
+-        setTeam([]);
+-        setPersonalityName(null);
+-        setShowNicknameEditor(false);
+-      } finally {
+-        setLoadingPage(false);
+-      }
+-    },
+-    [user],
+-  );
+-
+-  useEffect(() => {
+-    syncCareInventoryCounts();
+-    const eventName = getInventoryChangeEventName();
+-    window.addEventListener(eventName, syncCareInventoryCounts);
+-
+-    return () => {
+-      window.removeEventListener(eventName, syncCareInventoryCounts);
+-    };
+-  }, [syncCareInventoryCounts]);
+-
+-  useEffect(() => {
+-    if (authLoading || !user) return;
+-
+-    void loadPetPage(true);
+-
+-    const handleWindowFocus = () => void loadPetPage(false);
+-    const handleVisibilityChange = () => {
+-      if (document.visibilityState === "visible") {
+-        void loadPetPage(false);
+-      }
+-    };
+-
+-    const intervalId = window.setInterval(() => {
+-      if (document.visibilityState === "visible") {
+-        void loadPetPage(false);
+-      }
+-    }, 5 * 60_000);
+-
+-    window.addEventListener("focus", handleWindowFocus);
+-    document.addEventListener("visibilitychange", handleVisibilityChange);
+-
+-    return () => {
+-      window.clearInterval(intervalId);
+-      window.removeEventListener("focus", handleWindowFocus);
+-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+-    };
+-  }, [authLoading, user, loadPetPage]);
+-
+-  const runCareAction = useCallback(
+-    async (action: CareAction) => {
+-      if (careActionPendingRef.current || busy || nicknameSaving) return;
+-
+-      const cooldownRemainingMs = getCareCooldownRemainingMs(pet, action);
+-
+-      if (cooldownRemainingMs > 0) {
+-        setActionMsg(
+-          `${titleCase(action)} is still cooling down for ${Math.ceil(
+-            cooldownRemainingMs / 1000,
+-          )}s.`,
+-        );
+-        return;
+-      }
+-
+-      careActionPendingRef.current = true;
+-
+-      const inventoryCategoryByAction: Partial<
+-        Record<CareAction, CareInventoryCategory>
+-      > = {
+-        feed: "food",
+-        clean: "soap",
+-        play: "toy",
+-      };
+-
+-      const inventoryCategory = inventoryCategoryByAction[action] ?? null;
+-
+-      if (inventoryCategory) {
+-        const didConsume = consumeCareItem(inventoryCategory, 1);
+-
+-        if (!didConsume) {
+-          const missingLabel =
+-            inventoryCategory === "food"
+-              ? "food"
+-              : inventoryCategory === "soap"
+-                ? "soap"
+-                : "toy";
+-
+-          setActionMsg(`You need ${missingLabel} in your inventory first.`);
+-          syncCareInventoryCounts();
+-          careActionPendingRef.current = false;
+-          return;
+-        }
+-
+-        syncCareInventoryCounts();
+-      }
+-
+-      setBusy(true);
+-      setActionMsg(null);
+-
+-      try {
+-        const json =
+-          action === "pet"
+-            ? await apiFetch<{ message?: string }>(`/api/care/${action}`, {
+-                method: "POST",
+-              })
+-            : await apiFetch<{ message?: string }>("/api/pets/actions/do", {
+-                method: "POST",
+-                json: { action },
+-              });
+-
+-        const defaultMessageMap: Record<CareAction, string> = {
+-          feed: "Successful Food Intake.",
+-          clean: "Successful Bath.",
+-          play: "Successful play time.",
+-          pet: "They look happier.",
+-        };
+-
+-        setActionMsg(json?.message || defaultMessageMap[action]);
+-        await loadPetPage(false);
+-        syncCareInventoryCounts();
+-      } catch (error) {
+-        if (inventoryCategory) {
+-          addCareItem(inventoryCategory, 1);
+-          syncCareInventoryCounts();
+-        }
+-
+-        setActionMsg(
+-          error instanceof Error
+-            ? error.message
+-            : `Failed to ${action} your pet.`,
+-        );
+-      } finally {
+-        careActionPendingRef.current = false;
+-        setBusy(false);
+-      }
+-    },
+-    [busy, loadPetPage, nicknameSaving, pet, syncCareInventoryCounts],
+-  );
+-
+-  const switchActivePet = useCallback(
+-    async (petId: string) => {
+-      if (!petId || busy || nicknameSaving) return;
+-
+-      setBusy(true);
+-      setActionMsg(null);
+-
+-      try {
+-        await apiFetch("/api/care/place", {
+-          method: "POST",
+-          json: { petId },
+-        });
+-
+-        setActionMsg("Active Delta switched.");
+-        await loadPetPage(false);
+-      } catch (error) {
+-        setActionMsg(
+-          error instanceof Error
+-            ? error.message
+-            : "Failed to switch active Delta.",
+-        );
+-      } finally {
+-        setBusy(false);
+-      }
+-    },
+-    [busy, loadPetPage, nicknameSaving],
+-  );
+-
+-  const saveNickname = useCallback(async () => {
+-    if (!user?.id || !pet?.id) return;
+-
+-    const trimmed = nicknameDraft.trim();
+-    const existingNickname = pet.nickname?.trim() || "";
+-
+-    if (!trimmed) {
+-      setActionMsg("Your Delta needs a nickname before you can lock it in.");
+-      return;
+-    }
+-
+-    if (existingNickname) {
+-      setActionMsg("This Delta's nickname is already locked.");
+-      setShowNicknameEditor(false);
+-      return;
+-    }
+-
+-    setNicknameSaving(true);
+-    setActionMsg(null);
+-
+-    try {
+-      const json = await apiFetch<{ message?: string; pet?: PetRecord }>(
+-        `/api/pets/${pet.id}/nickname`,
+-        {
+-          method: "PATCH",
+-          json: { nickname: trimmed },
+-        },
+-      );
+-
+-      setActionMsg(json.message || `Nickname locked in as ${trimmed}.`);
+-      setShowNicknameEditor(false);
+-      await loadPetPage(false);
+-    } catch (error) {
+-      setActionMsg(
+-        error instanceof Error ? error.message : "Failed to save nickname.",
+-      );
+-    } finally {
+-      setNicknameSaving(false);
+-    }
+-  }, [loadPetPage, nicknameDraft, pet?.id, pet?.nickname, user?.id]);
+-
+-  const claimRescueEgg = useCallback(async () => {
+-    if (claimingRescueEgg) return;
+-
+-    setClaimingRescueEgg(true);
+-    setRescueEggError(null);
+-
+-    try {
+-      await apiFetch("/api/pets/rescue-egg", { method: "POST" });
+-      navigate("/rescue-reveal");
+-    } catch (error) {
+-      setRescueEggError(
+-        error instanceof Error
+-          ? error.message
+-          : "Could not claim the rescue egg. Try again.",
+-      );
+-    } finally {
+-      setClaimingRescueEgg(false);
+-    }
+-  }, [claimingRescueEgg, navigate]);
+-
+-  const hunger = clampPercent(pet?.hunger);
+-  const clean = clampPercent(pet?.clean);
+-  const happy = clampPercent(pet?.happy);
+-  const comfort = Math.max(0, Math.min(50, safeNum(pet?.comfort, 50)));
+-  const rest = Math.max(0, Math.min(50, safeNum(pet?.rest, 50)));
+-  const energy = clampPercent(pet?.energy ?? 100);
+-  const bond = clampPercent(pet?.bond);
+-
+-  const totalStats = useMemo(
+-    () => ({
+-      hp: safeNum(stats?.hp),
+-      atk: safeNum(stats?.atk),
+-      def: safeNum(stats?.def),
+-      spd: safeNum(stats?.spd),
+-      magi: safeNum(stats?.magi),
+-      mana: safeNum(stats?.mana),
+-    }),
+-    [stats],
+-  );
+-
+-  const activeElementKey = normalizeElement(pet?.element || pet?.line);
+-  const petElementTheme = getElementThemeKey(pet);
+-
+-  const elementRows = useMemo(
+-    () =>
+-      ELEMENT_ORDER.map((key) => ({
+-        key,
+-        label: key === "null" ? "Voidborne" : titleCase(key),
+-        value: getElementValue(elements, key),
+-        active: key === activeElementKey,
+-      })),
+-    [elements, activeElementKey],
+-  );
+-
+-  const petDescription = useMemo(() => getPetPageDescription(pet), [pet]);
+-  const growthTraits = useMemo(
+-    () => getPetGrowthTraits(pet, stats),
+-    [pet, stats],
+-  );
+-
+-  const kithTeamSlots = useMemo<PartySlotView[]>(() => {
+-    const teamBySlot = new Map<number, TeamCardPet>();
+-
+-    for (const teamPet of team) {
+-      const slotIndex = Math.max(1, Math.min(4, safeNum(teamPet.slotIndex, 0)));
+-
+-      if (slotIndex >= 1) {
+-        teamBySlot.set(slotIndex, teamPet);
+-      }
+-    }
+-
+-    return Array.from({ length: 4 }, (_, index) => {
+-      const slotIndex = index + 1;
+-      const teamPet = teamBySlot.get(slotIndex) ?? team[index] ?? null;
+-      const storagePet: StoragePet | null = teamPet
+-        ? {
+-            id: teamPet.id,
+-            user_id: user?.id ?? "",
+-            name: teamPet.name ?? teamPet.nickname ?? teamPet.species ?? null,
+-            nickname: teamPet.nickname ?? null,
+-            species: teamPet.species ?? teamPet.name ?? null,
+-            energy: teamPet.energy ?? 100,
+-            bond: teamPet.bond ?? 0,
+-            stage: teamPet.stage ?? "hatchling",
+-            line: teamPet.elementKey ?? teamPet.line ?? teamPet.element ?? null,
+-            level: teamPet.level ?? 1,
+-            location: "active",
+-            is_active: teamPet.isActive ?? false,
+-            created_at: null,
+-            hatched_at: null,
+-            portrait_url: teamPet.previewUrl ?? null,
+-            current_hp: teamPet.current_hp ?? teamPet.hp ?? null,
+-            max_hp: teamPet.max_hp ?? teamPet.hp ?? null,
+-            hp: teamPet.hp ?? teamPet.max_hp ?? teamPet.current_hp ?? null,
+-            atk: teamPet.atk ?? null,
+-            def: teamPet.def ?? null,
+-            magi: teamPet.magi ?? null,
+-            mana: teamPet.mana ?? null,
+-            spd: teamPet.spd ?? null,
+-            personality_key:
+-              teamPet.personality_key ?? teamPet.personality ?? null,
+-          }
+-        : null;
+-
+-      return {
+-        slotIndex,
+-        entryId: null,
+-        petId: teamPet?.id ?? null,
+-        pet: storagePet,
+-      };
+-    });
+-  }, [team, user?.id]);
+-
+-  const selectedKithTeamSlot =
+-    kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ?? null;
+-
+-  const selectKithTeamSlot = useCallback(
+-    (slotIndex: number) => {
+-      const selectedSlot = kithTeamSlots.find(
+-        (slot) => slot.slotIndex === slotIndex,
+-      );
+-
+-      if (selectedSlot?.petId) {
+-        void switchActivePet(selectedSlot.petId);
+-      }
+-    },
+-    [kithTeamSlots, switchActivePet],
+-  );
+-
+-  const nicknameLocked = Boolean(pet?.nickname?.trim());
+-  const canRenameNickname = !nicknameLocked;
+-  const trimmedNicknameDraft = nicknameDraft.trim();
+-
+-  const canSaveNickname =
+-    !busy &&
+-    !nicknameSaving &&
+-    canRenameNickname &&
+-    showNicknameEditor &&
+-    Boolean(trimmedNicknameDraft) &&
+-    trimmedNicknameDraft !== (pet?.nickname?.trim() || "");
+-
+-  const isRunawayLock =
+-    !loadErr && !loadingPage && !pet && Boolean(starterMerchant?.show);
+-
+-  const runawayEmergencyModal = isRunawayLock
+-    ? createPortal(
+-        <div className="petRepoRunawayModalBackdrop">
+-          <div
+-            className="petRepoRunawayModalWindow"
+-            role="dialog"
+-            aria-modal="true"
+-            aria-labelledby="pet-runaway-title"
+-          >
+-            <div className="petRepoRunawayModalHeader">
+-              <p className="petRepoRunawayModalEyebrow">Emergency</p>
+-              <h2 id="pet-runaway-title" className="petRepoRunawayModalTitle">
+-                {starterMerchant?.title || "Pet Ran Away"}
+-              </h2>
+-              <p className="petRepoRunawayModalCopy">{starterMerchant?.body}</p>
+-            </div>
+-
+-            <div className="petRepoRunawayModalActions">
+-              <button
+-                type="button"
+-                className="petRepoRunawayModalPrimary"
+-                disabled={claimingRescueEgg}
+-                onClick={claimRescueEgg}
+-              >
+-                {claimingRescueEgg
+-                  ? "Summoning egg..."
+-                  : starterMerchant?.ctaLabel || "Accept the Egg"}
+-              </button>
+-              {rescueEggError ? (
+-                <p className="petRepoRunawayModalError">{rescueEggError}</p>
+-              ) : null}
+-            </div>
+-          </div>
+-        </div>,
+-        document.body,
+-      )
+-    : null;
+-
+-  useEffect(() => {
+-    if (!isRunawayLock) {
+-      hasLoggedRunawayLockRef.current = false;
+-      return;
+-    }
+-
+-    if (!hasLoggedRunawayLockRef.current) {
+-      if (import.meta.env.DEV) {
+-        console.log("[PetPage] Runaway lock active → blocking full UI", {
+-          starterMerchant,
+-        });
+-      }
+-      hasLoggedRunawayLockRef.current = true;
+-    }
+-  }, [isRunawayLock, starterMerchant]);
+-
+-  if (authLoading || (!hasLoadedOnceRef.current && loadingPage)) {
+-    return (
+-      <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
+-        {runawayEmergencyModal}
+-        <div className="petRepoStateCard">Loading Delta Room…</div>
+-      </div>
+-    );
+-  }
+-
+-  if (isRunawayLock) {
+-    return (
+-      <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
+-        {runawayEmergencyModal}
+-      </div>
+-    );
+-  }
+-
+-  return (
+-    <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
+-      {loadErr ? (
+-        <div className="petRepoStateCard petRepoStateCardError">
+-          <h2>Pet page load error</h2>
+-          <p>{loadErr}</p>
+-        </div>
+-      ) : null}
+-
+-      {!loadErr && !loadingPage && !pet && !starterMerchant?.show ? (
+-        <div className="petRepoStateCard">
+-          <h2>No active pet found</h2>
+-          <p>Put one of your Deltas into the main team, then come back here.</p>
+-        </div>
+-      ) : null}
+-
+-      {!loadErr && pet ? (
+-        <section className="petRepoStage">
+-          <header
+-            className={`petRepoHeroCard petRepoHeroCard--element-${petElementTheme} dp-blue-grid-panel`}
+-          >
+-            <div className="petRepoHeroStatus petRepoHeroStatus--focusLeft">
+-              <span className="petRepoStatusLabel">Current Focus</span>
+-              <strong>{getPetLabel(pet)}</strong>
+-            </div>
+-
+-            <div className="petRepoHeroText petRepoHeroTextShifted">
+-              <h1 className="petRepoTitle">Delta Care Chamber</h1>
+-              <p className="petRepoSubtitle petRepoSubtitle--centered">
+-                Care is part of progression, but it does not force evolution.
+-                This room is for upkeep, trust, and keeping your main team in
+-                real condition.
+-              </p>
+-            </div>
+-
+-            <button
+-              type="button"
+-              className="lostKithRegistryOpenButton"
+-              onClick={() => setShowLostRegistry(true)}
+-            >
+-              Lost Kith Registry
+-            </button>
+-          </header>
+-
+-          <LostKithRegistry
+-            open={showLostRegistry}
+-            onClose={() => setShowLostRegistry(false)}
+-            onRecovered={() => {
+-              setShowLostRegistry(false);
+-              void loadPetPage(false);
+-            }}
+-          />
+-
+-          <PetDetailsPanel
+-            pet={pet}
+-            petDescription={petDescription}
+-            personalityName={personalityName}
+-            nicknameDraft={nicknameDraft}
+-            nicknameSaving={nicknameSaving}
+-            showNicknameEditor={showNicknameEditor}
+-            canRenameNickname={canRenameNickname}
+-            canSaveNickname={canSaveNickname}
+-            busy={busy}
+-            hunger={hunger}
+-            clean={clean}
+-            happy={happy}
+-            comfort={comfort}
+-            rest={rest}
+-            energy={energy}
+-            bond={bond}
+-            inventoryCounts={careInventoryCounts}
+-            actionMsg={actionMsg}
+-            starterMerchant={starterMerchant}
+-            setNicknameDraft={setNicknameDraft}
+-            setShowNicknameEditor={setShowNicknameEditor}
+-            saveNickname={saveNickname}
+-            runCareAction={runCareAction}
+-          />
+-
+-          <MainTeam
+-            partySlots={kithTeamSlots}
+-            enableDragAndDrop={false}
+-            selectedPartySlot={selectedKithTeamSlot}
+-            workingPetId={busy || nicknameSaving ? pet.id : null}
+-            workingSlotIndex={null}
+-            dragOverSlotIndex={null}
+-            onSelectSlot={selectKithTeamSlot}
+-            onDragStartPet={() => undefined}
+-            onDragEndPet={() => undefined}
+-            onDragOverSlot={(event) => event.preventDefault()}
+-            onDragEnterSlot={() => undefined}
+-            onDragLeaveSlot={() => undefined}
+-            onDropOnSlot={(event) => event.preventDefault()}
+-            teamName="Kith Team"
+-          />
+-
+-          <section className="petRepoBottomGrid">
+-            <StatsChamber
+-              pet={pet}
+-              totalStats={totalStats}
+-              elementRows={elementRows}
+-              petElementTheme={petElementTheme}
+-              growthTraits={growthTraits}
+-              onOpenSkillTree={() => setShowSkillTree(true)}
+-            />
+-
+-            <SkillsChamber pet={pet} stats={totalStats} />
+-
+-            <KithProgressCard
+-              name={getPetLabel(pet)}
+-              level={safeNum(pet.level, 1)}
+-              xp={safeNum(pet.experience ?? pet.xp, 0)}
+-              xpToNext={safeNum(
+-                pet.experience_to_next_level ??
+-                  pet.xp_to_next_level ??
+-                  pet.next_level_xp,
+-                100,
+-              )}
+-              wins={safeNum(pet.wins, 0)}
+-              losses={safeNum(pet.losses, 0)}
+-              hatchCount={safeNum(pet.hatch_count, 0)}
+-              corruptedEggsHatched={safeNum(pet.corrupted_eggs_hatched, 0)}
+-            />
+-          </section>
+-
+-          {showSkillTree ? (
+-            <DpPopupWindow
+-              open
+-              onClose={() => setShowSkillTree(false)}
+-              label="Kith Talent System"
+-              size="wide"
+-              className="skillTreePopupShell"
+-            >
+-              <SkillTree pet={pet} onClose={() => setShowSkillTree(false)} />
+-            </DpPopupWindow>
+-          ) : null}
+-        </section>
+-      ) : null}
+-    </div>
+-  );
+-}
++import { useCallback, useEffect, useMemo, useRef, useState } from "react";
++import { createPortal } from "react-dom";
++import { useNavigate } from "react-router-dom";
++import { useAuth } from "@/app/providers/useAuth";
++import { apiFetch } from "@/lib/api/baseClient";
++import { useDeltaTime } from "@/lib/timers/useDeltaTime";
++import {
++  clampPercent,
++  normalizeElement,
++  safeNum,
++  titleCase,
++} from "@/lib/petUtils";
++import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
++import LostKithRegistry from "@/pages/petsPage/components/LostKithRegistry/LostKithRegistry";
++import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
++import SkillsChamber from "@/components/skillChamber/skillChamber";
++import StatsChamber from "@/components/StatsChamber/StatsChamber";
++import MainTeam from "@/components/Main_Team/mainTeam";
++import type {
++  PartySlotView,
++  StoragePet,
++} from "@/components/Hatchery/pages/storage/usePetStorage";
++import "./PetPage.css";
++import SkillTree from "@/components/Skills/skilltree";
++import DpPopupWindow from "./components/DpPopupWindow";
++import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
++import {
++  type CareInventoryCategory,
++  addCareItem,
++  consumeCareItem,
++  ensureStarterCareInventory,
++  getCareInventoryCounts,
++  getInventoryChangeEventName,
++} from "@/components/inventory/inventory";
++
++type CareAction = "feed" | "clean" | "play" | "pet";
++
++type PetRecord = Record<string, any>;
++
++function getCareCooldownRemainingMs(pet: PetRecord | null, action: CareAction) {
++  if (action === "feed" || action === "pet") return 0;
++
++  const cooldownColumnByAction: Record<Exclude<CareAction, "pet">, string> = {
++    feed: "cd_feed_ends_at",
++    clean: "cd_clean_ends_at",
++    play: "cd_play_ends_at",
++  };
++
++  const endsAt = pet?.[cooldownColumnByAction[action]];
++  const endsMs = endsAt ? Date.parse(String(endsAt)) : NaN;
++
++  return Number.isFinite(endsMs) ? Math.max(0, endsMs - Date.now()) : 0;
++}
++
++type TeamCardPet = {
++  id: string;
++  name?: string | null;
++  nickname?: string | null;
++  species?: string | null;
++  stage?: string | null;
++  element?: string | null;
++  elementKey?: string | null;
++  line?: string | null;
++  level?: number | null;
++  energy?: number | null;
++  bond?: number | null;
++  isActive?: boolean | null;
++  slotIndex?: number | null;
++  previewUrl?: string | null;
++  hp?: number | null;
++  current_hp?: number | null;
++  max_hp?: number | null;
++  atk?: number | null;
++  def?: number | null;
++  magi?: number | null;
++  mana?: number | null;
++  spd?: number | null;
++  personality?: string | null;
++  personality_key?: string | null;
++};
++
++type StarterMerchantState = {
++  show?: boolean;
++  href?: string;
++  title?: string;
++  body?: string;
++  ctaLabel?: string;
++};
++
++type CareCurrentResponse = {
++  pet: PetRecord | null;
++  stats: PetStatsRow | null;
++  elements: PetElementsRow | null;
++  team?: TeamCardPet[];
++  starter_merchant?: StarterMerchantState | null;
++};
++
++const STAT_ORDER = ["hp", "atk", "def", "spd", "magi", "mana"] as const;
++
++const ELEMENT_ORDER = [
++  "null",
++  "water",
++  "fire",
++  "earth",
++  "air",
++  "ice",
++  "storm",
++  "light",
++  "shadow",
++] as const;
++
++type StatKey = (typeof STAT_ORDER)[number];
++type ElementKey = (typeof ELEMENT_ORDER)[number];
++type ElementThemeKey = ElementKey | "void" | "voidborne" | "neutral" | "silver";
++
++function getPetLabel(pet: PetRecord | null) {
++  return pet?.nickname?.trim?.() || pet?.name?.trim?.() || "Your Delta";
++}
++
++function getElementThemeKey(
++  petOrElement?: PetRecord | string | null,
++): ElementThemeKey {
++  const raw =
++    typeof petOrElement === "string"
++      ? petOrElement
++      : petOrElement?.element || petOrElement?.line || "null";
++
++  const normalized = normalizeElement(raw);
++
++  if (!normalized) return "neutral";
++  if (normalized === "null") return "voidborne";
++
++  return normalized as ElementThemeKey;
++}
++
++function getElementValue(elements: PetElementsRow | null, key: string) {
++  if (!elements) return 0;
++
++  if (key === "null") {
++    return safeNum((elements as any).null_element ?? (elements as any).null);
++  }
++
++  return safeNum((elements as any)[key]);
++}
++
++function getPetPageDescription(pet: PetRecord | null) {
++  if (!pet) return "No Delta data available yet.";
++
++  const displayName = getPetLabel(pet);
++
++  const fallbackNames = [
++    pet.species_name,
++    pet.speciesName,
++    pet.species,
++    pet.name,
++  ]
++    .map((value) => (typeof value === "string" ? value.trim() : ""))
++    .filter(Boolean);
++
++  if (pet.description?.trim?.()) {
++    let description = pet.description.trim();
++
++    if (displayName && displayName !== "Your Delta") {
++      for (const fallbackName of fallbackNames) {
++        if (!fallbackName || fallbackName === displayName) continue;
++
++        const escapedFallbackName = fallbackName.replace(
++          /[.*+?^${}()|[\]\\]/g,
++          "\\$&",
++        );
++
++        description = description.replace(
++          new RegExp(`^${escapedFallbackName}\\b`, "i"),
++          displayName,
++        );
++      }
++    }
++
++    return description;
++  }
++
++  const normalizedElement = normalizeElement(pet.element || pet.line);
++  const element = titleCase(
++    normalizedElement === "null" ? "Voidborne" : normalizedElement,
++  );
++  const stage = titleCase(pet.stage || "unknown stage");
++  const trait = titleCase(
++    pet.personality_name ||
++      pet.personality ||
++      pet.personality_key ||
++      "mysterious",
++  );
++
++  return `${displayName} is a ${trait} ${element} Delta in the ${stage} stage. Its bond is still forming, but the spark is there.`;
++}
++
++function getPetGrowthTraits(pet: PetRecord | null, stats: PetStatsRow | null) {
++  const rawStrong =
++    pet?.growth_strong_stats ??
++    pet?.growthStrongStats ??
++    pet?.strong_stats ??
++    [];
++
++  const rawWeak =
++    pet?.growth_weak_stat ??
++    pet?.growth_weak_stats ??
++    pet?.growthWeakStat ??
++    pet?.weak_stat ??
++    null;
++
++  const strongStats = Array.isArray(rawStrong)
++    ? rawStrong.filter((key): key is StatKey =>
++        STAT_ORDER.includes(key as StatKey),
++      )
++    : [];
++
++  const weakStat = Array.isArray(rawWeak)
++    ? (rawWeak.find((key) => STAT_ORDER.includes(key as StatKey)) ?? null)
++    : STAT_ORDER.includes(rawWeak as StatKey)
++      ? (rawWeak as StatKey)
++      : null;
++
++  if (strongStats.length || weakStat) {
++    return { strongStats, weakStat };
++  }
++
++  if (!stats) return { strongStats: [], weakStat: null };
++
++  const sortedStats = [...STAT_ORDER].sort(
++    (a, b) => safeNum((stats as any)[b]) - safeNum((stats as any)[a]),
++  );
++
++  return {
++    strongStats: sortedStats.slice(0, 2),
++    weakStat: sortedStats.at(-1) ?? null,
++  };
++}
++
++export default function PetPage() {
++  const navigate = useNavigate();
++  const { user, loading: authLoading } = useAuth();
++  const { phase } = useDeltaTime();
++  const [pet, setPet] = useState<PetRecord | null>(null);
++  const [stats, setStats] = useState<PetStatsRow | null>(null);
++  const [elements, setElements] = useState<PetElementsRow | null>(null);
++  const [team, setTeam] = useState<TeamCardPet[]>([]);
++  const [showSkillTree, setShowSkillTree] = useState(false);
++  const [busy, setBusy] = useState(false);
++  const [loadingPage, setLoadingPage] = useState(true);
++  const [loadErr, setLoadErr] = useState<string | null>(null);
++  const [actionMsg, setActionMsg] = useState<string | null>(null);
++  const [personalityName, setPersonalityName] = useState<string | null>(null);
++  const [starterMerchant, setStarterMerchant] =
++    useState<StarterMerchantState | null>(null);
++  const [showLostRegistry, setShowLostRegistry] = useState(false);
++  const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
++  const [rescueEggError, setRescueEggError] = useState<string | null>(null);
++  const [nicknameDraft, setNicknameDraft] = useState("");
++  const [nicknameSaving, setNicknameSaving] = useState(false);
++  const [showNicknameEditor, setShowNicknameEditor] = useState(false);
++  const [careInventoryCounts, setCareInventoryCounts] = useState(() =>
++    getCareInventoryCounts(),
++  );
++
++  const syncCareInventoryCounts = useCallback(() => {
++    setCareInventoryCounts(getCareInventoryCounts());
++  }, []);
++
++  const hasLoadedOnceRef = useRef(false);
++  const hasLoggedRunawayLockRef = useRef(false);
++  const careActionPendingRef = useRef(false);
++
++  useEffect(() => {
++    if (!authLoading && !user) {
++      navigate("/", { replace: true });
++    }
++  }, [authLoading, user, navigate]);
++
++  useEffect(() => {
++    ensureStarterCareInventory();
++  }, []);
++
++  const loadPetPage = useCallback(
++    async (showSpinner: boolean) => {
++      if (!user) return;
++
++      if (showSpinner) setLoadingPage(true);
++      setLoadErr(null);
++
++      try {
++        const json = await apiFetch<CareCurrentResponse>("/api/care/current");
++
++        const nextPet = json.pet ?? null;
++        const nextStats = json.stats ?? null;
++        const nextElements = json.elements ?? null;
++        const nextTeam = json.team ?? [];
++
++        setPet(nextPet);
++        setStats(nextStats);
++        setElements(nextElements);
++        setTeam(nextTeam);
++        setStarterMerchant(json.starter_merchant ?? null);
++        setNicknameDraft(nextPet?.nickname?.trim() || "");
++        setShowNicknameEditor(false);
++
++        const directPersonality =
++          nextPet?.personality_name ??
++          nextPet?.personality ??
++          nextPet?.personality_key ??
++          null;
++
++        setPersonalityName(
++          directPersonality ? titleCase(directPersonality) : null,
++        );
++
++        hasLoadedOnceRef.current = true;
++      } catch (error) {
++        const message =
++          error instanceof Error ? error.message : "Failed to load pet page.";
++
++        setLoadErr(message);
++        setPet(null);
++        setStarterMerchant(null);
++        setStats(null);
++        setElements(null);
++        setTeam([]);
++        setPersonalityName(null);
++        setShowNicknameEditor(false);
++      } finally {
++        setLoadingPage(false);
++      }
++    },
++    [user],
++  );
++
++  useEffect(() => {
++    syncCareInventoryCounts();
++    const eventName = getInventoryChangeEventName();
++    window.addEventListener(eventName, syncCareInventoryCounts);
++
++    return () => {
++      window.removeEventListener(eventName, syncCareInventoryCounts);
++    };
++  }, [syncCareInventoryCounts]);
++
++  useEffect(() => {
++    if (authLoading || !user) return;
++
++    void loadPetPage(true);
++
++    const handleWindowFocus = () => void loadPetPage(false);
++    const handleVisibilityChange = () => {
++      if (document.visibilityState === "visible") {
++        void loadPetPage(false);
++      }
++    };
++
++    const intervalId = window.setInterval(() => {
++      if (document.visibilityState === "visible") {
++        void loadPetPage(false);
++      }
++    }, 5 * 60_000);
++
++    window.addEventListener("focus", handleWindowFocus);
++    document.addEventListener("visibilitychange", handleVisibilityChange);
++
++    return () => {
++      window.clearInterval(intervalId);
++      window.removeEventListener("focus", handleWindowFocus);
++      document.removeEventListener("visibilitychange", handleVisibilityChange);
++    };
++  }, [authLoading, user, loadPetPage]);
++
++  const runCareAction = useCallback(
++    async (action: CareAction) => {
++      if (careActionPendingRef.current || busy || nicknameSaving) return;
++
++      const cooldownRemainingMs = getCareCooldownRemainingMs(pet, action);
++
++      if (cooldownRemainingMs > 0) {
++        setActionMsg(
++          `${titleCase(action)} is still cooling down for ${Math.ceil(
++            cooldownRemainingMs / 1000,
++          )}s.`,
++        );
++        return;
++      }
++
++      careActionPendingRef.current = true;
++
++      const inventoryCategoryByAction: Partial<
++        Record<CareAction, CareInventoryCategory>
++      > = {
++        feed: "food",
++        clean: "soap",
++        play: "toy",
++        pet: "bed",
++      };
++
++      const inventoryCategory = inventoryCategoryByAction[action] ?? null;
++
++      if (inventoryCategory) {
++        const didConsume = consumeCareItem(inventoryCategory, 1);
++
++        if (!didConsume) {
++          const missingLabel =
++            inventoryCategory === "food"
++              ? "food"
++              : inventoryCategory === "soap"
++                ? "soap"
++                : inventoryCategory === "toy"
++                  ? "toy"
++                  : "pillow";
++
++          setActionMsg(`You need ${missingLabel} in your inventory first.`);
++          syncCareInventoryCounts();
++          careActionPendingRef.current = false;
++          return;
++        }
++
++        syncCareInventoryCounts();
++      }
++
++      setBusy(true);
++      setActionMsg(null);
++
++      try {
++        const json =
++          action === "pet"
++            ? await apiFetch<{ message?: string }>(`/api/care/${action}`, {
++                method: "POST",
++              })
++            : await apiFetch<{ message?: string }>("/api/pets/actions/do", {
++                method: "POST",
++                json: { action },
++              });
++
++        const defaultMessageMap: Record<CareAction, string> = {
++          feed: "Successful Food Intake.",
++          clean: "Successful Bath.",
++          play: "Successful play time.",
++          pet: "They look happier.",
++        };
++
++        setActionMsg(json?.message || defaultMessageMap[action]);
++        await loadPetPage(false);
++        syncCareInventoryCounts();
++      } catch (error) {
++        if (inventoryCategory) {
++          addCareItem(inventoryCategory, 1);
++          syncCareInventoryCounts();
++        }
++
++        setActionMsg(
++          error instanceof Error
++            ? error.message
++            : `Failed to ${action} your pet.`,
++        );
++      } finally {
++        careActionPendingRef.current = false;
++        setBusy(false);
++      }
++    },
++    [busy, loadPetPage, nicknameSaving, pet, syncCareInventoryCounts],
++  );
++
++  const switchActivePet = useCallback(
++    async (petId: string) => {
++      if (!petId || busy || nicknameSaving) return;
++
++      setBusy(true);
++      setActionMsg(null);
++
++      try {
++        await apiFetch("/api/care/place", {
++          method: "POST",
++          json: { petId },
++        });
++
++        setActionMsg("Active Delta switched.");
++        await loadPetPage(false);
++      } catch (error) {
++        setActionMsg(
++          error instanceof Error
++            ? error.message
++            : "Failed to switch active Delta.",
++        );
++      } finally {
++        setBusy(false);
++      }
++    },
++    [busy, loadPetPage, nicknameSaving],
++  );
++
++  const saveNickname = useCallback(async () => {
++    if (!user?.id || !pet?.id) return;
++
++    const trimmed = nicknameDraft.trim();
++    const existingNickname = pet.nickname?.trim() || "";
++
++    if (!trimmed) {
++      setActionMsg("Your Delta needs a nickname before you can lock it in.");
++      return;
++    }
++
++    if (existingNickname) {
++      setActionMsg("This Delta's nickname is already locked.");
++      setShowNicknameEditor(false);
++      return;
++    }
++
++    setNicknameSaving(true);
++    setActionMsg(null);
++
++    try {
++      const json = await apiFetch<{ message?: string; pet?: PetRecord }>(
++        `/api/pets/${pet.id}/nickname`,
++        {
++          method: "PATCH",
++          json: { nickname: trimmed },
++        },
++      );
++
++      setActionMsg(json.message || `Nickname locked in as ${trimmed}.`);
++      setShowNicknameEditor(false);
++      await loadPetPage(false);
++    } catch (error) {
++      setActionMsg(
++        error instanceof Error ? error.message : "Failed to save nickname.",
++      );
++    } finally {
++      setNicknameSaving(false);
++    }
++  }, [loadPetPage, nicknameDraft, pet?.id, pet?.nickname, user?.id]);
++
++  const claimRescueEgg = useCallback(async () => {
++    if (claimingRescueEgg) return;
++
++    setClaimingRescueEgg(true);
++    setRescueEggError(null);
++
++    try {
++      await apiFetch("/api/pets/rescue-egg", { method: "POST" });
++      navigate("/rescue-reveal");
++    } catch (error) {
++      setRescueEggError(
++        error instanceof Error
++          ? error.message
++          : "Could not claim the rescue egg. Try again.",
++      );
++    } finally {
++      setClaimingRescueEgg(false);
++    }
++  }, [claimingRescueEgg, navigate]);
++
++  const hunger = clampPercent(pet?.hunger);
++  const clean = clampPercent(pet?.clean);
++  const happy = clampPercent(pet?.happy);
++  const comfort = Math.max(0, Math.min(50, safeNum(pet?.comfort, 50)));
++  const rest = Math.max(0, Math.min(50, safeNum(pet?.rest, 50)));
++  const energy = clampPercent(pet?.energy ?? 100);
++  const bond = clampPercent(pet?.bond);
++
++  const totalStats = useMemo(
++    () => ({
++      hp: safeNum(stats?.hp),
++      atk: safeNum(stats?.atk),
++      def: safeNum(stats?.def),
++      spd: safeNum(stats?.spd),
++      magi: safeNum(stats?.magi),
++      mana: safeNum(stats?.mana),
++    }),
++    [stats],
++  );
++
++  const activeElementKey = normalizeElement(pet?.element || pet?.line);
++  const petElementTheme = getElementThemeKey(pet);
++
++  const elementRows = useMemo(
++    () =>
++      ELEMENT_ORDER.map((key) => ({
++        key,
++        label: key === "null" ? "Voidborne" : titleCase(key),
++        value: getElementValue(elements, key),
++        active: key === activeElementKey,
++      })),
++    [elements, activeElementKey],
++  );
++
++  const petDescription = useMemo(() => getPetPageDescription(pet), [pet]);
++  const growthTraits = useMemo(
++    () => getPetGrowthTraits(pet, stats),
++    [pet, stats],
++  );
++
++  const kithTeamSlots = useMemo<PartySlotView[]>(() => {
++    const teamBySlot = new Map<number, TeamCardPet>();
++
++    for (const teamPet of team) {
++      const slotIndex = Math.max(1, Math.min(4, safeNum(teamPet.slotIndex, 0)));
++
++      if (slotIndex >= 1) {
++        teamBySlot.set(slotIndex, teamPet);
++      }
++    }
++
++    return Array.from({ length: 4 }, (_, index) => {
++      const slotIndex = index + 1;
++      const teamPet = teamBySlot.get(slotIndex) ?? team[index] ?? null;
++      const storagePet: StoragePet | null = teamPet
++        ? {
++            id: teamPet.id,
++            user_id: user?.id ?? "",
++            name: teamPet.name ?? teamPet.nickname ?? teamPet.species ?? null,
++            nickname: teamPet.nickname ?? null,
++            species: teamPet.species ?? teamPet.name ?? null,
++            energy: teamPet.energy ?? 100,
++            bond: teamPet.bond ?? 0,
++            stage: teamPet.stage ?? "hatchling",
++            line: teamPet.elementKey ?? teamPet.line ?? teamPet.element ?? null,
++            level: teamPet.level ?? 1,
++            location: "active",
++            is_active: teamPet.isActive ?? false,
++            created_at: null,
++            hatched_at: null,
++            portrait_url: teamPet.previewUrl ?? null,
++            current_hp: teamPet.current_hp ?? teamPet.hp ?? null,
++            max_hp: teamPet.max_hp ?? teamPet.hp ?? null,
++            hp: teamPet.hp ?? teamPet.max_hp ?? teamPet.current_hp ?? null,
++            atk: teamPet.atk ?? null,
++            def: teamPet.def ?? null,
++            magi: teamPet.magi ?? null,
++            mana: teamPet.mana ?? null,
++            spd: teamPet.spd ?? null,
++            personality_key:
++              teamPet.personality_key ?? teamPet.personality ?? null,
++          }
++        : null;
++
++      return {
++        slotIndex,
++        entryId: null,
++        petId: teamPet?.id ?? null,
++        pet: storagePet,
++      };
++    });
++  }, [team, user?.id]);
++
++  const selectedKithTeamSlot =
++    kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ?? null;
++
++  const selectKithTeamSlot = useCallback(
++    (slotIndex: number) => {
++      const selectedSlot = kithTeamSlots.find(
++        (slot) => slot.slotIndex === slotIndex,
++      );
++
++      if (selectedSlot?.petId) {
++        void switchActivePet(selectedSlot.petId);
++      }
++    },
++    [kithTeamSlots, switchActivePet],
++  );
++
++  const nicknameLocked = Boolean(pet?.nickname?.trim());
++  const canRenameNickname = !nicknameLocked;
++  const trimmedNicknameDraft = nicknameDraft.trim();
++
++  const canSaveNickname =
++    !busy &&
++    !nicknameSaving &&
++    canRenameNickname &&
++    showNicknameEditor &&
++    Boolean(trimmedNicknameDraft) &&
++    trimmedNicknameDraft !== (pet?.nickname?.trim() || "");
++
++  const isRunawayLock =
++    !loadErr && !loadingPage && !pet && Boolean(starterMerchant?.show);
++
++  const runawayEmergencyModal = isRunawayLock
++    ? createPortal(
++        <div className="petRepoRunawayModalBackdrop">
++          <div
++            className="petRepoRunawayModalWindow"
++            role="dialog"
++            aria-modal="true"
++            aria-labelledby="pet-runaway-title"
++          >
++            <div className="petRepoRunawayModalHeader">
++              <p className="petRepoRunawayModalEyebrow">Emergency</p>
++              <h2 id="pet-runaway-title" className="petRepoRunawayModalTitle">
++                {starterMerchant?.title || "Pet Ran Away"}
++              </h2>
++              <p className="petRepoRunawayModalCopy">{starterMerchant?.body}</p>
++            </div>
++
++            <div className="petRepoRunawayModalActions">
++              <button
++                type="button"
++                className="petRepoRunawayModalPrimary"
++                disabled={claimingRescueEgg}
++                onClick={claimRescueEgg}
++              >
++                {claimingRescueEgg
++                  ? "Summoning egg..."
++                  : starterMerchant?.ctaLabel || "Accept the Egg"}
++              </button>
++              {rescueEggError ? (
++                <p className="petRepoRunawayModalError">{rescueEggError}</p>
++              ) : null}
++            </div>
++          </div>
++        </div>,
++        document.body,
++      )
++    : null;
++
++  useEffect(() => {
++    if (!isRunawayLock) {
++      hasLoggedRunawayLockRef.current = false;
++      return;
++    }
++
++    if (!hasLoggedRunawayLockRef.current) {
++      if (import.meta.env.DEV) {
++        console.log("[PetPage] Runaway lock active → blocking full UI", {
++          starterMerchant,
++        });
++      }
++      hasLoggedRunawayLockRef.current = true;
++    }
++  }, [isRunawayLock, starterMerchant]);
++
++  if (authLoading || (!hasLoadedOnceRef.current && loadingPage)) {
++    return (
++      <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
++        {runawayEmergencyModal}
++        <div className="petRepoStateCard">Loading Delta Room…</div>
++      </div>
++    );
++  }
++
++  if (isRunawayLock) {
++    return (
++      <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
++        {runawayEmergencyModal}
++      </div>
++    );
++  }
++
++  return (
++    <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
++      {loadErr ? (
++        <div className="petRepoStateCard petRepoStateCardError">
++          <h2>Pet page load error</h2>
++          <p>{loadErr}</p>
++        </div>
++      ) : null}
++
++      {!loadErr && !loadingPage && !pet && !starterMerchant?.show ? (
++        <div className="petRepoStateCard">
++          <h2>No active pet found</h2>
++          <p>Put one of your Deltas into the main team, then come back here.</p>
++        </div>
++      ) : null}
++
++      {!loadErr && pet ? (
++        <section className="petRepoStage">
++          <header
++            className={`petRepoHeroCard petRepoHeroCard--element-${petElementTheme} dp-blue-grid-panel`}
++          >
++            <div className="petRepoHeroStatus petRepoHeroStatus--focusLeft">
++              <span className="petRepoStatusLabel">Current Focus</span>
++              <strong>{getPetLabel(pet)}</strong>
++            </div>
++
++            <div className="petRepoHeroText petRepoHeroTextShifted">
++              <h1 className="petRepoTitle">Delta Care Chamber</h1>
++              <p className="petRepoSubtitle petRepoSubtitle--centered">
++                Care is part of progression, but it does not force evolution.
++                This room is for upkeep, trust, and keeping your main team in
++                real condition.
++              </p>
++            </div>
++
++            <button
++              type="button"
++              className="lostKithRegistryOpenButton"
++              onClick={() => setShowLostRegistry(true)}
++            >
++              Lost Kith Registry
++            </button>
++          </header>
++
++          <LostKithRegistry
++            open={showLostRegistry}
++            onClose={() => setShowLostRegistry(false)}
++            onRecovered={() => {
++              setShowLostRegistry(false);
++              void loadPetPage(false);
++            }}
++          />
++
++          <PetDetailsPanel
++            pet={pet}
++            petDescription={petDescription}
++            personalityName={personalityName}
++            nicknameDraft={nicknameDraft}
++            nicknameSaving={nicknameSaving}
++            showNicknameEditor={showNicknameEditor}
++            canRenameNickname={canRenameNickname}
++            canSaveNickname={canSaveNickname}
++            busy={busy}
++            hunger={hunger}
++            clean={clean}
++            happy={happy}
++            comfort={comfort}
++            rest={rest}
++            energy={energy}
++            bond={bond}
++            inventoryCounts={careInventoryCounts}
++            actionMsg={actionMsg}
++            starterMerchant={starterMerchant}
++            setNicknameDraft={setNicknameDraft}
++            setShowNicknameEditor={setShowNicknameEditor}
++            saveNickname={saveNickname}
++            runCareAction={runCareAction}
++          />
++
++          <MainTeam
++            partySlots={kithTeamSlots}
++            enableDragAndDrop={false}
++            selectedPartySlot={selectedKithTeamSlot}
++            workingPetId={busy || nicknameSaving ? pet.id : null}
++            workingSlotIndex={null}
++            dragOverSlotIndex={null}
++            onSelectSlot={selectKithTeamSlot}
++            onDragStartPet={() => undefined}
++            onDragEndPet={() => undefined}
++            onDragOverSlot={(event) => event.preventDefault()}
++            onDragEnterSlot={() => undefined}
++            onDragLeaveSlot={() => undefined}
++            onDropOnSlot={(event) => event.preventDefault()}
++            teamName="Kith Team"
++          />
++
++          <section className="petRepoBottomGrid">
++            <StatsChamber
++              pet={pet}
++              totalStats={totalStats}
++              elementRows={elementRows}
++              petElementTheme={petElementTheme}
++              growthTraits={growthTraits}
++              onOpenSkillTree={() => setShowSkillTree(true)}
++            />
++
++            <SkillsChamber pet={pet} stats={totalStats} />
++
++            <KithProgressCard
++              name={getPetLabel(pet)}
++              level={safeNum(pet.level, 1)}
++              xp={safeNum(pet.experience ?? pet.xp, 0)}
++              xpToNext={safeNum(
++                pet.experience_to_next_level ??
++                  pet.xp_to_next_level ??
++                  pet.next_level_xp,
++                100,
++              )}
++              wins={safeNum(pet.wins, 0)}
++              losses={safeNum(pet.losses, 0)}
++              hatchCount={safeNum(pet.hatch_count, 0)}
++              corruptedEggsHatched={safeNum(pet.corrupted_eggs_hatched, 0)}
++            />
++          </section>
++
++          {showSkillTree ? (
++            <DpPopupWindow
++              open
++              onClose={() => setShowSkillTree(false)}
++              label="Kith Talent System"
++              size="wide"
++              className="skillTreePopupShell"
++            >
++              <SkillTree pet={pet} onClose={() => setShowSkillTree(false)} />
++            </DpPopupWindow>
++          ) : null}
++        </section>
++      ) : null}
++    </div>
++  );
++}
+diff --git a/delta_original2/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx b/delta_work/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx
+index 8576189..b63f931 100644
+--- a/delta_original2/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx
++++ b/delta_work/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx
+@@ -1,1005 +1,1005 @@
+-import { useEffect, useRef, useState } from "react";
+-import { Link } from "react-router-dom";
+-import { safeNum, titleCase } from "@/lib/petUtils";
+-import DpPopupWindow from "../DpPopupWindow";
+-import "./PetDetailsPanel.css";
+-import { getPetDialogue } from "./petDialogue";
+-import {
+-  getSelfAwareBubbleText,
+-  rememberSelfAwareVisit,
+-} from "../selfAware/selfAware";
+-// ─── Types ────────────────────────────────────────────────────────────────────
+-
+-type PetRecord = {
+-  id?: string;
+-  user_id?: string;
+-  name?: string | null;
+-  nickname?: string | null;
+-  level?: number | null;
+-  gender?: string | null;
+-  element?: string | null;
+-  line?: string | null;
+-  stage?: string | null;
+-  personality?: string | null;
+-  personality_name?: string | null;
+-  personality_key?: string | null;
+-  hunger?: number | null;
+-  clean?: number | null;
+-  happy?: number | null;
+-  energy?: number | null;
+-  bond?: number | null;
+-  description?: string | null;
+-  is_active?: boolean | null;
+-  image_url?: string | null;
+-  sprite_url?: string | null;
+-  portrait_url?: string | null;
+-  hatch_time_alignment?: string | null;
+-  training_time_preference?: string | null;
+-  preferred_time?: string | null;
+-  preferredTime?: string | null;
+-  created_at?: string | null;
+-  hatch_ends_at?: string | null;
+-  hatched_at?: string | null;
+-  passive_trait_id?: string | null;
+-  passive_trait_key?: string | null;
+-  passive_trait_name?: string | null;
+-  mutation_trait_names?: string[] | null;
+-  mutations?:
+-    | string[]
+-    | {
+-        name?: string | null;
+-        key?: string | null;
+-      }[]
+-    | null;
+-};
+-
+-type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
+-
+-type StarterMerchantState = {
+-  show?: boolean;
+-  href?: string;
+-  title?: string;
+-  body?: string;
+-  ctaLabel?: string;
+-};
+-
+-type PetPanelStats = {
+-  hp: number;
+-  atk: number;
+-  def: number;
+-  spd: number;
+-  magi: number;
+-  mana: number;
+-};
+-
+-const CARE_MAX = 50;
+-const ENERGY_MAX = 100;
+-
+-type PetDetailsPanelProps = {
+-  pet: PetRecord;
+-  petDescription?: string;
+-  stats?: PetPanelStats;
+-  personalityName: string | null;
+-  nicknameDraft: string;
+-  nicknameSaving: boolean;
+-  showNicknameEditor: boolean;
+-  canRenameNickname: boolean;
+-  canSaveNickname: boolean;
+-  busy: boolean;
+-  hunger: number;
+-  clean: number;
+-  happy: number;
+-  comfort: number;
+-  rest: number;
+-  energy: number;
+-  bond: number;
+-  inventoryCounts?: {
+-    food: number;
+-    soap: number;
+-    toy: number;
+-    bed: number;
+-  };
+-  actionMsg: string | null;
+-  starterMerchant?: StarterMerchantState | null;
+-  setNicknameDraft: (value: string) => void;
+-  setShowNicknameEditor: (value: boolean) => void;
+-  saveNickname: () => Promise<void>;
+-  runCareAction: (action: "feed" | "clean" | "play" | "pet") => Promise<void>;
+-};
+-
+-// ─── Pure helpers ─────────────────────────────────────────────────────────────
+-
+-function getPetLabel(pet: PetRecord | null) {
+-  return pet?.nickname?.trim() || pet?.name?.trim() || "Your Delta";
+-}
+-
+-function hasNickname(pet: PetRecord | null) {
+-  return Boolean(pet?.nickname?.trim());
+-}
+-
+-function getNicknameDisplay(pet: PetRecord | null) {
+-  return hasNickname(pet) ? pet?.nickname?.trim() || "--" : "--";
+-}
+-
+-function getDisplayedPersonality(
+-  pet: Pick<
+-    PetRecord,
+-    "personality_name" | "personality" | "personality_key"
+-  > | null,
+-  personalityName?: string | null,
+-) {
+-  const direct =
+-    personalityName ??
+-    pet?.personality_name ??
+-    pet?.personality ??
+-    pet?.personality_key ??
+-    null;
+-
+-  return direct ? titleCase(direct) : "Mysterious";
+-}
+-
+-function getDisplayedPassiveTrait(
+-  pet: Pick<
+-    PetRecord,
+-    "passive_trait_name" | "passive_trait_key" | "passive_trait_id"
+-  > | null,
+-) {
+-  const direct =
+-    pet?.passive_trait_name ??
+-    pet?.passive_trait_key ??
+-    pet?.passive_trait_id ??
+-    null;
+-
+-  return direct ? titleCase(direct) : "None";
+-}
+-
+-function getDisplayedMutationTraits(
+-  pet: Pick<PetRecord, "mutation_trait_names" | "mutations"> | null,
+-) {
+-  const directNames = pet?.mutation_trait_names ?? [];
+-
+-  const nestedNames =
+-    pet?.mutations?.map((mutation) => {
+-      if (typeof mutation === "string") {
+-        return mutation;
+-      }
+-
+-      return mutation.name ?? mutation.key ?? "";
+-    }) ?? [];
+-
+-  const names = Array.from(
+-    new Set([...directNames, ...nestedNames].filter(Boolean)),
+-  );
+-
+-  return names.length
+-    ? names.map((name) => titleCase(name)).join(", ")
+-    : "None";
+-}
+-
+-function getPreviewUrl(pet: PetRecord) {
+-  return pet.portrait_url || pet.sprite_url || pet.image_url || null;
+-}
+-
+-function getDisplayedElement(pet: PetRecord) {
+-  const value = String(pet.element || pet.line || "").toLowerCase();
+-  if (!value || value === "null" || value === "null_element")
+-    return "Voidborne";
+-  return titleCase(value);
+-}
+-
+-function getDayNightLabel(value: unknown) {
+-  const normalized = String(value ?? "")
+-    .trim()
+-    .toLowerCase()
+-    .replace(/[\s-]+/g, "_");
+-
+-  if (normalized === "day" || normalized === "day_pigeon") {
+-    return "Day Pigeon";
+-  }
+-
+-  if (normalized === "night" || normalized === "night_owl") {
+-    return "Night Owl";
+-  }
+-
+-  return null;
+-}
+-
+-function getDayNightFromTimestamp(value: unknown) {
+-  const raw = String(value ?? "").trim();
+-  if (!raw) return null;
+-
+-  const date = new Date(raw);
+-  if (Number.isNaN(date.getTime())) return null;
+-
+-  const hour = date.getHours();
+-  return hour >= 6 && hour < 18 ? "Day Pigeon" : "Night Owl";
+-}
+-
+-function getIsDayNow() {
+-  const hour = new Date().getHours();
+-  return hour >= 6 && hour < 18;
+-}
+-
+-function getStablePreference(pet: PetRecord) {
+-  const direct =
+-    getDayNightLabel(pet.hatch_time_alignment) ??
+-    getDayNightLabel(pet.training_time_preference) ??
+-    getDayNightLabel(pet.preferred_time) ??
+-    getDayNightLabel(pet.preferredTime);
+-
+-  if (direct) return direct;
+-
+-  const fallback =
+-    getDayNightFromTimestamp(pet.hatched_at) ??
+-    getDayNightFromTimestamp(pet.hatch_ends_at) ??
+-    getDayNightFromTimestamp(pet.created_at);
+-
+-  return fallback ?? "--";
+-}
+-
+-function getPetSpeech({
+-  hunger,
+-  clean,
+-  happy,
+-  comfort,
+-  rest,
+-  energy,
+-}: {
+-  hunger: number;
+-  clean: number;
+-  happy: number;
+-  comfort: number;
+-  rest: number;
+-  energy: number;
+-}) {
+-  const needs = [
+-    { value: hunger, text: "I'm hungry... can we get food?" },
+-    { value: clean, text: "I feel gross... I need a clean." },
+-    { value: happy, text: "I'm kinda bored... play with me?" },
+-    { value: comfort, text: "I could use some comfort right now." },
+-    { value: rest, text: "I'm tired... I need rest." },
+-    { value: energy, text: "I'm low on energy... slow down." },
+-  ];
+-
+-  needs.sort((a, b) => a.value - b.value);
+-  const lowest = needs[0];
+-
+-  if (lowest.value <= 15) return lowest.text;
+-  if (lowest.value <= 30) return `Hey... ${lowest.text}`;
+-  if (lowest.value <= 45) return `I'm okay, but ${lowest.text.toLowerCase()}`;
+-
+-  return "I'm doing okay right now.";
+-}
+-
+-function getRandomPetSpeech(options: {
+-  hunger: number;
+-  clean: number;
+-  happy: number;
+-  comfort: number;
+-  rest: number;
+-  energy: number;
+-}) {
+-  const sayings = [
+-    getPetSpeech(options),
+-    "Thanks for checking on me.",
+-    "I'm just vibing in here.",
+-    "This room feels cozy today.",
+-  ];
+-
+-  if (options.hunger <= 25) {
+-    sayings.push(
+-      "My tummy is making noises...",
+-      "Food would be amazing right now.",
+-    );
+-  }
+-
+-  if (options.clean <= 25) {
+-    sayings.push("I feel kinda messy...", "A bath would help a lot.");
+-  }
+-
+-  if (options.happy <= 25) {
+-    sayings.push("Can we play soon?", "I'm getting a little bored.");
+-  }
+-
+-  if (options.comfort <= 25) {
+-    sayings.push(
+-      "Can you stay with me for a bit?",
+-      "I could use some comfort.",
+-    );
+-  }
+-
+-  if (options.rest <= 25) {
+-    sayings.push("I'm getting sleepy...", "A nap sounds really good.");
+-  }
+-
+-  if (options.energy <= 25) {
+-    sayings.push("I'm low on energy today.", "I need to take it slow.");
+-  }
+-
+-  return sayings[Math.floor(Math.random() * sayings.length)];
+-}
+-
+-function randomNickname(seedName: string) {
+-  const starts = [
+-    "Nova",
+-    "Mochi",
+-    "Echo",
+-    "Rune",
+-    "Comet",
+-    "Luma",
+-    "Nori",
+-    "Jolt",
+-    "Miso",
+-    "Sprig",
+-    "Pebble",
+-    "Drift",
+-    "Orbit",
+-    "Blitz",
+-  ];
+-
+-  const ends = [
+-    "tail",
+-    "flare",
+-    "spark",
+-    "leaf",
+-    "wing",
+-    "fang",
+-    "step",
+-    "gleam",
+-    "drop",
+-    "shade",
+-    "burst",
+-    "whisp",
+-  ];
+-
+-  const cleaned = seedName.replace(/\s+/g, "").trim();
+-
+-  if (cleaned.length >= 3 && Math.random() > 0.45) {
+-    const suffix = ends[Math.floor(Math.random() * ends.length)];
+-    return `${cleaned.slice(0, 8)}${suffix}`;
+-  }
+-
+-  const first = starts[Math.floor(Math.random() * starts.length)];
+-  const second = ends[Math.floor(Math.random() * ends.length)];
+-  return `${first}${second}`;
+-}
+-
+-// ─── Sub-components ───────────────────────────────────────────────────────────
+-
+-function InfoRow({
+-  label,
+-  value,
+-  strong = false,
+-}: {
+-  label: string;
+-  value: string;
+-  strong?: boolean;
+-}) {
+-  return (
+-    <div className={`petRepoInfoRow ${strong ? "is-strong" : ""}`}>
+-      <span>{label}</span>
+-      <span>{value}</span>
+-    </div>
+-  );
+-}
+-
+-function NicknameRow({
+-  canRenameNickname,
+-  nicknameSaving,
+-  busy,
+-  nicknameIsSet,
+-  pet,
+-  setNicknameDraft,
+-  setShowNicknameEditor,
+-}: {
+-  canRenameNickname: boolean;
+-  nicknameSaving: boolean;
+-  busy: boolean;
+-  nicknameIsSet: boolean;
+-  pet: PetRecord;
+-  setNicknameDraft: (value: string) => void;
+-  setShowNicknameEditor: (value: boolean) => void;
+-}) {
+-  return (
+-    <button
+-      type="button"
+-      className={`petRepoInfoRowButton ${
+-        canRenameNickname ? "is-clickable" : "is-locked"
+-      }`}
+-      onClick={() => {
+-        if (!canRenameNickname) return;
+-        setNicknameDraft("");
+-        setShowNicknameEditor(true);
+-      }}
+-      disabled={!canRenameNickname || nicknameSaving || busy}
+-      title={
+-        canRenameNickname
+-          ? "Click to name this pet."
+-          : "This Delta's nickname is already locked."
+-      }
+-    >
+-      <span className="petRepoInfoRowButtonLabel">
+-        {!nicknameIsSet ? (
+-          <span className="petRepoNicknamePulseOrb" aria-hidden="true" />
+-        ) : null}
+-        <span>Nickname</span>
+-      </span>
+-
+-      <span
+-        className={
+-          nicknameIsSet
+-            ? "petRepoInfoRowButtonValue"
+-            : "petRepoInfoRowButtonValue petRepoInfoRowButtonValuePrompt"
+-        }
+-      >
+-        {getNicknameDisplay(pet)}
+-      </span>
+-    </button>
+-  );
+-}
+-
+-function MeterRow({
+-  label,
+-  value,
+-  tone,
+-}: {
+-  label: string;
+-  value: number;
+-  tone: MeterTone;
+-}) {
+-  const clampedValue = Math.max(0, Math.min(CARE_MAX, value));
+-  const fillWidth = (clampedValue / CARE_MAX) * 100;
+-
+-  return (
+-    <div className="petRepoMeterRow">
+-      <div className="petRepoMeterMeta">
+-        <span className="petRepoMeterLabel">{label}</span>
+-        <span className="petRepoMeterValue">{clampedValue}</span>
+-      </div>
+-
+-      <div className="petRepoMeterTrack" aria-hidden="true">
+-        <div
+-          className={`petRepoMeterFill petRepoMeterFill-${tone}`}
+-          style={{ width: `${fillWidth}%` }}
+-        />
+-      </div>
+-    </div>
+-  );
+-}
+-
+-// ─── Main component ───────────────────────────────────────────────────────────
+-
+-export default function PetDetailsPanel({
+-  pet,
+-  personalityName,
+-  petDescription,
+-  nicknameDraft,
+-  nicknameSaving,
+-  showNicknameEditor,
+-  canRenameNickname,
+-  canSaveNickname,
+-  busy,
+-  hunger,
+-  clean,
+-  happy,
+-  comfort,
+-  rest,
+-  energy,
+-  bond,
+-  inventoryCounts,
+-  actionMsg,
+-  starterMerchant,
+-  setNicknameDraft,
+-  setShowNicknameEditor,
+-  saveNickname,
+-  runCareAction,
+-}: PetDetailsPanelProps) {
+-  const previewUrl = getPreviewUrl(pet);
+-  const elementKey = String(pet.element || pet.line || "null")
+-    .trim()
+-    .toLowerCase()
+-    .replace(/\s+/g, "_");
+-
+-  const nicknameIsSet = hasNickname(pet);
+-  const clampedBond = Math.max(0, Math.min(100, bond));
+-  const clampedEnergy = Math.max(
+-    0,
+-    Math.min(ENERGY_MAX, safeNum(energy, ENERGY_MAX)),
+-  );
+-
+-  const hungerLevel = Math.max(
+-    0,
+-    Math.min(CARE_MAX, safeNum(hunger, CARE_MAX)),
+-  );
+-  const cleanLevel = Math.max(0, Math.min(CARE_MAX, safeNum(clean, CARE_MAX)));
+-  const moodLevel = Math.max(0, Math.min(CARE_MAX, safeNum(happy, CARE_MAX)));
+-  const restLevel = Math.max(0, Math.min(CARE_MAX, safeNum(rest, CARE_MAX)));
+-  const comfortLevel = Math.max(
+-    0,
+-    Math.min(CARE_MAX, safeNum(comfort, CARE_MAX)),
+-  );
+-  const energyLevel = Math.max(
+-    0,
+-    Math.min(ENERGY_MAX, safeNum(energy, ENERGY_MAX)),
+-  );
+-
+-  const stablePreference = getStablePreference(pet);
+-  const [petSpeech, setPetSpeech] = useState("");
+-  const [showPetSpeech, setShowPetSpeech] = useState(false);
+-
+-  const speechDataRef = useRef({
+-    pet,
+-    personalityName,
+-    hungerLevel,
+-    cleanLevel,
+-    moodLevel,
+-    comfortLevel,
+-    restLevel,
+-    energyLevel,
+-    clampedBond,
+-  });
+-
+-  useEffect(() => {
+-    speechDataRef.current = {
+-      pet,
+-      personalityName,
+-      hungerLevel,
+-      cleanLevel,
+-      moodLevel,
+-      comfortLevel,
+-      restLevel,
+-      energyLevel,
+-      clampedBond,
+-    };
+-  }, [
+-    pet,
+-    personalityName,
+-    hungerLevel,
+-    cleanLevel,
+-    moodLevel,
+-    comfortLevel,
+-    restLevel,
+-    energyLevel,
+-    clampedBond,
+-  ]);
+-
+-  const selfAwareMemoryRef = useRef<ReturnType<
+-    typeof rememberSelfAwareVisit
+-  > | null>(null);
+-
+-  useEffect(() => {
+-    selfAwareMemoryRef.current = rememberSelfAwareVisit(pet?.id ?? null);
+-  }, [pet?.id]);
+-
+-  useEffect(() => {
+-    let showTimer: number | null = null;
+-    let hideTimer: number | null = null;
+-    let stopped = false;
+-
+-    const schedulePetSpeech = () => {
+-      showTimer = window.setTimeout(
+-        () => {
+-          if (stopped) return;
+-
+-          const current = speechDataRef.current;
+-
+-          const dialogueText =
+-            getPetDialogue({
+-              petName: getPetLabel(current.pet),
+-              personalityKey:
+-                current.pet.personality_key ??
+-                current.pet.personality ??
+-                current.personalityName,
+-              hunger: current.hungerLevel,
+-              clean: current.cleanLevel,
+-              happy: current.moodLevel,
+-              comfort: current.comfortLevel,
+-              rest: current.restLevel,
+-              energy: current.energyLevel,
+-              bond: current.clampedBond,
+-            })?.trim() ?? "";
+-
+-          const fallbackSpeech =
+-            dialogueText ||
+-            getRandomPetSpeech({
+-              hunger: current.hungerLevel,
+-              clean: current.cleanLevel,
+-              happy: current.moodLevel,
+-              comfort: current.comfortLevel,
+-              rest: current.restLevel,
+-              energy: current.energyLevel,
+-            });
+-
+-          setPetSpeech(
+-            getSelfAwareBubbleText({
+-              pet: current.pet,
+-              care: {
+-                hunger: current.hungerLevel,
+-                clean: current.cleanLevel,
+-                happy: current.moodLevel,
+-                comfort: current.comfortLevel,
+-                rest: current.restLevel,
+-                energy: current.energyLevel,
+-                bond: current.clampedBond,
+-              },
+-              isDay: getIsDayNow(),
+-              memory: selfAwareMemoryRef.current,
+-              fallbackText: fallbackSpeech,
+-            }),
+-          );
+-
+-          setShowPetSpeech(true);
+-
+-          hideTimer = window.setTimeout(() => {
+-            if (stopped) return;
+-
+-            setShowPetSpeech(false);
+-            schedulePetSpeech();
+-          }, 90000);
+-        },
+-        20000 + Math.random() * 70000,
+-      );
+-    };
+-
+-    schedulePetSpeech();
+-
+-    return () => {
+-      stopped = true;
+-
+-      if (showTimer !== null) {
+-        window.clearTimeout(showTimer);
+-      }
+-
+-      if (hideTimer !== null) {
+-        window.clearTimeout(hideTimer);
+-      }
+-    };
+-  }, [pet?.id, personalityName]);
+-
+-  const safeInventory = inventoryCounts ?? {
+-    food: 0,
+-    soap: 0,
+-    toy: 0,
+-    bed: 0,
+-  };
+-
+-  useEffect(() => {
+-    if (!showNicknameEditor) return;
+-
+-    const originalOverflow = document.body.style.overflow;
+-    document.body.style.overflow = "hidden";
+-
+-    const handleKeyDown = (event: KeyboardEvent) => {
+-      if (event.key === "Escape" && !nicknameSaving) {
+-        setShowNicknameEditor(false);
+-      }
+-    };
+-
+-    window.addEventListener("keydown", handleKeyDown);
+-
+-    return () => {
+-      document.body.style.overflow = originalOverflow;
+-      window.removeEventListener("keydown", handleKeyDown);
+-    };
+-  }, [showNicknameEditor, nicknameSaving, setShowNicknameEditor]);
+-
+-  const nicknameModal =
+-    showNicknameEditor && canRenameNickname ? (
+-      <DpPopupWindow
+-        open
+-        onClose={() => {
+-          if (nicknameSaving) return;
+-          setShowNicknameEditor(false);
+-        }}
+-        label="Name Your New Pet"
+-        size="compact"
+-        contentClassName="petRepoNicknamePopupContent"
+-      >
+-        <button
+-          type="button"
+-          className="petRepoNicknameModalClose"
+-          onClick={() => setShowNicknameEditor(false)}
+-          disabled={nicknameSaving}
+-          aria-label="Close nickname window"
+-        >
+-          ×
+-        </button>
+-
+-        <div className="petRepoNicknameModalHeader">
+-          <h3 id="pet-nickname-title" className="petRepoNicknameModalTitle">
+-            Name Your New Pet!
+-          </h3>
+-          <p className="petRepoNicknameModalCopy">
+-            Create your nickname here. You can type your own or roll a random
+-            one.
+-          </p>
+-          <p className="petRepoNicknameModalCopy petRepoNicknameModalCopySmall">
+-            Once saved, it cannot be changed again.
+-          </p>
+-        </div>
+-
+-        <div className="petRepoNicknameModalBody">
+-          <label htmlFor="pet-nickname" className="petRepoInputLabel">
+-            Nickname
+-          </label>
+-
+-          <input
+-            id="pet-nickname"
+-            className="petRepoInput petRepoInputModal"
+-            type="text"
+-            maxLength={32}
+-            value={nicknameDraft}
+-            onChange={(event) => setNicknameDraft(event.target.value)}
+-            onKeyDown={(event) => {
+-              if (event.key === "Enter" && canSaveNickname) {
+-                event.preventDefault();
+-                void saveNickname();
+-              }
+-            }}
+-            placeholder="Enter a nickname"
+-            autoFocus
+-          />
+-
+-          <div className="petRepoNicknameModalActions">
+-            <button
+-              type="button"
+-              className="petRepoNicknameModalSecondary"
+-              onClick={() =>
+-                setNicknameDraft(randomNickname(pet?.name?.trim() || "Delta"))
+-              }
+-              disabled={nicknameSaving}
+-            >
+-              Random Name
+-            </button>
+-
+-            <button
+-              type="button"
+-              className="petRepoNicknameModalPrimary"
+-              onClick={() => void saveNickname()}
+-              disabled={!canSaveNickname}
+-            >
+-              {nicknameSaving ? "Saving..." : "Save Nickname"}
+-            </button>
+-          </div>
+-        </div>
+-      </DpPopupWindow>
+-    ) : null;
+-
+-  return (
+-    <>
+-      {nicknameModal}
+-
+-      <article className={`petRepoCareCard petRepoElement-${elementKey}`}>
+-        <div className="petRepoDetailsHeaderBlock">
+-          <h3 className="petRepoDeltaDetailsTitle">Kith Details</h3>
+-
+-          <div className="petRepoBondPanel" aria-label="Bond level">
+-            <span className="petRepoBondTitle">Bond</span>
+-
+-            <div className="petRepoBondTrack">
+-              <div
+-                className="petRepoBondFill"
+-                style={{ width: `${clampedBond}%` }}
+-              />
+-            </div>
+-          </div>
+-        </div>
+-
+-        <section className="petRepoDetailsTopPanel">
+-          {petDescription ? (
+-            <div className="petRepoDetailsTopPanelBody">
+-              <p className="petRepoDetailsTopPanelText">{petDescription}</p>
+-            </div>
+-          ) : null}
+-        </section>
+-
+-        <div className="petRepoCreatureTop">
+-          <section
+-            className="petRepoVerticalCard"
+-            aria-label="Pet scene and details"
+-          >
+-            <div
+-              className={`petRepoSceneOrb petRepoSceneOrb--${elementKey}`}
+-              style={
+-                {
+-                  ["--bond" as string]: String(clampedBond),
+-                  ["--energy" as string]: String(clampedEnergy),
+-                } as React.CSSProperties
+-              }
+-            >
+-              <div
+-                className="petRepoSceneRing petRepoSceneRing--bond"
+-                aria-hidden="true"
+-              />
+-              <div
+-                className="petRepoSceneRing petRepoSceneRing--energy"
+-                aria-hidden="true"
+-              />
+-
+-              <div
+-                className="petRepoSupplyShelf"
+-                aria-label="Care item shelves"
+-              >
+-                <div className="petRepoSupplySlot" />
+-                <div className="petRepoSupplySlot" />
+-                <div className="petRepoSupplySlot" />
+-                <div className="petRepoSupplySlot" />
+-                <p className="petRepoSupplyShelfHint">Care Items go here</p>
+-              </div>
+-
+-              <div className="petRepoSceneInner">
+-                <div className="petRepoSceneCeiling" aria-hidden="true" />
+-                <div className="petRepoSceneWallLeft" aria-hidden="true" />
+-                <div className="petRepoSceneWallRight" aria-hidden="true" />
+-                <div className="petRepoSceneGlow" aria-hidden="true" />
+-                <div className="petRepoSceneSparkles" aria-hidden="true">
+-                  <span className="petRepoSceneSparkle petRepoSceneSparkle-1" />
+-                  <span className="petRepoSceneSparkle petRepoSceneSparkle-2" />
+-                  <span className="petRepoSceneSparkle petRepoSceneSparkle-3" />
+-                  <span className="petRepoSceneSparkle petRepoSceneSparkle-4" />
+-                </div>
+-
+-                <div className="petRepoScenePet">
+-                  {previewUrl ? (
+-                    <img
+-                      className="petRepoScenePetImage"
+-                      src={previewUrl}
+-                      alt={getPetLabel(pet)}
+-                    />
+-                  ) : (
+-                    <div
+-                      className="petRepoCreatureCore petRepoCreatureCore--scene"
+-                      aria-label="Pet placeholder"
+-                    >
+-                      <span className="petRepoCreatureEye petRepoCreatureEyeLeft" />
+-                      <span className="petRepoCreatureEye petRepoCreatureEyeRight" />
+-                      <span className="petRepoCreatureSmile" />
+-                    </div>
+-                  )}
+-                </div>
+-
+-                <div className="petRepoScenePlatformWrap" aria-hidden="true">
+-                  <div className="petRepoScenePlatformOuter" />
+-                  <div className="petRepoScenePlatformInner" />
+-                </div>
+-              </div>
+-            </div>
+-
+-            {showPetSpeech && petSpeech ? (
+-              <div className="petRepoTalkBubble" aria-live="polite">
+-                <p>{petSpeech}</p>
+-              </div>
+-            ) : null}
+-            <div className="petRepoFarmButtonWrap">
+-              <Link to="/farm" className="btn btn-gold">
+-                Farm
+-              </Link>
+-            </div>
+-            <div className="petRepoEnergyPanel" aria-label="Energy level">
+-              <span className="petRepoEnergyTitle">Energy</span>
+-
+-              <div className="petRepoEnergyTrack">
+-                <div
+-                  className="petRepoEnergyFill"
+-                  style={{ width: `${clampedEnergy}%` }}
+-                />
+-              </div>
+-            </div>
+-
+-            <div className="petRepoVerticalInfo">
+-              <div className="petRepoStatStack">
+-                <InfoRow label="Species" value={pet.name || "--"} strong />
+-                <NicknameRow
+-                  canRenameNickname={canRenameNickname}
+-                  nicknameSaving={nicknameSaving}
+-                  busy={busy}
+-                  nicknameIsSet={nicknameIsSet}
+-                  pet={pet}
+-                  setNicknameDraft={setNicknameDraft}
+-                  setShowNicknameEditor={setShowNicknameEditor}
+-                />
+-                <InfoRow label="Level" value={String(safeNum(pet.level, 1))} />
+-                <InfoRow label="Gender" value={titleCase(pet.gender) || "--"} />
+-                <InfoRow label="Element" value={getDisplayedElement(pet)} />
+-                <InfoRow label="Stage" value={titleCase(pet.stage) || "--"} />
+-                <InfoRow label="Day or Night" value={stablePreference} />
+-                <InfoRow
+-                  label="Trait"
+-                  value={getDisplayedPersonality(pet, personalityName)}
+-                />
+-                <InfoRow
+-                  label="Passive Trait"
+-                  value={getDisplayedPassiveTrait(pet)}
+-                />
+-                <InfoRow
+-                  label="Mutation Trait"
+-                  value={getDisplayedMutationTraits(pet)}
+-                />
+-              </div>
+-            </div>
+-          </section>
+-        </div>
+-
+-        <section className="petRepoCareStatusPanel" aria-label="Care status">
+-          <div className="petRepoCareStatusHeader">
+-            <strong className="petRepoCareStatusTitle">Care Status</strong>
+-          </div>
+-
+-          <div className="petRepoBars">
+-            <MeterRow label="Hunger" value={hungerLevel} tone="blue" />
+-            <MeterRow label="Clean" value={cleanLevel} tone="purple" />
+-            <MeterRow label="Mood" value={moodLevel} tone="red" />
+-            <MeterRow label="Rest" value={restLevel} tone="green" />
+-            <MeterRow label="Comfort" value={comfortLevel} tone="gold" />
+-          </div>
+-
+-          <div className="petRepoActionGrid">
+-            <button
+-              type="button"
+-              className="petRepoAction petRepoActionBlue"
+-              onClick={() => void runCareAction("feed")}
+-              disabled={busy || nicknameSaving || safeInventory.food <= 0}
+-            >
+-              Feed {safeInventory.food > 0 ? `· ${safeInventory.food}` : ""}
+-            </button>
+-
+-            <button
+-              type="button"
+-              className="petRepoAction petRepoActionPurple"
+-              onClick={() => void runCareAction("clean")}
+-              disabled={busy || nicknameSaving || safeInventory.soap <= 0}
+-            >
+-              Clean {safeInventory.soap > 0 ? `· ${safeInventory.soap}` : ""}
+-            </button>
+-
+-            <button
+-              type="button"
+-              className="petRepoAction petRepoActionRed"
+-              onClick={() => void runCareAction("play")}
+-              disabled={busy || nicknameSaving || safeInventory.toy <= 0}
+-            >
+-              Play {safeInventory.toy > 0 ? `· ${safeInventory.toy}` : ""}
+-            </button>
+-
+-            <button
+-              type="button"
+-              className="petRepoAction petRepoActionYellow"
+-              onClick={() => void runCareAction("pet")}
+-              disabled={busy || nicknameSaving}
+-            >
+-              Pet
+-            </button>
+-          </div>
+-
+-          <div className="petRepoCareActionMessageSlot" aria-live="polite">
+-            {actionMsg ? (
+-              <div className="petRepoInlineMessage">{actionMsg}</div>
+-            ) : null}
+-          </div>
+-        </section>
+-
+-        {starterMerchant?.show ? (
+-          <div className="petRepoRunawayBanner" role="alert">
+-            <div className="petRepoRunawayBanner__eyebrow">
+-              Emergency Access
+-            </div>
+-            <h3 className="petRepoRunawayBanner__title">
+-              {starterMerchant.title || "Pet Ran Away"}
+-            </h3>
+-            <p className="petRepoRunawayBanner__body">
+-              {starterMerchant.body ||
+-                "All of your Kith are gone. A quiet merchant has opened inside Kithna's tutorial market with lower-tier starter rescues so you can rebuild."}
+-            </p>
+-
+-            <a
+-              className="petRepoRunawayBanner__cta"
+-              href={starterMerchant.href || "/hatchery"}
+-            >
+-              {starterMerchant.ctaLabel || "Visit the Kithna Merchant"}
+-            </a>
+-          </div>
+-        ) : null}
+-      </article>
+-    </>
+-  );
+-}
++import { useEffect, useRef, useState } from "react";
++import { Link } from "react-router-dom";
++import { safeNum, titleCase } from "@/lib/petUtils";
++import DpPopupWindow from "../DpPopupWindow";
++import "./PetDetailsPanel.css";
++import { getPetDialogue } from "./petDialogue";
++import {
++  getSelfAwareBubbleText,
++  rememberSelfAwareVisit,
++} from "../selfAware/selfAware";
++// ─── Types ────────────────────────────────────────────────────────────────────
++
++type PetRecord = {
++  id?: string;
++  user_id?: string;
++  name?: string | null;
++  nickname?: string | null;
++  level?: number | null;
++  gender?: string | null;
++  element?: string | null;
++  line?: string | null;
++  stage?: string | null;
++  personality?: string | null;
++  personality_name?: string | null;
++  personality_key?: string | null;
++  hunger?: number | null;
++  clean?: number | null;
++  happy?: number | null;
++  energy?: number | null;
++  bond?: number | null;
++  description?: string | null;
++  is_active?: boolean | null;
++  image_url?: string | null;
++  sprite_url?: string | null;
++  portrait_url?: string | null;
++  hatch_time_alignment?: string | null;
++  training_time_preference?: string | null;
++  preferred_time?: string | null;
++  preferredTime?: string | null;
++  created_at?: string | null;
++  hatch_ends_at?: string | null;
++  hatched_at?: string | null;
++  passive_trait_id?: string | null;
++  passive_trait_key?: string | null;
++  passive_trait_name?: string | null;
++  mutation_trait_names?: string[] | null;
++  mutations?:
++    | string[]
++    | {
++        name?: string | null;
++        key?: string | null;
++      }[]
++    | null;
++};
++
++type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
++
++type StarterMerchantState = {
++  show?: boolean;
++  href?: string;
++  title?: string;
++  body?: string;
++  ctaLabel?: string;
++};
++
++type PetPanelStats = {
++  hp: number;
++  atk: number;
++  def: number;
++  spd: number;
++  magi: number;
++  mana: number;
++};
++
++const CARE_MAX = 50;
++const ENERGY_MAX = 100;
++
++type PetDetailsPanelProps = {
++  pet: PetRecord;
++  petDescription?: string;
++  stats?: PetPanelStats;
++  personalityName: string | null;
++  nicknameDraft: string;
++  nicknameSaving: boolean;
++  showNicknameEditor: boolean;
++  canRenameNickname: boolean;
++  canSaveNickname: boolean;
++  busy: boolean;
++  hunger: number;
++  clean: number;
++  happy: number;
++  comfort: number;
++  rest: number;
++  energy: number;
++  bond: number;
++  inventoryCounts?: {
++    food: number;
++    soap: number;
++    toy: number;
++    bed: number;
++  };
++  actionMsg: string | null;
++  starterMerchant?: StarterMerchantState | null;
++  setNicknameDraft: (value: string) => void;
++  setShowNicknameEditor: (value: boolean) => void;
++  saveNickname: () => Promise<void>;
++  runCareAction: (action: "feed" | "clean" | "play" | "pet") => Promise<void>;
++};
++
++// ─── Pure helpers ─────────────────────────────────────────────────────────────
++
++function getPetLabel(pet: PetRecord | null) {
++  return pet?.nickname?.trim() || pet?.name?.trim() || "Your Delta";
++}
++
++function hasNickname(pet: PetRecord | null) {
++  return Boolean(pet?.nickname?.trim());
++}
++
++function getNicknameDisplay(pet: PetRecord | null) {
++  return hasNickname(pet) ? pet?.nickname?.trim() || "--" : "--";
++}
++
++function getDisplayedPersonality(
++  pet: Pick<
++    PetRecord,
++    "personality_name" | "personality" | "personality_key"
++  > | null,
++  personalityName?: string | null,
++) {
++  const direct =
++    personalityName ??
++    pet?.personality_name ??
++    pet?.personality ??
++    pet?.personality_key ??
++    null;
++
++  return direct ? titleCase(direct) : "Mysterious";
++}
++
++function getDisplayedPassiveTrait(
++  pet: Pick<
++    PetRecord,
++    "passive_trait_name" | "passive_trait_key" | "passive_trait_id"
++  > | null,
++) {
++  const direct =
++    pet?.passive_trait_name ??
++    pet?.passive_trait_key ??
++    pet?.passive_trait_id ??
++    null;
++
++  return direct ? titleCase(direct) : "None";
++}
++
++function getDisplayedMutationTraits(
++  pet: Pick<PetRecord, "mutation_trait_names" | "mutations"> | null,
++) {
++  const directNames = pet?.mutation_trait_names ?? [];
++
++  const nestedNames =
++    pet?.mutations?.map((mutation) => {
++      if (typeof mutation === "string") {
++        return mutation;
++      }
++
++      return mutation.name ?? mutation.key ?? "";
++    }) ?? [];
++
++  const names = Array.from(
++    new Set([...directNames, ...nestedNames].filter(Boolean)),
++  );
++
++  return names.length
++    ? names.map((name) => titleCase(name)).join(", ")
++    : "None";
++}
++
++function getPreviewUrl(pet: PetRecord) {
++  return pet.portrait_url || pet.sprite_url || pet.image_url || null;
++}
++
++function getDisplayedElement(pet: PetRecord) {
++  const value = String(pet.element || pet.line || "").toLowerCase();
++  if (!value || value === "null" || value === "null_element")
++    return "Voidborne";
++  return titleCase(value);
++}
++
++function getDayNightLabel(value: unknown) {
++  const normalized = String(value ?? "")
++    .trim()
++    .toLowerCase()
++    .replace(/[\s-]+/g, "_");
++
++  if (normalized === "day" || normalized === "day_pigeon") {
++    return "Day Pigeon";
++  }
++
++  if (normalized === "night" || normalized === "night_owl") {
++    return "Night Owl";
++  }
++
++  return null;
++}
++
++function getDayNightFromTimestamp(value: unknown) {
++  const raw = String(value ?? "").trim();
++  if (!raw) return null;
++
++  const date = new Date(raw);
++  if (Number.isNaN(date.getTime())) return null;
++
++  const hour = date.getHours();
++  return hour >= 6 && hour < 18 ? "Day Pigeon" : "Night Owl";
++}
++
++function getIsDayNow() {
++  const hour = new Date().getHours();
++  return hour >= 6 && hour < 18;
++}
++
++function getStablePreference(pet: PetRecord) {
++  const direct =
++    getDayNightLabel(pet.hatch_time_alignment) ??
++    getDayNightLabel(pet.training_time_preference) ??
++    getDayNightLabel(pet.preferred_time) ??
++    getDayNightLabel(pet.preferredTime);
++
++  if (direct) return direct;
++
++  const fallback =
++    getDayNightFromTimestamp(pet.hatched_at) ??
++    getDayNightFromTimestamp(pet.hatch_ends_at) ??
++    getDayNightFromTimestamp(pet.created_at);
++
++  return fallback ?? "--";
++}
++
++function getPetSpeech({
++  hunger,
++  clean,
++  happy,
++  comfort,
++  rest,
++  energy,
++}: {
++  hunger: number;
++  clean: number;
++  happy: number;
++  comfort: number;
++  rest: number;
++  energy: number;
++}) {
++  const needs = [
++    { value: hunger, text: "I'm hungry... can we get food?" },
++    { value: clean, text: "I feel gross... I need a clean." },
++    { value: happy, text: "I'm kinda bored... play with me?" },
++    { value: comfort, text: "I could use some comfort right now." },
++    { value: rest, text: "I'm tired... I need rest." },
++    { value: energy, text: "I'm low on energy... slow down." },
++  ];
++
++  needs.sort((a, b) => a.value - b.value);
++  const lowest = needs[0];
++
++  if (lowest.value <= 15) return lowest.text;
++  if (lowest.value <= 30) return `Hey... ${lowest.text}`;
++  if (lowest.value <= 45) return `I'm okay, but ${lowest.text.toLowerCase()}`;
++
++  return "I'm doing okay right now.";
++}
++
++function getRandomPetSpeech(options: {
++  hunger: number;
++  clean: number;
++  happy: number;
++  comfort: number;
++  rest: number;
++  energy: number;
++}) {
++  const sayings = [
++    getPetSpeech(options),
++    "Thanks for checking on me.",
++    "I'm just vibing in here.",
++    "This room feels cozy today.",
++  ];
++
++  if (options.hunger <= 25) {
++    sayings.push(
++      "My tummy is making noises...",
++      "Food would be amazing right now.",
++    );
++  }
++
++  if (options.clean <= 25) {
++    sayings.push("I feel kinda messy...", "A bath would help a lot.");
++  }
++
++  if (options.happy <= 25) {
++    sayings.push("Can we play soon?", "I'm getting a little bored.");
++  }
++
++  if (options.comfort <= 25) {
++    sayings.push(
++      "Can you stay with me for a bit?",
++      "I could use some comfort.",
++    );
++  }
++
++  if (options.rest <= 25) {
++    sayings.push("I'm getting sleepy...", "A nap sounds really good.");
++  }
++
++  if (options.energy <= 25) {
++    sayings.push("I'm low on energy today.", "I need to take it slow.");
++  }
++
++  return sayings[Math.floor(Math.random() * sayings.length)];
++}
++
++function randomNickname(seedName: string) {
++  const starts = [
++    "Nova",
++    "Mochi",
++    "Echo",
++    "Rune",
++    "Comet",
++    "Luma",
++    "Nori",
++    "Jolt",
++    "Miso",
++    "Sprig",
++    "Pebble",
++    "Drift",
++    "Orbit",
++    "Blitz",
++  ];
++
++  const ends = [
++    "tail",
++    "flare",
++    "spark",
++    "leaf",
++    "wing",
++    "fang",
++    "step",
++    "gleam",
++    "drop",
++    "shade",
++    "burst",
++    "whisp",
++  ];
++
++  const cleaned = seedName.replace(/\s+/g, "").trim();
++
++  if (cleaned.length >= 3 && Math.random() > 0.45) {
++    const suffix = ends[Math.floor(Math.random() * ends.length)];
++    return `${cleaned.slice(0, 8)}${suffix}`;
++  }
++
++  const first = starts[Math.floor(Math.random() * starts.length)];
++  const second = ends[Math.floor(Math.random() * ends.length)];
++  return `${first}${second}`;
++}
++
++// ─── Sub-components ───────────────────────────────────────────────────────────
++
++function InfoRow({
++  label,
++  value,
++  strong = false,
++}: {
++  label: string;
++  value: string;
++  strong?: boolean;
++}) {
++  return (
++    <div className={`petRepoInfoRow ${strong ? "is-strong" : ""}`}>
++      <span>{label}</span>
++      <span>{value}</span>
++    </div>
++  );
++}
++
++function NicknameRow({
++  canRenameNickname,
++  nicknameSaving,
++  busy,
++  nicknameIsSet,
++  pet,
++  setNicknameDraft,
++  setShowNicknameEditor,
++}: {
++  canRenameNickname: boolean;
++  nicknameSaving: boolean;
++  busy: boolean;
++  nicknameIsSet: boolean;
++  pet: PetRecord;
++  setNicknameDraft: (value: string) => void;
++  setShowNicknameEditor: (value: boolean) => void;
++}) {
++  return (
++    <button
++      type="button"
++      className={`petRepoInfoRowButton ${
++        canRenameNickname ? "is-clickable" : "is-locked"
++      }`}
++      onClick={() => {
++        if (!canRenameNickname) return;
++        setNicknameDraft("");
++        setShowNicknameEditor(true);
++      }}
++      disabled={!canRenameNickname || nicknameSaving || busy}
++      title={
++        canRenameNickname
++          ? "Click to name this pet."
++          : "This Delta's nickname is already locked."
++      }
++    >
++      <span className="petRepoInfoRowButtonLabel">
++        {!nicknameIsSet ? (
++          <span className="petRepoNicknamePulseOrb" aria-hidden="true" />
++        ) : null}
++        <span>Nickname</span>
++      </span>
++
++      <span
++        className={
++          nicknameIsSet
++            ? "petRepoInfoRowButtonValue"
++            : "petRepoInfoRowButtonValue petRepoInfoRowButtonValuePrompt"
++        }
++      >
++        {getNicknameDisplay(pet)}
++      </span>
++    </button>
++  );
++}
++
++function MeterRow({
++  label,
++  value,
++  tone,
++}: {
++  label: string;
++  value: number;
++  tone: MeterTone;
++}) {
++  const clampedValue = Math.max(0, Math.min(CARE_MAX, value));
++  const fillWidth = (clampedValue / CARE_MAX) * 100;
++
++  return (
++    <div className="petRepoMeterRow">
++      <div className="petRepoMeterMeta">
++        <span className="petRepoMeterLabel">{label}</span>
++        <span className="petRepoMeterValue">{clampedValue}</span>
++      </div>
++
++      <div className="petRepoMeterTrack" aria-hidden="true">
++        <div
++          className={`petRepoMeterFill petRepoMeterFill-${tone}`}
++          style={{ width: `${fillWidth}%` }}
++        />
++      </div>
++    </div>
++  );
++}
++
++// ─── Main component ───────────────────────────────────────────────────────────
++
++export default function PetDetailsPanel({
++  pet,
++  personalityName,
++  petDescription,
++  nicknameDraft,
++  nicknameSaving,
++  showNicknameEditor,
++  canRenameNickname,
++  canSaveNickname,
++  busy,
++  hunger,
++  clean,
++  happy,
++  comfort,
++  rest,
++  energy,
++  bond,
++  inventoryCounts,
++  actionMsg,
++  starterMerchant,
++  setNicknameDraft,
++  setShowNicknameEditor,
++  saveNickname,
++  runCareAction,
++}: PetDetailsPanelProps) {
++  const previewUrl = getPreviewUrl(pet);
++  const elementKey = String(pet.element || pet.line || "null")
++    .trim()
++    .toLowerCase()
++    .replace(/\s+/g, "_");
++
++  const nicknameIsSet = hasNickname(pet);
++  const clampedBond = Math.max(0, Math.min(100, bond));
++  const clampedEnergy = Math.max(
++    0,
++    Math.min(ENERGY_MAX, safeNum(energy, ENERGY_MAX)),
++  );
++
++  const hungerLevel = Math.max(
++    0,
++    Math.min(CARE_MAX, safeNum(hunger, CARE_MAX)),
++  );
++  const cleanLevel = Math.max(0, Math.min(CARE_MAX, safeNum(clean, CARE_MAX)));
++  const moodLevel = Math.max(0, Math.min(CARE_MAX, safeNum(happy, CARE_MAX)));
++  const restLevel = Math.max(0, Math.min(CARE_MAX, safeNum(rest, CARE_MAX)));
++  const comfortLevel = Math.max(
++    0,
++    Math.min(CARE_MAX, safeNum(comfort, CARE_MAX)),
++  );
++  const energyLevel = Math.max(
++    0,
++    Math.min(ENERGY_MAX, safeNum(energy, ENERGY_MAX)),
++  );
++
++  const stablePreference = getStablePreference(pet);
++  const [petSpeech, setPetSpeech] = useState("");
++  const [showPetSpeech, setShowPetSpeech] = useState(false);
++
++  const speechDataRef = useRef({
++    pet,
++    personalityName,
++    hungerLevel,
++    cleanLevel,
++    moodLevel,
++    comfortLevel,
++    restLevel,
++    energyLevel,
++    clampedBond,
++  });
++
++  useEffect(() => {
++    speechDataRef.current = {
++      pet,
++      personalityName,
++      hungerLevel,
++      cleanLevel,
++      moodLevel,
++      comfortLevel,
++      restLevel,
++      energyLevel,
++      clampedBond,
++    };
++  }, [
++    pet,
++    personalityName,
++    hungerLevel,
++    cleanLevel,
++    moodLevel,
++    comfortLevel,
++    restLevel,
++    energyLevel,
++    clampedBond,
++  ]);
++
++  const selfAwareMemoryRef = useRef<ReturnType<
++    typeof rememberSelfAwareVisit
++  > | null>(null);
++
++  useEffect(() => {
++    selfAwareMemoryRef.current = rememberSelfAwareVisit(pet?.id ?? null);
++  }, [pet?.id]);
++
++  useEffect(() => {
++    let showTimer: number | null = null;
++    let hideTimer: number | null = null;
++    let stopped = false;
++
++    const schedulePetSpeech = () => {
++      showTimer = window.setTimeout(
++        () => {
++          if (stopped) return;
++
++          const current = speechDataRef.current;
++
++          const dialogueText =
++            getPetDialogue({
++              petName: getPetLabel(current.pet),
++              personalityKey:
++                current.pet.personality_key ??
++                current.pet.personality ??
++                current.personalityName,
++              hunger: current.hungerLevel,
++              clean: current.cleanLevel,
++              happy: current.moodLevel,
++              comfort: current.comfortLevel,
++              rest: current.restLevel,
++              energy: current.energyLevel,
++              bond: current.clampedBond,
++            })?.trim() ?? "";
++
++          const fallbackSpeech =
++            dialogueText ||
++            getRandomPetSpeech({
++              hunger: current.hungerLevel,
++              clean: current.cleanLevel,
++              happy: current.moodLevel,
++              comfort: current.comfortLevel,
++              rest: current.restLevel,
++              energy: current.energyLevel,
++            });
++
++          setPetSpeech(
++            getSelfAwareBubbleText({
++              pet: current.pet,
++              care: {
++                hunger: current.hungerLevel,
++                clean: current.cleanLevel,
++                happy: current.moodLevel,
++                comfort: current.comfortLevel,
++                rest: current.restLevel,
++                energy: current.energyLevel,
++                bond: current.clampedBond,
++              },
++              isDay: getIsDayNow(),
++              memory: selfAwareMemoryRef.current,
++              fallbackText: fallbackSpeech,
++            }),
++          );
++
++          setShowPetSpeech(true);
++
++          hideTimer = window.setTimeout(() => {
++            if (stopped) return;
++
++            setShowPetSpeech(false);
++            schedulePetSpeech();
++          }, 90000);
++        },
++        20000 + Math.random() * 70000,
++      );
++    };
++
++    schedulePetSpeech();
++
++    return () => {
++      stopped = true;
++
++      if (showTimer !== null) {
++        window.clearTimeout(showTimer);
++      }
++
++      if (hideTimer !== null) {
++        window.clearTimeout(hideTimer);
++      }
++    };
++  }, [pet?.id, personalityName]);
++
++  const safeInventory = inventoryCounts ?? {
++    food: 0,
++    soap: 0,
++    toy: 0,
++    bed: 0,
++  };
++
++  useEffect(() => {
++    if (!showNicknameEditor) return;
++
++    const originalOverflow = document.body.style.overflow;
++    document.body.style.overflow = "hidden";
++
++    const handleKeyDown = (event: KeyboardEvent) => {
++      if (event.key === "Escape" && !nicknameSaving) {
++        setShowNicknameEditor(false);
++      }
++    };
++
++    window.addEventListener("keydown", handleKeyDown);
++
++    return () => {
++      document.body.style.overflow = originalOverflow;
++      window.removeEventListener("keydown", handleKeyDown);
++    };
++  }, [showNicknameEditor, nicknameSaving, setShowNicknameEditor]);
++
++  const nicknameModal =
++    showNicknameEditor && canRenameNickname ? (
++      <DpPopupWindow
++        open
++        onClose={() => {
++          if (nicknameSaving) return;
++          setShowNicknameEditor(false);
++        }}
++        label="Name Your New Pet"
++        size="compact"
++        contentClassName="petRepoNicknamePopupContent"
++      >
++        <button
++          type="button"
++          className="petRepoNicknameModalClose"
++          onClick={() => setShowNicknameEditor(false)}
++          disabled={nicknameSaving}
++          aria-label="Close nickname window"
++        >
++          ×
++        </button>
++
++        <div className="petRepoNicknameModalHeader">
++          <h3 id="pet-nickname-title" className="petRepoNicknameModalTitle">
++            Name Your New Pet!
++          </h3>
++          <p className="petRepoNicknameModalCopy">
++            Create your nickname here. You can type your own or roll a random
++            one.
++          </p>
++          <p className="petRepoNicknameModalCopy petRepoNicknameModalCopySmall">
++            Once saved, it cannot be changed again.
++          </p>
++        </div>
++
++        <div className="petRepoNicknameModalBody">
++          <label htmlFor="pet-nickname" className="petRepoInputLabel">
++            Nickname
++          </label>
++
++          <input
++            id="pet-nickname"
++            className="petRepoInput petRepoInputModal"
++            type="text"
++            maxLength={32}
++            value={nicknameDraft}
++            onChange={(event) => setNicknameDraft(event.target.value)}
++            onKeyDown={(event) => {
++              if (event.key === "Enter" && canSaveNickname) {
++                event.preventDefault();
++                void saveNickname();
++              }
++            }}
++            placeholder="Enter a nickname"
++            autoFocus
++          />
++
++          <div className="petRepoNicknameModalActions">
++            <button
++              type="button"
++              className="petRepoNicknameModalSecondary"
++              onClick={() =>
++                setNicknameDraft(randomNickname(pet?.name?.trim() || "Delta"))
++              }
++              disabled={nicknameSaving}
++            >
++              Random Name
++            </button>
++
++            <button
++              type="button"
++              className="petRepoNicknameModalPrimary"
++              onClick={() => void saveNickname()}
++              disabled={!canSaveNickname}
++            >
++              {nicknameSaving ? "Saving..." : "Save Nickname"}
++            </button>
++          </div>
++        </div>
++      </DpPopupWindow>
++    ) : null;
++
++  return (
++    <>
++      {nicknameModal}
++
++      <article className={`petRepoCareCard petRepoElement-${elementKey}`}>
++        <div className="petRepoDetailsHeaderBlock">
++          <h3 className="petRepoDeltaDetailsTitle">Kith Details</h3>
++
++          <div className="petRepoBondPanel" aria-label="Bond level">
++            <span className="petRepoBondTitle">Bond</span>
++
++            <div className="petRepoBondTrack">
++              <div
++                className="petRepoBondFill"
++                style={{ width: `${clampedBond}%` }}
++              />
++            </div>
++          </div>
++        </div>
++
++        <section className="petRepoDetailsTopPanel">
++          {petDescription ? (
++            <div className="petRepoDetailsTopPanelBody">
++              <p className="petRepoDetailsTopPanelText">{petDescription}</p>
++            </div>
++          ) : null}
++        </section>
++
++        <div className="petRepoCreatureTop">
++          <section
++            className="petRepoVerticalCard"
++            aria-label="Pet scene and details"
++          >
++            <div
++              className={`petRepoSceneOrb petRepoSceneOrb--${elementKey}`}
++              style={
++                {
++                  ["--bond" as string]: String(clampedBond),
++                  ["--energy" as string]: String(clampedEnergy),
++                } as React.CSSProperties
++              }
++            >
++              <div
++                className="petRepoSceneRing petRepoSceneRing--bond"
++                aria-hidden="true"
++              />
++              <div
++                className="petRepoSceneRing petRepoSceneRing--energy"
++                aria-hidden="true"
++              />
++
++              <div
++                className="petRepoSupplyShelf"
++                aria-label="Care item shelves"
++              >
++                <div className="petRepoSupplySlot" />
++                <div className="petRepoSupplySlot" />
++                <div className="petRepoSupplySlot" />
++                <div className="petRepoSupplySlot" />
++                <p className="petRepoSupplyShelfHint">Care Items go here</p>
++              </div>
++
++              <div className="petRepoSceneInner">
++                <div className="petRepoSceneCeiling" aria-hidden="true" />
++                <div className="petRepoSceneWallLeft" aria-hidden="true" />
++                <div className="petRepoSceneWallRight" aria-hidden="true" />
++                <div className="petRepoSceneGlow" aria-hidden="true" />
++                <div className="petRepoSceneSparkles" aria-hidden="true">
++                  <span className="petRepoSceneSparkle petRepoSceneSparkle-1" />
++                  <span className="petRepoSceneSparkle petRepoSceneSparkle-2" />
++                  <span className="petRepoSceneSparkle petRepoSceneSparkle-3" />
++                  <span className="petRepoSceneSparkle petRepoSceneSparkle-4" />
++                </div>
++
++                <div className="petRepoScenePet">
++                  {previewUrl ? (
++                    <img
++                      className="petRepoScenePetImage"
++                      src={previewUrl}
++                      alt={getPetLabel(pet)}
++                    />
++                  ) : (
++                    <div
++                      className="petRepoCreatureCore petRepoCreatureCore--scene"
++                      aria-label="Pet placeholder"
++                    >
++                      <span className="petRepoCreatureEye petRepoCreatureEyeLeft" />
++                      <span className="petRepoCreatureEye petRepoCreatureEyeRight" />
++                      <span className="petRepoCreatureSmile" />
++                    </div>
++                  )}
++                </div>
++
++                <div className="petRepoScenePlatformWrap" aria-hidden="true">
++                  <div className="petRepoScenePlatformOuter" />
++                  <div className="petRepoScenePlatformInner" />
++                </div>
++              </div>
++            </div>
++
++            {showPetSpeech && petSpeech ? (
++              <div className="petRepoTalkBubble" aria-live="polite">
++                <p>{petSpeech}</p>
++              </div>
++            ) : null}
++            <div className="petRepoFarmButtonWrap">
++              <Link to="/farm" className="btn btn-gold">
++                Farm
++              </Link>
++            </div>
++            <div className="petRepoEnergyPanel" aria-label="Energy level">
++              <span className="petRepoEnergyTitle">Energy</span>
++
++              <div className="petRepoEnergyTrack">
++                <div
++                  className="petRepoEnergyFill"
++                  style={{ width: `${clampedEnergy}%` }}
++                />
++              </div>
++            </div>
++
++            <div className="petRepoVerticalInfo">
++              <div className="petRepoStatStack">
++                <InfoRow label="Species" value={pet.name || "--"} strong />
++                <NicknameRow
++                  canRenameNickname={canRenameNickname}
++                  nicknameSaving={nicknameSaving}
++                  busy={busy}
++                  nicknameIsSet={nicknameIsSet}
++                  pet={pet}
++                  setNicknameDraft={setNicknameDraft}
++                  setShowNicknameEditor={setShowNicknameEditor}
++                />
++                <InfoRow label="Level" value={String(safeNum(pet.level, 1))} />
++                <InfoRow label="Gender" value={titleCase(pet.gender) || "--"} />
++                <InfoRow label="Element" value={getDisplayedElement(pet)} />
++                <InfoRow label="Stage" value={titleCase(pet.stage) || "--"} />
++                <InfoRow label="Day or Night" value={stablePreference} />
++                <InfoRow
++                  label="Trait"
++                  value={getDisplayedPersonality(pet, personalityName)}
++                />
++                <InfoRow
++                  label="Passive Trait"
++                  value={getDisplayedPassiveTrait(pet)}
++                />
++                <InfoRow
++                  label="Mutation Trait"
++                  value={getDisplayedMutationTraits(pet)}
++                />
++              </div>
++            </div>
++          </section>
++        </div>
++
++        <section className="petRepoCareStatusPanel" aria-label="Care status">
++          <div className="petRepoCareStatusHeader">
++            <strong className="petRepoCareStatusTitle">Care Status</strong>
++          </div>
++
++          <div className="petRepoBars">
++            <MeterRow label="Hunger" value={hungerLevel} tone="blue" />
++            <MeterRow label="Clean" value={cleanLevel} tone="purple" />
++            <MeterRow label="Mood" value={moodLevel} tone="red" />
++            <MeterRow label="Rest" value={restLevel} tone="green" />
++            <MeterRow label="Comfort" value={comfortLevel} tone="gold" />
++          </div>
++
++          <div className="petRepoActionGrid">
++            <button
++              type="button"
++              className="petRepoAction petRepoActionBlue"
++              onClick={() => void runCareAction("feed")}
++              disabled={busy || nicknameSaving || safeInventory.food <= 0}
++            >
++              Feed {safeInventory.food > 0 ? `· ${safeInventory.food}` : ""}
++            </button>
++
++            <button
++              type="button"
++              className="petRepoAction petRepoActionPurple"
++              onClick={() => void runCareAction("clean")}
++              disabled={busy || nicknameSaving || safeInventory.soap <= 0}
++            >
++              Clean {safeInventory.soap > 0 ? `· ${safeInventory.soap}` : ""}
++            </button>
++
++            <button
++              type="button"
++              className="petRepoAction petRepoActionRed"
++              onClick={() => void runCareAction("play")}
++              disabled={busy || nicknameSaving || safeInventory.toy <= 0}
++            >
++              Play {safeInventory.toy > 0 ? `· ${safeInventory.toy}` : ""}
++            </button>
++
++            <button
++              type="button"
++              className="petRepoAction petRepoActionYellow"
++              onClick={() => void runCareAction("pet")}
++              disabled={busy || nicknameSaving || safeInventory.bed <= 0}
++            >
++              Comfort {safeInventory.bed > 0 ? `· ${safeInventory.bed}` : ""}
++            </button>
++          </div>
++
++          <div className="petRepoCareActionMessageSlot" aria-live="polite">
++            {actionMsg ? (
++              <div className="petRepoInlineMessage">{actionMsg}</div>
++            ) : null}
++          </div>
++        </section>
++
++        {starterMerchant?.show ? (
++          <div className="petRepoRunawayBanner" role="alert">
++            <div className="petRepoRunawayBanner__eyebrow">
++              Emergency Access
++            </div>
++            <h3 className="petRepoRunawayBanner__title">
++              {starterMerchant.title || "Pet Ran Away"}
++            </h3>
++            <p className="petRepoRunawayBanner__body">
++              {starterMerchant.body ||
++                "All of your Kith are gone. A quiet merchant has opened inside Kithna's tutorial market with lower-tier starter rescues so you can rebuild."}
++            </p>
++
++            <a
++              className="petRepoRunawayBanner__cta"
++              href={starterMerchant.href || "/hatchery"}
++            >
++              {starterMerchant.ctaLabel || "Visit the Kithna Merchant"}
++            </a>
++          </div>
++        ) : null}
++      </article>
++    </>
++  );
++}
+diff --git a/delta_original2/backend/server/src/pets/cooldowns.ts b/delta_work/backend/server/src/pets/cooldowns.ts
+index 8180297..4fb6959 100644
+--- a/delta_original2/backend/server/src/pets/cooldowns.ts
++++ b/delta_work/backend/server/src/pets/cooldowns.ts
+@@ -1,86 +1,88 @@
+-// backend/server/src/lib/cooldowns.ts
+-// Single source of truth for cooldowns.
+-// Safe parsing, server-computed remaining_ms, easy to consume.
+-
+-export type CooldownKey = "feed" | "clean" | "play" | "bond";
+-
+-export type CooldownState = {
+-  ends_at: string | null; // ISO
+-  remaining_ms: number; // server computed
+-  ready: boolean;
+-};
+-
+-export type CooldownsPayload = Record<CooldownKey, CooldownState>;
+-
+-const COL_BY_KEY: Record<CooldownKey, string> = {
+-  feed: "cd_feed_ends_at",
+-  clean: "cd_clean_ends_at",
+-  play: "cd_play_ends_at",
+-  bond: "cd_bond_ends_at",
+-};
+-
+-export const DEFAULT_COOLDOWN_MS: Record<CooldownKey, number> = {
+-  feed: 60_000,
+-  clean: 90_000,
+-  play: 120_000,
+-  bond: 75_000,
+-};
+-
+-function toIso(v: any): string | null {
+-  if (!v) return null;
+-  const d = new Date(v);
+-  const ms = d.getTime();
+-  if (!Number.isFinite(ms)) return null;
+-  return d.toISOString();
+-}
+-
+-export function cooldownsFromPetRow(pet: any, nowMs: number): CooldownsPayload {
+-  const mk = (key: CooldownKey): CooldownState => {
+-    const col = COL_BY_KEY[key];
+-    const endsIso = toIso(pet?.[col]);
+-    const endsMs = endsIso ? Date.parse(endsIso) : NaN;
+-
+-    const remaining = Number.isFinite(endsMs) ? Math.max(0, endsMs - nowMs) : 0;
+-    const ready = remaining <= 0;
+-
+-    return { ends_at: endsIso, remaining_ms: remaining, ready };
+-  };
+-
+-  return {
+-    feed: mk("feed"),
+-    clean: mk("clean"),
+-    play: mk("play"),
+-    bond: mk("bond"),
+-  };
+-}
+-
+-export function assertCooldownReady(pet: any, key: CooldownKey, nowMs: number) {
+-  const col = COL_BY_KEY[key];
+-  const endsIso = toIso(pet?.[col]);
+-  if (!endsIso) return;
+-
+-  const endsMs = Date.parse(endsIso);
+-  if (!Number.isFinite(endsMs)) return;
+-
+-  const remaining = endsMs - nowMs;
+-  if (remaining > 0) {
+-    const err: any = new Error(`Cooldown not ready: ${key}`);
+-    err.status = 409;
+-    err.cooldown_key = key;
+-    err.cooldown_ends_at = endsIso;
+-    err.cooldown_remaining_ms = remaining;
+-    throw err;
+-  }
+-}
+-
+-export function calcNewCooldownEndsAtIso(
+-  nowMs: number,
+-  key: CooldownKey,
+-  durationMs: number = DEFAULT_COOLDOWN_MS[key],
+-) {
+-  return new Date(nowMs + durationMs).toISOString();
+-}
+-
+-export function colNameForKey(key: CooldownKey) {
+-  return COL_BY_KEY[key];
+-}
++// backend/server/src/lib/cooldowns.ts
++// Single source of truth for cooldowns.
++// Safe parsing, server-computed remaining_ms, easy to consume.
++
++export type CooldownKey = "feed" | "clean" | "play" | "bond";
++
++export type CooldownState = {
++  ends_at: string | null; // ISO
++  remaining_ms: number; // server computed
++  ready: boolean;
++};
++
++export type CooldownsPayload = Record<CooldownKey, CooldownState>;
++
++const COL_BY_KEY: Record<CooldownKey, string> = {
++  feed: "cd_feed_ends_at",
++  clean: "cd_clean_ends_at",
++  play: "cd_play_ends_at",
++  bond: "cd_bond_ends_at",
++};
++
++export const DEFAULT_COOLDOWN_MS: Record<CooldownKey, number> = {
++  feed: 0,
++  clean: 90_000,
++  play: 120_000,
++  bond: 75_000,
++};
++
++function toIso(v: any): string | null {
++  if (!v) return null;
++  const d = new Date(v);
++  const ms = d.getTime();
++  if (!Number.isFinite(ms)) return null;
++  return d.toISOString();
++}
++
++export function cooldownsFromPetRow(pet: any, nowMs: number): CooldownsPayload {
++  const mk = (key: CooldownKey): CooldownState => {
++    const col = COL_BY_KEY[key];
++    const endsIso = toIso(pet?.[col]);
++    const endsMs = endsIso ? Date.parse(endsIso) : NaN;
++
++    const remaining = Number.isFinite(endsMs) ? Math.max(0, endsMs - nowMs) : 0;
++    const ready = remaining <= 0;
++
++    return { ends_at: endsIso, remaining_ms: remaining, ready };
++  };
++
++  return {
++    feed: mk("feed"),
++    clean: mk("clean"),
++    play: mk("play"),
++    bond: mk("bond"),
++  };
++}
++
++export function assertCooldownReady(pet: any, key: CooldownKey, nowMs: number) {
++  if (key === "feed") return;
++
++  const col = COL_BY_KEY[key];
++  const endsIso = toIso(pet?.[col]);
++  if (!endsIso) return;
++
++  const endsMs = Date.parse(endsIso);
++  if (!Number.isFinite(endsMs)) return;
++
++  const remaining = endsMs - nowMs;
++  if (remaining > 0) {
++    const err: any = new Error(`Cooldown not ready: ${key}`);
++    err.status = 409;
++    err.cooldown_key = key;
++    err.cooldown_ends_at = endsIso;
++    err.cooldown_remaining_ms = remaining;
++    throw err;
++  }
++}
++
++export function calcNewCooldownEndsAtIso(
++  nowMs: number,
++  key: CooldownKey,
++  durationMs: number = DEFAULT_COOLDOWN_MS[key],
++) {
++  return new Date(nowMs + durationMs).toISOString();
++}
++
++export function colNameForKey(key: CooldownKey) {
++  return COL_BY_KEY[key];
++}

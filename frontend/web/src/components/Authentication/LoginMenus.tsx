@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import "./LoginMenus.css";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/app/providers/useAuth";
+import { useEnterGame } from "@/app/entry/useEnterGame";
 
 type AuthView = "login" | "signup";
 type ForcedAuthView = AuthView | "none";
@@ -93,6 +94,7 @@ export function LoginMenus({
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn } = useAuth();
+  const { enterGame } = useEnterGame();
 
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<AuthView>("login");
