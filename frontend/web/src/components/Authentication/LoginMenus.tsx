@@ -227,56 +227,10 @@ export function LoginMenus({
         return;
       }
 
-      const { data: authData, error: userError } =
-        await supabase.auth.getUser();
-
-      if (userError) {
-        setMessage({
-          type: "error",
-          text:
-            userError.message ?? "Sign in succeeded, but user lookup failed.",
-        });
-        return;
-      }
-
-      const userId = authData.user?.id;
-
-      if (!userId) {
-        setMessage({
-          type: "error",
-          text: "Sign in succeeded, but no user was returned.",
-        });
-        return;
-      }
-
-      console.log("[auth] sign-in success userId=%s", userId);
-
-      const { data: existingPet, error: petLookupError } = await supabase
-        .from("pets")
-        .select("id")
-        .eq("user_id", userId)
-        .limit(1)
-        .maybeSingle();
-
-      if (petLookupError) {
-        console.error("[auth] pet lookup failed:", petLookupError);
-        closeModal();
-        console.log("[auth] routing -> /pet (pet lookup fallback)");
-        navigate("/pet");
-        return;
-      }
+      console.log("[auth] sign-in success, handing off to enterGame()");
 
       closeModal();
-
-      if (existingPet) {
-        console.log("[auth] pet lookup -> existing pet found");
-        console.log("[auth] routing -> /pet");
-        navigate("/pet");
-      } else {
-        console.log("[auth] pet lookup -> no pet found");
-        console.log("[auth] routing -> /create");
-        navigate("/create");
-      }
+      await enterGame();
     } catch (error) {
       console.error("[auth] sign-in failed:", error);
       setMessage({
@@ -387,6 +341,7 @@ export function LoginMenus({
           email: trimmedEmail,
           password: signupPassword,
           options: {
+            emailRedirectTo: `${window.location.origin}/authcallback`,
             data: {
               full_name: trimmedName,
               username: normalizedNickname,
