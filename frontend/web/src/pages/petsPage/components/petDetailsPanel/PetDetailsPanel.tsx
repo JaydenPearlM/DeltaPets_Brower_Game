@@ -965,9 +965,9 @@ export default function PetDetailsPanel({
               type="button"
               className="petRepoAction petRepoActionYellow"
               onClick={() => void runCareAction("pet")}
-              disabled={busy || nicknameSaving}
+              disabled={busy || nicknameSaving || safeInventory.bed <= 0}
             >
-              Pet
+              Comfort {safeInventory.bed > 0 ? `· ${safeInventory.bed}` : ""}
             </button>
           </div>
 

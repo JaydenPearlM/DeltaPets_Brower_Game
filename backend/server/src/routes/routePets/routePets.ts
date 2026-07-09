@@ -623,6 +623,25 @@ petsRouter.post(
         });
       }
 
+      const { data: openSlot, error: openSlotError } = await supabaseAdmin
+        .from("hatchery_slots")
+        .select("id, slot_index")
+        .eq("user_id", userId)
+        .eq("unlocked", true)
+        .is("pet_id", null)
+        .order("slot_index", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (openSlotError) throw openSlotError;
+
+      if (!openSlot) {
+        return res.status(400).json({
+          success: false,
+          error: "No open hatchery slot is available for a rescue egg.",
+        });
+      }
+
       const worldTime = getWorldTimeOfDay();
       const starter = getStarterForSelection({
         line: "random",
@@ -683,15 +702,34 @@ petsRouter.post(
         });
       }
 
+      const { error: slotError } = await supabaseAdmin
+        .from("hatchery_slots")
+        .update({ pet_id: insertedPet.id })
+        .eq("id", openSlot.id)
+        .eq("user_id", userId);
+
+      if (slotError) {
+        logger.error("[rescue-egg] slot assignment failed", slotError);
+        // Roll back the pet insert so we don't leave an orphaned egg with
+        // no slot, better to fail the whole rescue than half-grant it.
+        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+        return res.status(500).json({
+          success: false,
+          error: slotError.message,
+        });
+      }
+
       logger.info("[rescue-egg] rescue egg granted", {
         userId,
         petId: insertedPet.id,
         speciesId: starter.speciesId,
+        slotIndex: openSlot.slot_index,
       });
 
       return res.status(200).json({
         success: true,
         pet: insertedPet,
+        slot_index: openSlot.slot_index,
       });
     } catch (err: any) {
       logger.error("[rescue-egg] failed", err);

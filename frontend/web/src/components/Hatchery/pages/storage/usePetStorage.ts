@@ -721,6 +721,22 @@ export function usePetStorage(options: UsePetStorageOptions) {
           );
         }
 
+        const { data: openSlot, error: openSlotError } = await supabase
+          .from("hatchery_slots")
+          .select("id, slot_index")
+          .eq("user_id", userId)
+          .eq("unlocked", true)
+          .is("pet_id", null)
+          .order("slot_index", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (openSlotError) throw openSlotError;
+
+        if (!openSlot) {
+          throw new Error("No open hatchery slot is available right now.");
+        }
+
         const { error } = await supabase
           .from("pets")
           .update({
@@ -731,6 +747,23 @@ export function usePetStorage(options: UsePetStorageOptions) {
           .eq("id", petId);
 
         if (error) throw error;
+
+        const { error: slotError } = await supabase
+          .from("hatchery_slots")
+          .update({ pet_id: petId })
+          .eq("id", openSlot.id)
+          .eq("user_id", userId);
+
+        if (slotError) {
+          // Roll back the location change so we don't leave an orphaned
+          // egg with no slot, better to fail the whole move than half-do it.
+          await supabase
+            .from("pets")
+            .update({ location: "storage" })
+            .eq("user_id", userId)
+            .eq("id", petId);
+          throw slotError;
+        }
       });
     },
     [pets, userId],
@@ -761,6 +794,14 @@ export function usePetStorage(options: UsePetStorageOptions) {
           .eq("id", petId);
 
         if (error) throw error;
+
+        const { error: slotError } = await supabase
+          .from("hatchery_slots")
+          .update({ pet_id: null })
+          .eq("user_id", userId)
+          .eq("pet_id", petId);
+
+        if (slotError) throw slotError;
       });
     },
     [pets, storageCounts, userId],

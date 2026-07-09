@@ -346,7 +346,6 @@ function EggSlotButton(props: {
         isSelected ? "selected" : "",
         slot.locked ? "locked" : "",
         slot.egg ? "hasEgg" : "",
-        slot.egg?.line ? `eggElement-${slot.egg.line}` : "",
       ].join(" ")}
     >
       <button
@@ -356,7 +355,7 @@ function EggSlotButton(props: {
           if (!slot.locked) onSelect();
         }}
         disabled={slot.locked}
-        title={slot.egg ? slot.egg.name : `Egg ${slot.index}`}
+        title={`Egg ${slot.index}`}
       >
         <div className="eggSlotLeft">
           {slot.egg ? (

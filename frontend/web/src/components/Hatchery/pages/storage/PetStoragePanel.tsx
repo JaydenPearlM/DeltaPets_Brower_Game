@@ -154,7 +154,7 @@ function StoragePetCard(props: {
       className={[
         "storagePetCard",
         "storagePetCardWithTooltip",
-        getToneClass(pet.line),
+        isEgg ? "tone-default" : getToneClass(pet.line),
         pet.is_active ? "isActivePet" : "",
         isDragging ? "isDragging" : "",
       ].join(" ")}
@@ -173,10 +173,12 @@ function StoragePetCard(props: {
       <div className="storagePetTop">
         <div className="storagePetIdentity">
           <div className="storagePetName">
-            {pet.name?.trim() || "Unnamed Delta"}
+            {isEgg ? "Mystery Egg" : pet.name?.trim() || "Unnamed Delta"}
           </div>
           <div className="storagePetMeta">
-            {formatLineLabel(pet.line)} • Lv. {pet.level ?? 1}
+            {isEgg
+              ? `Lv. ${pet.level ?? 1}`
+              : `${formatLineLabel(pet.line)} • Lv. ${pet.level ?? 1}`}
           </div>
         </div>
 
@@ -482,8 +484,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
 
         {incubatingEgg ? (
           <div className="storageIncubatorNotice">
-            Incubating now:{" "}
-            <strong>{incubatingEgg.name?.trim() || "Mystery Egg"}</strong>
+            Incubating now: <strong>Mystery Egg</strong>
             {" • "}
             {formatStageLabel(incubatingEgg.stage)}
           </div>
