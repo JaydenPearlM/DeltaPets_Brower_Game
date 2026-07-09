@@ -11,7 +11,7 @@ import {
   titleCase,
 } from "@/lib/petUtils";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
-import LostKithRegistry from "@/pages/petsPage/components/lostKithRegistry/LostKithRegistry";
+import LostKithRegistry from "@/pages/petsPage/components/LostKithRegistry/LostKithRegistry";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
 import StatsChamber from "@/components/StatsChamber/StatsChamber";
@@ -24,40 +24,21 @@ import "./PetPage.css";
 import SkillTree from "@/components/Skills/skilltree";
 import DpPopupWindow from "./components/DpPopupWindow";
 import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
+import {
+  type CareInventoryCategory,
+  addCareItem,
+  consumeCareItem,
+  ensureStarterCareInventory,
+  getCareInventoryCounts,
+  getInventoryChangeEventName,
+} from "@/components/inventory/inventory";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
-type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
-
-const TEMP_DISABLED_CARE_INVENTORY_COUNTS: Record<
-  CareInventoryCategory,
-  number
-> = {
-  food: 999,
-  soap: 999,
-  toy: 999,
-  bed: 999,
-};
-
-function ensureStarterCareInventory() {
-  // Inventory is temporarily disabled.
-}
-
-function getInventoryChangeEventName() {
-  return "deltapets:inventory-disabled";
-}
-
-function consumeCareItem(_category: CareInventoryCategory, _amount: number) {
-  return true;
-}
-
-function addCareItem(_category: CareInventoryCategory, _amount: number) {
-  // Inventory is temporarily disabled.
-}
 
 type PetRecord = Record<string, any>;
 
 function getCareCooldownRemainingMs(pet: PetRecord | null, action: CareAction) {
-  if (action === "pet") return 0;
+  if (action === "feed" || action === "pet") return 0;
 
   const cooldownColumnByAction: Record<Exclude<CareAction, "pet">, string> = {
     feed: "cd_feed_ends_at",
@@ -277,12 +258,12 @@ export default function PetPage() {
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [showNicknameEditor, setShowNicknameEditor] = useState(false);
-  const [careInventoryCounts, setCareInventoryCounts] = useState(
-    TEMP_DISABLED_CARE_INVENTORY_COUNTS,
+  const [careInventoryCounts, setCareInventoryCounts] = useState(() =>
+    getCareInventoryCounts(),
   );
 
   const syncCareInventoryCounts = useCallback(() => {
-    setCareInventoryCounts(TEMP_DISABLED_CARE_INVENTORY_COUNTS);
+    setCareInventoryCounts(getCareInventoryCounts());
   }, []);
 
   const hasLoadedOnceRef = useRef(false);
@@ -413,6 +394,7 @@ export default function PetPage() {
         feed: "food",
         clean: "soap",
         play: "toy",
+        pet: "bed",
       };
 
       const inventoryCategory = inventoryCategoryByAction[action] ?? null;
@@ -426,7 +408,9 @@ export default function PetPage() {
               ? "food"
               : inventoryCategory === "soap"
                 ? "soap"
-                : "toy";
+                : inventoryCategory === "toy"
+                  ? "toy"
+                  : "pillow";
 
           setActionMsg(`You need ${missingLabel} in your inventory first.`);
           syncCareInventoryCounts();
