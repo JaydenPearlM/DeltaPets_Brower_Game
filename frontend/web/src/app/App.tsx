@@ -438,16 +438,7 @@ export default function App() {
         >
           <section className="dpPopupWindow dpPopupWindow--compact">
             <div className="dpPopupWindowContent inventoryModal">
-              <button
-                type="button"
-                className="inventoryModalClose dp-btn--close"
-                onClick={closeInventory}
-                aria-label="Close inventory"
-              >
-                ×
-              </button>
-
-              <Inventory />
+              <Inventory onClose={closeInventory} />
             </div>
           </section>
         </div>

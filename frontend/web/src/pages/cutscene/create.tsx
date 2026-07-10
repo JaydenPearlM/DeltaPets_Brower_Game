@@ -262,9 +262,40 @@ function resampleClosed(pts: Point[], N: number) {
    component
 ========================================================= */
 export default function DeltaPetsCutscene() {
-  // [PORT] const { user } = useAuth();  -> derive display name
   const navigate = useNavigate();
-  const [playerName, setPlayerName] = useState("Jayden");
+  const [playerName, setPlayerName] = useState("Traveler");
+
+  // Was hardcoded to the literal string "Jayden" (a leftover dev placeholder,
+  // see the removed [PORT] comment that used to sit here). Pulls the real
+  // trainer's name from /api/me so "Good luck, <name>." addresses the
+  // actual player instead of always saying "Jayden."
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const me = await apiFetch<{
+          profile?: {
+            display_name?: string | null;
+            username?: string | null;
+          } | null;
+        }>("/api/me");
+
+        const name = me?.profile?.display_name || me?.profile?.username;
+
+        if (!cancelled && name) {
+          setPlayerName(name);
+        }
+      } catch {
+        // Keep the "Traveler" fallback if this fails, not worth blocking
+        // the cutscene over a name lookup.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [phase, setPhase] = useState<TimelinePhase>("fadeInBlack");
   const [centerText, setCenterText] = useState("");
@@ -863,6 +894,7 @@ export default function DeltaPetsCutscene() {
     phase === "gridFadeIn" ||
     phase === "wireHold" ||
     phase === "goodluck";
+  const isGoodluckText = phase === "goodluck" || phase === "hold";
 
   return (
     <div className="dpc-root">
@@ -875,7 +907,11 @@ export default function DeltaPetsCutscene() {
       ) : null}
 
       <div className={`dpc-center ${centerFadesOut ? "fade-out" : ""}`}>
-        <div className={`dpc-text ${glitching ? "glitch" : ""}`}>
+        <div
+          className={`dpc-text ${glitching ? "glitch" : ""} ${
+            isGoodluckText ? "dpc-text--goodluck" : ""
+          }`}
+        >
           <span>{centerText}</span>
           {typingPhase || glitching ? (
             <span className="dpc-caret">▍</span>
@@ -938,6 +974,9 @@ const css = `
   overflow:visible;
   color:${C.text}; font-size:22px; letter-spacing:.3px; text-align:center;
   text-shadow:0 0 18px rgba(70,220,255,0.28);
+}
+.dpc-text.dpc-text--goodluck{
+  transform:translate(-50%, calc(-50% + 195px));
 }
 .dpc-text.glitch span{
   text-shadow: 2px 0 rgba(255,60,120,0.6), -2px 0 rgba(60,200,255,0.6), 0 0 18px rgba(120,230,255,0.4);

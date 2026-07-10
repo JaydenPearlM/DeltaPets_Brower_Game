@@ -10,10 +10,15 @@
 .inventoryHeader {
   display: grid;
   gap: 8px;
-  padding-right: 38px;
 }
 
-.inventoryEyebrow,
+.inventoryHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .inventoryItemType,
 .inventoryItemMeta {
   margin: 0;
@@ -31,6 +36,56 @@
   line-height: 1;
   -webkit-text-stroke: 0;
   text-shadow: none;
+}
+
+.inventoryFilterWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.inventoryFilterToggle {
+  appearance: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--dp-cyber-cyan, #4deaff);
+  background: rgba(3, 12, 28, 0.66);
+  color: var(--dp-cyber-cyan, #4deaff);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.inventoryFilterMenu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 5;
+  display: grid;
+  gap: 4px;
+  min-width: 140px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 2px solid var(--dp-cyber-cyan, #4deaff);
+  background: rgba(3, 12, 28, 0.94);
+  box-shadow: 0 0 18px rgba(77, 234, 255, 0.18);
+}
+
+.inventoryFilterOption {
+  appearance: none;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.inventoryFilterOption--active {
+  background: rgba(77, 234, 255, 0.16);
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
 }
 
 .inventoryIntro {
@@ -54,6 +109,49 @@
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.inventoryGrid--slots {
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  grid-auto-rows: 96px;
+}
+
+.inventoryGrid--slots .inventoryItemCard {
+  min-height: 0;
+  gap: 4px;
+  padding: 8px;
+  justify-content: center;
+}
+
+.inventoryGrid--slots .inventoryItemCardHeader {
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.inventoryGrid--slots .inventoryItemCard h3 {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
+.inventoryGrid--slots .inventoryItemType,
+.inventoryGrid--slots .inventoryItemDescription,
+.inventoryGrid--slots .inventoryItemMeta {
+  display: none;
+}
+
+.inventoryGrid--slots .inventoryItemQty {
+  min-width: 34px;
+  padding: 3px 7px;
+  font-size: 0.72rem;
+}
+
+.inventorySlotEmpty {
+  border: 2px dashed rgba(77, 234, 255, 0.28);
+  border-radius: 16px;
+  background: rgba(3, 12, 28, 0.35);
 }
 
 .inventoryItemCard,
@@ -136,14 +234,33 @@
   font-weight: 950;
 }
 
+.inventoryFooter {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 4px;
+}
+
+.inventoryFooterClose {
+  min-width: 96px;
+}
+
 @media (max-width: 640px) {
   .inventoryGrid {
     grid-template-columns: 1fr;
   }
 
+  .inventoryGrid--slots {
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+    grid-auto-rows: 76px;
+  }
+
   .inventoryItemCardHeader {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .inventoryGrid--slots .inventoryItemCardHeader {
+    align-items: center;
   }
 
   .inventoryItemQty {
