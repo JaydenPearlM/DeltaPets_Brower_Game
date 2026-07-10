@@ -1431,6 +1431,15 @@
     border-bottom: 0;
   }
 
+  .hp-spotlightIdentity {
+    align-items: center;
+  }
+
+  .hp-spotlightName {
+    width: 100%;
+    text-align: center;
+  }
+
   .hp-spotlightMetaRow {
     flex-direction: column;
     align-items: center;

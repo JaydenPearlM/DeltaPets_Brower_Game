@@ -41,6 +41,15 @@
   line-height: 1.45;
 }
 
+.inventorySectionLabel {
+  margin: 18px 0 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dp-white-70, rgba(255, 255, 255, 0.7));
+}
+
 .inventoryGrid {
   display: grid;
   gap: 12px;

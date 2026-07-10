@@ -70,25 +70,6 @@ function pickRandomSpecies(
   return pool[cryptoRandomInt(pool.length)];
 }
 
-async function findOpenHatcherySlot(
-  userId: string,
-): Promise<{ id: string; slot_index: number } | null> {
-  const { data, error } = await supabaseAdmin
-    .from("hatchery_slots")
-    .select("id, slot_index, unlocked, pet_id")
-    .eq("user_id", userId)
-    .eq("unlocked", true)
-    .is("pet_id", null)
-    .order("slot_index", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) return null;
-
-  return { id: data.id, slot_index: data.slot_index };
-}
-
 async function grantXpToActivePet(userId: string, amount: number) {
   // Writes directly to pets.xp, the field every frontend XP bar actually
   // reads. Do not write this to pet_stat_allocations.xp, that table is a
@@ -150,17 +131,14 @@ kithnaRouter.post(
         return res.json({ found: false, reason: "no_pool" });
       }
 
-      const openSlot = await findOpenHatcherySlot(userId);
-      if (!openSlot) {
-        return res.json({ found: false, reason: "hatchery_full" });
-      }
-
       const species = pickRandomSpecies(pool);
       const eggQuality = await rollNonStarterEggQuality();
-      const hatchEndsAt = new Date(
-        now + eggQuality.hatch_minutes * 60 * 1000,
-      ).toISOString();
 
+      // Eggs now land in "inventory" instead of being auto-placed into an
+      // open hatchery slot. The player decides from there whether to send
+      // it to Storage or start incubating it in the Hatchery. hatch_ends_at
+      // stays null until incubation actually starts; the rolled duration is
+      // preserved in pending_hatch_minutes so it isn't lost.
       const { data: insertedPet, error: insertError } = await supabaseAdmin
         .from("pets")
         .insert({
@@ -170,9 +148,10 @@ kithnaRouter.post(
           line: species.line,
           stage: "egg",
           energy: 100,
-          hatch_ends_at: hatchEndsAt,
+          hatch_ends_at: null,
+          pending_hatch_minutes: eggQuality.hatch_minutes,
           is_active: false,
-          location: "hatchery",
+          location: "inventory",
           hatch_time_alignment: species.preferredTime,
         })
         .select("*")
@@ -197,27 +176,12 @@ kithnaRouter.post(
         });
       }
 
-      const { error: slotError } = await supabaseAdmin
-        .from("hatchery_slots")
-        .update({ pet_id: insertedPet.id })
-        .eq("id", openSlot.id)
-        .eq("user_id", userId);
-
-      if (slotError) {
-        logger.error("[kithna/roam] slot assignment failed", slotError);
-        // Roll back the pet insert so we don't leave an orphaned egg with
-        // no slot, better to fail the whole encounter than half-grant it.
-        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
-        return res.status(500).json({ error: slotError.message });
-      }
-
       await grantXpToActivePet(userId, species.findXpReward);
 
       logger.info("[kithna/roam] egg found", {
         userId,
         speciesId: species.id,
         timeOfDay,
-        slotIndex: openSlot.slot_index,
       });
 
       return res.json({

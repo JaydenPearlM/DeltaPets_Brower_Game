@@ -44,7 +44,7 @@ export default function App() {
   const { phase } = useDeltaTime();
   const { signal } = useAliuneSignal();
   const { user, loading } = useAuth();
-  const { inventoryOpen, closeInventory } = useUI();
+  const { inventoryOpen, openInventory, closeInventory } = useUI();
   const { result: roamResult, clearResult: clearRoamResult } = useRoamEncounter(
     Boolean(user) && !loading && location.pathname === "/cities/kithna",
   );
@@ -325,6 +325,19 @@ export default function App() {
                             onClick={() => handleNavigate("/profile")}
                           >
                             <span>Profile</span>
+                          </button>
+                        </div>
+
+                        <div className="hamburgerMenuSection hamburgerMenuSection--profile">
+                          <button
+                            type="button"
+                            className="hamburgerMenuSectionStatic"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              openInventory();
+                            }}
+                          >
+                            <span>Inventory</span>
                           </button>
                         </div>
 

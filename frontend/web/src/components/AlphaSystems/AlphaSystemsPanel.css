@@ -376,15 +376,27 @@
   opacity: 0.45;
 }
 
-/* MOBILE ONLY: everything below this point only fires under 720px.
-   Desktop rules above are untouched. .alpha-panel used the same
-   "bleed 100px wider than its column, shift 56px right" trick as
-   the homepage spotlight panel, which is why the table read as
-   cut off, the real table was rendering fine, it was just shifted
-   off the right edge of a narrow screen. The SYSTEM/DESCRIPTION/DATE
-   grid and the 4-column patch table are also switched to a single
-   stacked column here, since fixed grid-template-columns like
-   "1fr 1.6fr 110px" have no room to breathe on a 384px phone. */
+@media (min-width: 981px) {
+  .alpha-panel {
+    padding-bottom: 14.5px;
+  }
+}
+
+/*
+  MOBILE ONLY: Everything below this point only fires under 720px.
+
+  Desktop rules above are untouched. .alpha-panel used the same
+  "bleed 100px wider than its column, shift 56px right" trick as
+  the homepage spotlight panel, which is why the table appeared
+  cut off.
+
+  The real table was rendering correctly, but it was shifted off
+  the right edge of narrow screens.
+
+  The SYSTEM/DESCRIPTION/DATE grid and four-column patch table
+  are switched to a single stacked column because fixed columns
+  like "1fr 1.6fr 110px" do not have enough room on a 384px phone.
+*/
 @media (max-width: 720px) {
   .alpha-panel {
     width: 100%;
@@ -404,9 +416,9 @@
     font-size: 0.72rem;
     letter-spacing: 0.04em;
   }
+}
 
-  .alpha-tableHeader {
-
+.alpha-tableHeader {
   .alpha-row {
     grid-template-columns: 1fr;
   }

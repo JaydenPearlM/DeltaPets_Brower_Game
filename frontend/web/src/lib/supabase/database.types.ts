@@ -1096,6 +1096,7 @@ export type Database = {
           nickname: string | null
           personality_id: string | null
           personality_key: string | null
+          pending_hatch_minutes: number | null
           ran_away: boolean
           rest: number
           runaway_at: string | null
@@ -1148,6 +1149,7 @@ export type Database = {
           nickname?: string | null
           personality_id?: string | null
           personality_key?: string | null
+          pending_hatch_minutes?: number | null
           ran_away?: boolean
           rest?: number
           runaway_at?: string | null
@@ -1200,6 +1202,7 @@ export type Database = {
           nickname?: string | null
           personality_id?: string | null
           personality_key?: string | null
+          pending_hatch_minutes?: number | null
           ran_away?: boolean
           rest?: number
           runaway_at?: string | null

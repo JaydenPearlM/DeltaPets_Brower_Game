@@ -1,5 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/lib/api/baseClient";
 import "./inventory.css";
+
+// Backend-tracked items (GET /api/inventory). Separate from the local
+// care-item system above on purpose, see inventoryRouter for why. These
+// are real rows granted server-side, e.g. weekly reward items.
+export type BackendInventoryItem = {
+  slug: string;
+  name: string;
+  type: string;
+  description: string | null;
+  rarity: number;
+  stackLimit: number;
+  effects: Record<string, unknown>;
+  qty: number;
+  updatedAt: string;
+};
 
 export type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
 export type InventoryItemType = "food" | "seed" | "care" | "armor" | "skill" | "misc";
@@ -147,10 +163,23 @@ export function getInventoryChangeEventName() {
   return INVENTORY_CHANGE_EVENT;
 }
 
+// Starter grant amount. Previously this function only created an *empty*
+// inventory, which meant consumeCareItem() always failed and feed/clean/
+// play were permanently unusable for every player, since nothing else in
+// the app ever legitimately added a care item. This seeds a small starting
+// stock instead of an empty shell.
+const STARTER_CARE_ITEM_QTY = 5;
+
 export function ensureStarterCareInventory() {
   if (window.localStorage.getItem(INVENTORY_STORAGE_KEY)) return;
 
   writeInventoryState(emptyInventoryState());
+
+  (Object.keys(CARE_ITEM_DEFINITIONS) as CareInventoryCategory[]).forEach(
+    (category) => {
+      addInventoryItem(CARE_ITEM_DEFINITIONS[category], STARTER_CARE_ITEM_QTY);
+    },
+  );
 }
 
 export function getInventoryItems() {
@@ -238,6 +267,9 @@ export function consumeCareItem(category: CareInventoryCategory, amount = 1) {
 
 export default function Inventory() {
   const [inventoryItems, setInventoryItems] = useState(() => getInventoryItems());
+  const [backendItems, setBackendItems] = useState<BackendInventoryItem[]>([]);
+  const [backendLoading, setBackendLoading] = useState(true);
+  const [backendError, setBackendError] = useState("");
 
   useEffect(() => {
     const handleInventoryChange = () => {
@@ -255,12 +287,54 @@ export default function Inventory() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBackendInventory() {
+      setBackendLoading(true);
+      setBackendError("");
+
+      try {
+        const json = await apiFetch<{ items: BackendInventoryItem[] }>(
+          "/api/inventory",
+        );
+        if (!cancelled) {
+          setBackendItems(json.items ?? []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setBackendError(
+            err instanceof Error ? err.message : "Failed to load rewards.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setBackendLoading(false);
+        }
+      }
+    }
+
+    void loadBackendInventory();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const sortedInventoryItems = useMemo(
     () =>
       [...inventoryItems].sort((firstItem, secondItem) =>
         firstItem.name.localeCompare(secondItem.name),
       ),
     [inventoryItems],
+  );
+
+  const sortedBackendItems = useMemo(
+    () =>
+      [...backendItems].sort((firstItem, secondItem) =>
+        firstItem.name.localeCompare(secondItem.name),
+      ),
+    [backendItems],
   );
 
   return (
@@ -273,6 +347,8 @@ export default function Inventory() {
           into their specialty storage.
         </p>
       </header>
+
+      <p className="inventorySectionLabel">Care Items</p>
 
       {sortedInventoryItems.length > 0 ? (
         <div className="inventoryGrid" aria-label="Inventory items">
@@ -302,6 +378,42 @@ export default function Inventory() {
           <p>
             Merchant purchases will show here once Kithna shops are connected.
           </p>
+        </div>
+      )}
+
+      <p className="inventorySectionLabel">Rewards</p>
+
+      {backendLoading ? (
+        <div className="inventoryEmpty" role="status">
+          <p>Loading rewards...</p>
+        </div>
+      ) : backendError ? (
+        <div className="inventoryEmpty" role="status">
+          <p className="inventoryEmptyTitle">Couldn't load rewards.</p>
+          <p>{backendError}</p>
+        </div>
+      ) : sortedBackendItems.length > 0 ? (
+        <div className="inventoryGrid" aria-label="Reward items">
+          {sortedBackendItems.map((item) => (
+            <article className="inventoryItemCard" key={item.slug}>
+              <div className="inventoryItemCardHeader">
+                <div>
+                  <p className="inventoryItemType">{item.type}</p>
+                  <h3>{item.name}</h3>
+                </div>
+                <span className="inventoryItemQty">×{item.qty}</span>
+              </div>
+
+              {item.description ? (
+                <p className="inventoryItemDescription">{item.description}</p>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="inventoryEmpty" role="status">
+          <p className="inventoryEmptyTitle">No rewards claimed yet.</p>
+          <p>Weekly reward items you claim will show up here.</p>
         </div>
       )}
     </section>
