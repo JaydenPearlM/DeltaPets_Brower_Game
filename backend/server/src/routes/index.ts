@@ -13,6 +13,7 @@ import { careRouter } from "./care/care";
 
 import { battleRouter } from "./battle";
 import { kithnaRouter } from "./cities/kithna/kithnaEncounter";
+import { inventoryRouter } from "./inventory/inventory";
 
 const apiRouter = Router();
 
@@ -53,5 +54,11 @@ apiRouter.use("/daily/care", dailyCareRouter);
 =============================== */
 
 apiRouter.use("/rewards", rewardsRouter);
+
+/* ===============================
+   INVENTORY (backend item_defs / inventory tables)
+=============================== */
+
+apiRouter.use("/inventory", inventoryRouter);
 
 export { apiRouter };

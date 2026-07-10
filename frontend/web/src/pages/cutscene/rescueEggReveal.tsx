@@ -614,6 +614,7 @@ export default function RescueEggReveal() {
     phase === "fadeInBlack" || phase === "fadeOut" || phase === "done";
   const centerFadesOut = phase === "fadeOut" || phase === "done";
   const typingPhase = phase === "goodluck";
+  const isGoodluckText = phase === "goodluck" || phase === "hold";
 
   return (
     <div className="dpc-root">
@@ -622,7 +623,11 @@ export default function RescueEggReveal() {
       <div className={`dpc-black ${blackOn ? "on" : "off"}`} />
 
       <div className={`dpc-center ${centerFadesOut ? "fade-out" : ""}`}>
-        <div className={`dpc-text ${glitching ? "glitch" : ""}`}>
+        <div
+          className={`dpc-text ${glitching ? "glitch" : ""} ${
+            isGoodluckText ? "dpc-text--goodluck" : ""
+          }`}
+        >
           <span>{centerText}</span>
           {typingPhase || glitching ? (
             <span className="dpc-caret">▍</span>
@@ -659,6 +664,9 @@ const css = `
   overflow:visible;
   color:${C.text}; font-size:22px; letter-spacing:.3px; text-align:center;
   text-shadow:0 0 18px rgba(70,220,255,0.28);
+}
+.dpc-text.dpc-text--goodluck{
+  transform:translate(-50%, calc(-50% + 195px));
 }
 .dpc-text.glitch span{
   text-shadow: 2px 0 rgba(255,60,120,0.6), -2px 0 rgba(60,200,255,0.6), 0 0 18px rgba(120,230,255,0.4);

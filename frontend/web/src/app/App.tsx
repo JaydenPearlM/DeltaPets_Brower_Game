@@ -44,7 +44,7 @@ export default function App() {
   const { phase } = useDeltaTime();
   const { signal } = useAliuneSignal();
   const { user, loading } = useAuth();
-  const { inventoryOpen, closeInventory } = useUI();
+  const { inventoryOpen, openInventory, closeInventory } = useUI();
   const { result: roamResult, clearResult: clearRoamResult } = useRoamEncounter(
     Boolean(user) && !loading && location.pathname === "/cities/kithna",
   );
@@ -328,6 +328,19 @@ export default function App() {
                           </button>
                         </div>
 
+                        <div className="hamburgerMenuSection hamburgerMenuSection--profile">
+                          <button
+                            type="button"
+                            className="hamburgerMenuSectionStatic"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              openInventory();
+                            }}
+                          >
+                            <span>Inventory</span>
+                          </button>
+                        </div>
+
                         <div className="hamburgerMenuSection">
                           <button
                             type="button"
@@ -425,16 +438,7 @@ export default function App() {
         >
           <section className="dpPopupWindow dpPopupWindow--compact">
             <div className="dpPopupWindowContent inventoryModal">
-              <button
-                type="button"
-                className="inventoryModalClose dp-btn--close"
-                onClick={closeInventory}
-                aria-label="Close inventory"
-              >
-                ×
-              </button>
-
-              <Inventory />
+              <Inventory onClose={closeInventory} />
             </div>
           </section>
         </div>

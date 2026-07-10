@@ -172,7 +172,8 @@
 
 .anp-archiveHeading {
   position: relative;
-  top: -30px;
+  top: 0px;
+  padding-bottom: 13px;
   margin: 0;
   text-align: center;
   color: var(--dp-cyber-cyan);

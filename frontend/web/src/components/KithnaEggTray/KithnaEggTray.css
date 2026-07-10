@@ -1,0 +1,116 @@
+.kithnaEggTray {
+  width: 100%;
+  max-width: 72rem;
+  margin: 18px auto 0;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 2px solid var(--dp-panel-border-soft-cyan);
+  background: linear-gradient(
+    180deg,
+    var(--dp-panel-bg-top) 0%,
+    var(--dp-panel-bg-mid) 48%,
+    var(--dp-panel-bg-bottom) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 var(--dp-panel-inner-highlight),
+    0 0 14px var(--dp-panel-glow);
+}
+
+.kithnaEggTrayHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kithnaEggTrayHeader h2 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  color: var(--dp-text-primary);
+}
+
+.kithnaEggTrayHeader p {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--dp-white-70, rgba(255, 255, 255, 0.7));
+}
+
+.kithnaEggTrayDismiss {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--dp-panel-inner-border);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--dp-text-primary);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kithnaEggTrayError {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--dp-alert-red, #ff6b6b);
+}
+
+.kithnaEggTrayGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.kithnaEggTrayCard {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--dp-panel-inner-border);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.kithnaEggTrayName {
+  margin: 0 0 2px;
+  font-weight: 700;
+  color: var(--dp-text-primary);
+}
+
+.kithnaEggTrayLine {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  color: var(--dp-white-70, rgba(255, 255, 255, 0.7));
+}
+
+.kithnaEggTrayActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kithnaEggTrayBtn {
+  flex: 1 1 auto;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--dp-panel-inner-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--dp-text-primary);
+}
+
+.kithnaEggTrayBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kithnaEggTrayBtn--hatch {
+  background: var(--dp-cyber-blue-soft, rgba(91, 226, 255, 0.18));
+  border-color: var(--dp-cyber-cyan, #5be2ff);
+}
+
+@media (max-width: 640px) {
+  .kithnaEggTray {
+    margin: 14px 12px 0;
+    padding: 12px 14px;
+  }
+}

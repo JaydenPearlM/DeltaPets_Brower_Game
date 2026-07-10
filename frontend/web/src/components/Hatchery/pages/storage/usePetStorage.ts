@@ -40,6 +40,7 @@ export type StoragePet = {
   mana?: number | null;
   personality_key?: string | null;
   base_total?: number | null;
+  pending_hatch_minutes?: number | null;
 };
 
 type PartySlotRow = {
@@ -64,6 +65,11 @@ export const PARTY_SLOT_COUNT = 4;
 const STORAGE_TOTAL_CAP = 50;
 const STORAGE_EGG_CAP = 20;
 const STORAGE_PET_CAP = 30;
+// Matches NON_STARTER_EGG_MIN_HATCH_MINUTES in eggQualityRoll.ts on the
+// backend. Only used as a fallback if an egg somehow has no
+// pending_hatch_minutes recorded (e.g. an older egg from before this
+// column existed).
+const FALLBACK_HATCH_MINUTES = 3;
 
 function normalizeStageInternal(stage?: string | null): StorageStageFilter {
   const raw = String(stage ?? "")
@@ -189,7 +195,8 @@ export function usePetStorage(options: UsePetStorageOptions) {
     runaway_at,
     created_at,
     hatched_at,
-    hatch_ends_at
+    hatch_ends_at,
+    pending_hatch_minutes
   `,
         )
         .eq("user_id", userId)
@@ -242,6 +249,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
           mana: pet.mana ?? null,
           personality_key: pet.personality_key ?? null,
           base_total: null,
+          pending_hatch_minutes: pet.pending_hatch_minutes ?? null,
         };
       },
     );
@@ -307,6 +315,16 @@ export function usePetStorage(options: UsePetStorageOptions) {
   const incubatingEggs = useMemo(() => {
     return pets
       .filter((pet) => pet.location === "hatchery")
+      .filter((pet) => isEggStage(pet.stage))
+      .sort(sortPetsNewestFirst);
+  }, [pets]);
+
+  // Eggs found while roaming Kithna land here first (location: "inventory")
+  // instead of being auto-placed into the hatchery. The player chooses to
+  // send each one to Storage or start incubating it.
+  const inventoryEggs = useMemo(() => {
+    return pets
+      .filter((pet) => pet.location === "inventory")
       .filter((pet) => isEggStage(pet.stage))
       .sort(sortPetsNewestFirst);
   }, [pets]);
@@ -769,6 +787,120 @@ export function usePetStorage(options: UsePetStorageOptions) {
     [pets, userId],
   );
 
+  // Kithna roam eggs land in "inventory" first. These two moves take an
+  // egg from there to Storage (a holding spot, no timer started) or
+  // straight into an open Hatchery slot (timer starts now).
+  const moveEggFromInventoryToStorage = useCallback(
+    async (petId: string) => {
+      await runMutation({ petId }, async () => {
+        if (!userId) throw new Error("Missing user.");
+
+        const pet = pets.find((entry) => entry.id === petId) ?? null;
+        if (!pet) throw new Error("Pet not found.");
+        if (pet.location !== "inventory" || !isEggStage(pet.stage)) {
+          throw new Error("That egg is not in your inventory right now.");
+        }
+
+        assertCanStorePet(pet);
+
+        const { error } = await supabase
+          .from("pets")
+          .update({
+            location: "storage",
+            is_active: false,
+          })
+          .eq("user_id", userId)
+          .eq("id", petId);
+
+        if (error) throw error;
+      });
+    },
+    [pets, storageCounts, userId],
+  );
+
+  const moveEggFromInventoryToHatchery = useCallback(
+    async (petId: string) => {
+      await runMutation({ petId }, async () => {
+        if (!userId) throw new Error("Missing user.");
+
+        const pet = pets.find((entry) => entry.id === petId) ?? null;
+        if (!pet) throw new Error("Pet not found.");
+        if (pet.location !== "inventory" || !isEggStage(pet.stage)) {
+          throw new Error("That egg is not in your inventory right now.");
+        }
+
+        const existingIncubatingEgg = pets.find(
+          (entry) =>
+            entry.location === "hatchery" &&
+            isEggStage(entry.stage) &&
+            entry.id !== petId,
+        );
+
+        if (existingIncubatingEgg) {
+          throw new Error(
+            "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
+          );
+        }
+
+        const { data: openSlot, error: openSlotError } = await supabase
+          .from("hatchery_slots")
+          .select("id, slot_index")
+          .eq("user_id", userId)
+          .eq("unlocked", true)
+          .is("pet_id", null)
+          .order("slot_index", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (openSlotError) throw openSlotError;
+
+        if (!openSlot) {
+          throw new Error("No open hatchery slot is available right now.");
+        }
+
+        const hatchMinutes = pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
+        const hatchEndsAt = new Date(
+          Date.now() + hatchMinutes * 60 * 1000,
+        ).toISOString();
+
+        const { error } = await supabase
+          .from("pets")
+          .update({
+            location: "hatchery",
+            is_active: false,
+            hatch_ends_at: hatchEndsAt,
+            pending_hatch_minutes: null,
+          })
+          .eq("user_id", userId)
+          .eq("id", petId);
+
+        if (error) throw error;
+
+        const { error: slotError } = await supabase
+          .from("hatchery_slots")
+          .update({ pet_id: petId })
+          .eq("id", openSlot.id)
+          .eq("user_id", userId);
+
+        if (slotError) {
+          // Roll back so we don't leave an orphaned egg with a timer
+          // running but no slot, better to fail the whole move.
+          await supabase
+            .from("pets")
+            .update({
+              location: "inventory",
+              hatch_ends_at: null,
+              pending_hatch_minutes: hatchMinutes,
+            })
+            .eq("user_id", userId)
+            .eq("id", petId);
+          throw slotError;
+        }
+      });
+    },
+    [pets, userId],
+  );
+
   const moveEggToStorage = useCallback(
     async (petId: string) => {
       await runMutation({ petId }, async () => {
@@ -877,6 +1009,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
     workingSlotIndex,
     storageCounts,
     incubatingEggs,
+    inventoryEggs,
     reload: loadAll,
     assignPetToParty,
     returnPartyPetToStorage,
@@ -884,6 +1017,8 @@ export function usePetStorage(options: UsePetStorageOptions) {
     setActivePet,
     moveEggToIncubator,
     moveEggToStorage,
+    moveEggFromInventoryToStorage,
+    moveEggFromInventoryToHatchery,
     normalizeStage: normalizeStageInternal,
     caps: {
       total: STORAGE_TOTAL_CAP,

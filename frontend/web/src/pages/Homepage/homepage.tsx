@@ -2,6 +2,9 @@ import "./homepage.css";
 import { useNavigate } from "react-router-dom";
 import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { AlphaSystemsPanel } from "@/components/AlphaSystems/AlphaSystemsPanel";
+import { KithnaEggTray } from "@/components/KithnaEggTray/KithnaEggTray";
+import { useAuth } from "@/app/providers/useAuth";
+import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
 import { useHomepageBanner } from "./useHomepageBanner";
 import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
 
@@ -35,12 +38,21 @@ const HERO_FEATURES: HeroFeature[] = [
 
 export default function Homepage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { banner } = useHomepageBanner();
   const {
     pet: spotlightPet,
     displayName: spotlightDisplayName,
     loading: spotlightLoading,
   } = useHomepageSpotlightPet();
+  const {
+    inventoryEggs,
+    loading: petStorageLoading,
+    workingPetId,
+    error: petStorageError,
+    moveEggFromInventoryToStorage,
+    moveEggFromInventoryToHatchery,
+  } = usePetStorage({ userId: user?.id });
 
   const bannerItems =
     banner?.enabled && Array.isArray(banner.items)
@@ -141,6 +153,17 @@ export default function Homepage() {
           </div>
         </section>
       </div>
+
+      {user ? (
+        <KithnaEggTray
+          eggs={inventoryEggs}
+          loading={petStorageLoading}
+          workingPetId={workingPetId}
+          error={petStorageError}
+          onSendToStorage={moveEggFromInventoryToStorage}
+          onStartIncubating={moveEggFromInventoryToHatchery}
+        />
+      ) : null}
 
       <section className="hp-lowerGrid" aria-label="Homepage content">
         <aside className="hp-newsColumn">

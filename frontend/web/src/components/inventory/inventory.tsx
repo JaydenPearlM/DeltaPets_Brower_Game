@@ -1,8 +1,30 @@
 import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/lib/api/baseClient";
 import "./inventory.css";
 
+// Backend-tracked items (GET /api/inventory). Separate from the local
+// care-item system above on purpose, see inventoryRouter for why. These
+// are real rows granted server-side, e.g. weekly reward items.
+export type BackendInventoryItem = {
+  slug: string;
+  name: string;
+  type: string;
+  description: string | null;
+  rarity: number;
+  stackLimit: number;
+  effects: Record<string, unknown>;
+  qty: number;
+  updatedAt: string;
+};
+
 export type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
-export type InventoryItemType = "food" | "seed" | "care" | "armor" | "skill" | "misc";
+export type InventoryItemType =
+  | "food"
+  | "seed"
+  | "care"
+  | "armor"
+  | "skill"
+  | "misc";
 
 export type InventoryItemDefinition = {
   slug: string;
@@ -27,6 +49,27 @@ type InventoryStorageState = {
 const INVENTORY_STORAGE_KEY = "deltapets:care-inventory";
 const INVENTORY_CHANGE_EVENT = "deltapets:care-inventory-change";
 
+// Fixed bag size for now. Later this becomes level-gated and expandable by
+// paying dots, but that leveling system doesn't exist yet, so for now this
+// is just the hard cap and the grid always renders this many slots.
+const MAX_INVENTORY_SLOTS = 10;
+
+type InventoryFilter = "all" | "care" | "seed" | "armor" | "skill";
+
+const INVENTORY_FILTERS: { value: InventoryFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "care", label: "Care" },
+  { value: "seed", label: "Seeds" },
+  { value: "armor", label: "Armor" },
+  { value: "skill", label: "Skills" },
+];
+
+function matchesFilter(item: InventoryItemRecord, filter: InventoryFilter) {
+  if (filter === "all") return true;
+  if (filter === "care") return item.type === "care" || item.type === "food";
+  return item.type === filter;
+}
+
 const EMPTY_CARE_INVENTORY: CareInventoryCounts = {
   food: 0,
   soap: 0,
@@ -34,7 +77,10 @@ const EMPTY_CARE_INVENTORY: CareInventoryCounts = {
   bed: 0,
 };
 
-const CARE_ITEM_DEFINITIONS: Record<CareInventoryCategory, InventoryItemDefinition> = {
+const CARE_ITEM_DEFINITIONS: Record<
+  CareInventoryCategory,
+  InventoryItemDefinition
+> = {
   food: {
     slug: "kithna-food-pack",
     name: "Kithna Food Pack",
@@ -147,10 +193,23 @@ export function getInventoryChangeEventName() {
   return INVENTORY_CHANGE_EVENT;
 }
 
+// Starter grant amount. Previously this function only created an *empty*
+// inventory, which meant consumeCareItem() always failed and feed/clean/
+// play were permanently unusable for every player, since nothing else in
+// the app ever legitimately added a care item. This seeds a small starting
+// stock instead of an empty shell.
+const STARTER_CARE_ITEM_QTY = 5;
+
 export function ensureStarterCareInventory() {
   if (window.localStorage.getItem(INVENTORY_STORAGE_KEY)) return;
 
   writeInventoryState(emptyInventoryState());
+
+  (Object.keys(CARE_ITEM_DEFINITIONS) as CareInventoryCategory[]).forEach(
+    (category) => {
+      addInventoryItem(CARE_ITEM_DEFINITIONS[category], STARTER_CARE_ITEM_QTY);
+    },
+  );
 }
 
 export function getInventoryItems() {
@@ -181,6 +240,14 @@ export function addInventoryItem(item: InventoryItemDefinition, amount = 1) {
 
   const nextInventory = readInventoryState();
   const existingItem = nextInventory.items[item.slug];
+
+  // A new item type needs an open slot. Topping up a stack you already
+  // hold doesn't, since it's not taking a new slot.
+  if (!existingItem) {
+    const usedSlots = Object.keys(nextInventory.items).length;
+    if (usedSlots >= MAX_INVENTORY_SLOTS) return;
+  }
+
   const stackLimit = Math.max(1, Math.floor(Number(item.stackLimit ?? 99)));
   const nextQty = Math.min(stackLimit, (existingItem?.qty ?? 0) + nextAmount);
 
@@ -236,8 +303,19 @@ export function consumeCareItem(category: CareInventoryCategory, amount = 1) {
   return consumeInventoryItem(item.slug, amount);
 }
 
-export default function Inventory() {
-  const [inventoryItems, setInventoryItems] = useState(() => getInventoryItems());
+type InventoryProps = {
+  onClose: () => void;
+};
+
+export default function Inventory({ onClose }: InventoryProps) {
+  const [inventoryItems, setInventoryItems] = useState(() =>
+    getInventoryItems(),
+  );
+  const [filter, setFilter] = useState<InventoryFilter>("all");
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const [backendItems, setBackendItems] = useState<BackendInventoryItem[]>([]);
+  const [backendLoading, setBackendLoading] = useState(true);
+  const [backendError, setBackendError] = useState("");
 
   useEffect(() => {
     const handleInventoryChange = () => {
@@ -255,6 +333,40 @@ export default function Inventory() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBackendInventory() {
+      setBackendLoading(true);
+      setBackendError("");
+
+      try {
+        const json = await apiFetch<{ items: BackendInventoryItem[] }>(
+          "/api/inventory",
+        );
+        if (!cancelled) {
+          setBackendItems(json.items ?? []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setBackendError(
+            err instanceof Error ? err.message : "Failed to load rewards.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setBackendLoading(false);
+        }
+      }
+    }
+
+    void loadBackendInventory();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const sortedInventoryItems = useMemo(
     () =>
       [...inventoryItems].sort((firstItem, secondItem) =>
@@ -263,20 +375,94 @@ export default function Inventory() {
     [inventoryItems],
   );
 
+  const visibleInventoryItems = useMemo(
+    () => sortedInventoryItems.filter((item) => matchesFilter(item, filter)),
+    [sortedInventoryItems, filter],
+  );
+
+  // Fixed 10-slot bag display, WoW-style: filled slots hold an item, the
+  // rest render as empty placeholders up to MAX_INVENTORY_SLOTS. When the
+  // level-based paid expansion exists later, this is where more slots get
+  // added.
+  const inventorySlots = useMemo(() => {
+    const slots: (InventoryItemRecord | null)[] = [...visibleInventoryItems];
+    while (slots.length < MAX_INVENTORY_SLOTS) {
+      slots.push(null);
+    }
+    return slots.slice(
+      0,
+      Math.max(MAX_INVENTORY_SLOTS, visibleInventoryItems.length),
+    );
+  }, [visibleInventoryItems]);
+
+  const sortedBackendItems = useMemo(
+    () =>
+      [...backendItems].sort((firstItem, secondItem) =>
+        firstItem.name.localeCompare(secondItem.name),
+      ),
+    [backendItems],
+  );
+
   return (
     <section className="inventoryPanel" aria-label="Inventory">
       <header className="inventoryHeader">
-        <p className="inventoryEyebrow">DeltaPets Pack</p>
-        <h2>Inventory</h2>
+        <div className="inventoryHeaderRow">
+          <h2>Inventory</h2>
+
+          <div className="inventoryFilterWrap">
+            <button
+              type="button"
+              className="inventoryFilterToggle"
+              aria-haspopup="true"
+              aria-expanded={filterMenuOpen}
+              aria-label="Sort inventory"
+              onClick={() => setFilterMenuOpen((open) => !open)}
+            >
+              ☰
+            </button>
+
+            {filterMenuOpen ? (
+              <div className="inventoryFilterMenu" role="menu">
+                {INVENTORY_FILTERS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={filter === option.value}
+                    className={
+                      filter === option.value
+                        ? "inventoryFilterOption inventoryFilterOption--active"
+                        : "inventoryFilterOption"
+                    }
+                    onClick={() => {
+                      setFilter(option.value);
+                      setFilterMenuOpen(false);
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+
         <p className="inventoryIntro">
-          Care items, food, seeds, armor, and skills live here before they move
-          into their specialty storage.
+          Care items, seeds, armor, and skills live here before they move into
+          their specialty storage.
         </p>
       </header>
 
-      {sortedInventoryItems.length > 0 ? (
-        <div className="inventoryGrid" aria-label="Inventory items">
-          {sortedInventoryItems.map((item) => (
+      <p className="inventorySectionLabel">
+        Items ({visibleInventoryItems.length}/{MAX_INVENTORY_SLOTS})
+      </p>
+
+      <div
+        className="inventoryGrid inventoryGrid--slots"
+        aria-label="Inventory items"
+      >
+        {inventorySlots.map((item, slotIndex) =>
+          item ? (
             <article className="inventoryItemCard" key={item.slug}>
               <div className="inventoryItemCardHeader">
                 <div>
@@ -294,16 +480,62 @@ export default function Inventory() {
                 </p>
               ) : null}
             </article>
+          ) : (
+            <div
+              className="inventorySlotEmpty"
+              key={`empty-${slotIndex}`}
+              aria-hidden="true"
+            />
+          ),
+        )}
+      </div>
+
+      <p className="inventorySectionLabel">Rewards</p>
+
+      {backendLoading ? (
+        <div className="inventoryEmpty" role="status">
+          <p>Loading rewards...</p>
+        </div>
+      ) : backendError ? (
+        <div className="inventoryEmpty" role="status">
+          <p className="inventoryEmptyTitle">Couldn't load rewards.</p>
+          <p>{backendError}</p>
+        </div>
+      ) : sortedBackendItems.length > 0 ? (
+        <div className="inventoryGrid" aria-label="Reward items">
+          {sortedBackendItems.map((item) => (
+            <article className="inventoryItemCard" key={item.slug}>
+              <div className="inventoryItemCardHeader">
+                <div>
+                  <p className="inventoryItemType">{item.type}</p>
+                  <h3>{item.name}</h3>
+                </div>
+                <span className="inventoryItemQty">×{item.qty}</span>
+              </div>
+
+              {item.description ? (
+                <p className="inventoryItemDescription">{item.description}</p>
+              ) : null}
+            </article>
           ))}
         </div>
       ) : (
         <div className="inventoryEmpty" role="status">
-          <p className="inventoryEmptyTitle">No items yet.</p>
-          <p>
-            Merchant purchases will show here once Kithna shops are connected.
-          </p>
+          <p className="inventoryEmptyTitle">No rewards claimed yet.</p>
+          <p>Weekly reward items you claim will show up here.</p>
         </div>
       )}
+
+      <div className="inventoryFooter">
+        <button
+          type="button"
+          className="dp-btn--close inventoryFooterClose"
+          onClick={onClose}
+          aria-label="Close inventory"
+        >
+          Close
+        </button>
+      </div>
     </section>
   );
 }
