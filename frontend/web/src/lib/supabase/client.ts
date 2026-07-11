@@ -17,9 +17,10 @@ if (import.meta.env.DEV) {
   console.log("[supabase] client initialized");
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
+    storage: window.sessionStorage,
     autoRefreshToken: true,
     detectSessionInUrl: true,
   },

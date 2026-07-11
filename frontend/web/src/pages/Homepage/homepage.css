@@ -574,14 +574,16 @@
 .hp-heroDisclaimer {
   max-width: 860px;
   margin: 35px auto 0;
-  color: var(--dp-text-soft);
+  color: #9edcff;
   font-family: var(--font-body);
-  font-size: 0.6rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 800;
   line-height: 1.55;
   text-align: center;
   letter-spacing: 0.1em;
-  text-shadow: 0 1px 0 var(--dp-panel-inner-shadow);
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.65),
+    0 0 5px rgba(158, 220, 255, 0.25);
 }
 
 .hp-signalBanner {

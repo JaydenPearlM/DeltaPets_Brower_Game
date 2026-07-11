@@ -144,11 +144,12 @@ export default function Homepage() {
             </div>
 
             <p className="hp-heroDisclaimer">
-              Everything you see here belongs to Jayden. All DeltaPets art, UI
-              design, characters, and world-building are handcrafted and owned
-              by Jayden. AI tools are used solely to assist development
-              workflows and never to generate creative assets. © 2026 Jayden.
-              All rights reserved.
+              Everything you see here belongs to <strong>Jayden</strong>. All
+              DeltaPets art, UI design, characters, and world-building are
+              handcrafted and owned by <strong>Jayden</strong>. AI tools are
+              used solely to assist development workflows and never to generate
+              creative assets. © 2026 <strong>Jayden</strong>.{" "}
+              <strong>All rights reserved.</strong>
             </p>
           </div>
         </section>

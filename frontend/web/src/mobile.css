@@ -272,15 +272,17 @@
    --------------------------------------------------------- */
 @media (max-width: 480px) {
   .petRepoTalkBubble {
-    width: min(390px, calc(100vw - 32px)) !important;
-    transform: translateX(-50%) !important;
+    width: min(340px, calc(100% - 24px)) !important;
+    transform: none !important;
     padding: 8px 18px !important;
     font-size: 0.72rem !important;
   }
 
   .petRepoEnergyPanel {
-    width: min(390px, calc(100vw - 32px)) !important;
-    transform: translateX(-50%) !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    transform: none !important;
   }
 }
 
@@ -408,5 +410,285 @@
   .appShell {
     padding-left: 10px;
     padding-right: 10px;
+  }
+}
+
+@media (max-width: 720px) {
+  .alpha-panel,
+  .alpha-header,
+  .alpha-body,
+  .alpha-table,
+  .alpha-patchView,
+  .alpha-patchTable {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .alpha-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .alpha-title {
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .alpha-button {
+    width: 100%;
+  }
+
+  .alpha-tableHeader,
+  .alpha-patchTableHeader {
+    display: none;
+  }
+
+  .alpha-row,
+  .alpha-patchTableRow {
+    grid-template-columns: 1fr;
+  }
+
+  .alpha-row > span,
+  .alpha-patchTableCell {
+    min-width: 0;
+    min-height: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .alpha-row > span:not(:last-child),
+  .alpha-patchTableCell:not(:last-child) {
+    border-right: none;
+    border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
+  }
+
+  .alpha-row > span::before,
+  .alpha-patchTableCell::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--dp-panel-muted);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .alpha-row > span:nth-child(1)::before {
+    content: "System";
+  }
+
+  .alpha-row > span:nth-child(2)::before {
+    content: "Description";
+  }
+
+  .alpha-row > span:nth-child(3)::before {
+    content: "Date";
+  }
+
+  .alpha-patchTableCell:nth-child(1)::before {
+    content: "New";
+  }
+
+  .alpha-patchTableCell:nth-child(2)::before {
+    content: "Updated";
+  }
+
+  .alpha-patchTableCell:nth-child(3)::before {
+    content: "Fixed";
+  }
+
+  .alpha-patchTableCell:nth-child(4)::before {
+    content: "Notes";
+  }
+
+  .alpha-date {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .kithnaEggTray {
+    width: 100%;
+    margin: 14px 0 0;
+    box-sizing: border-box;
+  }
+
+  .kithnaEggTrayGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .hatcheryPage {
+    width: 100%;
+    min-height: 0;
+  }
+
+  .hatcheryPage .panelHeader,
+  .hatcheryTopActions {
+    flex-wrap: wrap;
+  }
+
+  .hatcheryLeftColumn,
+  .storagePanel,
+  .rackPanelSide,
+  .selectedEggPanel,
+  .selectedEggStatsInset,
+  .incubationInsetPanel {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .selectedEggPreviewArea {
+    height: min(420px, 105vw);
+    min-height: 0;
+    max-height: 420px;
+  }
+
+  .storagePetTooltip {
+    width: min(220px, calc(100vw - 48px));
+  }
+}
+
+@media (max-width: 420px) {
+  .compactStatsGrid,
+  .itemsGrid,
+  .eggGridCompact {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hatcheryTopActions > * {
+    width: 100%;
+  }
+}
+@media (max-width: 920px) {
+  .petRepoHeroCard {
+    grid-template-columns: 1fr !important;
+  }
+
+  .petRepoHeroTextShifted {
+    transform: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .petRepoHeroStatus {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .petRepoFarmButtonWrap {
+    width: 100%;
+    margin-right: 0;
+    justify-content: center;
+  }
+
+  .mainTeamTitleShell {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 420px) {
+  .mainTeamTitleShell {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .mainTeamTitle {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .mainTeamTitle span:first-child,
+  .mainTeamTitle span:last-child {
+    transform: none;
+  }
+
+  .petRepoBondPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .petRepoBondTitle {
+    text-align: center;
+    transform: none;
+  }
+}
+@media (max-width: 640px) {
+  .debugOverlayPanel {
+    left: 12px !important;
+    right: 12px !important;
+    top: 12px !important;
+    width: auto !important;
+    height: min(460px, calc(100vh - 88px)) !important;
+    min-width: 0 !important;
+    resize: none;
+    font-size: 14px;
+  }
+
+  .achievement-panel {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .roamEncounterToast {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    min-width: 0;
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  .wr-header,
+  .wr-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wr-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dpc-syslabel {
+    width: calc(100% - 32px) !important;
+    text-align: center !important;
+  }
+
+  .dpc-text,
+  .dpc-text.dpc-text--goodluck {
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+    height: auto !important;
+    padding: 0 8px !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important;
+    line-height: 1.45 !important;
+  }
+
+  .dpc-text {
+    transform: translate(-50%, calc(-50% + 145px)) !important;
+  }
+
+  .dpc-text.dpc-text--goodluck {
+    transform: translate(-50%, calc(-50% + 165px)) !important;
+  }
+
+  .dpc-controls {
+    bottom: 10px !important;
+    width: calc(100% - 24px) !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .wr-bar {
+    grid-template-columns: 1fr;
   }
 }
