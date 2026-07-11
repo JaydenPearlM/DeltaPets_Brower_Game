@@ -46,7 +46,12 @@ type InventoryStorageState = {
   items: Record<string, InventoryItemRecord>;
 };
 
-const INVENTORY_STORAGE_KEY = "deltapets:care-inventory";
+// v2: bumped so testers whose local blob was drained to zero before the
+// starter-seed fix get reseeded once. ensureStarterCareInventory() only
+// seeds when this key is completely absent, so a stale v1 blob (even one
+// sitting at all zeros) would otherwise block them forever. Old v1 data
+// is simply orphaned in localStorage, harmless, nothing reads it anymore.
+const INVENTORY_STORAGE_KEY = "deltapets:care-inventory:v2";
 const INVENTORY_CHANGE_EVENT = "deltapets:care-inventory-change";
 
 // Fixed bag size for now. Later this becomes level-gated and expandable by

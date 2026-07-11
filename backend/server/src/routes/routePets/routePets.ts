@@ -1117,6 +1117,12 @@ petsRouter.post(
         });
       }
 
+      await supabaseAdmin
+        .from("hatchery_slots")
+        .update({ pet_id: null })
+        .eq("user_id", userId)
+        .eq("pet_id", egg.id);
+
       const hatched = result.pet_row;
       const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
 
