@@ -27,6 +27,39 @@ export type AuthContextValue = {
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === "object" && error !== null && "message" in error) {
+    return String((error as { message?: unknown }).message ?? "");
+  }
+
+  return String(error ?? "");
+}
+
+function isInvalidRefreshToken(error: unknown): boolean {
+  const message = getErrorMessage(error).toLowerCase();
+
+  return (
+    message.includes("invalid refresh token") ||
+    message.includes("refresh token not found")
+  );
+}
+
+function clearStoredSupabaseSession(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  for (const key of Object.keys(window.localStorage)) {
+    if (key.startsWith("sb-") && key.endsWith("-auth-token")) {
+      window.localStorage.removeItem(key);
+    }
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,19 +67,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (!mounted) return;
+    const initializeSession = async (): Promise<void> => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-      if (error) {
-        console.error("[auth] getSession failed:", error.message ?? error);
+        if (error) {
+          throw error;
+        }
+
+        if (!mounted) {
+          return;
+        }
+
+        setUser(session?.user ?? null);
+        setLoading(false);
+      } catch (error) {
+        if (!mounted) {
+          return;
+        }
+
+        if (isInvalidRefreshToken(error)) {
+          console.warn("[auth] stale refresh token cleared");
+
+          clearStoredSupabaseSession();
+
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        console.error(
+          "[auth] session initialization failed:",
+          getErrorMessage(error),
+        );
+
+        setUser(null);
+        setLoading(false);
       }
+    };
 
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    });
+    void initializeSession();
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
+
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -62,19 +131,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       loading,
 
-      // 🔐 Username OR Email sign in
+      // Username OR Email sign in
       // Supabase password auth requires email, so we resolve username -> email
       // using the backend helper route.
       signIn: async ({ identifier, password, captchaToken }) => {
         const raw = identifier.trim();
+
         if (!raw || !password) {
-          return { error: new Error("Missing username/email and password.") };
+          return {
+            error: new Error("Missing username/email and password."),
+          };
         }
 
         const normalized = raw.toLowerCase();
         let emailToUse = normalized;
 
-        // If it doesn't look like an email, treat it as a username and resolve it.
+        // If it does not look like an email, treat it as a username
+        // and resolve it through the backend.
         if (!normalized.includes("@")) {
           const username = normalized;
 
@@ -94,7 +167,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             };
           }
 
-          const data = (await response.json()) as { email?: string | null };
+          const data = (await response.json()) as {
+            email?: string | null;
+          };
 
           if (!data.email) {
             return {
@@ -111,7 +186,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           options: captchaToken ? { captchaToken } : undefined,
         });
 
-        return { error: error ?? null };
+        return {
+          error: error ?? null,
+        };
       },
 
       signUp: async ({ email, password, captchaToken }) => {
@@ -122,18 +199,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          return { error, requiresConfirmation: false };
+          return {
+            error,
+            requiresConfirmation: false,
+          };
         }
 
-        // If session is null, Supabase requires email confirmation
+        // If session is null, Supabase requires email confirmation.
         const requiresConfirmation = data.session === null;
 
-        return { error: null, requiresConfirmation };
+        return {
+          error: null,
+          requiresConfirmation,
+        };
       },
 
       signOut: async () => {
         const { error } = await supabase.auth.signOut();
-        return { error: error ?? null };
+
+        return {
+          error: error ?? null,
+        };
       },
     }),
     [user, loading],

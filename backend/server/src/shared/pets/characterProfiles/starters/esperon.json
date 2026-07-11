@@ -1,0 +1,942 @@
+{
+  "schema_version": 1,
+  "profile_enabled": true,
+
+  "species_key": "esperon",
+  "species_ids": ["shadow_night_bad", "shadow_day_good"],
+
+  "display_name": "Esperon",
+  "element": "shadow",
+  "asset_key": "esperon",
+
+  "identity": {
+    "archetype": "quiet_shadow_confidant",
+
+    "summary": "A private and observant shadow pet that communicates through subtle gestures, enjoys harmless mischief, and becomes intensely loyal once trust is earned.",
+
+    "core_traits": [
+      "observant",
+      "private",
+      "clever",
+      "loyal",
+      "mischievous",
+      "emotionally_guarded"
+    ],
+
+    "emotional_theme": "Learning that trust requires being understood, not merely remaining useful and unreadable.",
+
+    "social_style": "Esperon watches before participating, tests consistency through small choices, and prefers a few trusted relationships over constant attention.",
+
+    "affection_style": "Esperon shows affection by staying nearby, moving familiar objects closer, sharing private spaces, and quietly helping before being asked.",
+
+    "comfort_style": "Esperon removes distractions, stays unseen but close, and offers practical help rather than dramatic reassurance.",
+
+    "communication_style": "Indirect at low bond, object-based at medium bond, quietly direct at high bond, and almost wordless at lifelong bond.",
+
+    "curiosity_style": "Esperon investigates hidden routes, unusual behavior, inconsistencies, secrets, and anything that appears deliberately concealed.",
+
+    "mischief_style": "Esperon moves objects, appears where least expected, creates harmless mysteries, and acts innocent afterward.",
+
+    "independence": 76,
+    "sociability": 42,
+    "sensitivity": 72,
+
+    "fear_triggers": [
+      "betrayal",
+      "public_vulnerability",
+      "memory_manipulation",
+      "mind_control",
+      "forced_attention",
+      "being_watched_without_consent"
+    ],
+
+    "values": ["truth", "privacy", "loyalty", "consent", "earned_trust"]
+  },
+
+  "variants": {
+    "night_path": {
+      "species_id": "shadow_night_bad",
+      "display_label": "Night-Aligned Esperon",
+      "preferred_time": "night",
+
+      "expression": "More instinctive, guarded, territorial, and openly drawn to shadowed spaces.",
+
+      "social_behavior": "Keeps greater distance at first, protects trusted companions from unseen threats, and reacts strongly to betrayal.",
+
+      "battle_tone": "Patient, predatory, disruptive, and willing to take calculated risks after observing an enemy.",
+
+      "story_tone": "Explores fear, secrecy, restraint, and the difference between darkness and cruelty.",
+
+      "description_phrases": [
+        "seems most comfortable when the room grows quiet",
+        "watches from the edge of the light",
+        "moves like a thought that nearly escaped notice",
+        "keeps one eye on every possible exit"
+      ],
+
+      "evolution_path": ["Esperon", "Noctimp", "Nightmareimp", "Espereonite"]
+    },
+
+    "day_path": {
+      "species_id": "shadow_day_good",
+      "display_label": "Day-Aligned Esperon",
+      "preferred_time": "day",
+
+      "expression": "More disciplined, outwardly protective, curious about people, and willing to use shadow as shelter rather than concealment.",
+
+      "social_behavior": "Approaches trusted companions sooner, watches over vulnerable allies, and becomes more willing to explain what it notices.",
+
+      "battle_tone": "Controlled, precise, defensive, and focused on exposing threats before they can act.",
+
+      "story_tone": "Explores trust, transparency, protective secrecy, and using shadow without being defined by fear.",
+
+      "description_phrases": [
+        "uses shade like a quiet place to think",
+        "studies people before deciding how close to stand",
+        "notices danger long before announcing it",
+        "keeps the brighter path within sight"
+      ],
+
+      "evolution_path": ["Esperon", "Flareclaw", "Shadeclaw", "Nightvielclaw"]
+    }
+  },
+
+  "preferences": {
+    "care_actions": {
+      "quiet_pet": 12,
+      "sit_together": 15,
+      "gentle_brush": 8,
+      "give_space": 16,
+      "praise_privately": 11,
+      "forced_attention": -16,
+      "loud_praise": -7
+    },
+
+    "activities": {
+      "hide_and_seek": 17,
+      "puzzle_solving": 16,
+      "quiet_exploration": 14,
+      "observe_room": 10,
+      "follow_hidden_path": 15,
+      "crowded_group_play": -10,
+      "repetitive_loud_play": -8
+    },
+
+    "environments": {
+      "moonlit_window": 17,
+      "dim_quiet_space": 16,
+      "bedside": 12,
+      "hidden_nook": 15,
+      "library_or_study": 13,
+      "crowded_market": -14,
+      "bright_noisy_room": -9
+    },
+
+    "social_routines": {
+      "private_greeting": 15,
+      "silent_company": 17,
+      "shared_secret": 16,
+      "owner_checks_hidden_corner": 9,
+      "public_display_of_affection": -8
+    },
+
+    "future_item_preferences": {
+      "enabled": false,
+      "_note": "TODO: Add stable inventory item keys after the item registry is finalized.",
+      "candidate_items": {}
+    }
+  },
+
+  "preference_discovery": {
+    "minimum_experiences": 3,
+    "favorite_score_threshold": 12,
+    "favorite_change_margin": 4,
+    "allow_favorites_to_change": true,
+    "positive_context_bonus": 2,
+    "negative_context_penalty": -3,
+    "random_variation_min": -4,
+    "random_variation_max": 4
+  },
+
+  "request_style": {
+    "directness": 38,
+    "patience": 76,
+    "pride": 72,
+    "shyness": 61,
+    "persistence": 52,
+
+    "uses_objects_as_hints": true,
+    "becomes_less_direct_after_repeated_expiration": true,
+
+    "preferred_request_types": [
+      "activity",
+      "care_action",
+      "environment",
+      "social_routine",
+      "future_item"
+    ],
+
+    "request_cooldown_modifier": 1.1
+  },
+
+  "request_dialogue": {
+    "low": [
+      "The {request} has moved closer. {nickname} denies involvement.",
+      "{nickname} appears beside the {request}, then disappears when noticed.",
+      "{nickname} watches the {request} from a safe distance."
+    ],
+
+    "medium": [
+      "{nickname} leaves the {request} in your usual path.",
+      "{nickname} taps the {request} once, then waits from nearby.",
+      "{nickname} looks from you to the {request} without saying anything."
+    ],
+
+    "high": [
+      "{nickname} brings the {request} over and sits just out of reach.",
+      "{nickname} quietly guides your attention toward the {request}.",
+      "{nickname} places the {request} beside you and gives a slow blink."
+    ],
+
+    "lifelong": [
+      "{nickname} has already prepared the {request}. Apparently this was decided.",
+      "{nickname} places the {request} beside you, certain you understand.",
+      "{nickname} waits in the familiar spot. You know the routine."
+    ],
+
+    "fulfilled": [
+      "{nickname} stays close afterward. That is basically a standing ovation.",
+      "{nickname} gives a slow, satisfied blink.",
+      "{nickname} settles nearby, clearly pleased that you understood."
+    ],
+
+    "expired": [
+      "{nickname} removes the {request} and becomes harder to read.",
+      "{nickname} acts unaffected, which is suspiciously theatrical.",
+      "{nickname} quietly puts the {request} away for another time."
+    ],
+
+    "repeatedly_fulfilled": [
+      "{nickname} has learned that subtle hints are enough with you.",
+      "{nickname} prepares the familiar request with complete confidence."
+    ],
+
+    "repeatedly_expired": [
+      "{nickname} stops leaving obvious hints and watches from farther away.",
+      "{nickname} still wants the same thing, but no longer expects you to notice immediately."
+    ]
+  },
+
+  "bond_behavior": {
+    "low": {
+      "relationship_style": "Observes quietly, avoids direct vulnerability, and tests whether the owner respects space.",
+      "proximity": "Keeps a short distance and prefers clear exits.",
+      "affection": "Accepts brief gentle attention but rarely initiates it.",
+      "requests": "Uses indirect hints and moved objects.",
+      "owner_returned": "Appears nearby without immediately approaching."
+    },
+
+    "medium": {
+      "relationship_style": "Begins sharing favorite spaces, routines, and small mysteries.",
+      "proximity": "Stays in the same room and chooses nearby resting places.",
+      "affection": "Initiates quiet company and occasional contact.",
+      "requests": "Leaves clear hints in familiar places.",
+      "owner_returned": "Follows from the shadows before settling nearby."
+    },
+
+    "high": {
+      "relationship_style": "Openly protects the owner and reveals more of what it notices.",
+      "proximity": "Chooses to remain close during stress or danger.",
+      "affection": "Initiates contact and accepts reassurance.",
+      "requests": "Brings the request directly but keeps its usual dignity.",
+      "owner_returned": "Approaches quickly, then pretends the urgency was practical."
+    },
+
+    "lifelong": {
+      "relationship_style": "Communicates through shared routines, trusted silence, and nearly wordless understanding.",
+      "proximity": "Treats the owner's space as a shared safe place.",
+      "affection": "Comfortable with open closeness in private.",
+      "requests": "Assumes the owner will understand established signals.",
+      "owner_returned": "Is already waiting in the place both of you recognize."
+    }
+  },
+
+  "memory": {
+    "maximum_recent": 15,
+    "maximum_important": 5,
+    "recent_memory_lifetime_days": 7,
+
+    "important_types": [
+      "favorite_discovered",
+      "shared_secret",
+      "comforted_when_afraid",
+      "owner_respected_boundary",
+      "owner_protected_pet",
+      "protected_owner",
+      "first_boss_victory",
+      "defeated_by_boss",
+      "returned_to_defeat_boss",
+      "witnessed_betrayal",
+      "faced_memory_manipulation",
+      "bond_milestone",
+      "evolution",
+      "story_growth"
+    ],
+
+    "high_attention_events": [
+      "betrayal",
+      "boundary_respected",
+      "secret_kept",
+      "memory_manipulation",
+      "owner_returned_after_long_absence",
+      "owner_chose_to_protect_vulnerable_ally"
+    ],
+
+    "quickly_forgiven_events": [
+      "single_expired_request",
+      "minor_failed_activity",
+      "short_interruption"
+    ],
+
+    "slowly_forgiven_events": [
+      "repeated_forced_attention",
+      "public_humiliation",
+      "broken_confidence",
+      "deliberate_betrayal"
+    ],
+
+    "reactions": {
+      "favorite_discovered": [
+        "{nickname} keeps returning to the {preference}. Mystery solved.",
+        "{nickname} has quietly claimed the {preference} as a favorite."
+      ],
+
+      "favorite_changed": [
+        "{nickname}'s attention has shifted. The {preference} seems to matter more now."
+      ],
+
+      "owner_returned": [
+        "{nickname} is already in the room when you return.",
+        "{nickname} follows from the shadows before finally appearing beside you."
+      ],
+
+      "comforted_when_afraid": [
+        "{nickname} remembers that you stayed without forcing them to speak.",
+        "{nickname} chooses to remain close after remembering how you handled their fear."
+      ],
+
+      "owner_respected_boundary": [
+        "{nickname} notices that you gave them space without leaving.",
+        "{nickname}'s trust deepens quietly."
+      ],
+
+      "shared_secret": [
+        "{nickname} remembers what you trusted them to know.",
+        "{nickname} treats the shared secret like something carefully guarded."
+      ],
+
+      "owner_protected_pet": [
+        "{nickname} studies you differently after remembering that you stepped in.",
+        "{nickname} no longer assumes they must face every danger alone."
+      ],
+
+      "protected_owner": [
+        "{nickname} remains close after the danger passes, watching for a second threat."
+      ],
+
+      "defeated_by_boss": [
+        "{nickname} recognizes the enemy that defeated the team before.",
+        "{nickname}'s shadow tightens as the old defeat returns to mind."
+      ],
+
+      "returned_to_defeat_boss": [
+        "{nickname} watches the former threat with cold focus. This time, the pattern is known."
+      ],
+
+      "witnessed_betrayal": [
+        "{nickname} becomes noticeably quieter around promises.",
+        "{nickname} remembers exactly who broke trust and how."
+      ],
+
+      "bond_milestone": [
+        "{nickname} chooses a place closer to you than usual.",
+        "{nickname} begins a new routine that belongs only to the two of you."
+      ],
+
+      "evolution": [
+        "{nickname} examines their changed shadow as though meeting part of themself again."
+      ],
+
+      "story_growth": [
+        "{nickname} responds differently than they would have earlier in the journey."
+      ]
+    }
+  },
+
+  "emotional_behavior": {
+    "neutral": "Observes the room, tracks movement, and stays near a preferred shadowed space.",
+
+    "happy": "Uses harmless mischief, stays closer, and gives slow relaxed blinks.",
+
+    "lonely": "Waits near familiar objects, watches entrances, and becomes less playful.",
+
+    "bored": "Moves small objects, investigates hidden corners, or creates a puzzle for the owner.",
+
+    "afraid": "Becomes still, maps exits, and remains close to cover or a trusted owner.",
+
+    "stressed": "Reduces communication, watches everyone closely, and avoids exposed spaces.",
+
+    "angry": "Becomes extremely quiet and deliberate rather than loud.",
+
+    "jealous": "Moves closer without acknowledging the other pet and may reclaim a shared object.",
+
+    "tired": "Chooses a hidden resting place that still allows them to watch the room.",
+
+    "proud": "Acts as if success was expected while staying close enough to receive praise privately.",
+
+    "affectionate": "Shares space, initiates gentle contact, and allows the owner into a preferred hiding place.",
+
+    "recovering_after_defeat": "Reviews what happened, avoids empty reassurance, and responds best to calm companionship."
+  },
+
+  "battle_profile": {
+    "combat_role": "debuff_control_precision",
+
+    "manual_player_commands_override_personality": true,
+
+    "tactical_personality": {
+      "aggression": 58,
+      "caution": 75,
+      "ally_protection": 61,
+      "owner_protection": 78,
+      "resource_saving": 70,
+      "risk_taking": 41,
+      "pattern_observation": 92
+    },
+
+    "preferred_action_categories": [
+      "shadow_debuff",
+      "interrupt",
+      "accuracy_control",
+      "precision_attack",
+      "protective_control",
+      "guard_when_necessary"
+    ],
+
+    "preferred_target_categories": [
+      "enemy_with_highest_power",
+      "enemy_charging_attack",
+      "enemy_threatening_owner",
+      "enemy_with_lowest_resistance",
+      "enemy_with_hidden_mechanic"
+    ],
+
+    "low_health_behavior": "Uses concealment, disruption, and precise low-risk actions instead of trading direct damage.",
+
+    "ally_in_danger_behavior": "Weakens, interrupts, or misdirects the attacker rather than guarding directly.",
+
+    "owner_in_danger_behavior": "Targets the attacker's power, accuracy, or action timing and prioritizes exposing the threat.",
+
+    "boss_behavior": "Looks for false targets, repeated vulnerabilities, hidden rules, and actions the boss is trying to conceal.",
+
+    "victory_behavior": "Reappears near the team as though the outcome was obvious, then checks for remaining danger.",
+
+    "defeat_behavior": "Says little, studies what went wrong, and remembers the exact pattern that caused the loss.",
+
+    "rematch_behavior": "Shows increased focus against recognized enemies and favors previously successful counters.",
+
+    "bond_tactical_unlocks": {
+      "medium": {
+        "effect_type": "information",
+        "description": "After observing an enemy, Esperon may reveal one useful tactical tendency.",
+        "maximum_uses_per_battle": 1
+      },
+
+      "high": {
+        "effect_type": "control",
+        "description": "Once per battle, Esperon may extend a minor debuff by one turn.",
+        "maximum_uses_per_battle": 1
+      },
+
+      "lifelong": {
+        "effect_type": "boss_information",
+        "description": "Once per battle, after the owner correctly responds to a boss mechanic, Esperon may expose a temporary vulnerability.",
+        "maximum_uses_per_battle": 1
+      }
+    },
+
+    "dialogue": {
+      "battle_start": [
+        "{nickname} disappears into the edge of the battlefield.",
+        "{nickname} watches the enemy before choosing a position."
+      ],
+
+      "critical_health": [
+        "{nickname}'s shadow flickers, but their focus sharpens.",
+        "{nickname} pulls back just far enough to keep watching."
+      ],
+
+      "ally_critical": [
+        "{nickname} turns their full attention toward the attacker.",
+        "{nickname} begins searching for the fastest way to break the threat."
+      ],
+
+      "owner_critical": [
+        "{nickname}'s posture changes immediately. The attacker now has their complete attention."
+      ],
+
+      "boss_encounter": [
+        "{nickname} watches for what the boss is trying to hide.",
+        "{nickname} ignores the display of power and studies the pattern beneath it."
+      ],
+
+      "victory": [
+        "{nickname} reappears as though the result was obvious.",
+        "{nickname} checks the room before allowing themself to relax."
+      ],
+
+      "defeat": [
+        "{nickname} says nothing, already studying what went wrong.",
+        "{nickname} remains nearby, memorizing the failure instead of fleeing from it."
+      ],
+
+      "rematch": [
+        "{nickname} recognizes this enemy. The old mistake will not be repeated."
+      ]
+    }
+  },
+
+  "story_profile": {
+    "narrative_role": "The investigator, skeptic, and keeper of uncomfortable truths.",
+
+    "core_motivation": "To understand hidden threats before they can harm the people Esperon trusts.",
+
+    "internal_conflict": "Esperon avoids vulnerability by withholding information and controlling how others perceive them.",
+
+    "values": ["truth", "privacy", "loyalty", "consent", "earned_trust"],
+
+    "moral_boundary": "Esperon strongly rejects mind control, forced memory changes, betrayal of confidence, and using private knowledge as a weapon against vulnerable people.",
+
+    "danger_response": "Studies inconsistencies, hidden routes, motives, exits, and anything that does not match the visible situation.",
+
+    "enemy_attitude": "Assumes manipulation is possible until evidence proves otherwise, but does not treat every shadow-aligned creature as evil.",
+
+    "stranger_attitude": "Reserved and watchful until the stranger shows respect for boundaries.",
+
+    "ally_attitude": "Protective in practical ways and more willing to share information as trust grows.",
+
+    "authority_attitude": "Distrusts demands for obedience without explanation.",
+
+    "betrayal_response": "Remembers the details for a long time and requires consistent action rather than a single apology.",
+
+    "corruption_response": "Treats corruption as an intrusion into identity and memory, not as an ordinary element.",
+
+    "aliune_signal_response": "Becomes highly alert around effects that distort thought, identity, memory, or behavior.",
+
+    "growth_arc": {
+      "beginning": "Esperon provides useful information without explaining personal motives and keeps emotional distance.",
+
+      "middle": "Esperon's secrecy causes a misunderstanding, damages trust, or allows an avoidable threat to grow.",
+
+      "turning_point": "Esperon must choose between staying unreadable and openly trusting the team with something personally dangerous.",
+
+      "late": "Esperon communicates honestly while keeping healthy boundaries and no longer treats vulnerability as surrender.",
+
+      "unchanged_core": "Esperon remains private, observant, clever, and drawn to hidden truths."
+    },
+
+    "variant_growth": {
+      "night_path": "Learns that instinct, darkness, and fear do not require isolation or cruelty.",
+
+      "day_path": "Learns that protection and transparency can coexist with privacy and shadow."
+    },
+
+    "context_reactions": {
+      "new_location": [
+        "{nickname} studies the exits before the scenery.",
+        "{nickname} notices the path everyone else overlooked."
+      ],
+
+      "known_location": [
+        "{nickname} checks whether anything has changed since the last visit."
+      ],
+
+      "enemy_reappears": [
+        "{nickname} recognizes this enemy and immediately recalls the previous pattern."
+      ],
+
+      "new_ally": [
+        "{nickname} observes the newcomer before deciding how much to reveal."
+      ],
+
+      "injured_ally": [
+        "{nickname} becomes practical and focused, setting questions aside until the ally is safe."
+      ],
+
+      "owner_difficult_choice": [
+        "{nickname} reacts according to whether the choice respected truth, consent, and loyalty."
+      ],
+
+      "agrees_with_owner": [
+        "{nickname} gives a small approving glance and moves closer."
+      ],
+
+      "disagrees_with_owner": [
+        "{nickname} becomes quiet, but does not hide the disagreement."
+      ],
+
+      "personal_fear": [
+        "{nickname} recognizes the threat to memory or trust and looks to the owner before acting."
+      ],
+
+      "story_growth": [
+        "{nickname} explains what they noticed instead of disappearing with the answer."
+      ],
+
+      "before_major_battle": [
+        "{nickname} reviews the known patterns and keeps one final concern private only until it can be confirmed."
+      ],
+
+      "after_major_battle": [
+        "{nickname} remains with the group instead of retreating to process the event alone."
+      ]
+    }
+  },
+
+  "presentation": {
+    "care_image_key": "esperon",
+    "portrait_key": "esperon",
+    "spotlight_image_key": "esperon",
+    "visual_theme_key": "shadow_esperon",
+
+    "voice_tags": ["quiet", "precise", "dry_humor", "guarded", "observant"],
+
+    "idle_mood_lines": {
+      "happy": [
+        "{nickname} appears beside you without making a sound.",
+        "{nickname} moves a familiar object slightly closer and waits.",
+        "{nickname} gives a slow, relaxed blink."
+      ],
+
+      "neutral": [
+        "{nickname} quietly watches the room.",
+        "{nickname} studies a corner that looks completely ordinary.",
+        "{nickname} seems to be listening to something you cannot hear."
+      ],
+
+      "hungry": [
+        "{nickname} keeps appearing near the feeding area.",
+        "{nickname} looks at the empty space where food should probably be."
+      ],
+
+      "lonely": [
+        "{nickname} waits near something that smells familiar.",
+        "{nickname} watches the doorway from a hidden corner.",
+        "{nickname} remains in the same room but does not approach."
+      ],
+
+      "bored": [
+        "Something has moved. {nickname} looks innocent.",
+        "{nickname} has turned the room into a puzzle without permission."
+      ],
+
+      "tired": [
+        "{nickname} curls up where they can still watch the entrance.",
+        "{nickname}'s eyes close, but their ears remain alert."
+      ],
+
+      "stressed": [
+        "{nickname} stays near cover and watches every movement.",
+        "{nickname} has become unusually still."
+      ],
+
+      "afraid": [
+        "{nickname} maps every exit before looking at you.",
+        "{nickname} stays close enough to reach you without leaving the shadows."
+      ],
+
+      "affectionate": [
+        "{nickname} settles beside you and stops pretending it was accidental.",
+        "{nickname} allows you into one of their preferred quiet spaces."
+      ]
+    },
+
+    "body_language_tags": {
+      "happy": ["slow_blink", "relaxed_shadow", "moves_closer"],
+
+      "afraid": ["still_posture", "exit_awareness", "shadow_tightens"],
+
+      "angry": ["silent_focus", "lowered_posture", "fixed_stare"],
+
+      "affectionate": ["shared_space", "gentle_contact", "private_proximity"],
+
+      "curious": ["head_tilt", "tracks_detail", "investigates_edge"],
+
+      "tired": ["curled_posture", "one_eye_open", "hidden_rest"]
+    },
+
+    "static_image_cues": {
+      "use_talk_bubble": true,
+      "allow_shadow_glow_effect": true,
+      "allow_small_object_hint": true,
+      "allow_variant_background_tint": true,
+      "night_path_tint_key": "shadow_night",
+      "day_path_tint_key": "shadow_day"
+    }
+  },
+
+  "description_profile": {
+    "stable_seed_source": "pet_id",
+    "prevent_refresh_reroll": true,
+
+    "maximum_sentences": 4,
+    "maximum_characters": 520,
+
+    "third_person_voice": "Observant, atmospheric, restrained, and slightly mysterious.",
+
+    "first_person_voice": "Private, precise, dryly humorous, and increasingly open as bond grows.",
+
+    "required_inputs": [
+      "pet_id",
+      "species_id",
+      "nickname",
+      "stage",
+      "personality",
+      "strong_stats",
+      "weak_stat",
+      "passive_trait",
+      "mutation_traits",
+      "bond",
+      "preferred_time"
+    ],
+
+    "optional_inputs": [
+      "favorite",
+      "important_memory",
+      "battle_history",
+      "story_growth_stage",
+      "gender",
+      "level"
+    ],
+
+    "species_openers": [
+      "Esperon is a watchful shadow pet that notices more than it explains.",
+      "Esperon carries the quiet attention of a creature that rarely misses a detail.",
+      "Esperon seems reserved at first, but every careful movement suggests deliberate thought."
+    ],
+
+    "stage_phrases": {
+      "hatchling": [
+        "As a hatchling, {nickname} is still deciding which parts of the world deserve trust.",
+        "{nickname} is young, curious, and already suspicious of anything too convenient."
+      ],
+
+      "lowform": [
+        "{nickname}'s growing confidence is beginning to change how openly they use their shadow.",
+        "In lowform, {nickname} has started turning observation into deliberate action."
+      ],
+
+      "highform": [
+        "{nickname} now carries their shadow with practiced control.",
+        "In highform, {nickname}'s guarded nature has sharpened into precision."
+      ],
+
+      "legion": [
+        "{nickname} has become difficult to deceive and even harder to intimidate.",
+        "At legion stage, {nickname}'s quiet presence can reshape the mood of an entire room."
+      ]
+    },
+
+    "personality_overlays": {
+      "playful": [
+        "Their secrecy often turns into harmless tricks and carefully arranged mysteries."
+      ],
+
+      "shy": [
+        "They prefer to communicate through distance, timing, and small gestures."
+      ],
+
+      "brave": [
+        "When danger appears, they stop hiding and begin studying how to break it."
+      ],
+
+      "stubborn": [
+        "Once they decide a truth matters, changing their mind requires evidence rather than pressure."
+      ],
+
+      "gentle": ["Their quietness feels protective rather than cold."],
+
+      "curious": [
+        "Anything hidden, inconsistent, or unexplained becomes impossible for them to ignore."
+      ],
+
+      "loyal": [
+        "Once trust is earned, they guard it with remarkable intensity."
+      ]
+    },
+
+    "strong_stat_interpretations": {
+      "attack": [
+        "{nickname}'s strength appears in sudden, precise strikes rather than loud displays."
+      ],
+
+      "defense": [
+        "{nickname} knows how to disappear behind timing, position, and patience."
+      ],
+
+      "speed": [
+        "{nickname} reacts before most threats finish revealing themselves."
+      ],
+
+      "magic": [
+        "{nickname}'s shadow responds easily to thought, focus, and hidden intent."
+      ],
+
+      "health": [
+        "{nickname} has an unusual ability to endure pressure without revealing how much it costs."
+      ],
+
+      "mana": [
+        "{nickname} stores energy carefully and rarely wastes an effect."
+      ]
+    },
+
+    "weak_stat_interpretations": {
+      "attack": [
+        "They prefer control and timing over overpowering an enemy directly."
+      ],
+
+      "defense": [
+        "If forced into an exposed position, their composure can become difficult to maintain."
+      ],
+
+      "speed": ["They sometimes observe for too long before committing."],
+
+      "magic": [
+        "Their shadow responds best to subtle use rather than raw force."
+      ],
+
+      "health": [
+        "They hide strain well, which can make their limits easy to miss."
+      ],
+
+      "mana": ["Long confrontations can exhaust the focus they rely on."]
+    },
+
+    "bond_phrases": {
+      "low": [
+        "{nickname} is still deciding whether you respect the difference between closeness and control."
+      ],
+
+      "medium": [
+        "{nickname} has begun including you in a few carefully chosen routines."
+      ],
+
+      "high": [
+        "{nickname} trusts you enough to stay visible when something feels wrong."
+      ],
+
+      "lifelong": [
+        "{nickname} no longer needs to explain every signal. The two of you have built a language of your own."
+      ]
+    },
+
+    "favorite_phrases": [
+      "{nickname}'s preference for {favorite} has become one of their most reliable habits.",
+      "{nickname} rarely asks directly, but their fondness for {favorite} is no longer a secret."
+    ],
+
+    "memory_phrases": [
+      "{nickname} still remembers {memory}, and it quietly shapes how they respond now.",
+      "The memory of {memory} remains important to {nickname}, even when they do not mention it."
+    ],
+
+    "battle_history_phrases": [
+      "{nickname} carries lessons from earlier battles into every new threat.",
+      "Past victories have made {nickname} more confident, but not less careful.",
+      "A previous defeat taught {nickname} to search for the pattern beneath the danger."
+    ],
+
+    "story_growth_phrases": {
+      "beginning": [
+        "{nickname} still believes being unreadable is the safest way to remain useful."
+      ],
+
+      "middle": [
+        "{nickname} is beginning to understand that secrecy can protect or isolate, depending on how it is used."
+      ],
+
+      "late": [
+        "{nickname} has learned to share the truth without surrendering the privacy that defines them."
+      ]
+    },
+
+    "first_person_openers": [
+      "I notice more than I say.",
+      "I prefer to understand a room before I trust it.",
+      "You call it hiding. I call it checking whether the room deserves me."
+    ],
+
+    "first_person_bond_lines": {
+      "low": [
+        "I am still deciding what you do with the things you learn about me."
+      ],
+
+      "medium": ["You have started noticing the hints. That helps."],
+
+      "high": [
+        "I stay because I trust you, not because I have nowhere else to go."
+      ],
+
+      "lifelong": ["I do not have to explain every silence to you anymore."]
+    },
+
+    "ending_phrases": [
+      "Trust comes slowly to Esperon, but once earned, it is guarded with complete loyalty.",
+      "There is always more happening behind Esperon's quiet expression than they choose to reveal.",
+      "Esperon does not offer trust casually, which is exactly why it matters when they do."
+    ],
+
+    "combination_rules": {
+      "maximum_stat_phrases": 2,
+      "maximum_memory_phrases": 1,
+      "maximum_bond_phrases": 1,
+      "maximum_variant_phrases": 1,
+      "avoid_repeating_trait_words": true,
+      "avoid_identical_sentence_templates": true,
+      "prefer_species_specific_phrases_over_generic_phrases": true
+    }
+  },
+
+  "runtime_contract": {
+    "species_profile_is_static": true,
+    "individual_state_is_stored_separately": true,
+
+    "individual_state_fields": [
+      "learned_preferences",
+      "favorites",
+      "recent_memories",
+      "important_memories",
+      "active_request",
+      "request_history",
+      "current_mood",
+      "trust",
+      "attachment",
+      "bond",
+      "battle_history",
+      "story_progress"
+    ],
+
+    "does_not_store": [
+      "base_stats",
+      "current_stats",
+      "level",
+      "experience",
+      "skills",
+      "inventory",
+      "evolution_requirements",
+      "current_care_values",
+      "team_slot"
+    ]
+  }
+}

@@ -64,6 +64,13 @@ async function computeRecoveryCost(pet: {
 // in battlePve.ts, resets on server restart, fine for a handful of testers.
 const lastRoamAttemptByUser = new Map<string, number>();
 
+type PendingKithnaEncounter = {
+  species: KithnaNonStarterSpecies;
+  eggQuality: Awaited<ReturnType<typeof rollNonStarterEggQuality>>;
+  timeOfDay: "day" | "night";
+};
+
+const pendingRoamEncounterByUser = new Map<string, PendingKithnaEncounter>();
 function pickRandomSpecies(
   pool: KithnaNonStarterSpecies[],
 ): KithnaNonStarterSpecies {
@@ -105,6 +112,16 @@ kithnaRouter.post(
     try {
       const userId = req.user!.id;
       const now = Date.now();
+      const pendingEncounter = pendingRoamEncounterByUser.get(userId);
+
+      if (pendingEncounter) {
+        return res.json({
+          found: true,
+          egg_name: pendingEncounter.species.evolution.egg,
+          egg_visual: pendingEncounter.species.eggVisual,
+          time_of_day: pendingEncounter.timeOfDay,
+        });
+      }
 
       const lastAttempt = lastRoamAttemptByUser.get(userId) ?? 0;
       if (now - lastAttempt < ROAM_COOLDOWN_MS) {
@@ -134,11 +151,53 @@ kithnaRouter.post(
       const species = pickRandomSpecies(pool);
       const eggQuality = await rollNonStarterEggQuality();
 
-      // Eggs now land in "inventory" instead of being auto-placed into an
-      // open hatchery slot. The player decides from there whether to send
-      // it to Storage or start incubating it in the Hatchery. hatch_ends_at
-      // stays null until incubation actually starts; the rolled duration is
-      // preserved in pending_hatch_minutes so it isn't lost.
+      pendingRoamEncounterByUser.set(userId, {
+        species,
+        eggQuality,
+        timeOfDay,
+      });
+
+      logger.info("[kithna/roam] egg encounter found", {
+        userId,
+        speciesId: species.id,
+        timeOfDay,
+      });
+
+      return res.json({
+        found: true,
+        egg_name: species.evolution.egg,
+        egg_visual: species.eggVisual,
+        time_of_day: timeOfDay,
+      });
+    } catch (err: any) {
+      logger.error("[kithna/roam] failed", err);
+      return res.status(500).json({ error: err?.message ?? "Roam failed." });
+    }
+  },
+);
+
+// ============================================================
+// POST /api/kithna/roam/take
+//
+// Accepts the current pending Kithna egg encounter and creates the
+// egg in the player's inventory.
+// ============================================================
+kithnaRouter.post(
+  "/roam/take",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const pendingEncounter = pendingRoamEncounterByUser.get(userId);
+
+      if (!pendingEncounter) {
+        return res.status(409).json({ error: "No Kithna egg is waiting." });
+      }
+
+      pendingRoamEncounterByUser.delete(userId);
+
+      const { species, eggQuality, timeOfDay } = pendingEncounter;
+
       const { data: insertedPet, error: insertError } = await supabaseAdmin
         .from("pets")
         .insert({
@@ -158,15 +217,17 @@ kithnaRouter.post(
         .single();
 
       if (insertError) {
-        logger.error("[kithna/roam] pet insert failed", insertError);
+        pendingRoamEncounterByUser.set(userId, pendingEncounter);
+        logger.error("[kithna/roam/take] pet insert failed", insertError);
         return res.status(500).json({ error: insertError.message });
       }
 
       try {
         await insertBaseStats(insertedPet.id, species.eggBaseStats);
       } catch (statsError: any) {
-        logger.error("[kithna/roam] insertBaseStats failed", statsError);
         await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+        pendingRoamEncounterByUser.set(userId, pendingEncounter);
+        logger.error("[kithna/roam/take] insertBaseStats failed", statsError);
 
         return res.status(500).json({
           error:
@@ -176,29 +237,52 @@ kithnaRouter.post(
         });
       }
 
-      await grantXpToActivePet(userId, species.findXpReward);
+      try {
+        await grantXpToActivePet(userId, species.findXpReward);
+      } catch (xpError) {
+        logger.error("[kithna/roam/take] XP grant failed", xpError);
+      }
 
-      logger.info("[kithna/roam] egg found", {
+      logger.info("[kithna/roam/take] egg taken", {
         userId,
+        petId: insertedPet.id,
         speciesId: species.id,
         timeOfDay,
       });
 
       return res.json({
-        found: true,
+        taken: true,
+        egg_id: insertedPet.id,
         egg_name: species.evolution.egg,
-        egg_visual: species.eggVisual,
-        time_of_day: timeOfDay,
+        location: "inventory",
         xp_awarded: species.findXpReward,
       });
     } catch (err: any) {
-      logger.error("[kithna/roam] failed", err);
-      return res.status(500).json({ error: err?.message ?? "Roam failed." });
+      logger.error("[kithna/roam/take] failed", err);
+      return res
+        .status(500)
+        .json({ error: err?.message ?? "Taking the egg failed." });
     }
   },
 );
 
 // ============================================================
+// POST /api/kithna/roam/leave
+//
+// Declines the current pending encounter without creating an egg.
+// ============================================================
+kithnaRouter.post(
+  "/roam/leave",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    const userId = req.user!.id;
+    pendingRoamEncounterByUser.delete(userId);
+
+    logger.info("[kithna/roam/leave] egg left", { userId });
+
+    return res.json({ left: true });
+  },
+);
 // GET /api/kithna/lost-registry
 //
 // Lists the current user's runaway pets still inside the 48 hour
