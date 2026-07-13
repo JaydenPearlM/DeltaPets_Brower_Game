@@ -3,7 +3,17 @@
 // Shared species registry
 // ========================================
 
-import type { PetStage } from "../types/petStages";
+import type { PetStage } from "../../types/petStages";
+
+import type {
+  PetSpeciesIdentity,
+  PetSpeciesRules,
+  ShadowNature,
+  SharedBaseStats,
+  SharedElementLine,
+  SpeciesEvolution,
+  WorldTimeState,
+} from "../petSpeciesTypes";
 
 export type SharedElementLine =
   | "null_element"
@@ -15,6 +25,20 @@ export type SharedElementLine =
   | "storm"
   | "light"
   | "shadow";
+
+export const ELEMENT_EGG_NAMES: Record<
+  Exclude<SharedElementLine, "null_element">,
+  string
+> = {
+  water: "Tide Egg",
+  fire: "Ember Egg",
+  earth: "Grove Egg",
+  air: "Zephyr Egg",
+  ice: "Frostveil Egg",
+  storm: "Storm Egg",
+  light: "Dawnshard Egg",
+  shadow: "Eclipse Egg",
+};
 
 export type SharedBaseStats = {
   hp: number;
@@ -108,7 +132,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "water_starter",
     line: "water",
     evolution: {
-      egg: "Water Egg",
+      egg: ELEMENT_EGG_NAMES.water,
       hatchling: "Mizu",
       lowform: "Mizule",
       highform: "Zulelon",
@@ -129,7 +153,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "fire_starter",
     line: "fire",
     evolution: {
-      egg: "Fire Egg",
+      egg: ELEMENT_EGG_NAMES.fire,
       hatchling: "Kindlekin",
       lowform: "Moltikyn",
       highform: "Magnakyn",
@@ -150,7 +174,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "earth_starter",
     line: "earth",
     evolution: {
-      egg: "Earth Egg",
+      egg: ELEMENT_EGG_NAMES.earth,
       hatchling: "Twiglet",
       lowform: "Rootle",
       highform: "Radaroot",
@@ -171,7 +195,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "air_starter",
     line: "air",
     evolution: {
-      egg: "Air Egg",
+      egg: ELEMENT_EGG_NAMES.air,
       hatchling: "Wistpip",
       lowform: "Zephyx",
       highform: "Phyxlion",
@@ -192,7 +216,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "ice_starter",
     line: "ice",
     evolution: {
-      egg: "Ice Egg",
+      egg: ELEMENT_EGG_NAMES.ice,
       hatchling: "Cribi",
       lowform: "Cribit",
       highform: "Crabbit",
@@ -213,7 +237,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "storm_starter",
     line: "storm",
     evolution: {
-      egg: "Storm Egg",
+      egg: ELEMENT_EGG_NAMES.storm,
       hatchling: "Volb",
       lowform: "Voltlet",
       highform: "Tovote",
@@ -234,7 +258,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "light_starter",
     line: "light",
     evolution: {
-      egg: "Light Egg",
+      egg: ELEMENT_EGG_NAMES.light,
       hatchling: "Solen",
       lowform: "Solkit",
       highform: "Solaryn",
@@ -257,7 +281,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     variant: "bad",
     preferredTime: "night",
     evolution: {
-      egg: "Night Shadow Egg",
+      egg: ELEMENT_EGG_NAMES.shadow,
       hatchling: "Esperon",
       lowform: "Noctimp",
       highform: "Nightmareimp",
@@ -280,7 +304,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     variant: "good",
     preferredTime: "day",
     evolution: {
-      egg: "Day Shadow Egg",
+      egg: ELEMENT_EGG_NAMES.shadow,
       hatchling: "Esperon",
       lowform: "Flareclaw",
       highform: "Shadeclaw",

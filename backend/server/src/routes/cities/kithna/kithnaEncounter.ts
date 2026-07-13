@@ -14,7 +14,7 @@ import { insertBaseStats, fetchTotalPoints } from "../../routePets/petsStats";
 import {
   getKithnaEggsForTime,
   type KithnaNonStarterSpecies,
-} from "../../../shared/pets/KithnaSpecies";
+} from "../../../shared/pets/species/kithna-species";
 import { rollNonStarterEggQuality } from "../../../shared/pets/eggQualityRoll";
 
 export const kithnaRouter = Router();

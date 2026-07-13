@@ -36,7 +36,7 @@ import {
   getStarterForSelection,
 } from "./starters";
 
-import { getKithnaNonStarterSpecies } from "../../shared/pets/KithnaSpecies";
+import { getKithnaNonStarterSpecies } from "../../shared/pets/species/kithna-species";
 import { getWorldTimeOfDay } from "../../lib/deltaTime";
 
 import {

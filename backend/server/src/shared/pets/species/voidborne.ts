@@ -27,6 +27,8 @@
  * Use "Voidborne" only for UI/player-facing display text.
  */
 
+import type { PetSpeciesRules, SharedElementLine } from "../petSpeciesTypes";
+
 export const VOIDBORNE_ELEMENT_KEY = "null_element" as const;
 export const VOIDBORNE_DISPLAY_NAME = "Voidborne" as const;
 

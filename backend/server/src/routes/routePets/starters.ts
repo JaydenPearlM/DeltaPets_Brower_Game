@@ -6,7 +6,7 @@ import {
   findStarterByName as findSharedStarterByName,
   getStarterSpeciesFromSelection,
   type SharedElementLine,
-} from "../../shared/pets/species";
+} from "../../shared/pets/species/starter-species";
 
 export type StarterDefinition = {
   speciesId: string;

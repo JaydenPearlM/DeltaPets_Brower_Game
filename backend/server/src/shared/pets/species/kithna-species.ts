@@ -3,7 +3,16 @@ import type {
   SharedElementLine,
   SpeciesEvolution,
   WorldTimeState,
-} from "./species";
+} from "./starter-species";
+import type {
+  PetSpeciesIdentity,
+  PetSpeciesRules,
+  SharedBaseStats,
+  SharedElementLine,
+  SpeciesEvolution,
+  WorldTimeState,
+} from "../petSpeciesTypes";
+import { isVoidborneLine, VOIDBORNE_RULES } from "./voidborne";
 
 export const EGG_FIND_XP_REWARD = 30 as const;
 
