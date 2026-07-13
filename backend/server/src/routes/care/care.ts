@@ -765,10 +765,9 @@ careRouter.post("/place", requireUser, async (req: AuthedRequest, res) => {
         .status(400)
         .json({ error: "That Delta has already run away." });
     }
-
     const { error: clearError } = await supabaseAdmin
       .from("pets")
-      .update({ is_active: false, location: "storage" })
+      .update({ is_active: false })
       .eq("user_id", userId)
       .eq("is_active", true);
 

@@ -1,0 +1,122 @@
+diff --git a/backend/server/src/lib/petCareHelpers.ts b/backend/server/src/lib/petCareHelpers.ts
+index abd7c8b..aa3366c 100644
+--- a/backend/server/src/lib/petCareHelpers.ts
++++ b/backend/server/src/lib/petCareHelpers.ts
+@@ -90,6 +90,13 @@ export async function updatePetCareStats(
+   // pet keeps occupying its slot forever: it still shows up in the team
+   // list, and the slot can never be reassigned to a recovered or new pet.
+   if (updates.ran_away) {
++    const { error: runawayPetError } = await supabaseAdmin
++      .from("pets")
++      .update({ is_active: false, location: "storage" })
++      .eq("id", petId);
++
++    if (runawayPetError) throw runawayPetError;
++
+     const { error: slotError } = await supabaseAdmin
+       .from("party_slots")
+       .delete()
+diff --git a/backend/server/src/routes/routePets/petsRepo.ts b/backend/server/src/routes/routePets/petsRepo.ts
+index e1f55f0..556c0f4 100644
+--- a/backend/server/src/routes/routePets/petsRepo.ts
++++ b/backend/server/src/routes/routePets/petsRepo.ts
+@@ -15,6 +15,7 @@ export async function fetchActivePet(userId: string) {
+       .select("*")
+       .eq("user_id", userId)
+       .eq("is_active", true)
++      .eq("ran_away", false)
+       .order("created_at", { ascending: false })
+       .limit(1)
+       .maybeSingle();
+@@ -28,6 +29,7 @@ export async function fetchActivePet(userId: string) {
+       .from("pets")
+       .select("*")
+       .eq("user_id", userId)
++      .eq("ran_away", false)
+       .neq("stage", "egg")
+       .order("hatched_at", { ascending: false })
+       .order("created_at", { ascending: false })
+diff --git a/frontend/web/src/components/Hatchery/pages/storage/usePetStorage.ts b/frontend/web/src/components/Hatchery/pages/storage/usePetStorage.ts
+index 2312d78..1963c32 100644
+--- a/frontend/web/src/components/Hatchery/pages/storage/usePetStorage.ts
++++ b/frontend/web/src/components/Hatchery/pages/storage/usePetStorage.ts
+@@ -192,6 +192,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
+     level,
+     location,
+     is_active,
++    ran_away,
+     runaway_at,
+     created_at,
+     hatched_at,
+@@ -305,6 +306,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
+   const storedPets = useMemo(() => {
+     return pets
+       .filter((pet) => {
++        if (isRunawayPet(pet)) return false;
+         if (pet.location === "storage") return true;
+         if (pet.location === "active" && !partyPetIds.has(pet.id)) return true;
+         return false;
+diff --git a/supabase/migrations/20260713000006_repair_runaway_registry_state.sql b/supabase/migrations/20260713000006_repair_runaway_registry_state.sql
+new file mode 100644
+index 0000000..f4fbb5a
+--- /dev/null
++++ b/supabase/migrations/20260713000006_repair_runaway_registry_state.sql
+@@ -0,0 +1,58 @@
++-- Keep runaway pets out of Main Team and Storage UI state.
++-- The Lost Kith Registry continues to use pets.ran_away and runaway_at.
++
++update public.pets
++set
++  is_active = false,
++  location = 'storage'
++where ran_away = true
++  and (
++    is_active = true
++    or location <> 'storage'
++  );
++
++delete from public.party_slots as slot
++using public.pets as pet
++where slot.pet_id = pet.id
++  and pet.ran_away = true;
++
++-- Rescue hatches can be stranded if a runaway pet held the only party slot.
++-- Repair only accounts that now have exactly one healthy non-egg pet and no
++-- party rows, which is the rescue-egg case without choosing between pets.
++with only_healthy_pet as (
++  select
++    pet.user_id,
++    (array_agg(pet.id order by pet.hatched_at desc nulls last, pet.created_at desc))[1]
++      as pet_id
++  from public.pets as pet
++  where pet.ran_away = false
++    and pet.stage <> 'egg'
++  group by pet.user_id
++  having count(*) = 1
++    and not exists (
++      select 1
++      from public.party_slots as existing_slot
++      where existing_slot.user_id = pet.user_id
++    )
++),
++inserted as (
++  insert into public.party_slots (
++    user_id,
++    slot_index,
++    pet_id
++  )
++  select
++    only_healthy_pet.user_id,
++    1,
++    only_healthy_pet.pet_id
++  from only_healthy_pet
++  on conflict do nothing
++  returning user_id, pet_id
++)
++update public.pets as pet
++set
++  location = 'active',
++  is_active = true
++from inserted
++where pet.id = inserted.pet_id
++  and pet.user_id = inserted.user_id;

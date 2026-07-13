@@ -132,6 +132,9 @@ function StoragePetCard(props: {
   onDragStart: (event: React.DragEvent<HTMLElement>, pet: StoragePet) => void;
   onDragEnd: () => void;
   onMoveEggToIncubator?: (petId: string) => void;
+  onMovePetToParty?: (petId: string) => void;
+  targetSlot: number | null;
+  isWorking: boolean;
   incubatorBusy: boolean;
 }) {
   const {
@@ -140,6 +143,9 @@ function StoragePetCard(props: {
     onDragStart,
     onDragEnd,
     onMoveEggToIncubator,
+    onMovePetToParty,
+    targetSlot,
+    isWorking,
     incubatorBusy,
   } = props;
 
@@ -218,7 +224,22 @@ function StoragePetCard(props: {
             {incubatorBusy ? "Incubator Busy" : "Move to Incubator"}
           </button>
         ) : (
-          <div className="dragHandleHint">Drag to team</div>
+          <>
+            <div className="dragHandleHint">Drag to team</div>
+
+            <button
+              type="button"
+              className="btn btn-blue storageActionBtn"
+              disabled={!targetSlot || isWorking}
+              onClick={() => onMovePetToParty?.(pet.id)}
+            >
+              {isWorking
+                ? "Moving..."
+                : targetSlot
+                  ? `Move to Slot ${targetSlot}`
+                  : "Main Team Full"}
+            </button>
+          </>
         )}
       </div>
 
@@ -282,7 +303,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
   }, [filter, normalizeStage, pets, search]);
 
   const partyCount = partySlots.filter((slot) => slot.petId).length;
-  const targetSlot = selectedPartySlot ?? firstEmptyPartySlot;
+  const targetSlot = firstEmptyPartySlot ?? selectedPartySlot;
   const incubatingEgg = incubatingEggs[0] ?? null;
 
   function clearDragState() {
@@ -318,6 +339,13 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
       fromSlotIndex: slotIndex,
       isEgg: normalizeStage(pet.stage) === "egg",
     });
+  }
+
+  async function handleMoveStoredPetToTeam(petId: string) {
+    if (!targetSlot) return;
+
+    await assignPetToParty(petId, targetSlot);
+    setSelectedPartySlot(targetSlot);
   }
 
   async function handleDropToTeam(

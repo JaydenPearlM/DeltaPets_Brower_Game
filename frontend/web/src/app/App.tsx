@@ -424,6 +424,8 @@ export default function App() {
         </header>
       )}
 
+          <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
+
       <main className="appContent">
         <Outlet />
       </main>
@@ -445,6 +447,37 @@ export default function App() {
       )}
 
       <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
+    </div>
+  );
+}
+      </header>
+    )}
+
+    <RoamEncounterToast
+      result={roamResult}
+      onDismiss={clearRoamResult}
+    />
+
+    <main className="appContent">
+      <Outlet />
+    </main>
+
+    <LoginMenus forcedView={forcedAuthView} showLaunchers={false} />
+
+    {inventoryOpen && user && (
+      <div
+        className="dpPopupWindowBackdrop"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Inventory"
+      >
+        <section className="dpPopupWindow dpPopupWindow--compact">
+          <div className="dpPopupWindowContent inventoryModal">
+            <Inventory onClose={closeInventory} />
+          </div>
+               </section>
+        </div>
+      )}
     </div>
   );
 }
