@@ -55,8 +55,8 @@ export type KithnaPetTemplate = {
 };
 
 /**
- * These egg names are intentionally different from starter eggs.
- * For example, Tideheart Egg cannot be confused with Water Egg.
+ * Canonical elemental egg visuals used by normal Kithna encounters.
+ * Mystery Egg remains exclusive to the starter flow.
  */
 export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   null_element: {
@@ -71,7 +71,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   water: {
     element: "water",
     displayName: "Water",
-    eggName: "Tideheart Egg",
+    eggName: "Tide Egg",
     shellColor: "blue",
     markingColor: "aqua",
     glowColor: "soft blue",
@@ -80,7 +80,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   fire: {
     element: "fire",
     displayName: "Fire",
-    eggName: "Embercore Egg",
+    eggName: "Ember Egg",
     shellColor: "red",
     markingColor: "orange",
     glowColor: "warm gold",
@@ -89,7 +89,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   earth: {
     element: "earth",
     displayName: "Earth",
-    eggName: "Rootbound Egg",
+    eggName: "Grove Egg",
     shellColor: "brown",
     markingColor: "green",
     glowColor: "soft moss",
@@ -98,7 +98,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   air: {
     element: "air",
     displayName: "Air",
-    eggName: "Skywhorl Egg",
+    eggName: "Zephyr Egg",
     shellColor: "sky blue",
     markingColor: "white",
     glowColor: "pale cyan",
@@ -116,7 +116,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   storm: {
     element: "storm",
     displayName: "Storm",
-    eggName: "Thundercrest Egg",
+    eggName: "Storm Egg",
     shellColor: "violet",
     markingColor: "yellow",
     glowColor: "electric purple",
@@ -134,7 +134,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   shadow: {
     element: "shadow",
     displayName: "Shadow",
-    eggName: "Duskmire Egg",
+    eggName: "Eclipse Egg",
     shellColor: "deep purple",
     markingColor: "black",
     glowColor: "violet",
@@ -155,7 +155,7 @@ const STANDARD_KITHNA_RULES: PetSpeciesRules = {
   canBreed: true,
   breedingPartnerLine: "any",
   hasGender: true,
-  maxStage: "mythical_legendary",
+  maxStage: "legion",
   xpMultiplier: 1,
   encounterWeight: 100,
   catchFailureChancePercent: 0,
@@ -190,16 +190,16 @@ export function createKithnaNonStarterSpecies(
     : STANDARD_KITHNA_RULES;
 
   const rules = mergeRules(baseRules, template.rules);
-
   const evolution: SpeciesEvolution = {
     egg: eggVisual.eggName,
     hatchling: template.hatchling,
     lowform: template.lowform,
     highform: template.highform,
     legion: template.legion,
-
     mythical_legendary:
-      rules.maxStage === "legion" ? null : template.mythical_legendary,
+      rules.maxStage === "legion"
+        ? null
+        : (template.mythical_legendary ?? null),
   };
 
   return {
@@ -309,12 +309,12 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
   //
   // createKithnaNonStarterSpecies({
   //   id: "kithna_voidborne_pet_01",
-  //   line: "voidborne",
+  //   line: "null_element",
   //
   //   hatchling: "",
   //   lowform: "",
   //   highform: "",
-  //   legion: "", // Required before enabling this species.
+  //   legion: "VOIDBORNE_LEGION_NAME",
   //   mythical_legendary: null,
   //
   //   eggBaseStats: {

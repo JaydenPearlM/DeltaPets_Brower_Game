@@ -411,34 +411,81 @@ kithnaRouter.post(
           .json({ error: `Not enough ${currency} to recover this Delta.` });
       }
 
-      const { error: updateError } = await supabaseAdmin
-        .from("pets")
-        .update({
-          ran_away: false,
-          runaway_at: null,
-          is_active: false,
-          location: "storage",
-        })
-        .eq("id", petId);
-
-      if (updateError) {
-        // Refund since the charge went through but the recovery didn't.
-        await supabaseAdmin.rpc("increment_wallet", {
+      const { data: recoveryRows, error: recoveryError } =
+        await supabaseAdmin.rpc("recover_runaway_pet_to_party", {
           p_user_id: userId,
-          p_dots: currency === "dots" ? amount : 0,
-          p_crystals: currency === "crystals" ? amount : 0,
+          p_pet_id: petId,
         });
-        throw updateError;
+
+      if (recoveryError) {
+        // The charge succeeded, but recovery failed. Refund exactly what
+        // the player paid before returning the error.
+        const { error: refundError } = await supabaseAdmin.rpc(
+          "increment_wallet",
+          {
+            p_user_id: userId,
+            p_dots: currency === "dots" ? amount : 0,
+            p_crystals: currency === "crystals" ? amount : 0,
+          },
+        );
+
+        if (refundError) {
+          logger.error(
+            "[kithna/lost-registry/recover] refund failed",
+            refundError,
+          );
+        }
+
+        throw recoveryError;
       }
 
-      // Deliberately not auto-assigning a party slot here. The pet lands
-      // in storage as "recovered but benched", the player adds it to
-      // their team through the normal MainTeam UI when they're ready.
+      const recovery = Array.isArray(recoveryRows)
+        ? recoveryRows[0]
+        : recoveryRows;
+
+      if (!recovery) {
+        const { error: refundError } = await supabaseAdmin.rpc(
+          "increment_wallet",
+          {
+            p_user_id: userId,
+            p_dots: currency === "dots" ? amount : 0,
+            p_crystals: currency === "crystals" ? amount : 0,
+          },
+        );
+
+        if (refundError) {
+          logger.error(
+            "[kithna/lost-registry/recover] empty-result refund failed",
+            refundError,
+          );
+        }
+
+        throw new Error("Recovery completed without a destination.");
+      }
+
+      const rawPartySlot = Number(recovery.party_slot ?? 0);
+      const assignedPartySlot =
+        Number.isInteger(rawPartySlot) && rawPartySlot >= 1 && rawPartySlot <= 4
+          ? rawPartySlot
+          : null;
+
+      const destination: "party" | "storage" =
+        recovery.destination === "party" ? "party" : "storage";
+
+      const message =
+        typeof recovery.message === "string" && recovery.message.trim()
+          ? recovery.message
+          : destination === "party"
+            ? "Pet has returned home, stats all care maxed."
+            : "Pet has returned to storage, stats all care maxed.";
+
       logger.info("[kithna/lost-registry] pet recovered", {
         userId,
         petId,
         currency,
         amount,
+        destination,
+        partySlot: assignedPartySlot,
       });
 
       return res.json({
@@ -446,6 +493,9 @@ kithnaRouter.post(
         pet_id: petId,
         currency,
         amount,
+        destination,
+        party_slot: assignedPartySlot,
+        message,
       });
     } catch (err: any) {
       logger.error("[kithna/lost-registry/recover] failed", err);

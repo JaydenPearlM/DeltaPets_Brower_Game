@@ -35,6 +35,4 @@ begin
 end
 $$;
 
-alter table public.profiles
-  drop column if exists food_trough_unlocked;
 commit;
