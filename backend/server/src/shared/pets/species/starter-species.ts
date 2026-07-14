@@ -48,7 +48,7 @@ export type SpeciesEvolution = {
   hatchling: string;
   lowform: string;
   highform: string;
-  legion: string | null;
+  legion: string;
   mythical_legendary: string | null;
 };
 
@@ -74,7 +74,7 @@ export type StarterSprout = {
   hatchlingName: string;
   lowformName: string;
   highformName: string;
-  legionName: string | null;
+  legionName: string;
   mythicalLegendaryName: string | null;
   baseStats: SharedBaseStats;
 };
@@ -367,16 +367,22 @@ export function getSpeciesStageName(
   switch (stage) {
     case "egg":
       return species.evolution.egg;
+
     case "hatchling":
       return species.evolution.hatchling;
+
     case "lowform":
       return species.evolution.lowform;
+
     case "highform":
       return species.evolution.highform;
+
     case "legion":
       return species.evolution.legion;
+
     case "mythical_legendary":
       return species.evolution.mythical_legendary;
+
     default:
       return null;
   }
@@ -390,8 +396,15 @@ export function getShadowNature(
   personalityKey: string | null | undefined,
 ): ShadowNature {
   const key = (personalityKey ?? "").trim().toLowerCase();
-  if (BAD_SHADOW_PERSONALITIES.has(key)) return "bad";
-  if (GOOD_SHADOW_PERSONALITIES.has(key)) return "good";
+
+  if (BAD_SHADOW_PERSONALITIES.has(key)) {
+    return "bad";
+  }
+
+  if (GOOD_SHADOW_PERSONALITIES.has(key)) {
+    return "good";
+  }
+
   return "good";
 }
 
@@ -407,7 +420,10 @@ export function resolveShadowSpecies(
       species.variant === nature &&
       (!worldTime || species.preferredTime === worldTime),
   );
-  if (exact) return exact;
+
+  if (exact) {
+    return exact;
+  }
 
   return (
     SHARED_SPECIES.find(
@@ -435,7 +451,10 @@ export function findStarterByName(
   name: string | null | undefined,
 ): StarterSprout | null {
   const normalized = (name ?? "").trim().toLowerCase();
-  if (!normalized) return null;
+
+  if (!normalized) {
+    return null;
+  }
 
   return (
     STARTER_SPROUTS.find((starter) =>
@@ -447,8 +466,8 @@ export function findStarterByName(
         starter.legionName,
         starter.mythicalLegendaryName,
       ]
-        .filter((v): v is string => Boolean(v))
-        .some((v) => v.toLowerCase() === normalized),
+        .filter((value): value is string => Boolean(value))
+        .some((value) => value.toLowerCase() === normalized),
     ) ?? null
   );
 }
@@ -457,7 +476,10 @@ export function findSpeciesByAnyStageName(
   name: string | null | undefined,
 ): SharedSpecies | null {
   const normalized = (name ?? "").trim().toLowerCase();
-  if (!normalized) return null;
+
+  if (!normalized) {
+    return null;
+  }
 
   return (
     SHARED_SPECIES.find((species) =>
@@ -469,8 +491,8 @@ export function findSpeciesByAnyStageName(
         species.evolution.legion,
         species.evolution.mythical_legendary,
       ]
-        .filter((v): v is string => Boolean(v))
-        .some((v) => v.toLowerCase() === normalized),
+        .filter((value): value is string => Boolean(value))
+        .some((value) => value.toLowerCase() === normalized),
     ) ?? null
   );
 }

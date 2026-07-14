@@ -962,11 +962,9 @@ petsRouter.post(
         ? (STARTERS.find((s) => s.speciesId === typedEgg.species) ?? null)
         : (STARTERS.find((s) => s.line === typedEgg.line) ?? null);
 
-      const kithnaSpecies = typedEgg.species
-        ? (getKithnaNonStarterSpecies().find(
-            (species) => species.id === typedEgg.species,
-          ) ?? null)
-        : null;
+      const kithnaSpecies =
+        findNonStarterSpeciesById(typedEgg.species) ??
+        findNonStarterSpeciesByEggName(typedEgg.name);
 
       const hatchlingName =
         starter?.hatchlingName ?? kithnaSpecies?.evolution.hatchling ?? null;
@@ -1016,11 +1014,10 @@ petsRouter.post(
           personalityKey = personalityRow.key;
         }
       }
-
       if (!personalityId || !personalityKey) {
         const rolled = await rollPersonality();
-        personalityKey = rolled.key;
-        personalityId = rolled.id;
+        personalityKey = rolled?.key ?? null;
+        personalityId = rolled?.id ?? null;
       }
 
       let passiveTraitId = typedEgg.passive_trait_id ?? null;

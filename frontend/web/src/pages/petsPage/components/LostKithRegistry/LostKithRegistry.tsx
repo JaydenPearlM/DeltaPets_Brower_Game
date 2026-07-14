@@ -67,7 +67,7 @@ export default function LostKithRegistry({
     try {
       await apiFetch("/api/kithna/lost-registry/recover", {
         method: "POST",
-        body: JSON.stringify({ petId, currency }),
+        json: { petId, currency },
       });
 
       setEntries((prev) => prev.filter((entry) => entry.pet_id !== petId));

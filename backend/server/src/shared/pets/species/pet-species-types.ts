@@ -8,10 +8,17 @@ export type PetSpeciesRules = {
   canBreed: boolean;
   breedingPartnerLine: SharedElementLine | "any";
   hasGender: boolean;
-  maxStage: "highform" | "mythical_legendary";
+
+  /**
+   * Every species must reach Legion.
+   * Mythical Legendary is optional.
+   */
+  maxStage: "legion" | "mythical_legendary";
+
   xpMultiplier: number;
   encounterWeight: number;
   catchFailureChancePercent: number;
+
   hatchMinutes: {
     min: number;
     max: number;

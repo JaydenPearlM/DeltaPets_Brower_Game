@@ -39,8 +39,17 @@ export type KithnaPetTemplate = {
   hatchling: string;
   lowform: string;
   highform: string;
-  legion?: string | null;
-  mythical_legendary?: string | null;
+
+  /**
+   * Legion is required for every species.
+   */
+  legion: string;
+
+  /**
+   * Mythical Legendary may not exist yet.
+   */
+  mythical_legendary: string | null;
+
   eggBaseStats?: SharedBaseStats;
   rules?: Partial<PetSpeciesRules>;
 };
@@ -187,13 +196,10 @@ export function createKithnaNonStarterSpecies(
     hatchling: template.hatchling,
     lowform: template.lowform,
     highform: template.highform,
-
-    legion: rules.maxStage === "highform" ? null : (template.legion ?? null),
+    legion: template.legion,
 
     mythical_legendary:
-      rules.maxStage === "highform"
-        ? null
-        : (template.mythical_legendary ?? null),
+      rules.maxStage === "legion" ? null : template.mythical_legendary,
   };
 
   return {
@@ -308,7 +314,7 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
   //   hatchling: "",
   //   lowform: "",
   //   highform: "",
-  //   legion: null,
+  //   legion: "", // Required before enabling this species.
   //   mythical_legendary: null,
   //
   //   eggBaseStats: {
