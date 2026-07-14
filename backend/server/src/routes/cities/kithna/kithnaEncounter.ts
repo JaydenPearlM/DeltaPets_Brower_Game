@@ -180,7 +180,7 @@ kithnaRouter.post(
 // POST /api/kithna/roam/take
 //
 // Accepts the current pending Kithna egg encounter and creates the
-// egg in the player's inventory.
+// egg in the player's storage.
 // ============================================================
 kithnaRouter.post(
   "/roam/take",
@@ -210,8 +210,8 @@ kithnaRouter.post(
           hatch_ends_at: null,
           pending_hatch_minutes: eggQuality.hatch_minutes,
           is_active: false,
-          location: "inventory",
-          hatch_time_alignment: species.preferredTime,
+          location: "storage",
+          hatch_time_alignment: timeOfDay,
         })
         .select("*")
         .single();
@@ -254,7 +254,7 @@ kithnaRouter.post(
         taken: true,
         egg_id: insertedPet.id,
         egg_name: species.evolution.egg,
-        location: "inventory",
+        location: "storage",
         xp_awarded: species.findXpReward,
       });
     } catch (err: any) {

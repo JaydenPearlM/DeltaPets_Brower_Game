@@ -5,16 +5,6 @@
 
 import type { PetStage } from "../../types/petStages";
 
-import type {
-  PetSpeciesIdentity,
-  PetSpeciesRules,
-  ShadowNature,
-  SharedBaseStats,
-  SharedElementLine,
-  SpeciesEvolution,
-  WorldTimeState,
-} from "../petSpeciesTypes";
-
 export type SharedElementLine =
   | "null_element"
   | "water"
@@ -58,7 +48,7 @@ export type SpeciesEvolution = {
   hatchling: string;
   lowform: string;
   highform: string;
-  legion: string;
+  legion: string | null;
   mythical_legendary: string | null;
 };
 
@@ -84,7 +74,7 @@ export type StarterSprout = {
   hatchlingName: string;
   lowformName: string;
   highformName: string;
-  legionName: string;
+  legionName: string | null;
   mythicalLegendaryName: string | null;
   baseStats: SharedBaseStats;
 };

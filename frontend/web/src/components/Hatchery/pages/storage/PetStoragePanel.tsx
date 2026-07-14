@@ -551,6 +551,11 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                   onMoveEggToIncubator={(petId) =>
                     void moveEggToIncubator(petId)
                   }
+                  onMovePetToParty={(petId) =>
+                    void handleMoveStoredPetToTeam(petId)
+                  }
+                  targetSlot={targetSlot}
+                  isWorking={workingPetId === pet.id}
                   incubatorBusy={Boolean(incubatingEgg)}
                 />
               ))}

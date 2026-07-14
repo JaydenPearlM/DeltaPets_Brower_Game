@@ -7,8 +7,8 @@ import type {
   SharedBaseStats,
   SharedElementLine,
   SpeciesEvolution,
-  WorldTimeState,
 } from "./starter-species";
+import type { PetSpeciesIdentity, PetSpeciesRules } from "./pet-species-types";
 
 import { isVoidborneLine, VOIDBORNE_RULES } from "./voidborne";
 
@@ -50,8 +50,8 @@ export type KithnaPetTemplate = {
  * For example, Tideheart Egg cannot be confused with Water Egg.
  */
 export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
-  voidborne: {
-    element: "voidborne",
+  null_element: {
+    element: "null_element",
     displayName: "Voidborne",
     eggName: "Bronzeheart Egg",
     shellColor: "bronze",

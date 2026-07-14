@@ -36,7 +36,10 @@ import {
   getStarterForSelection,
 } from "./starters";
 
-import { getKithnaNonStarterSpecies } from "../../shared/pets/species/kithna-species";
+import {
+  findNonStarterSpeciesByEggName,
+  findNonStarterSpeciesById,
+} from "../../shared/pets/species/all-species";
 import { getWorldTimeOfDay } from "../../lib/deltaTime";
 
 import {
@@ -1104,7 +1107,12 @@ petsRouter.post(
       if (hatchError) {
         logger.error("[hatch] RPC failed", hatchError);
 
-        return res.status(500).json({ error: "Failed to hatch pet" });
+        return res.status(500).json({
+          error: hatchError.message || "Failed to hatch pet",
+          code: hatchError.code ?? null,
+          details: hatchError.details ?? null,
+          hint: hatchError.hint ?? null,
+        });
       }
 
       const result = Array.isArray(hatchResult) ? hatchResult[0] : hatchResult;
