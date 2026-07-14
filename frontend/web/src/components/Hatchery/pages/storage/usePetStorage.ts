@@ -192,6 +192,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
     level,
     location,
     is_active,
+    ran_away,
     runaway_at,
     created_at,
     hatched_at,
@@ -305,6 +306,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
   const storedPets = useMemo(() => {
     return pets
       .filter((pet) => {
+        if (isRunawayPet(pet)) return false;
         if (pet.location === "storage") return true;
         if (pet.location === "active" && !partyPetIds.has(pet.id)) return true;
         return false;
