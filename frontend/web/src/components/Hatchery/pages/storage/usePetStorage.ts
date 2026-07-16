@@ -757,11 +757,19 @@ export function usePetStorage(options: UsePetStorageOptions) {
           throw new Error("No open hatchery slot is available right now.");
         }
 
+        const hatchMinutes =
+          pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
+        const hatchEndsAt = new Date(
+          Date.now() + hatchMinutes * 60 * 1000,
+        ).toISOString();
+
         const { error } = await supabase
           .from("pets")
           .update({
             location: "hatchery",
             is_active: false,
+            hatch_ends_at: hatchEndsAt,
+            pending_hatch_minutes: null,
           })
           .eq("user_id", userId)
           .eq("id", petId);
@@ -779,7 +787,11 @@ export function usePetStorage(options: UsePetStorageOptions) {
           // egg with no slot, better to fail the whole move than half-do it.
           await supabase
             .from("pets")
-            .update({ location: "storage" })
+            .update({
+              location: "storage",
+              hatch_ends_at: null,
+              pending_hatch_minutes: hatchMinutes,
+            })
             .eq("user_id", userId)
             .eq("id", petId);
           throw slotError;
@@ -788,7 +800,6 @@ export function usePetStorage(options: UsePetStorageOptions) {
     },
     [pets, userId],
   );
-
   // Kithna roam eggs land in "inventory" first. These two moves take an
   // egg from there to Storage (a holding spot, no timer started) or
   // straight into an open Hatchery slot (timer starts now).
@@ -860,7 +871,8 @@ export function usePetStorage(options: UsePetStorageOptions) {
           throw new Error("No open hatchery slot is available right now.");
         }
 
-        const hatchMinutes = pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
+        const hatchMinutes =
+          pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
         const hatchEndsAt = new Date(
           Date.now() + hatchMinutes * 60 * 1000,
         ).toISOString();

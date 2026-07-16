@@ -9,16 +9,19 @@ import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 import { useDeltaTime } from "@/lib/timers/useDeltaTime";
 import goldEggPng from "@/Pets_Creation/assets/eggs/goldEgg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
-import { SHARED_SPECIES } from "@shared/pets/species";
+import { SHARED_SPECIES, ELEMENT_EGG_NAMES } from "@shared/pets/species";
+import type { SharedElementLine } from "@shared/pets/species";
 import "./HatcheryPage.css";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const MYSTERY_EGG = {
   id: "mystery_egg",
-  name: "Mystery Egg",
+  name: "Prismatic Egg",
   sprite: goldEggPng,
 };
+
+const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
 
 // How often to poll when the tab is visible (ms)
 const POLL_INTERVAL_MS = 30_000;
@@ -184,6 +187,22 @@ const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
 };
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
+
+function resolveEggIdentity(egg?: { line?: string | null } | null): {
+  label: string;
+  elementKey: ElementalLineKey | null;
+} {
+  const line = String(egg?.line ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (ELEMENT_LINE_KEYS.has(line)) {
+    const key = line as ElementalLineKey;
+    return { label: ELEMENT_EGG_NAMES[key], elementKey: key };
+  }
+
+  return { label: MYSTERY_EGG.name, elementKey: null };
+}
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
@@ -619,6 +638,10 @@ export default function HatcheryPage() {
     return getEggGrowthTraits(selectedEgg);
   }, [selectedEgg]);
 
+  const selectedEggIdentity = useMemo(() => {
+    return resolveEggIdentity(selectedEgg);
+  }, [selectedEgg]);
+
   async function refreshAfterHatch() {
     const next = await fetchHatchery();
     setData(next);
@@ -690,7 +713,9 @@ export default function HatcheryPage() {
                   />
 
                   <div className="selectedText">
-                    <div className="selectedPreviewEyebrow">Incubator Live</div>
+                    <div className="selectedPreviewEyebrow">
+                      Incubator Core Activated.
+                    </div>
                     <div className="selectedSub">{countdownText}</div>
                   </div>
                 </div>

@@ -614,6 +614,67 @@
   display: block;
 }
 
+.eggElementPlaceholder {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: radial-gradient(
+    closest-side,
+    var(--element-tint, rgba(255, 255, 255, 0.14)),
+    rgba(10, 16, 30, 0.85) 78%
+  );
+  box-shadow: 0 0 18px var(--element-glow, rgba(255, 255, 255, 0.1));
+}
+
+.eggElementPlaceholderIcon {
+  width: 28px;
+  height: 28px;
+}
+
+.eggElementPlaceholderBig {
+  width: 160px;
+  height: 160px;
+}
+
+.eggElementPlaceholder[data-element="water"] {
+  --element-tint: var(--element-water-bg);
+  --element-glow: var(--element-water);
+}
+
+.eggElementPlaceholder[data-element="fire"] {
+  --element-tint: var(--element-fire-bg);
+  --element-glow: var(--element-fire);
+}
+
+.eggElementPlaceholder[data-element="earth"] {
+  --element-tint: var(--element-earth-bg);
+  --element-glow: var(--element-earth);
+}
+
+.eggElementPlaceholder[data-element="air"] {
+  --element-tint: var(--element-air-bg);
+  --element-glow: var(--element-air);
+}
+
+.eggElementPlaceholder[data-element="ice"] {
+  --element-tint: var(--element-ice-bg);
+  --element-glow: var(--element-ice);
+}
+
+.eggElementPlaceholder[data-element="storm"] {
+  --element-tint: var(--element-storm-bg);
+  --element-glow: var(--element-storm);
+}
+
+.eggElementPlaceholder[data-element="light"] {
+  --element-tint: var(--element-light-bg);
+  --element-glow: var(--element-light);
+}
+
+.eggElementPlaceholder[data-element="shadow"] {
+  --element-tint: var(--element-shadow-bg);
+  --element-glow: var(--element-shadow);
+}
+
 .eggSlotMain {
   min-width: 0;
 }

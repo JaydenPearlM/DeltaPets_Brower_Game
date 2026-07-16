@@ -8,6 +8,7 @@ import {
   usePetStorage,
 } from "./usePetStorage";
 import MainTeam from "../../../Main_Team/mainTeam";
+import { ELEMENT_EGG_NAMES } from "@shared/pets/species";
 import "./PetStoragePanel.css";
 
 type PetStoragePanelProps = {
@@ -39,6 +40,26 @@ const STAT_ROWS = [
   { key: "spd", label: "SPD" },
   { key: "mana", label: "MANA" },
 ] as const;
+
+const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
+
+function resolveEggIdentity(line?: string | null): {
+  label: string;
+  toneClass: string;
+} {
+  const value = String(line ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (ELEMENT_LINE_KEYS.has(value)) {
+    return {
+      label: ELEMENT_EGG_NAMES[value as keyof typeof ELEMENT_EGG_NAMES],
+      toneClass: getToneClass(value),
+    };
+  }
+
+  return { label: "Prismatic Egg", toneClass: "tone-default" };
+}
 
 function getToneClass(line?: string | null) {
   const value = String(line ?? "")
@@ -154,13 +175,14 @@ function StoragePetCard(props: {
       .trim()
       .toLowerCase() === "egg";
   const draggable = !isEgg;
+  const eggIdentity = isEgg ? resolveEggIdentity(pet.line) : null;
 
   return (
     <article
       className={[
         "storagePetCard",
         "storagePetCardWithTooltip",
-        isEgg ? "tone-default" : getToneClass(pet.line),
+        isEgg ? eggIdentity!.toneClass : getToneClass(pet.line),
         pet.is_active ? "isActivePet" : "",
         isDragging ? "isDragging" : "",
       ].join(" ")}
@@ -179,7 +201,7 @@ function StoragePetCard(props: {
       <div className="storagePetTop">
         <div className="storagePetIdentity">
           <div className="storagePetName">
-            {isEgg ? "Mystery Egg" : pet.name?.trim() || "Unnamed Delta"}
+            {isEgg ? eggIdentity!.label : pet.name?.trim() || "Unnamed Delta"}
           </div>
           <div className="storagePetMeta">
             {isEgg
