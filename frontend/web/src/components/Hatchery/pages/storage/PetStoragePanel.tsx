@@ -10,9 +10,10 @@ import {
 import MainTeam from "../../../Main_Team/mainTeam";
 import { ELEMENT_EGG_NAMES } from "@shared/pets/species";
 import "./PetStoragePanel.css";
-
 type PetStoragePanelProps = {
   userId?: string;
+  refreshSignal?: number;
+  onStorageChanged?: () => void;
 };
 
 type DragPayload = {

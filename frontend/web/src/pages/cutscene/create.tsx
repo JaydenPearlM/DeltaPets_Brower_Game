@@ -2,7 +2,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type ChangeEvent,
   type Dispatch,
   type SetStateAction,
 } from "react";
@@ -316,7 +315,9 @@ export default function DeltaPetsCutscene() {
   });
 
   const runIdRef = useRef(0);
-  const [replayKey, setReplayKey] = useState(0);
+  // Replay button (dev-only) removed; keep a stable replay key so the
+  // effect below still has a consistent dependency.
+  const [replayKey] = useState(0);
 
   /* ---------------- canvas: grid + triangle + egg ---------------- */
   useEffect(() => {
@@ -768,16 +769,24 @@ export default function DeltaPetsCutscene() {
         reduce ? 200 : TIMING.triangleDrawMs,
         (e) => {
           V.triDropY = lerp(-220, 0, e); // falls from above into place
-          V.triSquash = e < 0.7 ? lerp(-0.3, 0, e / 0.7) : 0; // slight stretch while falling
+          // Stretch builds as it speeds up (matches easeInCubic acceleration),
+          // then eases off right before impact instead of cutting out early.
+          V.triSquash =
+            e < 0.85
+              ? lerp(0, -0.5, e / 0.85)
+              : lerp(-0.5, -0.15, (e - 0.85) / 0.15);
         },
         alive,
         easeInCubic, // gravity: slow start, fast landing
       );
       if (!alive()) return;
       await tween(
-        reduce ? 120 : 260,
+        reduce ? 120 : 420,
         (e) => {
-          V.triSquash = Math.sin(e * Math.PI) * 0.55; // squash on impact, rebound to normal
+          // Springy landing: a couple of diminishing bounces instead of
+          // one flat squash-and-release.
+          const decay = Math.exp(-e * 4.2);
+          V.triSquash = Math.sin(e * Math.PI * 2.4) * 0.85 * decay;
         },
         alive,
       );
@@ -894,7 +903,8 @@ export default function DeltaPetsCutscene() {
     phase === "gridFadeIn" ||
     phase === "wireHold" ||
     phase === "goodluck";
-  const isGoodluckText = phase === "goodluck" || phase === "hold";
+  const isGoodluckText =
+    phase === "goodluck" || phase === "hold" || phase === "fadeOut";
 
   return (
     <div className="dpc-root">
@@ -917,25 +927,6 @@ export default function DeltaPetsCutscene() {
             <span className="dpc-caret">▍</span>
           ) : null}
         </div>
-      </div>
-
-      {/* preview-only controls (delete in your app) */}
-      <div className="dpc-controls">
-        <input
-          className="dpc-input"
-          value={playerName}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            setPlayerName(e.target.value || "Traveler")
-          }
-          aria-label="Preview player name"
-        />
-        <button
-          className="dpc-btn"
-          type="button"
-          onClick={() => setReplayKey((k) => k + 1)}
-        >
-          Replay
-        </button>
       </div>
     </div>
   );
@@ -976,7 +967,8 @@ const css = `
   text-shadow:0 0 18px rgba(70,220,255,0.28);
 }
 .dpc-text.dpc-text--goodluck{
-  transform:translate(-50%, calc(-50% + 195px));
+  transform:translate(-50%, calc(-50% + 200px));
+}
 }
 .dpc-text.glitch span{
   text-shadow: 2px 0 rgba(255,60,120,0.6), -2px 0 rgba(60,200,255,0.6), 0 0 18px rgba(120,230,255,0.4);

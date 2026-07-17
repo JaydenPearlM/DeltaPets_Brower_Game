@@ -369,13 +369,10 @@ export function LoginMenus({
 
       resetSignupFields();
       setLoginPassword("");
-      closeModal();
-      navigate("/");
-    } catch (error) {
-      console.error("[signup] failed:", error);
+      setView("login");
       setMessage({
-        type: "error",
-        text: "Signup failed. Please try again.",
+        type: "success",
+        text: "Account created! Check your email to verify before signing in.",
       });
     } finally {
       setLoading(false);

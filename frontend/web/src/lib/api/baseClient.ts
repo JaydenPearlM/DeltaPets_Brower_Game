@@ -15,6 +15,35 @@ export class ApiError extends Error {
   }
 }
 
+// Shared across every apiFetch call. Without this, navigating back to a
+// page that fires several requests at once (Hatchery loading its own
+// data plus PetStoragePanel loading its own) means each one independently
+// decides the token needs refreshing and races its own refreshSession()
+// call, which is slow and can fight itself. This makes every concurrent
+// caller await the same in-flight refresh instead.
+let inFlightRefresh: Promise<string> | null = null;
+
+async function refreshAccessToken(): Promise<string> {
+  if (inFlightRefresh) return inFlightRefresh;
+
+  inFlightRefresh = (async () => {
+    const { data: refreshed, error: refreshError } =
+      await supabase.auth.refreshSession();
+
+    if (refreshError || !refreshed.session) {
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    return refreshed.session.access_token;
+  })();
+
+  try {
+    return await inFlightRefresh;
+  } finally {
+    inFlightRefresh = null;
+  }
+}
+
 export async function getAccessToken(): Promise<string> {
   const { data, error } = await supabase.auth.getSession();
 
@@ -32,14 +61,7 @@ export async function getAccessToken(): Promise<string> {
   const isExpiringSoon = expiresAt * 1000 < Date.now() + 60_000;
 
   if (isExpiringSoon) {
-    const { data: refreshed, error: refreshError } =
-      await supabase.auth.refreshSession();
-
-    if (refreshError || !refreshed.session) {
-      throw new Error("Session expired. Please log in again.");
-    }
-
-    return refreshed.session.access_token;
+    return refreshAccessToken();
   }
 
   return session.access_token;
@@ -101,9 +123,8 @@ export async function apiFetch<T>(
   let res = await doFetch(headers);
 
   if (res.status === 401) {
-    const { data, error } = await supabase.auth.refreshSession();
-
-    if (!error && data.session) {
+    try {
+      await refreshAccessToken();
       headers = await getAuthHeaders({
         ...(init?.headers ?? {}),
         ...(init?.json !== undefined
@@ -111,6 +132,9 @@ export async function apiFetch<T>(
           : {}),
       });
       res = await doFetch(headers);
+    } catch {
+      // Session is genuinely dead, let the original failed response
+      // fall through and surface as an ApiError below.
     }
   }
 
