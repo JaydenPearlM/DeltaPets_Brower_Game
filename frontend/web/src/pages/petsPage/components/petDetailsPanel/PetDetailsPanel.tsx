@@ -4,6 +4,9 @@ import { safeNum, titleCase } from "@/lib/petUtils";
 import DpPopupWindow from "../DpPopupWindow";
 import "./PetDetailsPanel.css";
 import { getPetDialogue } from "./petDialogue";
+import { useDeltaTime } from "@/lib/timers/useDeltaTime";
+import { isPetAsleep } from "@/lib/petSleepSchedule";
+import PetSleepZs from "./PetSleepZs";
 import {
   getSelfAwareBubbleText,
   rememberSelfAwareVisit,
@@ -524,6 +527,8 @@ export default function PetDetailsPanel({
   );
 
   const stablePreference = getStablePreference(pet);
+  const { timeOfDay } = useDeltaTime();
+  const isPetSleeping = isPetAsleep(stablePreference, timeOfDay);
   const [petSpeech, setPetSpeech] = useState("");
   const [showPetSpeech, setShowPetSpeech] = useState(false);
 
@@ -840,6 +845,7 @@ export default function PetDetailsPanel({
                 </div>
 
                 <div className="petRepoScenePet">
+                  {isPetSleeping ? <PetSleepZs /> : null}
                   {previewUrl ? (
                     <img
                       className="petRepoScenePetImage"

@@ -8,10 +8,12 @@ import {
   usePetStorage,
 } from "./usePetStorage";
 import MainTeam from "../../../Main_Team/mainTeam";
+import { ELEMENT_EGG_NAMES } from "@shared/pets/species";
 import "./PetStoragePanel.css";
-
 type PetStoragePanelProps = {
   userId?: string;
+  refreshSignal?: number;
+  onStorageChanged?: () => void;
 };
 
 type DragPayload = {
@@ -39,6 +41,26 @@ const STAT_ROWS = [
   { key: "spd", label: "SPD" },
   { key: "mana", label: "MANA" },
 ] as const;
+
+const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
+
+function resolveEggIdentity(line?: string | null): {
+  label: string;
+  toneClass: string;
+} {
+  const value = String(line ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (ELEMENT_LINE_KEYS.has(value)) {
+    return {
+      label: ELEMENT_EGG_NAMES[value as keyof typeof ELEMENT_EGG_NAMES],
+      toneClass: getToneClass(value),
+    };
+  }
+
+  return { label: "Prismatic Egg", toneClass: "tone-default" };
+}
 
 function getToneClass(line?: string | null) {
   const value = String(line ?? "")
@@ -132,6 +154,9 @@ function StoragePetCard(props: {
   onDragStart: (event: React.DragEvent<HTMLElement>, pet: StoragePet) => void;
   onDragEnd: () => void;
   onMoveEggToIncubator?: (petId: string) => void;
+  onMovePetToParty?: (petId: string) => void;
+  targetSlot: number | null;
+  isWorking: boolean;
   incubatorBusy: boolean;
 }) {
   const {
@@ -140,6 +165,9 @@ function StoragePetCard(props: {
     onDragStart,
     onDragEnd,
     onMoveEggToIncubator,
+    onMovePetToParty,
+    targetSlot,
+    isWorking,
     incubatorBusy,
   } = props;
 
@@ -148,13 +176,14 @@ function StoragePetCard(props: {
       .trim()
       .toLowerCase() === "egg";
   const draggable = !isEgg;
+  const eggIdentity = isEgg ? resolveEggIdentity(pet.line) : null;
 
   return (
     <article
       className={[
         "storagePetCard",
         "storagePetCardWithTooltip",
-        isEgg ? "tone-default" : getToneClass(pet.line),
+        isEgg ? eggIdentity!.toneClass : getToneClass(pet.line),
         pet.is_active ? "isActivePet" : "",
         isDragging ? "isDragging" : "",
       ].join(" ")}
@@ -173,7 +202,7 @@ function StoragePetCard(props: {
       <div className="storagePetTop">
         <div className="storagePetIdentity">
           <div className="storagePetName">
-            {isEgg ? "Mystery Egg" : pet.name?.trim() || "Unnamed Delta"}
+            {isEgg ? eggIdentity!.label : pet.name?.trim() || "Unnamed Delta"}
           </div>
           <div className="storagePetMeta">
             {isEgg
@@ -218,7 +247,22 @@ function StoragePetCard(props: {
             {incubatorBusy ? "Incubator Busy" : "Move to Incubator"}
           </button>
         ) : (
-          <div className="dragHandleHint">Drag to team</div>
+          <>
+            <div className="dragHandleHint">Drag to team</div>
+
+            <button
+              type="button"
+              className="btn btn-blue storageActionBtn"
+              disabled={!targetSlot || isWorking}
+              onClick={() => onMovePetToParty?.(pet.id)}
+            >
+              {isWorking
+                ? "Moving..."
+                : targetSlot
+                  ? `Move to Slot ${targetSlot}`
+                  : "Main Team Full"}
+            </button>
+          </>
         )}
       </div>
 
@@ -282,7 +326,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
   }, [filter, normalizeStage, pets, search]);
 
   const partyCount = partySlots.filter((slot) => slot.petId).length;
-  const targetSlot = selectedPartySlot ?? firstEmptyPartySlot;
+  const targetSlot = firstEmptyPartySlot ?? selectedPartySlot;
   const incubatingEgg = incubatingEggs[0] ?? null;
 
   function clearDragState() {
@@ -318,6 +362,13 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
       fromSlotIndex: slotIndex,
       isEgg: normalizeStage(pet.stage) === "egg",
     });
+  }
+
+  async function handleMoveStoredPetToTeam(petId: string) {
+    if (!targetSlot) return;
+
+    await assignPetToParty(petId, targetSlot);
+    setSelectedPartySlot(targetSlot);
   }
 
   async function handleDropToTeam(
@@ -523,6 +574,11 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                   onMoveEggToIncubator={(petId) =>
                     void moveEggToIncubator(petId)
                   }
+                  onMovePetToParty={(petId) =>
+                    void handleMoveStoredPetToTeam(petId)
+                  }
+                  targetSlot={targetSlot}
+                  isWorking={workingPetId === pet.id}
                   incubatorBusy={Boolean(incubatingEgg)}
                 />
               ))}

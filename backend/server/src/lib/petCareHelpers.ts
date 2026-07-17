@@ -90,6 +90,13 @@ export async function updatePetCareStats(
   // pet keeps occupying its slot forever: it still shows up in the team
   // list, and the slot can never be reassigned to a recovered or new pet.
   if (updates.ran_away) {
+    const { error: runawayPetError } = await supabaseAdmin
+      .from("pets")
+      .update({ is_active: false, location: "storage" })
+      .eq("id", petId);
+
+    if (runawayPetError) throw runawayPetError;
+
     const { error: slotError } = await supabaseAdmin
       .from("party_slots")
       .delete()

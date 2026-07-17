@@ -59,8 +59,8 @@ export type PartySlotView = {
 
 type UsePetStorageOptions = {
   userId?: string;
+  onMutated?: () => void;
 };
-
 export const PARTY_SLOT_COUNT = 4;
 const STORAGE_TOTAL_CAP = 50;
 const STORAGE_EGG_CAP = 20;
@@ -148,7 +148,7 @@ export function formatLineLabel(line?: string | null) {
 }
 
 export function usePetStorage(options: UsePetStorageOptions) {
-  const { userId } = options;
+  const { userId, onMutated } = options;
 
   const [pets, setPets] = useState<StoragePet[]>([]);
   const [partyRows, setPartyRows] = useState<PartySlotRow[]>([]);
@@ -192,6 +192,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
     level,
     location,
     is_active,
+    ran_away,
     runaway_at,
     created_at,
     hatched_at,
@@ -305,6 +306,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
   const storedPets = useMemo(() => {
     return pets
       .filter((pet) => {
+        if (isRunawayPet(pet)) return false;
         if (pet.location === "storage") return true;
         if (pet.location === "active" && !partyPetIds.has(pet.id)) return true;
         return false;
@@ -462,6 +464,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
     try {
       await fn();
       await loadAll();
+      onMutated?.();
     } catch (err: any) {
       setError(err?.message ?? "Storage update failed.");
     } finally {
@@ -485,9 +488,17 @@ export function usePetStorage(options: UsePetStorageOptions) {
         if (isEggStage(pet.stage)) {
           throw new Error("Eggs cannot join the Main Team.");
         }
-
         if (isRunawayPet(pet)) {
           throw new Error("Runaway pets cannot join the Main Team.");
+        }
+
+        // A solo pet always lives in slot 1. If this pet is already on the
+        // team and it's the only one there, ignore whatever slot it was
+        // dropped on and keep it pinned to slot 1.
+        const isOnlySoloPet =
+          partyRows.length === 1 && partyRows[0].pet_id === petId;
+        if (isOnlySoloPet) {
+          slotIndex = 1;
         }
 
         const currentSlotForPet =
@@ -755,11 +766,19 @@ export function usePetStorage(options: UsePetStorageOptions) {
           throw new Error("No open hatchery slot is available right now.");
         }
 
+        const hatchMinutes =
+          pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
+        const hatchEndsAt = new Date(
+          Date.now() + hatchMinutes * 60 * 1000,
+        ).toISOString();
+
         const { error } = await supabase
           .from("pets")
           .update({
             location: "hatchery",
             is_active: false,
+            hatch_ends_at: hatchEndsAt,
+            pending_hatch_minutes: null,
           })
           .eq("user_id", userId)
           .eq("id", petId);
@@ -777,7 +796,11 @@ export function usePetStorage(options: UsePetStorageOptions) {
           // egg with no slot, better to fail the whole move than half-do it.
           await supabase
             .from("pets")
-            .update({ location: "storage" })
+            .update({
+              location: "storage",
+              hatch_ends_at: null,
+              pending_hatch_minutes: hatchMinutes,
+            })
             .eq("user_id", userId)
             .eq("id", petId);
           throw slotError;
@@ -786,7 +809,6 @@ export function usePetStorage(options: UsePetStorageOptions) {
     },
     [pets, userId],
   );
-
   // Kithna roam eggs land in "inventory" first. These two moves take an
   // egg from there to Storage (a holding spot, no timer started) or
   // straight into an open Hatchery slot (timer starts now).
@@ -858,7 +880,8 @@ export function usePetStorage(options: UsePetStorageOptions) {
           throw new Error("No open hatchery slot is available right now.");
         }
 
-        const hatchMinutes = pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
+        const hatchMinutes =
+          pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
         const hatchEndsAt = new Date(
           Date.now() + hatchMinutes * 60 * 1000,
         ).toISOString();

@@ -424,9 +424,12 @@ export default function App() {
         </header>
       )}
 
+      <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
+
       <main className="appContent">
         <Outlet />
       </main>
+
       <LoginMenus forcedView={forcedAuthView} showLaunchers={false} />
 
       {inventoryOpen && user && (
@@ -443,8 +446,6 @@ export default function App() {
           </section>
         </div>
       )}
-
-      <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
     </div>
   );
 }

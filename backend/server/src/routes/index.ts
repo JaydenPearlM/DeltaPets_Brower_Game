@@ -14,6 +14,7 @@ import { careRouter } from "./care/care";
 import { battleRouter } from "./battle";
 import { kithnaRouter } from "./cities/kithna/kithnaEncounter";
 import { inventoryRouter } from "./inventory/inventory";
+import { kithnaMerchantsRouter } from "./merchants/kithnaMerchants";
 
 const apiRouter = Router();
 
@@ -46,8 +47,13 @@ apiRouter.use("/care", careRouter);
 /* ===============================
    DAILY CARE / STREAK SYSTEM
 =============================== */
+apiRouter.use("/kithna", kithnaRouter);
 
-apiRouter.use("/daily/care", dailyCareRouter);
+/* ===============================
+   Merchant Stores
+=============================== */
+
+apiRouter.use("/merchants/kithna", kithnaMerchantsRouter);
 
 /* ===============================
    REWARDS SYSTEM

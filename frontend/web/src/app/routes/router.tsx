@@ -32,6 +32,13 @@ const ComingSoonPage = lazy(() =>
   })),
 );
 
+const FoodMerchantPage = lazy(
+  () => import("../../pages/Cities/Kithna/Merchants/FoodMerchantPage"),
+);
+const MerchantClosedPage = lazy(
+  () => import("../../pages/Cities/Kithna/Merchants/MerchantClosedPage"),
+);
+
 function PageLoader() {
   return <div style={{ padding: 16 }}>Loading...</div>;
 }
@@ -176,10 +183,34 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "cities/kath",
+        path: "kithna/food",
         element: withSuspense(
           <ProtectedRoute>
-            <ComingSoonPage pageName="Kath" />
+            <FoodMerchantPage />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "kithna/health",
+        element: withSuspense(
+          <ProtectedRoute>
+            <MerchantClosedPage merchantName="Health Merchant" />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "kithna/armor",
+        element: withSuspense(
+          <ProtectedRoute>
+            <MerchantClosedPage merchantName="Armor Merchant" />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "kithna/weapons",
+        element: withSuspense(
+          <ProtectedRoute>
+            <MerchantClosedPage merchantName="Weapon Merchant" />
           </ProtectedRoute>,
         ),
       },

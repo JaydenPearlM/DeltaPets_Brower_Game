@@ -448,6 +448,60 @@
   z-index: 1;
 }
 
+/* Reusable "not open yet" signage for merchant buildings, cyan outer
+   border with an inset purple border, centered on whatever page uses it. */
+.dp-merchant-closed-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.dp-merchant-closed-panel {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 32px 28px;
+  text-align: center;
+  border: 2px solid var(--dp-cyber-cyan);
+  border-radius: 20px;
+  background: var(--dp-surface-panel);
+  box-shadow: var(--dp-standard-panel-shadow);
+  color: var(--dp-panel-text);
+}
+
+.dp-merchant-closed-panel::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 3px solid var(--dp-panel-purple-border);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.dp-merchant-closed-title {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 10px;
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  color: var(--dp-cyber-cyan);
+}
+
+.dp-merchant-closed-text {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  line-height: 1.6;
+  color: var(--dp-panel-text);
+}
+
+.dp-merchant-closed-back-btn {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+}
+
 .dp-standard-panel-purple {
   position: relative;
   isolation: isolate;

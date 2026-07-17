@@ -15,6 +15,7 @@ export async function fetchActivePet(userId: string) {
       .select("*")
       .eq("user_id", userId)
       .eq("is_active", true)
+      .eq("ran_away", false)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -28,6 +29,7 @@ export async function fetchActivePet(userId: string) {
       .from("pets")
       .select("*")
       .eq("user_id", userId)
+      .eq("ran_away", false)
       .neq("stage", "egg")
       .order("hatched_at", { ascending: false })
       .order("created_at", { ascending: false })

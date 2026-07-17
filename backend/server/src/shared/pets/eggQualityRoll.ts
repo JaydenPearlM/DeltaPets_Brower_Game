@@ -2,7 +2,19 @@ import { randomInt as cryptoRandomInt } from "node:crypto";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { rollGrowthTraits, type GrowthStatKey } from "../../pets/growthTraits";
 
-const NON_STARTER_EGG_MIN_HATCH_MINUTES = 3;
+// --- Alpha testing override -------------------------------------------------
+// Tutorial/testing eggs hatch on a flat timer so testing stays fast and
+// predictable, real quality scaling below still runs and gets calculated,
+// it's just not what gets returned yet. Flip this to false once stat /
+// passive trait / mutation-based hatch time is ready to go live (planned:
+// wire in after the Gym and elemental affinities land).
+const ALPHA_FLAT_HATCH_MINUTES_ENABLED = true;
+const ALPHA_FLAT_HATCH_MINUTES = 2;
+
+// Real quality-scaled range, used once ALPHA_FLAT_HATCH_MINUTES_ENABLED is
+// false. More strong stats, no weak stat, and rarer passive traits (up to
+// legendary) all push the hatch time toward the max.
+const NON_STARTER_EGG_MIN_HATCH_MINUTES = 2;
 const NON_STARTER_EGG_MAX_HATCH_MINUTES = 10;
 
 type PassiveTraitRoll = {
@@ -58,12 +70,16 @@ export async function rollNonStarterEggQuality(): Promise<EggQualityRoll> {
     Math.max(NON_STARTER_EGG_MIN_HATCH_MINUTES, hatchMinutes),
   );
 
+  const finalHatchMinutes = ALPHA_FLAT_HATCH_MINUTES_ENABLED
+    ? ALPHA_FLAT_HATCH_MINUTES
+    : hatchMinutes;
+
   return {
     growth_strong_stats: strongStats,
     growth_weak_stat: weakStat,
     passive_trait_id: passiveTrait?.id ?? null,
     passive_trait_key: passiveTrait?.key ?? null,
-    hatch_minutes: hatchMinutes,
+    hatch_minutes: finalHatchMinutes,
     mutation_capacity: 1,
   };
 }

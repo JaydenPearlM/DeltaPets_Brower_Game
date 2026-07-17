@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
@@ -9,14 +9,15 @@ import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 import { useDeltaTime } from "@/lib/timers/useDeltaTime";
 import goldEggPng from "@/Pets_Creation/assets/eggs/goldEgg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
-import { SHARED_SPECIES } from "@shared/pets/species";
+import { SHARED_SPECIES, ELEMENT_EGG_NAMES } from "@shared/pets/species";
+import type { SharedElementLine } from "@shared/pets/species";
 import "./HatcheryPage.css";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const MYSTERY_EGG = {
   id: "mystery_egg",
-  name: "Mystery Egg",
+  name: "Prismatic Egg",
   sprite: goldEggPng,
 };
 
@@ -185,6 +186,29 @@ const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
+type ElementalLineKey = Exclude<SharedElementLine, "null_element">;
+
+const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
+
+// Eggs with a resolved element line show their real name and an
+// element-tinted placeholder. Eggs without a resolved line (true unknowns)
+// fall back to the generic Prismatic Egg look.
+function resolveEggIdentity(egg?: { line?: string | null } | null): {
+  label: string;
+  elementKey: ElementalLineKey | null;
+} {
+  const line = String(egg?.line ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (ELEMENT_LINE_KEYS.has(line)) {
+    const key = line as ElementalLineKey;
+    return { label: ELEMENT_EGG_NAMES[key], elementKey: key };
+  }
+
+  return { label: MYSTERY_EGG.name, elementKey: null };
+}
+
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
@@ -338,6 +362,7 @@ function EggSlotButton(props: {
       : "EMPTY";
 
   const canHatch = Boolean(slot.egg && cd.done && !slot.locked && !isHatching);
+  const eggIdentity = slot.egg ? resolveEggIdentity(slot.egg) : null;
 
   return (
     <div
@@ -355,15 +380,22 @@ function EggSlotButton(props: {
           if (!slot.locked) onSelect();
         }}
         disabled={slot.locked}
-        title={`Egg ${slot.index}`}
+        title={eggIdentity ? eggIdentity.label : `Egg ${slot.index}`}
       >
         <div className="eggSlotLeft">
-          {slot.egg ? (
-            <img
-              className="eggIconImg"
-              src={MYSTERY_EGG.sprite}
-              alt={MYSTERY_EGG.name}
-            />
+          {eggIdentity ? (
+            eggIdentity.elementKey ? (
+              <div
+                className="eggElementPlaceholder eggElementPlaceholderIcon"
+                data-element={eggIdentity.elementKey}
+              />
+            ) : (
+              <img
+                className="eggIconImg"
+                src={MYSTERY_EGG.sprite}
+                alt={eggIdentity.label}
+              />
+            )
           ) : (
             <div className="eggIcon" />
           )}
@@ -371,7 +403,9 @@ function EggSlotButton(props: {
 
         <div className="eggSlotMain">
           <div className="eggSlotTop">
-            <div className="eggSlotTitle">Egg {slot.index}</div>
+            <div className="eggSlotTitle">
+              {eggIdentity ? eggIdentity.label : `Egg ${slot.index}`}
+            </div>
             <div className="eggSlotTimer">{timerLabel}</div>
           </div>
         </div>
@@ -423,6 +457,8 @@ export default function HatcheryPage() {
 
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
+  const [storageRefreshSignal, setStorageRefreshSignal] = useState(0);
+  const loadRef = useRef<() => Promise<void>>(async () => {});
   const localNowMs = useNow(1000);
 
   const serverNowIso = useMemo(() => {
@@ -475,6 +511,8 @@ export default function HatcheryPage() {
         setLoadErr(getErrorMessage(e));
       }
     }
+
+    loadRef.current = load;
 
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
@@ -619,6 +657,10 @@ export default function HatcheryPage() {
     return getEggGrowthTraits(selectedEgg);
   }, [selectedEgg]);
 
+  const selectedEggIdentity = useMemo(() => {
+    return resolveEggIdentity(selectedEgg);
+  }, [selectedEgg]);
+
   async function refreshAfterHatch() {
     const next = await fetchHatchery();
     setData(next);
@@ -636,6 +678,7 @@ export default function HatcheryPage() {
     }
 
     await refreshAfterHatch();
+    setStorageRefreshSignal((n) => n + 1);
   }
 
   async function onHatchFromSlot(slot: HatchSlot) {
@@ -683,14 +726,26 @@ export default function HatcheryPage() {
                 <div className="selectedPreviewFilled">
                   <div className="selectedEggHalo" />
 
-                  <img
-                    className="eggBigImg"
-                    src={MYSTERY_EGG.sprite}
-                    alt={MYSTERY_EGG.name}
-                  />
+                  {selectedEggIdentity.elementKey ? (
+                    <div
+                      className="eggElementPlaceholder eggElementPlaceholderBig"
+                      data-element={selectedEggIdentity.elementKey}
+                    />
+                  ) : (
+                    <img
+                      className="eggBigImg"
+                      src={MYSTERY_EGG.sprite}
+                      alt={selectedEggIdentity.label}
+                    />
+                  )}
 
                   <div className="selectedText">
-                    <div className="selectedPreviewEyebrow">Incubator Live</div>
+                    <div className="selectedPreviewEyebrow">
+                      Incubator Core Activated.
+                    </div>
+                    <div className="selectedName">
+                      {selectedEggIdentity.label}
+                    </div>
                     <div className="selectedSub">{countdownText}</div>
                   </div>
                 </div>
@@ -797,7 +852,13 @@ export default function HatcheryPage() {
           </div>
         </section>
 
-        <PetStoragePanel userId={user?.id} />
+        <PetStoragePanel
+          userId={user?.id}
+          refreshSignal={storageRefreshSignal}
+          onStorageChanged={() => {
+            void loadRef.current();
+          }}
+        />
       </div>
     </div>
   );
