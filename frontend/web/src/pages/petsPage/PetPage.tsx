@@ -572,10 +572,7 @@ export default function PetPage() {
     }),
     [stats],
   );
-
   const activeElementKey = normalizeElement(pet?.element || pet?.line);
-  const petElementTheme = getElementThemeKey(pet);
-
   const elementRows = useMemo(
     () =>
       ELEMENT_ORDER.map((key) => ({
@@ -592,7 +589,6 @@ export default function PetPage() {
     () => getPetGrowthTraits(pet, stats),
     [pet, stats],
   );
-
   const kithTeamSlots = useMemo<PartySlotView[]>(() => {
     const teamBySlot = new Map<number, TeamCardPet>();
 
@@ -649,8 +645,25 @@ export default function PetPage() {
   const selectedKithTeamSlot =
     kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ?? null;
 
+  const [viewingSlotIndex, setViewingSlotIndex] = useState<number | null>(null);
+
+  const effectiveSlotIndex = viewingSlotIndex ?? selectedKithTeamSlot;
+
+  const viewedPet =
+    kithTeamSlots.find((slot) => slot.slotIndex === effectiveSlotIndex)?.pet ??
+    null;
+
+  const viewedPetLabel =
+    viewedPet?.nickname?.trim() ||
+    viewedPet?.name?.trim() ||
+    viewedPet?.species?.trim() ||
+    null;
+
+  const petElementTheme = getElementThemeKey(viewedPet ?? pet);
+
   const selectKithTeamSlot = useCallback(
     (slotIndex: number) => {
+      setViewingSlotIndex(slotIndex);
       const selectedSlot = kithTeamSlots.find(
         (slot) => slot.slotIndex === slotIndex,
       );
@@ -846,7 +859,8 @@ export default function PetPage() {
 
           <section className="petRepoBottomGrid">
             <StatsChamber
-              pet={pet}
+              pet={viewedPet ?? pet}
+              petLabel={viewedPetLabel}
               totalStats={totalStats}
               elementRows={elementRows}
               petElementTheme={petElementTheme}

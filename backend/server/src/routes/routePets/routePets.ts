@@ -142,7 +142,7 @@ const TOO_HIGH_CORRUPTION_EGG_LOSS_CHANCE = 900; // 90%, tune later
 function isMysteryEggProtected(egg: EggRow): boolean {
   const eggName = String(egg.name ?? "").toLowerCase();
 
-  if (eggName.includes("mystery")) {
+  if (eggName.includes("mystery") || eggName.includes("prismatic")) {
     return true;
   }
 
@@ -492,9 +492,9 @@ petsRouter.post(
 
       const fullInsertPayload = {
         user_id: userId,
-        name: starter.eggName,
+        name: "Prismatic Egg",
         species: starter.speciesId,
-        line: resolvedLine,
+        line: "null_element",
         stage: "egg",
         energy: 100,
         hatch_ends_at: hatchEndsAt,
@@ -663,10 +663,9 @@ petsRouter.post(
       const { data: insertedPet, error: insertError } = await supabaseAdmin
         .from("pets")
         .insert({
-          user_id: userId,
-          name: starter.eggName,
+          name: "Prismatic Egg",
           species: starter.speciesId,
-          line: starter.line,
+          line: "null_element",
           stage: "egg",
           energy: 100,
           hatch_ends_at: hatchEndsAt,
@@ -1137,6 +1136,15 @@ petsRouter.post(
       let storageResult: "party" | "storage" = "storage";
 
       if (assignedPartySlot) {
+        // Step 1: deactivate any currently active pet so there is never two
+        await supabaseAdmin
+          .from("pets")
+          .update({ is_active: false })
+          .eq("user_id", userId)
+          .eq("is_active", true)
+          .neq("id", egg.id);
+
+        // Step 2: activate the newly hatched pet
         const { error: activateErr } = await supabaseAdmin
           .from("pets")
           .update({

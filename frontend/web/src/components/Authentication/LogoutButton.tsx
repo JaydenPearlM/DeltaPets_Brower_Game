@@ -17,11 +17,12 @@ export function LogoutButton() {
         const { error } = await signOut();
         setBusy(false);
 
-        if (!error) {
-          navigate("/", { replace: true });
-        } else {
+        if (error) {
           console.error("Logout failed:", error);
         }
+        // No navigate() call here.
+        // onAuthStateChange fires, sets user = null,
+        // auth-guarded pages redirect themselves.
       }}
     >
       {busy ? "Logging out…" : "Logout"}

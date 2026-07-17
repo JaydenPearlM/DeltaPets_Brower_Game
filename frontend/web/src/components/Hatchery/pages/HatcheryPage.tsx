@@ -22,7 +22,7 @@ const MYSTERY_EGG = {
 };
 
 // How often to poll when the tab is visible (ms)
-const POLL_INTERVAL_MS = 30_000;
+const POLL_INTERVAL_MS = 8_000;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -555,7 +555,7 @@ export default function HatcheryPage() {
             pet && pet.stage === "egg" && hatchEndsAt
               ? {
                   id: pet.id,
-                  name: pet.name?.trim() || "Mystery Egg",
+                  name: pet.name?.trim() || "Prismatic Egg",
                   hatch_ends_at: hatchEndsAt,
                   line: pet.line ?? undefined,
                   species: pet.species ?? null,
@@ -574,7 +574,7 @@ export default function HatcheryPage() {
       pet && pet.stage === "egg" && hatchEndsAt
         ? {
             id: pet.id,
-            name: pet.name?.trim() || "Mystery Egg",
+            name: pet.name?.trim() || "Prismatic Egg",
             hatch_ends_at: hatchEndsAt,
             line: pet.line ?? undefined,
             growth_strong_stats: pet.growth_strong_stats ?? [],

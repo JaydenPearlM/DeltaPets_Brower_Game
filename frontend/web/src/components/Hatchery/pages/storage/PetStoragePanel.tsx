@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   formatLineLabel,
   formatStageLabel,
@@ -272,7 +272,7 @@ function StoragePetCard(props: {
 }
 
 export function PetStoragePanel(props: PetStoragePanelProps) {
-  const { userId } = props;
+  const { userId, refreshSignal, onStorageChanged } = props;
 
   const [filter, setFilter] = useState<StorageStageFilter>("all");
   const [search, setSearch] = useState("");
@@ -300,7 +300,13 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
     moveEggToIncubator,
     normalizeStage,
     caps,
-  } = usePetStorage({ userId });
+    reload,
+  } = usePetStorage({ userId, onMutated: onStorageChanged });
+
+  useEffect(() => {
+    if (!refreshSignal) return;
+    void reload();
+  }, [refreshSignal, reload]);
 
   const filteredPets = useMemo(() => {
     const q = search.trim().toLowerCase();

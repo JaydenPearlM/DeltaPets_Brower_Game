@@ -26,6 +26,7 @@ type ElementRow = {
 
 type StatsChamberProps = {
   pet: PetRecord;
+  petLabel?: string | null;
   totalStats: Record<StatKey, number>;
   elementRows: ElementRow[];
   petElementTheme: string;
@@ -46,6 +47,7 @@ function SectionPill({ title }: { title: string }) {
 
 export default function StatsChamber({
   pet,
+  petLabel,
   totalStats,
   elementRows,
   petElementTheme,
@@ -57,6 +59,16 @@ export default function StatsChamber({
       <h2 className="statsChamberTitle dp-standard-panel-title">
         Stats Chamber
       </h2>
+      {petLabel ? (
+        <p
+          className="statsChamberPetLabel"
+          data-element={
+            elementRows.find((row) => row.active)?.key ?? petElementTheme
+          }
+        >
+          {petLabel}
+        </p>
+      ) : null}
 
       <div className="petRepoDataTwoCol">
         <section className="petRepoInfoSection petRepoInfoSection--stats statsChamberSubPanel">

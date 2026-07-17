@@ -2,7 +2,7 @@
 
 import { logger } from "../../lib/logger";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
-import { STARTER_ANY_STAGE_NAMES } from "./starters";
+import { STARTERS } from "./starters";
 
 // ---------------------------------------------------------------------------
 // Pet queries
@@ -66,7 +66,7 @@ export async function fetchStarterPetAnyStage(userId: string) {
     .from("pets")
     .select("*")
     .eq("user_id", userId)
-    .in("name", STARTER_ANY_STAGE_NAMES)
+    .in("name", STARTERS)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();

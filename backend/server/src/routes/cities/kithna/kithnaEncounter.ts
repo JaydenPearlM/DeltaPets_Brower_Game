@@ -133,6 +133,24 @@ kithnaRouter.post(
       }
       lastRoamAttemptByUser.set(userId, now);
 
+      // Block encounters until the player has at least one hatched pet.
+      const { data: hatchedPets, error: hatchedError } = await supabaseAdmin
+        .from("pets")
+        .select("id")
+        .eq("user_id", userId)
+        .neq("stage", "egg")
+        .eq("ran_away", false)
+        .limit(1);
+
+      if (hatchedError) {
+        logger.error("[kithna/roam] hatch check failed", hatchedError);
+        return res.json({ found: false, reason: "no_find" });
+      }
+
+      if (!hatchedPets || hatchedPets.length === 0) {
+        return res.json({ found: false, reason: "no_hatched_pet" });
+      }
+
       const roll = cryptoRandomInt(100);
       if (roll >= ROAM_FIND_CHANCE_PERCENT) {
         return res.json({ found: false, reason: "no_find" });
