@@ -3,60 +3,141 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 60;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 280px;
-  max-width: 360px;
-  padding: 16px 18px;
-  border-radius: 14px;
-  background: var(--dp-surface-panel);
-  border: 1px solid var(--dp-border-panel);
-  box-shadow: 0 8px 24px var(--dp-cyber-blue-soft);
+  z-index: 10000;
+  width: min(380px, calc(100vw - 32px));
+  border: var(--dp-popup-border-width) solid var(--dp-popup-border);
+  border-radius: 24px;
+  background: var(--dp-popup-grid-base);
+  box-shadow: var(--dp-popup-window-shadow);
+  color: var(--dp-popup-text);
+  overflow: hidden;
+  isolation: isolate;
   animation: roamEncounterToastIn 220ms ease-out;
 }
 
-.roamEncounterToast__glow {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--dp-brand-yellow);
-  box-shadow: 0 0 12px var(--dp-cyber-blue-soft);
+.roamEncounterToast::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-popup-inset-gap);
+  z-index: 0;
+  border: var(--dp-popup-inner-border-width) solid var(--dp-popup-inner-border);
+  border-radius: 14px;
+  background-image: var(--dp-popup-grid-texture);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
+    auto;
+  background-position:
+    0 0,
+    0 0,
+    100% 100%,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  background-clip: padding-box;
+  background-origin: padding-box;
+  pointer-events: none;
 }
 
-.roamEncounterToast__body {
-  flex: 1;
-  min-width: 0;
+.roamEncounterToast > * {
+  position: relative;
+  z-index: 1;
+}
+
+.roamEncounterToast__inner {
+  padding: calc(
+    var(--dp-popup-inset-gap) + var(--dp-popup-inner-border-width) + 10px
+  );
+}
+
+.roamEncounterToast__header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--dp-cyber-cyan-soft);
 }
 
 .roamEncounterToast__title {
-  font-size: 12px;
+  font-family: var(--font-heading);
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   color: var(--dp-cyber-cyan);
+  font-weight: 700;
 }
 
-.roamEncounterToast__name {
-  font-size: 15px;
-  font-weight: 600;
+.roamEncounterToast__eggName {
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
   color: var(--dp-brand-yellow-bright);
+  margin-bottom: 10px;
 }
 
-.roamEncounterToast__xp {
-  font-size: 12px;
-  color: var(--dp-cyber-blue);
+.roamEncounterToast__copy {
+  font-size: 0.82rem;
+  color: var(--dp-panel-muted);
+  margin-bottom: 16px;
+  line-height: 1.5;
 }
 
-.roamEncounterToast__close {
-  background: none;
-  border: none;
+.roamEncounterToast__error {
+  font-size: 0.78rem;
+  color: var(--dp-brand-red);
+  margin-bottom: 10px;
+}
+
+.roamEncounterToast__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.roamEncounterToast__btnLeave {
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--dp-cyber-cyan);
+  background: transparent;
   color: var(--dp-cyber-cyan);
-  font-size: 18px;
-  line-height: 1;
   cursor: pointer;
-  padding: 2px 4px;
+  transition: background var(--transition-fast);
+  font-family: var(--font-body);
+}
+
+.roamEncounterToast__btnLeave:hover:not(:disabled) {
+  background: var(--dp-cyber-cyan-soft);
+}
+
+.roamEncounterToast__btnLeave:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.roamEncounterToast__btnTake {
+  padding: 6px 16px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--dp-gradient-yellow-button);
+  color: var(--btn-gold-text);
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+  font-family: var(--font-body);
+}
+
+.roamEncounterToast__btnTake:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.roamEncounterToast__btnTake:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @keyframes roamEncounterToastIn {

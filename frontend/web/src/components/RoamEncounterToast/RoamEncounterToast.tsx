@@ -42,19 +42,19 @@ export function RoamEncounterToast({
 
   return (
     <section
-      className="roamEncounterToast dp-standard-panel"
+      className="roamEncounterToast"
       role="region"
       aria-label="Kithna egg encounter"
     >
-      <div className="roamEncounterToast__glow" />
+      <div className="roamEncounterToast__inner">
+        <div className="roamEncounterToast__header">
+          <span className="roamEncounterToast__title">You Found an Egg!</span>
+        </div>
 
-      <div className="roamEncounterToast__body">
-        <div className="roamEncounterToast__title">You found an egg!</div>
-        <div className="roamEncounterToast__name">{result.egg_name}</div>
+        <div className="roamEncounterToast__eggName">{result.egg_name}</div>
 
         <div className="roamEncounterToast__copy">
-          A Kithna egg is resting nearby. Leave it where it is, or take it into
-          your Inventory.
+          An egg is resting nearby. Take it or leave it?
         </div>
 
         {error && (
@@ -62,26 +62,26 @@ export function RoamEncounterToast({
             {error}
           </div>
         )}
-      </div>
 
-      <div className="roamEncounterToast__actions">
-        <button
-          type="button"
-          className="roamEncounterToast__action dp-btn dp-btn-blue"
-          onClick={() => void handleDecision("leave")}
-          disabled={workingAction !== null}
-        >
-          {workingAction === "leave" ? "Leaving..." : "Leave It"}
-        </button>
+        <div className="roamEncounterToast__actions">
+          <button
+            type="button"
+            className="roamEncounterToast__btnLeave"
+            onClick={() => void handleDecision("leave")}
+            disabled={workingAction !== null}
+          >
+            {workingAction === "leave" ? "Leaving..." : "Leave It"}
+          </button>
 
-        <button
-          type="button"
-          className="roamEncounterToast__action dp-btn dp-btn-yellow"
-          onClick={() => void handleDecision("take")}
-          disabled={workingAction !== null}
-        >
-          {workingAction === "take" ? "Taking..." : "Take It"}
-        </button>
+          <button
+            type="button"
+            className="roamEncounterToast__btnTake"
+            onClick={() => void handleDecision("take")}
+            disabled={workingAction !== null}
+          >
+            {workingAction === "take" ? "Taking..." : "Take It"}
+          </button>
+        </div>
       </div>
     </section>
   );

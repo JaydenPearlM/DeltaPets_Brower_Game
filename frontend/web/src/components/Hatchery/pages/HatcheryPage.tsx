@@ -7,7 +7,10 @@ import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";
 import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 import { useDeltaTime } from "@/lib/timers/useDeltaTime";
-import goldEggPng from "@/Pets_Creation/assets/eggs/goldEgg.png";
+import {
+  getEggImage,
+  MYSTERY_EGG_IMAGE,
+} from "@/Pets_Creation/assets/eggs/eggType";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
 import { SHARED_SPECIES, ELEMENT_EGG_NAMES } from "@shared/pets/species";
 import type { SharedElementLine } from "@shared/pets/species";
@@ -18,7 +21,7 @@ import "./HatcheryPage.css";
 const MYSTERY_EGG = {
   id: "mystery_egg",
   name: "Prismatic Egg",
-  sprite: goldEggPng,
+  sprite: MYSTERY_EGG_IMAGE,
 };
 
 // How often to poll when the tab is visible (ms)
@@ -384,18 +387,11 @@ function EggSlotButton(props: {
       >
         <div className="eggSlotLeft">
           {eggIdentity ? (
-            eggIdentity.elementKey ? (
-              <div
-                className="eggElementPlaceholder eggElementPlaceholderIcon"
-                data-element={eggIdentity.elementKey}
-              />
-            ) : (
-              <img
-                className="eggIconImg"
-                src={MYSTERY_EGG.sprite}
-                alt={eggIdentity.label}
-              />
-            )
+            <img
+              className="eggIconImg"
+              src={getEggImage(slot.egg?.line)}
+              alt={eggIdentity.label}
+            />
           ) : (
             <div className="eggIcon" />
           )}
@@ -726,18 +722,11 @@ export default function HatcheryPage() {
                 <div className="selectedPreviewFilled">
                   <div className="selectedEggHalo" />
 
-                  {selectedEggIdentity.elementKey ? (
-                    <div
-                      className="eggElementPlaceholder eggElementPlaceholderBig"
-                      data-element={selectedEggIdentity.elementKey}
-                    />
-                  ) : (
-                    <img
-                      className="eggBigImg"
-                      src={MYSTERY_EGG.sprite}
-                      alt={selectedEggIdentity.label}
-                    />
-                  )}
+                  <img
+                    className="eggBigImg"
+                    src={getEggImage(selectedEgg?.line)}
+                    alt={selectedEggIdentity.label}
+                  />
 
                   <div className="selectedText">
                     <div className="selectedPreviewEyebrow">
