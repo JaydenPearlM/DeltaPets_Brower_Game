@@ -253,6 +253,9 @@ export default function PetPage() {
   const [starterMerchant, setStarterMerchant] =
     useState<StarterMerchantState | null>(null);
   const [showLostRegistry, setShowLostRegistry] = useState(false);
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(
+    null,
+  );
   const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
   const [rescueEggError, setRescueEggError] = useState<string | null>(null);
   const [nicknameDraft, setNicknameDraft] = useState("");
@@ -643,7 +646,9 @@ export default function PetPage() {
   }, [team, user?.id]);
 
   const selectedKithTeamSlot =
-    kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ?? null;
+    selectedSlotIndex ??
+    kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ??
+    null;
 
   const [viewingSlotIndex, setViewingSlotIndex] = useState<number | null>(null);
 
@@ -669,6 +674,7 @@ export default function PetPage() {
       );
 
       if (selectedSlot?.petId) {
+        setSelectedSlotIndex(slotIndex);
         void switchActivePet(selectedSlot.petId);
       }
     },

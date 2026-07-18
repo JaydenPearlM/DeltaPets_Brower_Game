@@ -508,7 +508,6 @@ petsRouter.post(
         growth_weak_stat: weakStat,
         mutation_capacity: 1,
       } as PetInsertPayload;
-
       const fullInsertResult = await supabaseAdmin
         .from("pets")
         .insert(fullInsertPayload)
