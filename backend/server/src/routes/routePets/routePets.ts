@@ -492,7 +492,7 @@ petsRouter.post(
 
       const fullInsertPayload = {
         user_id: userId,
-        name: starter.eggName,
+        name: "Prismatic Egg",
         species: starter.speciesId,
         line: resolvedLine,
         stage: "egg",
@@ -508,7 +508,6 @@ petsRouter.post(
         growth_weak_stat: weakStat,
         mutation_capacity: 1,
       } as PetInsertPayload;
-
       const fullInsertResult = await supabaseAdmin
         .from("pets")
         .insert(fullInsertPayload)

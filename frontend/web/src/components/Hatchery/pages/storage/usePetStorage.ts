@@ -109,6 +109,12 @@ function isUsableActivePet(pet?: StoragePet | null) {
   return !isEggStage(pet.stage);
 }
 
+function isPartyEligible(pet?: StoragePet | null) {
+  if (!pet) return false;
+  if (isRunawayPet(pet)) return false;
+  return !isEggStage(pet.stage);
+}
+
 function sortPetsNewestFirst(a: StoragePet, b: StoragePet) {
   const aTime = Date.parse(a.hatched_at ?? a.created_at ?? "");
   const bTime = Date.parse(b.hatched_at ?? b.created_at ?? "");
@@ -287,7 +293,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
       const slotIndex = idx + 1;
       const row = rowsByIndex.get(slotIndex) ?? null;
       const rawPet = row ? (petsById.get(row.pet_id) ?? null) : null;
-      const pet = isUsableActivePet(rawPet) ? rawPet : null;
+      const pet = isPartyEligible(rawPet) ? rawPet : null;
 
       return {
         slotIndex,
