@@ -186,20 +186,28 @@ const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
-type ElementalLineKey = Exclude<SharedElementLine, "null_element">;
-
 const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
+const STARTER_SPECIES_IDS = new Set<string>(
+  SHARED_SPECIES.map((species) => species.id),
+);
 
 // Eggs with a resolved element line show their real name and an
 // element-tinted placeholder. Eggs without a resolved line (true unknowns)
 // fall back to the generic Prismatic Egg look.
 function resolveEggIdentity(
-  egg?: { name?: string | null; line?: string | null } | null,
+  egg?: {
+    name?: string | null;
+    line?: string | null;
+    species?: string | null;
+  } | null,
 ): {
   label: string;
   elementKey: ElementalLineKey | null;
 } {
-  if (egg?.name?.trim().toLowerCase() === MYSTERY_EGG.name.toLowerCase()) {
+  if (
+    STARTER_SPECIES_IDS.has(String(egg?.species ?? "").trim()) ||
+    egg?.name?.trim().toLowerCase() === MYSTERY_EGG.name.toLowerCase()
+  ) {
     return { label: MYSTERY_EGG.name, elementKey: null };
   }
 

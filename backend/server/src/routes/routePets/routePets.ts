@@ -1112,6 +1112,7 @@ petsRouter.post(
           p_growth_strong_stats: strengths,
           p_growth_weak_stat: growthWeakStatForRpc,
           p_hatch_time_alignment: hatchTimeAlignmentForRpc,
+          p_line: hatchLine,
         },
       );
 
