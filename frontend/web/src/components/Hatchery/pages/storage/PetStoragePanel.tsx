@@ -535,7 +535,11 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
 
         {incubatingEgg ? (
           <div className="storageIncubatorNotice">
-            Incubating now: <strong>Mystery Egg</strong>
+            Incubating now:{" "}
+            <strong>
+              {incubatingEgg.name?.trim() ||
+                resolveEggIdentity(incubatingEgg.line).label}
+            </strong>
             {" • "}
             {formatStageLabel(incubatingEgg.stage)}
           </div>

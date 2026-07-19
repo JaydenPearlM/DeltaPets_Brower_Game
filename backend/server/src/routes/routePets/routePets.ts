@@ -862,7 +862,22 @@ petsRouter.post(
       const serverNowMs = Date.now();
       const nowIso = new Date(serverNowMs).toISOString();
 
-      const { pet: egg } = await fetchHatcheryEgg(userId);
+      const eggId = String(req.body?.eggId ?? "").trim();
+
+      if (!eggId) {
+        return res.status(400).json({ error: "Egg id is required" });
+      }
+
+      const { data: egg, error: eggError } = await supabaseAdmin
+        .from("pets")
+        .select("*")
+        .eq("id", eggId)
+        .eq("user_id", userId)
+        .eq("stage", "egg")
+        .not("hatch_ends_at", "is", null)
+        .maybeSingle();
+
+      if (eggError) throw eggError;
 
       if (!egg) {
         return res.status(404).json({ error: "No egg to hatch" });
