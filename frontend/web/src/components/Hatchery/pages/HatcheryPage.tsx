@@ -7,10 +7,7 @@ import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";
 import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 import { useDeltaTime } from "@/lib/timers/useDeltaTime";
-import {
-  getEggImage,
-  MYSTERY_EGG_IMAGE,
-} from "@/Pets_Creation/assets/eggs/eggType";
+import prismaticEggPng from "@/Pets_Creation/assets/eggs/prismatic_egg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
 import { SHARED_SPECIES, ELEMENT_EGG_NAMES } from "@shared/pets/species";
 import type { SharedElementLine } from "@shared/pets/species";
@@ -21,11 +18,11 @@ import "./HatcheryPage.css";
 const MYSTERY_EGG = {
   id: "mystery_egg",
   name: "Prismatic Egg",
-  sprite: MYSTERY_EGG_IMAGE,
+  sprite: prismaticEggPng,
 };
 
 // How often to poll when the tab is visible (ms)
-const POLL_INTERVAL_MS = 8_000;
+const POLL_INTERVAL_MS = 30_000;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -196,10 +193,16 @@ const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
 // Eggs with a resolved element line show their real name and an
 // element-tinted placeholder. Eggs without a resolved line (true unknowns)
 // fall back to the generic Prismatic Egg look.
-function resolveEggIdentity(egg?: { line?: string | null } | null): {
+function resolveEggIdentity(
+  egg?: { name?: string | null; line?: string | null } | null,
+): {
   label: string;
   elementKey: ElementalLineKey | null;
 } {
+  if (egg?.name?.trim().toLowerCase() === MYSTERY_EGG.name.toLowerCase()) {
+    return { label: MYSTERY_EGG.name, elementKey: null };
+  }
+
   const line = String(egg?.line ?? "")
     .trim()
     .toLowerCase();
@@ -335,8 +338,11 @@ async function fetchHatchery(): Promise<HatcheryResponse> {
   return apiFetch<HatcheryResponse>("/api/pets/hatchery");
 }
 
-async function hatchEgg(): Promise<HatchActionResponse> {
-  return apiFetch<HatchActionResponse>("/api/pets/hatch", { method: "POST" });
+async function hatchEgg(eggId: string): Promise<HatchActionResponse> {
+  return apiFetch<HatchActionResponse>("/api/pets/hatch", {
+    method: "POST",
+    json: { eggId },
+  });
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -387,11 +393,18 @@ function EggSlotButton(props: {
       >
         <div className="eggSlotLeft">
           {eggIdentity ? (
-            <img
-              className="eggIconImg"
-              src={getEggImage(slot.egg?.line)}
-              alt={eggIdentity.label}
-            />
+            eggIdentity.elementKey ? (
+              <div
+                className="eggElementPlaceholder eggElementPlaceholderIcon"
+                data-element={eggIdentity.elementKey}
+              />
+            ) : (
+              <img
+                className="eggIconImg"
+                src={MYSTERY_EGG.sprite}
+                alt={eggIdentity.label}
+              />
+            )
           ) : (
             <div className="eggIcon" />
           )}
@@ -551,7 +564,7 @@ export default function HatcheryPage() {
             pet && pet.stage === "egg" && hatchEndsAt
               ? {
                   id: pet.id,
-                  name: pet.name?.trim() || "Prismatic Egg",
+                  name: pet.name?.trim() || "Mystery Egg",
                   hatch_ends_at: hatchEndsAt,
                   line: pet.line ?? undefined,
                   species: pet.species ?? null,
@@ -570,7 +583,7 @@ export default function HatcheryPage() {
       pet && pet.stage === "egg" && hatchEndsAt
         ? {
             id: pet.id,
-            name: pet.name?.trim() || "Prismatic Egg",
+            name: pet.name?.trim() || "Mystery Egg",
             hatch_ends_at: hatchEndsAt,
             line: pet.line ?? undefined,
             growth_strong_stats: pet.growth_strong_stats ?? [],
@@ -664,8 +677,8 @@ export default function HatcheryPage() {
     syncServerClock(next.server_now);
   }
 
-  async function completeHatchFlow() {
-    const hatchResult = await hatchEgg();
+  async function completeHatchFlow(eggId: string) {
+    const hatchResult = await hatchEgg(eggId);
     syncServerClock(hatchResult.server_now);
 
     if (hatchResult.post_hatch_destination) {
@@ -689,7 +702,7 @@ export default function HatcheryPage() {
     setIsHatching(true);
 
     try {
-      await completeHatchFlow();
+      await completeHatchFlow(slot.egg.id);
     } catch (e: unknown) {
       alert(getErrorMessage(e));
     } finally {
@@ -722,11 +735,18 @@ export default function HatcheryPage() {
                 <div className="selectedPreviewFilled">
                   <div className="selectedEggHalo" />
 
-                  <img
-                    className="eggBigImg"
-                    src={getEggImage(selectedEgg?.line)}
-                    alt={selectedEggIdentity.label}
-                  />
+                  {selectedEggIdentity.elementKey ? (
+                    <div
+                      className="eggElementPlaceholder eggElementPlaceholderBig"
+                      data-element={selectedEggIdentity.elementKey}
+                    />
+                  ) : (
+                    <img
+                      className="eggBigImg"
+                      src={MYSTERY_EGG.sprite}
+                      alt={selectedEggIdentity.label}
+                    />
+                  )}
 
                   <div className="selectedText">
                     <div className="selectedPreviewEyebrow">
