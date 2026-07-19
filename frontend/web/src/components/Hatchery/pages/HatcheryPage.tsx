@@ -7,7 +7,7 @@ import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";
 import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 import { useDeltaTime } from "@/lib/timers/useDeltaTime";
-import goldEggPng from "@/Pets_Creation/assets/eggs/goldEgg.png";
+import prismaticEggPng from "@/Pets_Creation/assets/eggs/prismatic_egg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
 import { SHARED_SPECIES, ELEMENT_EGG_NAMES } from "@shared/pets/species";
 import type { SharedElementLine } from "@shared/pets/species";
@@ -18,7 +18,7 @@ import "./HatcheryPage.css";
 const MYSTERY_EGG = {
   id: "mystery_egg",
   name: "Prismatic Egg",
-  sprite: goldEggPng,
+  sprite: prismaticEggPng,
 };
 
 // How often to poll when the tab is visible (ms)

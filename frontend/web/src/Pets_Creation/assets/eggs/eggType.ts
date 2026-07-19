@@ -1,7 +1,7 @@
 // eggTypes.ts
 
 import type { ElementLine } from "../../registry/creationTypes";
-import goldEgg from "./goldEgg.png";
+import prismaticEgg from "./prismatic_egg.png";
 
 export type EggType = {
   id: string;
@@ -13,10 +13,10 @@ export type EggType = {
 
 export const MYSTERY_EGG: EggType = {
   id: "mystery_egg",
-  name: "Prismatic Unknown",
+  name: "Prismatic Egg",
   element: "null_element",
   description: "It keeps shaking, seems like it will hatch soon",
-  sprite: goldEgg,
+  sprite: prismaticEgg,
 };
 
 export const EGG_TYPES: EggType[] = [
@@ -76,7 +76,7 @@ export const EGG_TYPES: EggType[] = [
   },
   {
     id: "MYSTERY_EGG",
-    name: "Prismatic Unknown",
+    name: "Prismatic Egg",
     element: "null_element",
     description:
       "Unstable. Shifting. No known origin. Its element is revealed at hatch.",
