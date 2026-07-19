@@ -58,6 +58,17 @@ export default function StatsChamber({
         Stats Chamber
       </h2>
 
+      <p
+        className="statsChamberPetName"
+        style={{ color: `var(--element-${petElementTheme})` }}
+      >
+        {pet.nickname?.trim?.() ||
+          pet.name?.trim?.() ||
+          pet.species_name?.trim?.() ||
+          pet.species?.trim?.() ||
+          "Your Delta"}
+      </p>
+
       <div className="petRepoDataTwoCol">
         <section className="petRepoInfoSection petRepoInfoSection--stats statsChamberSubPanel">
           <SectionPill title="Stats:" />
