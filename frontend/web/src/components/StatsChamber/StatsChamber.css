@@ -52,6 +52,60 @@
   padding-left: 15px;
 }
 
+.statsChamberPetName {
+  margin: -2px 0 2px;
+  padding-left: 34px;
+  font-family: var(--font-accent);
+  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+  font-weight: 800;
+  font-variation-settings: "wght" 800;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1;
+  letter-spacing: 0.045em;
+  line-height: 1.05;
+  text-transform: none;
+  text-wrap: balance;
+}
+
+.statsChamberPetName--water {
+  color: var(--element-water);
+}
+
+.statsChamberPetName--fire {
+  color: var(--element-fire);
+}
+
+.statsChamberPetName--earth {
+  color: var(--element-earth);
+}
+
+.statsChamberPetName--air {
+  color: var(--element-air);
+}
+
+.statsChamberPetName--ice {
+  color: var(--element-ice);
+}
+
+.statsChamberPetName--storm {
+  color: var(--element-storm);
+}
+
+.statsChamberPetName--light {
+  color: var(--element-light);
+}
+
+.statsChamberPetName--shadow {
+  color: var(--element-shadow);
+}
+
+.statsChamberPetName--null,
+.statsChamberPetName--voidborne,
+.statsChamberPetName--voidborn {
+  color: var(--element-null);
+}
+
 .statsChamber .petRepoDataTwoCol {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

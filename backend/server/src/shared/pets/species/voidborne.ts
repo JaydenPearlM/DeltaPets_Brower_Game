@@ -8,6 +8,7 @@
  */
 export const VOIDBORNE_ELEMENT_KEY = "null_element" as const;
 export const VOIDBORNE_DISPLAY_NAME = "Voidborne" as const;
+export const VOIDBORNE_EGG_NAME = "Bronzeheart Egg" as const;
 
 /**
  * Shared Voidborne gameplay rules.

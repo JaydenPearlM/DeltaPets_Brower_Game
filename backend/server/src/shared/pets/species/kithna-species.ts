@@ -3,14 +3,19 @@
 // Wild Kithna species only. Starter species live in starter-species.ts.
 // ========================================
 
-import type {
-  SharedBaseStats,
-  SharedElementLine,
-  SpeciesEvolution,
+import {
+  ELEMENT_EGG_NAMES,
+  type SharedBaseStats,
+  type SharedElementLine,
+  type SpeciesEvolution,
 } from "./starter-species";
 import type { PetSpeciesIdentity, PetSpeciesRules } from "./pet-species-types";
 
-import { isVoidborneLine, VOIDBORNE_RULES } from "./voidborne";
+import {
+  isVoidborneLine,
+  VOIDBORNE_EGG_NAME,
+  VOIDBORNE_RULES,
+} from "./voidborne";
 
 export const EGG_FIND_XP_REWARD = 30 as const;
 
@@ -62,7 +67,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   null_element: {
     element: "null_element",
     displayName: "Voidborne",
-    eggName: "Bronzeheart Egg",
+    eggName: VOIDBORNE_EGG_NAME,
     shellColor: "bronze",
     markingColor: "pearl",
     glowColor: "soft bronze",
@@ -71,7 +76,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   water: {
     element: "water",
     displayName: "Water",
-    eggName: "Tide Egg",
+    eggName: ELEMENT_EGG_NAMES.water,
     shellColor: "blue",
     markingColor: "aqua",
     glowColor: "soft blue",
@@ -80,7 +85,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   fire: {
     element: "fire",
     displayName: "Fire",
-    eggName: "Ember Egg",
+    eggName: ELEMENT_EGG_NAMES.fire,
     shellColor: "red",
     markingColor: "orange",
     glowColor: "warm gold",
@@ -89,7 +94,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   earth: {
     element: "earth",
     displayName: "Earth",
-    eggName: "Grove Egg",
+    eggName: ELEMENT_EGG_NAMES.earth,
     shellColor: "brown",
     markingColor: "green",
     glowColor: "soft moss",
@@ -98,7 +103,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   air: {
     element: "air",
     displayName: "Air",
-    eggName: "Zephyr Egg",
+    eggName: ELEMENT_EGG_NAMES.air,
     shellColor: "sky blue",
     markingColor: "white",
     glowColor: "pale cyan",
@@ -107,7 +112,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   ice: {
     element: "ice",
     displayName: "Ice",
-    eggName: "Frostveil Egg",
+    eggName: ELEMENT_EGG_NAMES.ice,
     shellColor: "ice blue",
     markingColor: "white",
     glowColor: "frost blue",
@@ -116,7 +121,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   storm: {
     element: "storm",
     displayName: "Storm",
-    eggName: "Storm Egg",
+    eggName: ELEMENT_EGG_NAMES.storm,
     shellColor: "violet",
     markingColor: "yellow",
     glowColor: "electric purple",
@@ -125,7 +130,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   light: {
     element: "light",
     displayName: "Light",
-    eggName: "Dawnshard Egg",
+    eggName: ELEMENT_EGG_NAMES.light,
     shellColor: "gold",
     markingColor: "cream",
     glowColor: "soft gold",
@@ -134,7 +139,7 @@ export const KITHNA_EGG_VISUALS: Record<SharedElementLine, KithnaEggVisual> = {
   shadow: {
     element: "shadow",
     displayName: "Shadow",
-    eggName: "Eclipse Egg",
+    eggName: ELEMENT_EGG_NAMES.shadow,
     shellColor: "deep purple",
     markingColor: "black",
     glowColor: "violet",

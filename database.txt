@@ -1,0 +1,582 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.profiles (
+  user_id uuid NOT NULL UNIQUE,
+  username text UNIQUE,
+  display_name text,
+  is_admin boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  role text NOT NULL DEFAULT 'user'::text CHECK (role = ANY (ARRAY['user'::text, 'admin'::text])),
+  email text CHECK (email IS NULL OR email ~* '^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$'::text),
+  alpha_ribbon_awarded boolean NOT NULL DEFAULT false,
+  daily_care_completed_at timestamp with time zone,
+  timezone text,
+  intro_seen boolean NOT NULL DEFAULT false,
+  intro_cutscene_completed boolean NOT NULL DEFAULT false,
+  hatchery_initialized boolean NOT NULL DEFAULT false,
+  CONSTRAINT profiles_pkey PRIMARY KEY (user_id),
+  CONSTRAINT profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.pets (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  name text,
+  line USER-DEFINED NOT NULL,
+  stage USER-DEFINED NOT NULL DEFAULT 'egg'::pet_stage,
+  level integer NOT NULL DEFAULT 1 CHECK (level >= 0 AND level <= 10),
+  xp integer NOT NULL DEFAULT 0,
+  hatched_at timestamp with time zone,
+  hunger integer NOT NULL DEFAULT 50 CHECK (hunger >= 0 AND hunger <= 50),
+  energy integer NOT NULL DEFAULT 100 CHECK (energy >= 0 AND energy <= 100),
+  atk integer NOT NULL DEFAULT 5,
+  def integer NOT NULL DEFAULT 5,
+  spd integer NOT NULL DEFAULT 5,
+  hp_max integer NOT NULL DEFAULT 30,
+  hp_cur integer NOT NULL DEFAULT 30,
+  age USER-DEFINED NOT NULL DEFAULT 'Baby_sprout'::age_stage,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  gender USER-DEFINED NOT NULL DEFAULT 'null_gender'::pet_gender,
+  bond integer NOT NULL DEFAULT 0,
+  last_cared_at timestamp with time zone,
+  hatch_ends_at timestamp with time zone,
+  cd_feed_ends_at timestamp with time zone,
+  cd_clean_ends_at timestamp with time zone,
+  cd_play_ends_at timestamp with time zone,
+  unspent_points integer NOT NULL DEFAULT 0 CHECK (unspent_points >= 0),
+  is_active boolean NOT NULL DEFAULT false,
+  last_hunger_decay_at timestamp with time zone NOT NULL DEFAULT now(),
+  magi integer NOT NULL DEFAULT 0,
+  personality_id uuid,
+  personality_key text,
+  mana integer NOT NULL DEFAULT 0,
+  nickname text CHECK (nickname IS NULL OR char_length(nickname) <= 24),
+  location text NOT NULL DEFAULT 'storage'::text CHECK (location = ANY (ARRAY['hatchery'::text, 'active'::text, 'storage'::text, 'inventory'::text])),
+  hatchery_slot_index integer CHECK (hatchery_slot_index IS NULL OR hatchery_slot_index >= 1 AND hatchery_slot_index <= 10),
+  species text,
+  description text,
+  growth_strong_stats ARRAY,
+  growth_weak_stat text,
+  hatch_time_alignment text,
+  clean integer NOT NULL DEFAULT 50 CHECK (clean >= 0 AND clean <= 50),
+  happy integer NOT NULL DEFAULT 50 CHECK (happy >= 0 AND happy <= 50),
+  comfort integer NOT NULL DEFAULT 50 CHECK (comfort >= 0 AND comfort <= 50),
+  rest integer NOT NULL DEFAULT 50 CHECK (rest >= 0 AND rest <= 50),
+  neglect_hours integer NOT NULL DEFAULT 0 CHECK (neglect_hours >= 0),
+  ran_away boolean NOT NULL DEFAULT false,
+  runaway_at timestamp with time zone,
+  last_care_decay_at timestamp with time zone,
+  last_fed_at timestamp with time zone NOT NULL DEFAULT now(),
+  cd_bond_ends_at timestamp with time zone,
+  passive_trait_id uuid,
+  passive_trait_key text,
+  mutation_capacity smallint NOT NULL DEFAULT 4 CHECK (mutation_capacity >= 1 AND mutation_capacity <= 4),
+  cd_pet_ends_at timestamp with time zone,
+  cleanliness integer DEFAULT 50,
+  happiness integer DEFAULT 50,
+  is_runaway boolean DEFAULT false,
+  pending_hatch_minutes integer,
+  CONSTRAINT pets_pkey PRIMARY KEY (id),
+  CONSTRAINT pets_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT pets_personality_id_fkey FOREIGN KEY (personality_id) REFERENCES public.personalities(id),
+  CONSTRAINT pets_passive_trait_id_fkey FOREIGN KEY (passive_trait_id) REFERENCES public.passive_traits(id)
+);
+CREATE TABLE public.item_defs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  name text NOT NULL,
+  type USER-DEFINED NOT NULL,
+  description text,
+  rarity integer NOT NULL DEFAULT 1 CHECK (rarity >= 1 AND rarity <= 5),
+  stack_limit integer NOT NULL DEFAULT 999,
+  effects jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT item_defs_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.inventory (
+  user_id uuid NOT NULL,
+  item_id uuid NOT NULL,
+  qty integer NOT NULL DEFAULT 0 CHECK (qty >= 0),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  pet_id uuid,
+  CONSTRAINT inventory_pkey PRIMARY KEY (user_id, item_id),
+  CONSTRAINT inventory_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT inventory_item_id_fkey FOREIGN KEY (item_id) REFERENCES public.item_defs(id),
+  CONSTRAINT inventory_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id)
+);
+CREATE TABLE public.wallets (
+  user_id uuid NOT NULL,
+  dots integer NOT NULL DEFAULT 5000 CHECK (dots >= 0),
+  gems integer NOT NULL DEFAULT 0 CHECK (gems >= 0),
+  crystals integer NOT NULL DEFAULT 0 CHECK (crystals >= 0),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT wallets_pkey PRIMARY KEY (user_id),
+  CONSTRAINT wallets_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.wallet_ledger (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  currency USER-DEFINED NOT NULL,
+  delta integer NOT NULL,
+  reason text NOT NULL,
+  ref_id uuid,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT wallet_ledger_pkey PRIMARY KEY (id),
+  CONSTRAINT wallet_ledger_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.battle_runs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  pet_id uuid NOT NULL,
+  status text NOT NULL DEFAULT 'active'::text CHECK (status = ANY (ARRAY['active'::text, 'won'::text, 'lost'::text])),
+  current_fight integer NOT NULL DEFAULT 1 CHECK (current_fight >= 1 AND current_fight <= 6),
+  started_at timestamp with time zone NOT NULL DEFAULT now(),
+  ended_at timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT battle_runs_pkey PRIMARY KEY (id),
+  CONSTRAINT battle_runs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT battle_runs_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id)
+);
+CREATE TABLE public.battle_run_fights (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  run_id uuid NOT NULL,
+  fight_number integer NOT NULL CHECK (fight_number >= 1 AND fight_number <= 6),
+  kind USER-DEFINED NOT NULL DEFAULT 'normal'::fight_kind,
+  enemy_level integer NOT NULL DEFAULT 1,
+  enemy_line USER-DEFINED,
+  result text NOT NULL CHECK (result = ANY (ARRAY['pending'::text, 'won'::text, 'lost'::text])),
+  reward jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT battle_run_fights_pkey PRIMARY KEY (id),
+  CONSTRAINT battle_run_fights_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.battle_runs(id)
+);
+CREATE TABLE public.game_config (
+  key text NOT NULL,
+  value jsonb NOT NULL,
+  CONSTRAINT game_config_pkey PRIMARY KEY (key)
+);
+CREATE TABLE public.pet_stats (
+  pet_id uuid NOT NULL,
+  base_hp integer NOT NULL,
+  base_atk integer NOT NULL,
+  base_magi integer NOT NULL,
+  base_def integer NOT NULL,
+  base_spd integer NOT NULL,
+  base_mana integer NOT NULL,
+  base_total integer NOT NULL DEFAULT 10,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pet_stats_pkey PRIMARY KEY (pet_id),
+  CONSTRAINT pet_stats_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id)
+);
+CREATE TABLE public.pet_stat_allocations (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  pet_id uuid NOT NULL,
+  level integer NOT NULL CHECK (level >= 1 AND level <= 10),
+  hp integer NOT NULL DEFAULT 0,
+  atk integer NOT NULL DEFAULT 0,
+  magi integer NOT NULL DEFAULT 0,
+  def integer NOT NULL DEFAULT 0,
+  spd integer NOT NULL DEFAULT 0,
+  mana integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  xp integer NOT NULL DEFAULT 0,
+  CONSTRAINT pet_stat_allocations_pkey PRIMARY KEY (id),
+  CONSTRAINT pet_stat_allocations_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id)
+);
+CREATE TABLE public.skill_defs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  name text NOT NULL,
+  description text,
+  required_level integer NOT NULL DEFAULT 1,
+  requirements jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT skill_defs_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pet_skills (
+  pet_id uuid NOT NULL,
+  skill_id uuid NOT NULL,
+  equipped boolean NOT NULL DEFAULT false,
+  unlocked_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pet_skills_pkey PRIMARY KEY (pet_id, skill_id),
+  CONSTRAINT pet_skills_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id),
+  CONSTRAINT pet_skills_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES public.skill_defs(id)
+);
+CREATE TABLE public.eggs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  starter_element USER-DEFINED NOT NULL,
+  hatch_ready_at timestamp with time zone NOT NULL,
+  hatched_at timestamp with time zone,
+  pet_id uuid,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT eggs_pkey PRIMARY KEY (id),
+  CONSTRAINT eggs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(user_id),
+  CONSTRAINT eggs_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id)
+);
+CREATE TABLE public.element_defs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  key text NOT NULL UNIQUE,
+  display_name text NOT NULL,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT element_defs_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pet_element_affinities (
+  pet_id uuid NOT NULL,
+  element_id uuid NOT NULL,
+  affinity integer NOT NULL DEFAULT 0 CHECK (affinity >= 0),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pet_element_affinities_pkey PRIMARY KEY (pet_id, element_id),
+  CONSTRAINT pet_element_affinities_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id),
+  CONSTRAINT pet_element_affinities_element_id_fkey FOREIGN KEY (element_id) REFERENCES public.element_defs(id)
+);
+CREATE TABLE public.daily_care (
+  user_id uuid NOT NULL,
+  last_completed_at timestamp with time zone,
+  streak integer NOT NULL DEFAULT 0 CHECK (streak >= 0),
+  alpha_ribbon_awarded boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  completed_date_eastern date,
+  completed_delta_day integer,
+  CONSTRAINT daily_care_pkey PRIMARY KEY (user_id),
+  CONSTRAINT daily_care_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.pet_elements (
+  pet_id uuid NOT NULL,
+  null_element integer NOT NULL DEFAULT 0,
+  water integer NOT NULL DEFAULT 0,
+  fire integer NOT NULL DEFAULT 0,
+  earth integer NOT NULL DEFAULT 0,
+  air integer NOT NULL DEFAULT 0,
+  ice integer NOT NULL DEFAULT 0,
+  storm integer NOT NULL DEFAULT 0,
+  light integer NOT NULL DEFAULT 0,
+  shadow integer NOT NULL DEFAULT 0,
+  CONSTRAINT pet_elements_pkey PRIMARY KEY (pet_id),
+  CONSTRAINT pet_elements_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id)
+);
+CREATE TABLE public.personalities (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  key text NOT NULL UNIQUE,
+  name text NOT NULL,
+  definition text NOT NULL,
+  modifiers jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT personalities_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.user_resources (
+  user_id uuid NOT NULL,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT user_resources_pkey PRIMARY KEY (user_id),
+  CONSTRAINT user_resources_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.daily_login_rewards (
+  id uuid NOT NULL,
+  streak integer NOT NULL DEFAULT 0,
+  last_claimed_at timestamp with time zone,
+  CONSTRAINT daily_login_rewards_pkey PRIMARY KEY (id),
+  CONSTRAINT daily_login_rewards_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.awards (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  key text NOT NULL UNIQUE,
+  name text NOT NULL,
+  type text NOT NULL CHECK (type = ANY (ARRAY['ribbon'::text, 'trophy'::text])),
+  icon_url text,
+  rarity text,
+  description text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT awards_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pet_awards (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  pet_id uuid NOT NULL,
+  award_id uuid NOT NULL,
+  earned_at timestamp with time zone NOT NULL DEFAULT now(),
+  context jsonb NOT NULL DEFAULT '{}'::jsonb,
+  CONSTRAINT pet_awards_pkey PRIMARY KEY (id),
+  CONSTRAINT pet_awards_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id),
+  CONSTRAINT pet_awards_award_id_fkey FOREIGN KEY (award_id) REFERENCES public.awards(id)
+);
+CREATE TABLE public.home_objects (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  kind text NOT NULL,
+  x integer NOT NULL DEFAULT 0,
+  y integer NOT NULL DEFAULT 0,
+  rotation integer NOT NULL DEFAULT 0,
+  placed boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT home_objects_pkey PRIMARY KEY (id),
+  CONSTRAINT home_objects_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.announcements (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  body text NOT NULL,
+  is_published boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  created_by uuid,
+  page_scope text NOT NULL DEFAULT 'homepage'::text,
+  CONSTRAINT announcements_pkey PRIMARY KEY (id),
+  CONSTRAINT announcements_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id)
+);
+CREATE TABLE public.homepage_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  category USER-DEFINED NOT NULL,
+  title text NOT NULL,
+  description text,
+  display_order integer DEFAULT 0,
+  patch_html text,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT homepage_logs_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.party_slots (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  slot_index integer NOT NULL CHECK (slot_index >= 1 AND slot_index <= 5),
+  pet_id uuid NOT NULL UNIQUE,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT party_slots_pkey PRIMARY KEY (id),
+  CONSTRAINT party_slots_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT party_slots_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id)
+);
+CREATE TABLE public.hatchery_slots (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  slot_index integer NOT NULL CHECK (slot_index >= 1 AND slot_index <= 10),
+  unlocked boolean NOT NULL DEFAULT false,
+  pet_id uuid,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT hatchery_slots_pkey PRIMARY KEY (id),
+  CONSTRAINT hatchery_slots_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT hatchery_slots_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id)
+);
+CREATE TABLE public.hatchery_shelf_slots (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  slot_index integer NOT NULL CHECK (slot_index >= 1 AND slot_index <= 10),
+  unlocked boolean NOT NULL DEFAULT false,
+  item_key text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT hatchery_shelf_slots_pkey PRIMARY KEY (id),
+  CONSTRAINT hatchery_shelf_slots_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.homepage_alerts (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  message text NOT NULL,
+  alert_color text NOT NULL DEFAULT 'yellow'::text CHECK (alert_color = ANY (ARRAY['yellow'::text, 'red'::text, 'blue'::text, 'pink'::text, 'green'::text])),
+  alert_type text NOT NULL DEFAULT 'news'::text CHECK (alert_type = ANY (ARRAY['news'::text, 'event'::text, 'weather'::text, 'market'::text, 'anomaly'::text, 'funny'::text, 'other'::text])),
+  is_active boolean NOT NULL DEFAULT true,
+  starts_at timestamp with time zone,
+  ends_at timestamp with time zone,
+  cta_label text,
+  cta_href text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT homepage_alerts_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.aliune_signals (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  enabled boolean NOT NULL DEFAULT true,
+  condition text NOT NULL CHECK (condition = ANY (ARRAY['stable'::text, 'unbalanced'::text, 'unstable'::text])),
+  region text NOT NULL CHECK (region = ANY (ARRAY['Starweald Rise'::text, 'Ashfall Coast'::text, 'Moonroot Fen'::text, 'Thornmere Hollow'::text])),
+  corruption text NOT NULL CHECK (corruption = ANY (ARRAY['low'::text, 'rising'::text, 'high'::text, 'too high'::text])),
+  report_age_days integer NOT NULL DEFAULT 0 CHECK (report_age_days >= 0),
+  report_text text NOT NULL,
+  portal_event boolean NOT NULL DEFAULT false,
+  irregular_eggs boolean NOT NULL DEFAULT false,
+  corrupted_egg_bonus numeric NOT NULL DEFAULT 0.10,
+  starts_at timestamp with time zone NOT NULL,
+  ends_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT aliune_signals_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.aliune_signal_reports (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  enabled boolean NOT NULL DEFAULT true,
+  condition text NOT NULL CHECK (condition = ANY (ARRAY['stable'::text, 'unbalanced'::text, 'unstable'::text])),
+  region text NOT NULL,
+  corruption text NOT NULL CHECK (corruption = ANY (ARRAY['none'::text, 'low'::text, 'rising'::text, 'high'::text, 'too high'::text])),
+  report_text text NOT NULL,
+  starts_at timestamp with time zone,
+  ends_at timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  start_time time without time zone,
+  end_time time without time zone,
+  report_age_days integer,
+  town text,
+  CONSTRAINT aliune_signal_reports_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.alpha_systems (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  description text,
+  enabled boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  released_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT alpha_systems_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.patch_notes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  version text NOT NULL UNIQUE,
+  title text,
+  summary text,
+  body text,
+  is_published boolean NOT NULL DEFAULT true,
+  released_at timestamp with time zone NOT NULL DEFAULT now(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  new_notes text,
+  updated_notes text,
+  fixed_notes text,
+  notes text,
+  CONSTRAINT patch_notes_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.signup_trigger_errors (
+  id bigint NOT NULL DEFAULT nextval('signup_trigger_errors_id_seq'::regclass),
+  user_id uuid,
+  email text,
+  step text NOT NULL,
+  error_message text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT signup_trigger_errors_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pve_instabilities (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  region text NOT NULL DEFAULT 'Kithna'::text,
+  condition text NOT NULL CHECK (condition = ANY (ARRAY['minor'::text, 'major'::text, 'critical'::text])),
+  corruption_level text NOT NULL CHECK (corruption_level = ANY (ARRAY['low'::text, 'rising'::text, 'high'::text])),
+  description text NOT NULL,
+  total_fights integer NOT NULL DEFAULT 3 CHECK (total_fights >= 1 AND total_fights <= 5),
+  has_boss boolean NOT NULL DEFAULT false,
+  reward_xp integer NOT NULL DEFAULT 100 CHECK (reward_xp >= 0),
+  reward_materials jsonb NOT NULL DEFAULT '[]'::jsonb,
+  reward_buffs jsonb NOT NULL DEFAULT '[]'::jsonb,
+  spawned_at timestamp with time zone NOT NULL DEFAULT now(),
+  expires_at timestamp with time zone NOT NULL,
+  enabled boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pve_instabilities_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pve_instability_runs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  instability_id uuid NOT NULL,
+  pet_id uuid NOT NULL,
+  status text NOT NULL DEFAULT 'in_progress'::text CHECK (status = ANY (ARRAY['in_progress'::text, 'completed'::text, 'abandoned'::text])),
+  current_fight integer NOT NULL DEFAULT 1,
+  started_at timestamp with time zone NOT NULL DEFAULT now(),
+  completed_at timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pve_instability_runs_pkey PRIMARY KEY (id),
+  CONSTRAINT pve_instability_runs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT pve_instability_runs_instability_id_fkey FOREIGN KEY (instability_id) REFERENCES public.pve_instabilities(id),
+  CONSTRAINT pve_instability_runs_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id)
+);
+CREATE TABLE public.pve_instability_fights (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  run_id uuid NOT NULL,
+  fight_number integer NOT NULL CHECK (fight_number > 0),
+  enemy_name text NOT NULL,
+  enemy_level integer NOT NULL,
+  enemy_element text NOT NULL,
+  enemy_line text NOT NULL,
+  result text CHECK (result = ANY (ARRAY['victory'::text, 'defeat'::text, 'abandoned'::text])),
+  rewards jsonb,
+  started_at timestamp with time zone NOT NULL DEFAULT now(),
+  completed_at timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pve_instability_fights_pkey PRIMARY KEY (id),
+  CONSTRAINT pve_instability_fights_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.pve_instability_runs(id)
+);
+CREATE TABLE public.pve_active_buffs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  buff_type text NOT NULL CHECK (buff_type = ANY (ARRAY['bonus_xp'::text, 'reduced_decay'::text, 'hatch_speed'::text, 'drop_rate'::text])),
+  strength numeric NOT NULL DEFAULT 1.0 CHECK (strength >= 0::numeric),
+  description text NOT NULL,
+  expires_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pve_active_buffs_pkey PRIMARY KEY (id),
+  CONSTRAINT pve_active_buffs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.pve_research_stats (
+  user_id uuid NOT NULL,
+  total_instabilities_cleared integer NOT NULL DEFAULT 0,
+  total_fights_won integer NOT NULL DEFAULT 0,
+  total_bosses_defeated integer NOT NULL DEFAULT 0,
+  rarest_drop_tier integer NOT NULL DEFAULT 0,
+  first_clear_at timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pve_research_stats_pkey PRIMARY KEY (user_id),
+  CONSTRAINT pve_research_stats_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.passive_traits (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  key text NOT NULL UNIQUE,
+  name text NOT NULL,
+  stat_key text NOT NULL CHECK (stat_key = ANY (ARRAY['hp'::text, 'atk'::text, 'def'::text, 'spd'::text, 'magi'::text, 'mana'::text])),
+  rarity text NOT NULL CHECK (rarity = ANY (ARRAY['common'::text, 'uncommon'::text, 'rare'::text, 'legendary'::text])),
+  description text NOT NULL,
+  effect_summary text NOT NULL,
+  effects jsonb NOT NULL DEFAULT '{}'::jsonb,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT passive_traits_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.mutations (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  key text NOT NULL UNIQUE,
+  name text NOT NULL,
+  rarity text NOT NULL CHECK (rarity = ANY (ARRAY['common'::text, 'uncommon'::text, 'rare'::text, 'legendary'::text])),
+  description text NOT NULL,
+  effect_summary text NOT NULL,
+  drawback_summary text,
+  effects jsonb NOT NULL DEFAULT '{}'::jsonb,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT mutations_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pet_mutations (
+  pet_id uuid NOT NULL,
+  mutation_id uuid,
+  has_mutation boolean NOT NULL,
+  roll_value double precision NOT NULL CHECK (roll_value >= 0::double precision AND roll_value < 1::double precision),
+  assigned_at timestamp with time zone NOT NULL DEFAULT now(),
+  slot_index smallint NOT NULL DEFAULT 1 CHECK (slot_index >= 1 AND slot_index <= 4),
+  CONSTRAINT pet_mutations_pkey PRIMARY KEY (pet_id, slot_index),
+  CONSTRAINT pet_mutations_pet_id_fkey FOREIGN KEY (pet_id) REFERENCES public.pets(id),
+  CONSTRAINT pet_mutations_mutation_id_fkey FOREIGN KEY (mutation_id) REFERENCES public.mutations(id)
+);
+CREATE TABLE public.trainer_awards (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  award_id uuid NOT NULL,
+  earned_at timestamp with time zone NOT NULL DEFAULT now(),
+  context jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT trainer_awards_pkey PRIMARY KEY (id),
+  CONSTRAINT trainer_awards_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT trainer_awards_award_id_fkey FOREIGN KEY (award_id) REFERENCES public.awards(id)
+);

@@ -1,5 +1,5 @@
 .hatcheryPage {
-  width: min(1440px, calc(100vw - 48px));
+  width: 100%;
   min-height: 1000px;
   margin: auto;
   box-sizing: border-box;

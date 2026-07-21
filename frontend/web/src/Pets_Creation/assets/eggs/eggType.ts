@@ -1,6 +1,7 @@
 // eggTypes.ts
 
 import type { ElementLine } from "../../registry/creationTypes";
+import { ELEMENT_EGG_NAMES, VOIDBORNE_EGG_NAME } from "@shared/pets/species";
 import prismaticEgg from "./prismatic_egg.png";
 
 export type EggType = {
@@ -22,55 +23,55 @@ export const MYSTERY_EGG: EggType = {
 export const EGG_TYPES: EggType[] = [
   {
     id: "abyssal_pearl",
-    name: "Abyssal Pearl",
+    name: ELEMENT_EGG_NAMES.water,
     element: "water",
     description: "Cold to the touch. You can hear distant tides inside.",
   },
   {
     id: "cinder_core",
-    name: "Cinder Core",
+    name: ELEMENT_EGG_NAMES.fire,
     element: "fire",
     description: "Warm pulses radiate from beneath its cracked shell.",
   },
   {
     id: "terra_bulwark",
-    name: "Terra Bulwark",
+    name: ELEMENT_EGG_NAMES.earth,
     element: "earth",
     description: "Heavy and unmoving. Feels older than stone.",
   },
   {
     id: "zephyr_pod",
-    name: "Zephyr Pod",
+    name: ELEMENT_EGG_NAMES.air,
     element: "air",
     description: "It vibrates faintly, like it's resisting gravity.",
   },
   {
     id: "frostbound_relic",
-    name: "Frostbound",
+    name: ELEMENT_EGG_NAMES.ice,
     element: "ice",
     description: "Encased in crystalline chill that never melts.",
   },
   {
     id: "tempest_ova",
-    name: "Tempest Ova",
+    name: ELEMENT_EGG_NAMES.storm,
     element: "storm",
     description: "Tiny arcs of static flicker across its surface.",
   },
   {
     id: "solstice_embryo",
-    name: "Solstice Embryo",
+    name: ELEMENT_EGG_NAMES.light,
     element: "light",
     description: "Soft radiance leaks from hairline fractures.",
   },
   {
     id: "nocturne_vessel",
-    name: "Nocturne Vessel",
+    name: ELEMENT_EGG_NAMES.shadow,
     element: "shadow",
     description: "It seems darker than the space around it.",
   },
   {
     id: "void_chrysalis",
-    name: "Void Chrysalis",
+    name: VOIDBORNE_EGG_NAME,
     element: "null_element",
     description: "Weightless. Soundless. It reflects nothing, not even light.",
   },

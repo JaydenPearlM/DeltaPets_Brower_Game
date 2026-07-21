@@ -9,7 +9,7 @@
   background: transparent;
   color: var(--dp-park-text);
   min-height: 100%;
-  padding: 24px;
+  padding: 24px 0;
   display: flex;
   flex-direction: column;
   gap: 16px;

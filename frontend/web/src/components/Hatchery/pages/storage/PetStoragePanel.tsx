@@ -8,7 +8,7 @@ import {
   usePetStorage,
 } from "./usePetStorage";
 import MainTeam from "../../../Main_Team/mainTeam";
-import { ELEMENT_EGG_NAMES } from "@shared/pets/species";
+import { ELEMENT_EGG_NAMES, SHARED_SPECIES } from "@shared/pets/species";
 import "./PetStoragePanel.css";
 type PetStoragePanelProps = {
   userId?: string;
@@ -43,12 +43,21 @@ const STAT_ROWS = [
 ] as const;
 
 const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
+const STARTER_SPECIES_IDS = new Set<string>(
+  SHARED_SPECIES.map((species) => species.id),
+);
 
-function resolveEggIdentity(line?: string | null): {
+function resolveEggIdentity(
+  egg?: { line?: string | null; species?: string | null } | null,
+): {
   label: string;
   toneClass: string;
 } {
-  const value = String(line ?? "")
+  if (STARTER_SPECIES_IDS.has(String(egg?.species ?? "").trim())) {
+    return { label: "Prismatic Egg", toneClass: "tone-default" };
+  }
+
+  const value = String(egg?.line ?? "")
     .trim()
     .toLowerCase();
 
@@ -176,7 +185,7 @@ function StoragePetCard(props: {
       .trim()
       .toLowerCase() === "egg";
   const draggable = !isEgg;
-  const eggIdentity = isEgg ? resolveEggIdentity(pet.line) : null;
+  const eggIdentity = isEgg ? resolveEggIdentity(pet) : null;
 
   return (
     <article
@@ -544,7 +553,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
             Incubating now:{" "}
             <strong>
               {incubatingEgg.name?.trim() ||
-                resolveEggIdentity(incubatingEgg.line).label}
+                resolveEggIdentity(incubatingEgg).label}
             </strong>
             {" • "}
             {formatStageLabel(incubatingEgg.stage)}

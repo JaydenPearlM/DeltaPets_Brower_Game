@@ -123,7 +123,7 @@ function getElementThemeKey(
   const raw =
     typeof petOrElement === "string"
       ? petOrElement
-      : petOrElement?.element || petOrElement?.line || "null";
+      : petOrElement?.element || petOrElement?.line || null;
 
   const normalized = normalizeElement(raw);
 
@@ -180,9 +180,9 @@ function getPetPageDescription(pet: PetRecord | null) {
   }
 
   const normalizedElement = normalizeElement(pet.element || pet.line);
-  const element = titleCase(
-    normalizedElement === "null" ? "Voidborne" : normalizedElement,
-  );
+  const element = normalizedElement
+    ? titleCase(normalizedElement === "null" ? "Voidborne" : normalizedElement)
+    : "Unknown";
   const stage = titleCase(pet.stage || "unknown stage");
   const trait = titleCase(
     pet.personality_name ||
@@ -253,9 +253,6 @@ export default function PetPage() {
   const [starterMerchant, setStarterMerchant] =
     useState<StarterMerchantState | null>(null);
   const [showLostRegistry, setShowLostRegistry] = useState(false);
-  const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(
-    null,
-  );
   const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
   const [rescueEggError, setRescueEggError] = useState<string | null>(null);
   const [nicknameDraft, setNicknameDraft] = useState("");
@@ -646,9 +643,7 @@ export default function PetPage() {
   }, [team, user?.id]);
 
   const selectedKithTeamSlot =
-    selectedSlotIndex ??
-    kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ??
-    null;
+    kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ?? null;
 
   const [viewingSlotIndex, setViewingSlotIndex] = useState<number | null>(null);
 
@@ -674,7 +669,6 @@ export default function PetPage() {
       );
 
       if (selectedSlot?.petId) {
-        setSelectedSlotIndex(slotIndex);
         void switchActivePet(selectedSlot.petId);
       }
     },
@@ -874,23 +868,29 @@ export default function PetPage() {
               onOpenSkillTree={() => setShowSkillTree(true)}
             />
 
-            <SkillsChamber pet={pet} stats={totalStats} />
-
-            <KithProgressCard
-              name={getPetLabel(pet)}
-              level={safeNum(pet.level, 1)}
-              xp={safeNum(pet.experience ?? pet.xp, 0)}
-              xpToNext={safeNum(
-                pet.experience_to_next_level ??
-                  pet.xp_to_next_level ??
-                  pet.next_level_xp,
-                100,
-              )}
-              wins={safeNum(pet.wins, 0)}
-              losses={safeNum(pet.losses, 0)}
-              hatchCount={safeNum(pet.hatch_count, 0)}
-              corruptedEggsHatched={safeNum(pet.corrupted_eggs_hatched, 0)}
-            />
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "18px" }}
+            >
+              <SkillsChamber pet={pet} stats={totalStats} />
+              <KithProgressCard
+                name={getPetLabel(pet)}
+                level={safeNum(pet.level, 1)}
+                xp={safeNum(pet.experience ?? pet.xp, 0)}
+                xpToNext={safeNum(
+                  pet.experience_to_next_level ??
+                    pet.xp_to_next_level ??
+                    pet.next_level_xp,
+                  100,
+                )}
+                wins={safeNum(pet.wins, 0)}
+                losses={safeNum(pet.losses, 0)}
+                hatchCount={safeNum(pet.hatch_count, 0)}
+                corruptedEggsHatched={safeNum(pet.corrupted_eggs_hatched, 0)}
+                hatchedAt={pet.hatched_at ?? null}
+                favoriteCareAction={null}
+                elementRows={elementRows}
+              />
+            </div>
           </section>
 
           {showSkillTree ? (

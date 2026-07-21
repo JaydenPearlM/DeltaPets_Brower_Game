@@ -2,14 +2,26 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
-
 import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";
 import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 import { useDeltaTime } from "@/lib/timers/useDeltaTime";
 import prismaticEggPng from "@/Pets_Creation/assets/eggs/prismatic_egg.png";
+import tideEggPng from "@/Pets_Creation/assets/eggs/tide_egg.png";
+import emberEggPng from "@/Pets_Creation/assets/eggs/ember_egg.png";
+import groveEggPng from "@/Pets_Creation/assets/eggs/grove_egg.png";
+import zephyrEggPng from "@/Pets_Creation/assets/eggs/zephr_egg.png";
+import frostveilEggPng from "@/Pets_Creation/assets/eggs/frostviel_egg.png";
+import stormEggPng from "@/Pets_Creation/assets/eggs/storm.png";
+import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light.png";
+import eclipseEggPng from "@/Pets_Creation/assets/eggs/eclipse_egg.png";
+import voidborneEggPng from "@/Pets_Creation/assets/eggs/Voidborne_egg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
-import { SHARED_SPECIES, ELEMENT_EGG_NAMES } from "@shared/pets/species";
+import {
+  SHARED_SPECIES,
+  ELEMENT_EGG_NAMES,
+  VOIDBORNE_EGG_NAME,
+} from "@shared/pets/species";
 import type { SharedElementLine } from "@shared/pets/species";
 import "./HatcheryPage.css";
 
@@ -60,6 +72,7 @@ const STAT_ROWS = [
 ] as const;
 
 type EggStatKey = (typeof STAT_ROWS)[number]["key"];
+type ElementalLineKey = SharedElementLine;
 
 type HatcherySlotResponse = {
   id: string;
@@ -186,20 +199,45 @@ const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
-type ElementalLineKey = Exclude<SharedElementLine, "null_element">;
+const ELEMENT_LINE_KEYS = new Set<string>([
+  ...Object.keys(ELEMENT_EGG_NAMES),
+  "null_element",
+]);
 
-const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
+const ELEMENT_EGG_IMAGES: Record<ElementalLineKey, string> = {
+  null_element: voidborneEggPng,
+  water: tideEggPng,
+  fire: emberEggPng,
+  earth: groveEggPng,
+  air: zephyrEggPng,
+  ice: frostveilEggPng,
+  storm: stormEggPng,
+  light: dawnshardEggPng,
+  shadow: eclipseEggPng,
+};
 
+const STARTER_SPECIES_IDS = new Set<string>(
+  SHARED_SPECIES.map((species) => species.id),
+);
+
+// Eggs with a resolved element line show their real name and an
 // Eggs with a resolved element line show their real name and an
 // element-tinted placeholder. Eggs without a resolved line (true unknowns)
 // fall back to the generic Prismatic Egg look.
 function resolveEggIdentity(
-  egg?: { name?: string | null; line?: string | null } | null,
+  egg?: {
+    name?: string | null;
+    line?: string | null;
+    species?: string | null;
+  } | null,
 ): {
   label: string;
   elementKey: ElementalLineKey | null;
 } {
-  if (egg?.name?.trim().toLowerCase() === MYSTERY_EGG.name.toLowerCase()) {
+  if (
+    STARTER_SPECIES_IDS.has(String(egg?.species ?? "").trim()) ||
+    egg?.name?.trim().toLowerCase() === MYSTERY_EGG.name.toLowerCase()
+  ) {
     return { label: MYSTERY_EGG.name, elementKey: null };
   }
 
@@ -209,7 +247,13 @@ function resolveEggIdentity(
 
   if (ELEMENT_LINE_KEYS.has(line)) {
     const key = line as ElementalLineKey;
-    return { label: ELEMENT_EGG_NAMES[key], elementKey: key };
+    return {
+      label:
+        key === "null_element"
+          ? VOIDBORNE_EGG_NAME
+          : ELEMENT_EGG_NAMES[key],
+      elementKey: key,
+    };
   }
 
   return { label: MYSTERY_EGG.name, elementKey: null };
@@ -394,9 +438,10 @@ function EggSlotButton(props: {
         <div className="eggSlotLeft">
           {eggIdentity ? (
             eggIdentity.elementKey ? (
-              <div
-                className="eggElementPlaceholder eggElementPlaceholderIcon"
-                data-element={eggIdentity.elementKey}
+              <img
+                className="eggIconImg"
+                src={ELEMENT_EGG_IMAGES[eggIdentity.elementKey]}
+                alt={eggIdentity.label}
               />
             ) : (
               <img
@@ -736,9 +781,10 @@ export default function HatcheryPage() {
                   <div className="selectedEggHalo" />
 
                   {selectedEggIdentity.elementKey ? (
-                    <div
-                      className="eggElementPlaceholder eggElementPlaceholderBig"
-                      data-element={selectedEggIdentity.elementKey}
+                    <img
+                      className="eggBigImg"
+                      src={ELEMENT_EGG_IMAGES[selectedEggIdentity.elementKey]}
+                      alt={selectedEggIdentity.label}
                     />
                   ) : (
                     <img

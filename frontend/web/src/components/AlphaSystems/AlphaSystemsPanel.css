@@ -1,11 +1,3 @@
-.alpha-panel {
-  width: calc(100% + 100px);
-  margin-left: 56px;
-  margin-right: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
 .alpha-panel.dp-standard-panel-purple::before {
   border-radius: 14px;
 }
