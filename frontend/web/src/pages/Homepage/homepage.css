@@ -1,6 +1,6 @@
 .hp-root {
   width: 100%;
-  max-width: var(--content-max);
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 var(--space-4) var(--space-8);
   animation: dpFadeIn 0.2s ease both;
@@ -11,7 +11,7 @@
   display: block;
   width: calc(100% + 160px);
   max-width: none;
-  margin: 0 -160px 10px 0;
+  margin: 0 -80px 10px -80px;
   border-radius: 16px;
   border: 2px solid var(--dp-panel-border-soft-cyan);
   overflow: hidden;
@@ -116,8 +116,7 @@
 .hp-heroCard {
   position: relative;
   width: calc(100% + 160px);
-  max-width: none;
-  margin: 0 -160px 18px 0;
+  margin: 0 -80px 18px -80px;
   border-radius: 30px;
   border: 3px solid var(--dp-panel-border);
   background:
@@ -785,7 +784,7 @@
 
 .hp-lowerGrid {
   display: grid;
-  grid-template-columns: minmax(260px, 0.9fr) minmax(520px, 1.6fr);
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.6fr);
   gap: 1rem;
   align-items: start;
   margin-top: 1rem;
@@ -795,9 +794,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-left: -60px;
-  width: calc(100% + 60px);
-  transform: translateX(65px);
 }
 
 .hp-newsColumn .anp-panel {
@@ -811,17 +807,6 @@
 
 .hp-spotlightPanel {
   justify-self: start;
-  margin-left: 56px;
-  width: calc(100% + 100px);
-}
-
-.hp-createdPanel {
-  overflow: hidden;
-  margin-right: -120px;
-  position: relative;
-  box-shadow:
-    14px 0 24px rgba(18, 28, 49, 0.16),
-    24px 0 34px rgba(18, 28, 49, 0.1);
 }
 
 .hp-spotlightPanel .hp-panelHeader {

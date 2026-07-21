@@ -1,0 +1,897 @@
+diff -ruN /mnt/data/delta39_original/backend/server/src/routes/care/care.ts /mnt/data/delta39_work/backend/server/src/routes/care/care.ts
+--- /mnt/data/delta39_original/backend/server/src/routes/care/care.ts	2026-07-16 23:59:54.000000000 +0000
++++ /mnt/data/delta39_work/backend/server/src/routes/care/care.ts	2026-07-21 01:40:48.933263481 +0000
+@@ -330,7 +330,7 @@
+           const source = petMap.get(String(slot.pet_id));
+           if (!source?.id) return null;
+ 
+-          const rawElement = String(source.line ?? "null_element")
++          const rawElement = String(source.line ?? "")
+             .trim()
+             .toLowerCase();
+ 
+@@ -354,8 +354,9 @@
+                 source.personality_key,
+               "Mysterious",
+             ),
+-            element: titleCaseValue(source.line ?? "Voidborne", "Voidborne"),
+-            elementKey: rawElement === "neutral" ? "null_element" : rawElement,
++            element: titleCaseValue(source.line, "Unknown"),
++            elementKey:
++              rawElement === "neutral" ? "null_element" : rawElement || null,
+             level: Number(source.level ?? 1),
+             isActive: Boolean(source.is_active),
+             previewUrl:
+diff -ruN /mnt/data/delta39_original/backend/server/src/routes/routePets/petDescription.ts /mnt/data/delta39_work/backend/server/src/routes/routePets/petDescription.ts
+--- /mnt/data/delta39_original/backend/server/src/routes/routePets/petDescription.ts	2026-07-05 14:58:32.000000000 +0000
++++ /mnt/data/delta39_work/backend/server/src/routes/routePets/petDescription.ts	2026-07-21 01:42:18.086473215 +0000
+@@ -40,7 +40,7 @@
+ }
+ 
+ function normalizeElement(value: string | null | undefined) {
+-  if (!value) return "null";
++  if (!value) return "";
+   const normalized = value.trim().toLowerCase().replace(/\s+/g, "_");
+   return normalized === "null_element" ? "null" : normalized;
+ }
+diff -ruN /mnt/data/delta39_original/backend/server/src/routes/routePets/petsRepo.ts /mnt/data/delta39_work/backend/server/src/routes/routePets/petsRepo.ts
+--- /mnt/data/delta39_original/backend/server/src/routes/routePets/petsRepo.ts	2026-07-19 14:59:32.000000000 +0000
++++ /mnt/data/delta39_work/backend/server/src/routes/routePets/petsRepo.ts	2026-07-21 01:40:48.934352585 +0000
+@@ -47,6 +47,7 @@
+     .select("*")
+     .eq("user_id", userId)
+     .eq("stage", "egg")
++    .eq("location", "hatchery")
+     .not("hatch_ends_at", "is", null)
+     .order("created_at", { ascending: true })
+     .limit(1)
+@@ -57,6 +58,23 @@
+   return { pet: data ?? null, used: "hatch_ends_at" as const };
+ }
+ 
++export async function releaseHatcherySlotsForPets(
++  userId: string,
++  petIds: string[],
++): Promise<void> {
++  const uniquePetIds = Array.from(new Set(petIds.filter(Boolean)));
++
++  if (uniquePetIds.length === 0) return;
++
++  const { error } = await supabaseAdmin
++    .from("hatchery_slots")
++    .update({ pet_id: null })
++    .eq("user_id", userId)
++    .in("pet_id", uniquePetIds);
++
++  if (error) throw error;
++}
++
+ /**
+  * Starter/Mystery Egg is one-per-user.
+  * Finds it at ANY stage so ensure-egg stays idempotent.
+@@ -287,10 +305,43 @@
+     }
+   }
+ 
++  const invalidPetIds = Array.from(
++    new Set(
++      slots
++        .map((slot: any) => slot.pet_id)
++        .filter((petId: any): petId is string => {
++          if (!petId) return false;
++
++          const pet = petsById.get(petId);
++
++          return (
++            !pet ||
++            pet.user_id !== userId ||
++            pet.stage !== "egg" ||
++            pet.location !== "hatchery"
++          );
++        }),
++    ),
++  );
++
++  if (invalidPetIds.length > 0) {
++    try {
++      await releaseHatcherySlotsForPets(userId, invalidPetIds);
++    } catch (error) {
++      logger.error("[petsRepo] Failed to release invalid hatchery slots:", error);
++    }
++  }
++
++  const invalidPetIdSet = new Set(invalidPetIds);
++
+   return {
+     slots: slots.map((slot: any) => ({
+       ...slot,
+-      pet: slot.pet_id ? (petsById.get(slot.pet_id) ?? null) : null,
++      pet_id: invalidPetIdSet.has(slot.pet_id) ? null : slot.pet_id,
++      pet:
++        slot.pet_id && !invalidPetIdSet.has(slot.pet_id)
++          ? (petsById.get(slot.pet_id) ?? null)
++          : null,
+     })),
+   };
+ }
+diff -ruN /mnt/data/delta39_original/backend/server/src/routes/routePets/petsUtils.ts /mnt/data/delta39_work/backend/server/src/routes/routePets/petsUtils.ts
+--- /mnt/data/delta39_original/backend/server/src/routes/routePets/petsUtils.ts	2026-07-01 20:08:16.000000000 +0000
++++ /mnt/data/delta39_work/backend/server/src/routes/routePets/petsUtils.ts	2026-07-21 01:42:18.077500434 +0000
+@@ -49,8 +49,10 @@
+     .replace(/\b\w/g, (char) => char.toUpperCase());
+ }
+ 
+-export function normalizeElement(value: string | null | undefined): ElementKey {
+-  if (!value) return "null";
++export function normalizeElement(
++  value: string | null | undefined,
++): ElementKey | null {
++  if (!value) return null;
+ 
+   const v = String(value).trim().toLowerCase().replace(/\s+/g, "_");
+ 
+@@ -58,7 +60,7 @@
+ 
+   if (VALID_ELEMENTS.includes(v as ElementKey)) return v as ElementKey;
+ 
+-  return "null";
++  return null;
+ }
+ 
+ export function msUntil(value: string | null | undefined, nowMs = Date.now()) {
+@@ -86,7 +88,7 @@
+ }
+ 
+ export function elementMapForLine(line: ElementalLine | string | null) {
+-  const normalized = String(line ?? "null_element")
++  const normalized = String(line ?? "")
+     .trim()
+     .toLowerCase()
+     .replace(/\s+/g, "_");
+diff -ruN /mnt/data/delta39_original/backend/server/src/routes/routePets/routePets.ts /mnt/data/delta39_work/backend/server/src/routes/routePets/routePets.ts
+--- /mnt/data/delta39_original/backend/server/src/routes/routePets/routePets.ts	2026-07-19 15:34:10.000000000 +0000
++++ /mnt/data/delta39_work/backend/server/src/routes/routePets/routePets.ts	2026-07-21 01:40:48.935075617 +0000
+@@ -15,6 +15,7 @@
+   fetchHatcheryEgg,
+   fetchHatcherySlotGroups,
+   fetchStarterPetAnyStage,
++  releaseHatcherySlotsForPets,
+ } from "./petsRepo";
+ import {
+   rollGrowthTraits,
+@@ -374,9 +375,7 @@
+ 
+       const points = await fetchTotalPoints(hydratedPet.id);
+       const stats = points?.base ?? null;
+-      const elements = elementMapForLine(
+-        (hydratedPet.line ?? "null_element") as ElementalLine,
+-      );
++      const elements = elementMapForLine(hydratedPet.line ?? null);
+ 
+       return res.json({
+         server_now: new Date(serverNowMs).toISOString(),
+@@ -689,6 +688,26 @@
+         });
+       }
+ 
++      if (
++        insertedPet.species !== starter.speciesId ||
++        insertedPet.line !== starter.line
++      ) {
++        logger.error("[rescue-egg] persisted identity mismatch", {
++          petId: insertedPet.id,
++          expectedSpecies: starter.speciesId,
++          storedSpecies: insertedPet.species ?? null,
++          expectedLine: starter.line,
++          storedLine: insertedPet.line ?? null,
++        });
++
++        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
++
++        return res.status(500).json({
++          success: false,
++          error: "Rescue egg identity was not stored correctly.",
++        });
++      }
++
+       try {
+         await insertBaseStats(insertedPet.id, starter.baseStats);
+       } catch (statsError: any) {
+@@ -725,6 +744,7 @@
+         userId,
+         petId: insertedPet.id,
+         speciesId: starter.speciesId,
++        line: starter.line,
+         slotIndex: openSlot.slot_index,
+       });
+ 
+@@ -814,9 +834,7 @@
+ 
+       const points = await fetchTotalPoints(egg.id);
+       const stats = points?.base ?? null;
+-      const elements = elementMapForLine(
+-        (egg.line ?? "null_element") as ElementalLine,
+-      );
++      const elements = elementMapForLine(egg.line ?? null);
+ 
+       return res.json({
+         server_now: new Date(serverNowMs).toISOString(),
+@@ -918,11 +936,18 @@
+         cryptoRandomInt(HATCH_CORRUPTION_ROLL_MAX) < eggLossChance;
+ 
+       if (eggCorrupted) {
+-        await supabaseAdmin
+-          .from("hatchery_slots")
+-          .update({ pet_id: null })
+-          .eq("user_id", userId)
+-          .eq("pet_id", egg.id);
++        try {
++          await releaseHatcherySlotsForPets(userId, [egg.id]);
++        } catch (slotCleanupError) {
++          logger.error(
++            "[hatch] corrupted egg slot cleanup failed",
++            slotCleanupError,
++          );
++
++          return res.status(500).json({
++            error: "The egg corrupted, but cleanup failed.",
++          });
++        }
+ 
+         const { error: deleteEggError } = await supabaseAdmin
+           .from("pets")
+@@ -988,7 +1013,7 @@
+       const hatchLine =
+         typedEgg.line ?? starter?.line ?? kithnaSpecies?.line ?? null;
+ 
+-      if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId) {
++      if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId || !hatchLine) {
+         logger.error("[hatch] no hatch species matched egg", {
+           egg_id: egg.id,
+           egg_species: typedEgg.species,
+@@ -1137,11 +1162,11 @@
+         });
+       }
+ 
+-      await supabaseAdmin
+-        .from("hatchery_slots")
+-        .update({ pet_id: null })
+-        .eq("user_id", userId)
+-        .eq("pet_id", egg.id);
++      try {
++        await releaseHatcherySlotsForPets(userId, [egg.id]);
++      } catch (slotCleanupError) {
++        logger.error("[hatch] hatched egg slot cleanup failed", slotCleanupError);
++      }
+ 
+       const hatched = result.pet_row;
+       const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
+diff -ruN /mnt/data/delta39_original/backend/server/src/shared/pets/species/kithna-species.ts /mnt/data/delta39_work/backend/server/src/shared/pets/species/kithna-species.ts
+--- /mnt/data/delta39_original/backend/server/src/shared/pets/species/kithna-species.ts	2026-07-16 23:59:54.000000000 +0000
++++ /mnt/data/delta39_work/backend/server/src/shared/pets/species/kithna-species.ts	2026-07-21 01:40:48.936024477 +0000
+@@ -3,14 +3,19 @@
+ // Wild Kithna species only. Starter species live in starter-species.ts.
+ // ========================================
+ 
+-import type {
+-  SharedBaseStats,
+-  SharedElementLine,
+-  SpeciesEvolution,
++import {
++  ELEMENT_EGG_NAMES,
++  type SharedBaseStats,
++  type SharedElementLine,
++  type SpeciesEvolution,
+ } from "./starter-species";
+ import type { PetSpeciesIdentity, PetSpeciesRules } from "./pet-species-types";
+ 
+-import { isVoidborneLine, VOIDBORNE_RULES } from "./voidborne";
++import {
++  isVoidborneLine,
++  VOIDBORNE_EGG_NAME,
++  VOIDBORNE_RULES,
++} from "./voidborne";
+ 
+ export const EGG_FIND_XP_REWARD = 30 as const;
+ 
+@@ -62,7 +67,7 @@
+   null_element: {
+     element: "null_element",
+     displayName: "Voidborne",
+-    eggName: "Bronzeheart Egg",
++    eggName: VOIDBORNE_EGG_NAME,
+     shellColor: "bronze",
+     markingColor: "pearl",
+     glowColor: "soft bronze",
+@@ -71,7 +76,7 @@
+   water: {
+     element: "water",
+     displayName: "Water",
+-    eggName: "Tide Egg",
++    eggName: ELEMENT_EGG_NAMES.water,
+     shellColor: "blue",
+     markingColor: "aqua",
+     glowColor: "soft blue",
+@@ -80,7 +85,7 @@
+   fire: {
+     element: "fire",
+     displayName: "Fire",
+-    eggName: "Ember Egg",
++    eggName: ELEMENT_EGG_NAMES.fire,
+     shellColor: "red",
+     markingColor: "orange",
+     glowColor: "warm gold",
+@@ -89,7 +94,7 @@
+   earth: {
+     element: "earth",
+     displayName: "Earth",
+-    eggName: "Grove Egg",
++    eggName: ELEMENT_EGG_NAMES.earth,
+     shellColor: "brown",
+     markingColor: "green",
+     glowColor: "soft moss",
+@@ -98,7 +103,7 @@
+   air: {
+     element: "air",
+     displayName: "Air",
+-    eggName: "Zephyr Egg",
++    eggName: ELEMENT_EGG_NAMES.air,
+     shellColor: "sky blue",
+     markingColor: "white",
+     glowColor: "pale cyan",
+@@ -107,7 +112,7 @@
+   ice: {
+     element: "ice",
+     displayName: "Ice",
+-    eggName: "Frostveil Egg",
++    eggName: ELEMENT_EGG_NAMES.ice,
+     shellColor: "ice blue",
+     markingColor: "white",
+     glowColor: "frost blue",
+@@ -116,7 +121,7 @@
+   storm: {
+     element: "storm",
+     displayName: "Storm",
+-    eggName: "Storm Egg",
++    eggName: ELEMENT_EGG_NAMES.storm,
+     shellColor: "violet",
+     markingColor: "yellow",
+     glowColor: "electric purple",
+@@ -125,7 +130,7 @@
+   light: {
+     element: "light",
+     displayName: "Light",
+-    eggName: "Dawnshard Egg",
++    eggName: ELEMENT_EGG_NAMES.light,
+     shellColor: "gold",
+     markingColor: "cream",
+     glowColor: "soft gold",
+@@ -134,7 +139,7 @@
+   shadow: {
+     element: "shadow",
+     displayName: "Shadow",
+-    eggName: "Eclipse Egg",
++    eggName: ELEMENT_EGG_NAMES.shadow,
+     shellColor: "deep purple",
+     markingColor: "black",
+     glowColor: "violet",
+diff -ruN /mnt/data/delta39_original/backend/server/src/shared/pets/species/voidborne.ts /mnt/data/delta39_work/backend/server/src/shared/pets/species/voidborne.ts
+--- /mnt/data/delta39_original/backend/server/src/shared/pets/species/voidborne.ts	2026-07-16 23:59:54.000000000 +0000
++++ /mnt/data/delta39_work/backend/server/src/shared/pets/species/voidborne.ts	2026-07-21 01:40:48.935565151 +0000
+@@ -8,6 +8,7 @@
+  */
+ export const VOIDBORNE_ELEMENT_KEY = "null_element" as const;
+ export const VOIDBORNE_DISPLAY_NAME = "Voidborne" as const;
++export const VOIDBORNE_EGG_NAME = "Bronzeheart Egg" as const;
+ 
+ /**
+  * Shared Voidborne gameplay rules.
+diff -ruN /mnt/data/delta39_original/frontend/web/src/Pets_Creation/assets/eggs/eggType.ts /mnt/data/delta39_work/frontend/web/src/Pets_Creation/assets/eggs/eggType.ts
+--- /mnt/data/delta39_original/frontend/web/src/Pets_Creation/assets/eggs/eggType.ts	2026-07-19 14:56:42.000000000 +0000
++++ /mnt/data/delta39_work/frontend/web/src/Pets_Creation/assets/eggs/eggType.ts	2026-07-21 01:40:48.936454408 +0000
+@@ -1,6 +1,7 @@
+ // eggTypes.ts
+ 
+ import type { ElementLine } from "../../registry/creationTypes";
++import { ELEMENT_EGG_NAMES, VOIDBORNE_EGG_NAME } from "@shared/pets/species";
+ import prismaticEgg from "./prismatic_egg.png";
+ 
+ export type EggType = {
+@@ -22,55 +23,55 @@
+ export const EGG_TYPES: EggType[] = [
+   {
+     id: "abyssal_pearl",
+-    name: "Abyssal Pearl",
++    name: ELEMENT_EGG_NAMES.water,
+     element: "water",
+     description: "Cold to the touch. You can hear distant tides inside.",
+   },
+   {
+     id: "cinder_core",
+-    name: "Cinder Core",
++    name: ELEMENT_EGG_NAMES.fire,
+     element: "fire",
+     description: "Warm pulses radiate from beneath its cracked shell.",
+   },
+   {
+     id: "terra_bulwark",
+-    name: "Terra Bulwark",
++    name: ELEMENT_EGG_NAMES.earth,
+     element: "earth",
+     description: "Heavy and unmoving. Feels older than stone.",
+   },
+   {
+     id: "zephyr_pod",
+-    name: "Zephyr Pod",
++    name: ELEMENT_EGG_NAMES.air,
+     element: "air",
+     description: "It vibrates faintly, like it's resisting gravity.",
+   },
+   {
+     id: "frostbound_relic",
+-    name: "Frostbound",
++    name: ELEMENT_EGG_NAMES.ice,
+     element: "ice",
+     description: "Encased in crystalline chill that never melts.",
+   },
+   {
+     id: "tempest_ova",
+-    name: "Tempest Ova",
++    name: ELEMENT_EGG_NAMES.storm,
+     element: "storm",
+     description: "Tiny arcs of static flicker across its surface.",
+   },
+   {
+     id: "solstice_embryo",
+-    name: "Solstice Embryo",
++    name: ELEMENT_EGG_NAMES.light,
+     element: "light",
+     description: "Soft radiance leaks from hairline fractures.",
+   },
+   {
+     id: "nocturne_vessel",
+-    name: "Nocturne Vessel",
++    name: ELEMENT_EGG_NAMES.shadow,
+     element: "shadow",
+     description: "It seems darker than the space around it.",
+   },
+   {
+     id: "void_chrysalis",
+-    name: "Void Chrysalis",
++    name: VOIDBORNE_EGG_NAME,
+     element: "null_element",
+     description: "Weightless. Soundless. It reflects nothing, not even light.",
+   },
+diff -ruN /mnt/data/delta39_original/frontend/web/src/components/Hatchery/pages/HatcheryPage.tsx /mnt/data/delta39_work/frontend/web/src/components/Hatchery/pages/HatcheryPage.tsx
+--- /mnt/data/delta39_original/frontend/web/src/components/Hatchery/pages/HatcheryPage.tsx	2026-07-19 18:58:50.000000000 +0000
++++ /mnt/data/delta39_work/frontend/web/src/components/Hatchery/pages/HatcheryPage.tsx	2026-07-21 01:40:48.938780021 +0000
+@@ -15,8 +15,13 @@
+ import stormEggPng from "@/Pets_Creation/assets/eggs/storm.png";
+ import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light.png";
+ import eclipseEggPng from "@/Pets_Creation/assets/eggs/eclipse_egg.png";
++import voidborneEggPng from "@/Pets_Creation/assets/eggs/Voidborne_egg.png";
+ import { PetStoragePanel } from "./storage/PetStoragePanel";
+-import { SHARED_SPECIES, ELEMENT_EGG_NAMES } from "@shared/pets/species";
++import {
++  SHARED_SPECIES,
++  ELEMENT_EGG_NAMES,
++  VOIDBORNE_EGG_NAME,
++} from "@shared/pets/species";
+ import type { SharedElementLine } from "@shared/pets/species";
+ import "./HatcheryPage.css";
+ 
+@@ -67,7 +72,7 @@
+ ] as const;
+ 
+ type EggStatKey = (typeof STAT_ROWS)[number]["key"];
+-type ElementalLineKey = Exclude<SharedElementLine, "null_element">;
++type ElementalLineKey = SharedElementLine;
+ 
+ type HatcherySlotResponse = {
+   id: string;
+@@ -194,9 +199,13 @@
+ 
+ // ─── Pure helpers ─────────────────────────────────────────────────────────────
+ 
+-const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
++const ELEMENT_LINE_KEYS = new Set<string>([
++  ...Object.keys(ELEMENT_EGG_NAMES),
++  "null_element",
++]);
+ 
+ const ELEMENT_EGG_IMAGES: Record<ElementalLineKey, string> = {
++  null_element: voidborneEggPng,
+   water: tideEggPng,
+   fire: emberEggPng,
+   earth: groveEggPng,
+@@ -238,7 +247,13 @@
+ 
+   if (ELEMENT_LINE_KEYS.has(line)) {
+     const key = line as ElementalLineKey;
+-    return { label: ELEMENT_EGG_NAMES[key], elementKey: key };
++    return {
++      label:
++        key === "null_element"
++          ? VOIDBORNE_EGG_NAME
++          : ELEMENT_EGG_NAMES[key],
++      elementKey: key,
++    };
+   }
+ 
+   return { label: MYSTERY_EGG.name, elementKey: null };
+@@ -423,9 +438,10 @@
+         <div className="eggSlotLeft">
+           {eggIdentity ? (
+             eggIdentity.elementKey ? (
+-              <div
+-                className="eggElementPlaceholder eggElementPlaceholderIcon"
+-                data-element={eggIdentity.elementKey}
++              <img
++                className="eggIconImg"
++                src={ELEMENT_EGG_IMAGES[eggIdentity.elementKey]}
++                alt={eggIdentity.label}
+               />
+             ) : (
+               <img
+@@ -765,9 +781,10 @@
+                   <div className="selectedEggHalo" />
+ 
+                   {selectedEggIdentity.elementKey ? (
+-                    <div
+-                      className="eggElementPlaceholder eggElementPlaceholderBig"
+-                      data-element={selectedEggIdentity.elementKey}
++                    <img
++                      className="eggBigImg"
++                      src={ELEMENT_EGG_IMAGES[selectedEggIdentity.elementKey]}
++                      alt={selectedEggIdentity.label}
+                     />
+                   ) : (
+                     <img
+diff -ruN /mnt/data/delta39_original/frontend/web/src/components/RoamEncounterToast/RoamEncounterToast.tsx /mnt/data/delta39_work/frontend/web/src/components/RoamEncounterToast/RoamEncounterToast.tsx
+--- /mnt/data/delta39_original/frontend/web/src/components/RoamEncounterToast/RoamEncounterToast.tsx	2026-07-19 17:57:52.000000000 +0000
++++ /mnt/data/delta39_work/frontend/web/src/components/RoamEncounterToast/RoamEncounterToast.tsx	2026-07-21 01:40:48.936903389 +0000
+@@ -1,6 +1,7 @@
+ import { useState } from "react";
+ import type { RoamEncounterResult } from "../../lib/kithna/useRoamEncounter";
+ import { apiFetch } from "../../lib/api/baseClient";
++import { ELEMENT_EGG_NAMES, VOIDBORNE_EGG_NAME } from "@shared/pets/species";
+ import tideEggImage from "../../Pets_Creation/assets/eggs/tide_egg.png";
+ import emberEggImage from "../../Pets_Creation/assets/eggs/ember_egg.png";
+ import groveEggImage from "../../Pets_Creation/assets/eggs/grove_egg.png";
+@@ -19,47 +20,51 @@
+ 
+ function getEggElementClass(eggName?: string): string {
+   switch (eggName) {
+-    case "Tide Egg":
++    case ELEMENT_EGG_NAMES.water:
+       return "roamEncounterToast__name--water";
+-    case "Ember Egg":
++    case ELEMENT_EGG_NAMES.fire:
+       return "roamEncounterToast__name--fire";
+-    case "Grove Egg":
++    case ELEMENT_EGG_NAMES.earth:
+       return "roamEncounterToast__name--earth";
+-    case "Zephyr Egg":
++    case ELEMENT_EGG_NAMES.air:
+       return "roamEncounterToast__name--air";
+-    case "Frostveil Egg":
++    case ELEMENT_EGG_NAMES.ice:
+       return "roamEncounterToast__name--ice";
+-    case "Storm Egg":
++    case ELEMENT_EGG_NAMES.storm:
+       return "roamEncounterToast__name--storm";
+-    case "Dawnshard Egg":
++    case ELEMENT_EGG_NAMES.light:
+       return "roamEncounterToast__name--light";
+-    case "Eclipse Egg":
++    case ELEMENT_EGG_NAMES.shadow:
+       return "roamEncounterToast__name--shadow";
+-    default:
++    case VOIDBORNE_EGG_NAME:
+       return "roamEncounterToast__name--voidborne";
++    default:
++      return "";
+   }
+ }
+ 
+-function getEggImage(eggName?: string): string {
++function getEggImage(eggName?: string): string | null {
+   switch (eggName) {
+-    case "Tide Egg":
++    case ELEMENT_EGG_NAMES.water:
+       return tideEggImage;
+-    case "Ember Egg":
++    case ELEMENT_EGG_NAMES.fire:
+       return emberEggImage;
+-    case "Grove Egg":
++    case ELEMENT_EGG_NAMES.earth:
+       return groveEggImage;
+-    case "Zephyr Egg":
++    case ELEMENT_EGG_NAMES.air:
+       return zephyrEggImage;
+-    case "Frostveil Egg":
++    case ELEMENT_EGG_NAMES.ice:
+       return frostveilEggImage;
+-    case "Storm Egg":
++    case ELEMENT_EGG_NAMES.storm:
+       return stormEggImage;
+-    case "Dawnshard Egg":
++    case ELEMENT_EGG_NAMES.light:
+       return dawnshardEggImage;
+-    case "Eclipse Egg":
++    case ELEMENT_EGG_NAMES.shadow:
+       return eclipseEggImage;
+-    default:
++    case VOIDBORNE_EGG_NAME:
+       return voidborneEggImage;
++    default:
++      return null;
+   }
+ }
+ 
+@@ -71,6 +76,7 @@
+     null,
+   );
+   const [error, setError] = useState("");
++  const eggImage = getEggImage(result?.egg_name);
+ 
+   async function handleDecision(action: "take" | "leave") {
+     setWorkingAction(action);
+@@ -106,12 +112,14 @@
+         <div className="roamEncounterToast__body dp-blue-grid-panel">
+           <div className="roamEncounterToast__title">You found an egg!</div>
+ 
+-          <img
+-            className="roamEncounterToast__eggImage"
+-            src={getEggImage(result.egg_name)}
+-            alt=""
+-            aria-hidden="true"
+-          />
++          {eggImage ? (
++            <img
++              className="roamEncounterToast__eggImage"
++              src={eggImage}
++              alt=""
++              aria-hidden="true"
++            />
++          ) : null}
+ 
+           <div
+             className={`roamEncounterToast__name ${getEggElementClass(
+diff -ruN /mnt/data/delta39_original/frontend/web/src/lib/petUtils.ts /mnt/data/delta39_work/frontend/web/src/lib/petUtils.ts
+--- /mnt/data/delta39_original/frontend/web/src/lib/petUtils.ts	2026-07-01 20:08:16.000000000 +0000
++++ /mnt/data/delta39_work/frontend/web/src/lib/petUtils.ts	2026-07-21 01:40:48.937222539 +0000
+@@ -46,8 +46,10 @@
+     .replace(/\b\w/g, (char) => char.toUpperCase());
+ }
+ 
+-export function normalizeElement(value: string | null | undefined): ElementKey {
+-  if (!value) return "null";
++export function normalizeElement(
++  value: string | null | undefined,
++): ElementKey | null {
++  if (!value) return null;
+ 
+   const v = String(value).trim().toLowerCase().replace(/\s+/g, "_");
+ 
+@@ -55,5 +57,5 @@
+ 
+   if (VALID_ELEMENTS.includes(v as ElementKey)) return v as ElementKey;
+ 
+-  return "null";
++  return null;
+ }
+diff -ruN /mnt/data/delta39_original/frontend/web/src/pages/petsPage/PetPage.tsx /mnt/data/delta39_work/frontend/web/src/pages/petsPage/PetPage.tsx
+--- /mnt/data/delta39_original/frontend/web/src/pages/petsPage/PetPage.tsx	2026-07-19 14:59:32.000000000 +0000
++++ /mnt/data/delta39_work/frontend/web/src/pages/petsPage/PetPage.tsx	2026-07-21 01:40:48.937570880 +0000
+@@ -123,7 +123,7 @@
+   const raw =
+     typeof petOrElement === "string"
+       ? petOrElement
+-      : petOrElement?.element || petOrElement?.line || "null";
++      : petOrElement?.element || petOrElement?.line || null;
+ 
+   const normalized = normalizeElement(raw);
+ 
+@@ -180,9 +180,9 @@
+   }
+ 
+   const normalizedElement = normalizeElement(pet.element || pet.line);
+-  const element = titleCase(
+-    normalizedElement === "null" ? "Voidborne" : normalizedElement,
+-  );
++  const element = normalizedElement
++    ? titleCase(normalizedElement === "null" ? "Voidborne" : normalizedElement)
++    : "Unknown";
+   const stage = titleCase(pet.stage || "unknown stage");
+   const trait = titleCase(
+     pet.personality_name ||
+@@ -253,9 +253,6 @@
+   const [starterMerchant, setStarterMerchant] =
+     useState<StarterMerchantState | null>(null);
+   const [showLostRegistry, setShowLostRegistry] = useState(false);
+-  const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(
+-    null,
+-  );
+   const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
+   const [rescueEggError, setRescueEggError] = useState<string | null>(null);
+   const [nicknameDraft, setNicknameDraft] = useState("");
+@@ -650,9 +647,7 @@
+   }, [team, user?.id]);
+ 
+   const selectedKithTeamSlot =
+-    selectedSlotIndex ??
+-    kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ??
+-    null;
++    kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ?? null;
+ 
+   const selectKithTeamSlot = useCallback(
+     (slotIndex: number) => {
+@@ -661,7 +656,6 @@
+       );
+ 
+       if (selectedSlot?.petId) {
+-        setSelectedSlotIndex(slotIndex);
+         void switchActivePet(selectedSlot.petId);
+       }
+     },
+diff -ruN /mnt/data/delta39_original/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx /mnt/data/delta39_work/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx
+--- /mnt/data/delta39_original/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx	2026-07-16 23:59:54.000000000 +0000
++++ /mnt/data/delta39_work/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx	2026-07-21 01:40:48.938326136 +0000
+@@ -498,7 +498,7 @@
+   runCareAction,
+ }: PetDetailsPanelProps) {
+   const previewUrl = getPreviewUrl(pet);
+-  const elementKey = String(pet.element || pet.line || "null")
++  const elementKey = String(pet.element || pet.line || "neutral")
+     .trim()
+     .toLowerCase()
+     .replace(/\s+/g, "_");
+diff -ruN /mnt/data/delta39_original/supabase/migrations/20260720210000_repair_starter_pet_lines.sql /mnt/data/delta39_work/supabase/migrations/20260720210000_repair_starter_pet_lines.sql
+--- /mnt/data/delta39_original/supabase/migrations/20260720210000_repair_starter_pet_lines.sql	1970-01-01 00:00:00.000000000 +0000
++++ /mnt/data/delta39_work/supabase/migrations/20260720210000_repair_starter_pet_lines.sql	2026-07-21 01:40:48.939319287 +0000
+@@ -0,0 +1,31 @@
++begin;
++
++update public.pets
++set
++  line = case species
++    when 'water_starter' then 'water'::public.elemental_line
++    when 'fire_starter' then 'fire'::public.elemental_line
++    when 'earth_starter' then 'earth'::public.elemental_line
++    when 'air_starter' then 'air'::public.elemental_line
++    when 'ice_starter' then 'ice'::public.elemental_line
++    when 'storm_starter' then 'storm'::public.elemental_line
++    when 'light_starter' then 'light'::public.elemental_line
++    when 'shadow_night_bad' then 'shadow'::public.elemental_line
++    when 'shadow_day_good' then 'shadow'::public.elemental_line
++    else line
++  end,
++  updated_at = now()
++where line::text = 'null_element'
++  and species in (
++    'water_starter',
++    'fire_starter',
++    'earth_starter',
++    'air_starter',
++    'ice_starter',
++    'storm_starter',
++    'light_starter',
++    'shadow_night_bad',
++    'shadow_day_good'
++  );
++
++commit;
+diff -ruN /mnt/data/delta39_original/supabase/migrations/20260720211000_cleanup_invalid_hatchery_slots.sql /mnt/data/delta39_work/supabase/migrations/20260720211000_cleanup_invalid_hatchery_slots.sql
+--- /mnt/data/delta39_original/supabase/migrations/20260720211000_cleanup_invalid_hatchery_slots.sql	1970-01-01 00:00:00.000000000 +0000
++++ /mnt/data/delta39_work/supabase/migrations/20260720211000_cleanup_invalid_hatchery_slots.sql	2026-07-21 01:40:48.939691298 +0000
+@@ -0,0 +1,15 @@
++begin;
++
++update public.hatchery_slots as slot
++set pet_id = null
++where slot.pet_id is not null
++  and not exists (
++    select 1
++    from public.pets as pet
++    where pet.id = slot.pet_id
++      and pet.user_id = slot.user_id
++      and pet.stage::text = 'egg'
++      and pet.location = 'hatchery'
++  );
++
++commit;
+diff -ruN /mnt/data/delta39_original/supabase/migrations/20260720212000_verify_hatch_pet_rpc_contract.sql /mnt/data/delta39_work/supabase/migrations/20260720212000_verify_hatch_pet_rpc_contract.sql
+--- /mnt/data/delta39_original/supabase/migrations/20260720212000_verify_hatch_pet_rpc_contract.sql	1970-01-01 00:00:00.000000000 +0000
++++ /mnt/data/delta39_work/supabase/migrations/20260720212000_verify_hatch_pet_rpc_contract.sql	2026-07-21 01:40:48.939923319 +0000
+@@ -0,0 +1,90 @@
++begin;
++
++do $$
++declare
++  hatch_pet_count integer;
++  hatch_pet_definition text;
++begin
++  select count(*)
++  into hatch_pet_count
++  from pg_proc as procedure
++  join pg_namespace as namespace
++    on namespace.oid = procedure.pronamespace
++  where namespace.nspname = 'public'
++    and procedure.proname = 'hatch_pet';
++
++  if hatch_pet_count <> 1 then
++    raise exception 'Expected exactly one public.hatch_pet function, found %', hatch_pet_count;
++  end if;
++
++  select lower(pg_get_functiondef(procedure.oid))
++  into hatch_pet_definition
++  from pg_proc as procedure
++  join pg_namespace as namespace
++    on namespace.oid = procedure.pronamespace
++  where namespace.nspname = 'public'
++    and procedure.proname = 'hatch_pet';
++
++  if hatch_pet_definition !~ 'p_line[[:space:]]+(public[.])?elemental_line' then
++    raise exception 'public.hatch_pet is missing the p_line elemental_line parameter';
++  end if;
++
++  if hatch_pet_definition !~ 'name[[:space:]]*=[[:space:]]*p_hatchling_name' then
++    raise exception 'public.hatch_pet is not updating pets.name';
++  end if;
++
++  if hatch_pet_definition !~ 'line[[:space:]]*=[[:space:]]*p_line' then
++    raise exception 'public.hatch_pet is not updating pets.line';
++  end if;
++
++  if hatch_pet_definition !~ 'stage[[:space:]]*=[[:space:]]*''hatchling''' then
++    raise exception 'public.hatch_pet is not updating pets.stage';
++  end if;
++
++  if hatch_pet_definition !~ 'hatched_at[[:space:]]*=[[:space:]]*v_now' then
++    raise exception 'public.hatch_pet is not updating pets.hatched_at';
++  end if;
++
++  if hatch_pet_definition !~ 'hatch_ends_at[[:space:]]*=[[:space:]]*null' then
++    raise exception 'public.hatch_pet is not clearing pets.hatch_ends_at';
++  end if;
++
++  if hatch_pet_definition !~ 'location[[:space:]]*=[[:space:]]*''storage''' then
++    raise exception 'public.hatch_pet is not setting the post-hatch location';
++  end if;
++
++  if hatch_pet_definition !~ 'gender[[:space:]]*=' then
++    raise exception 'public.hatch_pet is not updating pets.gender';
++  end if;
++
++  if hatch_pet_definition !~ 'hp_max[[:space:]]*=[[:space:]]*v_hp_max' or
++     hatch_pet_definition !~ 'hp_cur[[:space:]]*=[[:space:]]*v_hp_max' or
++     hatch_pet_definition !~ 'atk[[:space:]]*=[[:space:]]*v_total_atk' or
++     hatch_pet_definition !~ 'def[[:space:]]*=[[:space:]]*v_total_def' or
++     hatch_pet_definition !~ 'spd[[:space:]]*=[[:space:]]*v_total_spd' or
++     hatch_pet_definition !~ 'magi[[:space:]]*=[[:space:]]*v_total_magi' or
++     hatch_pet_definition !~ 'mana[[:space:]]*=[[:space:]]*v_total_mana' then
++    raise exception 'public.hatch_pet is missing one or more required stat updates';
++  end if;
++
++  if hatch_pet_definition !~ 'hunger[[:space:]]*=[[:space:]]*50' or
++     hatch_pet_definition !~ 'clean[[:space:]]*=[[:space:]]*50' or
++     hatch_pet_definition !~ 'happy[[:space:]]*=[[:space:]]*50' or
++     hatch_pet_definition !~ 'comfort[[:space:]]*=[[:space:]]*50' or
++     hatch_pet_definition !~ 'rest[[:space:]]*=[[:space:]]*50' or
++     hatch_pet_definition !~ 'energy[[:space:]]*=[[:space:]]*100' then
++    raise exception 'public.hatch_pet is missing one or more required care updates';
++  end if;
++
++  if hatch_pet_definition !~ 'personality_id[[:space:]]*=[[:space:]]*p_personality_id' or
++     hatch_pet_definition !~ 'personality_key[[:space:]]*=[[:space:]]*p_personality_key' or
++     hatch_pet_definition !~ 'description[[:space:]]*=[[:space:]]*p_description' or
++     hatch_pet_definition !~ 'hatch_time_alignment[[:space:]]*=[[:space:]]*p_hatch_time_alignment' or
++     hatch_pet_definition !~ 'growth_strong_stats[[:space:]]*=[[:space:]]*p_growth_strong_stats' or
++     hatch_pet_definition !~ 'growth_weak_stat[[:space:]]*=[[:space:]]*p_growth_weak_stat' then
++    raise exception 'public.hatch_pet is missing one or more required identity or growth updates';
++  end if;
++end
++$$;
++
++commit;
