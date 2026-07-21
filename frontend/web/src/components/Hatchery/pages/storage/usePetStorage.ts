@@ -799,8 +799,6 @@ export function usePetStorage(options: UsePetStorageOptions) {
           .eq("user_id", userId);
 
         if (slotError) {
-          // Roll back the location change so we don't leave an orphaned
-          // egg with no slot, better to fail the whole move than half-do it.
           await supabase
             .from("pets")
             .update({
@@ -810,6 +808,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
             })
             .eq("user_id", userId)
             .eq("id", petId);
+
           throw slotError;
         }
       });
