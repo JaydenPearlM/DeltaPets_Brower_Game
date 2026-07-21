@@ -49,8 +49,10 @@ export function titleCase(value: string | null | undefined): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-export function normalizeElement(value: string | null | undefined): ElementKey {
-  if (!value) return "null";
+export function normalizeElement(
+  value: string | null | undefined,
+): ElementKey | null {
+  if (!value) return null;
 
   const v = String(value).trim().toLowerCase().replace(/\s+/g, "_");
 
@@ -58,7 +60,7 @@ export function normalizeElement(value: string | null | undefined): ElementKey {
 
   if (VALID_ELEMENTS.includes(v as ElementKey)) return v as ElementKey;
 
-  return "null";
+  return null;
 }
 
 export function msUntil(value: string | null | undefined, nowMs = Date.now()) {
@@ -86,7 +88,7 @@ export function hatchPayload(
 }
 
 export function elementMapForLine(line: ElementalLine | string | null) {
-  const normalized = String(line ?? "null_element")
+  const normalized = String(line ?? "")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "_");

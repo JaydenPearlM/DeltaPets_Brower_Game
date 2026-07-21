@@ -498,7 +498,7 @@ export default function PetDetailsPanel({
   runCareAction,
 }: PetDetailsPanelProps) {
   const previewUrl = getPreviewUrl(pet);
-  const elementKey = String(pet.element || pet.line || "null")
+  const elementKey = String(pet.element || pet.line || "neutral")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "_");

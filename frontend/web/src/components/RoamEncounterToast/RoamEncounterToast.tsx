@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { RoamEncounterResult } from "../../lib/kithna/useRoamEncounter";
 import { apiFetch } from "../../lib/api/baseClient";
+import { ELEMENT_EGG_NAMES, VOIDBORNE_EGG_NAME } from "@shared/pets/species";
 import tideEggImage from "../../Pets_Creation/assets/eggs/tide_egg.png";
 import emberEggImage from "../../Pets_Creation/assets/eggs/ember_egg.png";
 import groveEggImage from "../../Pets_Creation/assets/eggs/grove_egg.png";
@@ -19,47 +20,51 @@ type RoamEncounterToastProps = {
 
 function getEggElementClass(eggName?: string): string {
   switch (eggName) {
-    case "Tide Egg":
+    case ELEMENT_EGG_NAMES.water:
       return "roamEncounterToast__name--water";
-    case "Ember Egg":
+    case ELEMENT_EGG_NAMES.fire:
       return "roamEncounterToast__name--fire";
-    case "Grove Egg":
+    case ELEMENT_EGG_NAMES.earth:
       return "roamEncounterToast__name--earth";
-    case "Zephyr Egg":
+    case ELEMENT_EGG_NAMES.air:
       return "roamEncounterToast__name--air";
-    case "Frostveil Egg":
+    case ELEMENT_EGG_NAMES.ice:
       return "roamEncounterToast__name--ice";
-    case "Storm Egg":
+    case ELEMENT_EGG_NAMES.storm:
       return "roamEncounterToast__name--storm";
-    case "Dawnshard Egg":
+    case ELEMENT_EGG_NAMES.light:
       return "roamEncounterToast__name--light";
-    case "Eclipse Egg":
+    case ELEMENT_EGG_NAMES.shadow:
       return "roamEncounterToast__name--shadow";
-    default:
+    case VOIDBORNE_EGG_NAME:
       return "roamEncounterToast__name--voidborne";
+    default:
+      return "";
   }
 }
 
-function getEggImage(eggName?: string): string {
+function getEggImage(eggName?: string): string | null {
   switch (eggName) {
-    case "Tide Egg":
+    case ELEMENT_EGG_NAMES.water:
       return tideEggImage;
-    case "Ember Egg":
+    case ELEMENT_EGG_NAMES.fire:
       return emberEggImage;
-    case "Grove Egg":
+    case ELEMENT_EGG_NAMES.earth:
       return groveEggImage;
-    case "Zephyr Egg":
+    case ELEMENT_EGG_NAMES.air:
       return zephyrEggImage;
-    case "Frostveil Egg":
+    case ELEMENT_EGG_NAMES.ice:
       return frostveilEggImage;
-    case "Storm Egg":
+    case ELEMENT_EGG_NAMES.storm:
       return stormEggImage;
-    case "Dawnshard Egg":
+    case ELEMENT_EGG_NAMES.light:
       return dawnshardEggImage;
-    case "Eclipse Egg":
+    case ELEMENT_EGG_NAMES.shadow:
       return eclipseEggImage;
-    default:
+    case VOIDBORNE_EGG_NAME:
       return voidborneEggImage;
+    default:
+      return null;
   }
 }
 
@@ -71,6 +76,7 @@ export function RoamEncounterToast({
     null,
   );
   const [error, setError] = useState("");
+  const eggImage = getEggImage(result?.egg_name);
 
   async function handleDecision(action: "take" | "leave") {
     setWorkingAction(action);
@@ -106,12 +112,14 @@ export function RoamEncounterToast({
         <div className="roamEncounterToast__body dp-blue-grid-panel">
           <div className="roamEncounterToast__title">You found an egg!</div>
 
-          <img
-            className="roamEncounterToast__eggImage"
-            src={getEggImage(result.egg_name)}
-            alt=""
-            aria-hidden="true"
-          />
+          {eggImage ? (
+            <img
+              className="roamEncounterToast__eggImage"
+              src={eggImage}
+              alt=""
+              aria-hidden="true"
+            />
+          ) : null}
 
           <div
             className={`roamEncounterToast__name ${getEggElementClass(

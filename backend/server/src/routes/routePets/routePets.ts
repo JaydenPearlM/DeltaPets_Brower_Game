@@ -15,6 +15,7 @@ import {
   fetchHatcheryEgg,
   fetchHatcherySlotGroups,
   fetchStarterPetAnyStage,
+  releaseHatcherySlotsForPets,
 } from "./petsRepo";
 import {
   rollGrowthTraits,
@@ -374,9 +375,7 @@ petsRouter.get(
 
       const points = await fetchTotalPoints(hydratedPet.id);
       const stats = points?.base ?? null;
-      const elements = elementMapForLine(
-        (hydratedPet.line ?? "null_element") as ElementalLine,
-      );
+      const elements = elementMapForLine(hydratedPet.line ?? null);
 
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
@@ -689,6 +688,26 @@ petsRouter.post(
         });
       }
 
+      if (
+        insertedPet.species !== starter.speciesId ||
+        insertedPet.line !== starter.line
+      ) {
+        logger.error("[rescue-egg] persisted identity mismatch", {
+          petId: insertedPet.id,
+          expectedSpecies: starter.speciesId,
+          storedSpecies: insertedPet.species ?? null,
+          expectedLine: starter.line,
+          storedLine: insertedPet.line ?? null,
+        });
+
+        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+
+        return res.status(500).json({
+          success: false,
+          error: "Rescue egg identity was not stored correctly.",
+        });
+      }
+
       try {
         await insertBaseStats(insertedPet.id, starter.baseStats);
       } catch (statsError: any) {
@@ -725,6 +744,7 @@ petsRouter.post(
         userId,
         petId: insertedPet.id,
         speciesId: starter.speciesId,
+        line: starter.line,
         slotIndex: openSlot.slot_index,
       });
 
@@ -814,9 +834,7 @@ petsRouter.get(
 
       const points = await fetchTotalPoints(egg.id);
       const stats = points?.base ?? null;
-      const elements = elementMapForLine(
-        (egg.line ?? "null_element") as ElementalLine,
-      );
+      const elements = elementMapForLine(egg.line ?? null);
 
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
@@ -918,11 +936,18 @@ petsRouter.post(
         cryptoRandomInt(HATCH_CORRUPTION_ROLL_MAX) < eggLossChance;
 
       if (eggCorrupted) {
-        await supabaseAdmin
-          .from("hatchery_slots")
-          .update({ pet_id: null })
-          .eq("user_id", userId)
-          .eq("pet_id", egg.id);
+        try {
+          await releaseHatcherySlotsForPets(userId, [egg.id]);
+        } catch (slotCleanupError) {
+          logger.error(
+            "[hatch] corrupted egg slot cleanup failed",
+            slotCleanupError,
+          );
+
+          return res.status(500).json({
+            error: "The egg corrupted, but cleanup failed.",
+          });
+        }
 
         const { error: deleteEggError } = await supabaseAdmin
           .from("pets")
@@ -988,7 +1013,7 @@ petsRouter.post(
       const hatchLine =
         typedEgg.line ?? starter?.line ?? kithnaSpecies?.line ?? null;
 
-      if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId) {
+      if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId || !hatchLine) {
         logger.error("[hatch] no hatch species matched egg", {
           egg_id: egg.id,
           egg_species: typedEgg.species,
@@ -1137,11 +1162,11 @@ petsRouter.post(
         });
       }
 
-      await supabaseAdmin
-        .from("hatchery_slots")
-        .update({ pet_id: null })
-        .eq("user_id", userId)
-        .eq("pet_id", egg.id);
+      try {
+        await releaseHatcherySlotsForPets(userId, [egg.id]);
+      } catch (slotCleanupError) {
+        logger.error("[hatch] hatched egg slot cleanup failed", slotCleanupError);
+      }
 
       const hatched = result.pet_row;
       const assignedPartySlot = await assignPetToMainParty(userId, egg.id);

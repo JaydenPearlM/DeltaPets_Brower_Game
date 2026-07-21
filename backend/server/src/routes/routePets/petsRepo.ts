@@ -47,6 +47,7 @@ export async function fetchHatcheryEgg(userId: string) {
     .select("*")
     .eq("user_id", userId)
     .eq("stage", "egg")
+    .eq("location", "hatchery")
     .not("hatch_ends_at", "is", null)
     .order("created_at", { ascending: true })
     .limit(1)
@@ -55,6 +56,23 @@ export async function fetchHatcheryEgg(userId: string) {
   if (error) throw error;
 
   return { pet: data ?? null, used: "hatch_ends_at" as const };
+}
+
+export async function releaseHatcherySlotsForPets(
+  userId: string,
+  petIds: string[],
+): Promise<void> {
+  const uniquePetIds = Array.from(new Set(petIds.filter(Boolean)));
+
+  if (uniquePetIds.length === 0) return;
+
+  const { error } = await supabaseAdmin
+    .from("hatchery_slots")
+    .update({ pet_id: null })
+    .eq("user_id", userId)
+    .in("pet_id", uniquePetIds);
+
+  if (error) throw error;
 }
 
 /**
@@ -287,10 +305,43 @@ async function fetchHatcherySlotsOnly(userId: string) {
     }
   }
 
+  const invalidPetIds = Array.from(
+    new Set(
+      slots
+        .map((slot: any) => slot.pet_id)
+        .filter((petId: any): petId is string => {
+          if (!petId) return false;
+
+          const pet = petsById.get(petId);
+
+          return (
+            !pet ||
+            pet.user_id !== userId ||
+            pet.stage !== "egg" ||
+            pet.location !== "hatchery"
+          );
+        }),
+    ),
+  );
+
+  if (invalidPetIds.length > 0) {
+    try {
+      await releaseHatcherySlotsForPets(userId, invalidPetIds);
+    } catch (error) {
+      logger.error("[petsRepo] Failed to release invalid hatchery slots:", error);
+    }
+  }
+
+  const invalidPetIdSet = new Set(invalidPetIds);
+
   return {
     slots: slots.map((slot: any) => ({
       ...slot,
-      pet: slot.pet_id ? (petsById.get(slot.pet_id) ?? null) : null,
+      pet_id: invalidPetIdSet.has(slot.pet_id) ? null : slot.pet_id,
+      pet:
+        slot.pet_id && !invalidPetIdSet.has(slot.pet_id)
+          ? (petsById.get(slot.pet_id) ?? null)
+          : null,
     })),
   };
 }

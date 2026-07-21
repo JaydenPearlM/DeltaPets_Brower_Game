@@ -15,8 +15,13 @@ import frostveilEggPng from "@/Pets_Creation/assets/eggs/frostviel_egg.png";
 import stormEggPng from "@/Pets_Creation/assets/eggs/storm.png";
 import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light.png";
 import eclipseEggPng from "@/Pets_Creation/assets/eggs/eclipse_egg.png";
+import voidborneEggPng from "@/Pets_Creation/assets/eggs/Voidborne_egg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
-import { SHARED_SPECIES, ELEMENT_EGG_NAMES } from "@shared/pets/species";
+import {
+  SHARED_SPECIES,
+  ELEMENT_EGG_NAMES,
+  VOIDBORNE_EGG_NAME,
+} from "@shared/pets/species";
 import type { SharedElementLine } from "@shared/pets/species";
 import "./HatcheryPage.css";
 
@@ -67,7 +72,7 @@ const STAT_ROWS = [
 ] as const;
 
 type EggStatKey = (typeof STAT_ROWS)[number]["key"];
-type ElementalLineKey = Exclude<SharedElementLine, "null_element">;
+type ElementalLineKey = SharedElementLine;
 
 type HatcherySlotResponse = {
   id: string;
@@ -194,9 +199,13 @@ const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
-const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
+const ELEMENT_LINE_KEYS = new Set<string>([
+  ...Object.keys(ELEMENT_EGG_NAMES),
+  "null_element",
+]);
 
 const ELEMENT_EGG_IMAGES: Record<ElementalLineKey, string> = {
+  null_element: voidborneEggPng,
   water: tideEggPng,
   fire: emberEggPng,
   earth: groveEggPng,
@@ -238,7 +247,13 @@ function resolveEggIdentity(
 
   if (ELEMENT_LINE_KEYS.has(line)) {
     const key = line as ElementalLineKey;
-    return { label: ELEMENT_EGG_NAMES[key], elementKey: key };
+    return {
+      label:
+        key === "null_element"
+          ? VOIDBORNE_EGG_NAME
+          : ELEMENT_EGG_NAMES[key],
+      elementKey: key,
+    };
   }
 
   return { label: MYSTERY_EGG.name, elementKey: null };
@@ -423,9 +438,10 @@ function EggSlotButton(props: {
         <div className="eggSlotLeft">
           {eggIdentity ? (
             eggIdentity.elementKey ? (
-              <div
-                className="eggElementPlaceholder eggElementPlaceholderIcon"
-                data-element={eggIdentity.elementKey}
+              <img
+                className="eggIconImg"
+                src={ELEMENT_EGG_IMAGES[eggIdentity.elementKey]}
+                alt={eggIdentity.label}
               />
             ) : (
               <img
@@ -765,9 +781,10 @@ export default function HatcheryPage() {
                   <div className="selectedEggHalo" />
 
                   {selectedEggIdentity.elementKey ? (
-                    <div
-                      className="eggElementPlaceholder eggElementPlaceholderBig"
-                      data-element={selectedEggIdentity.elementKey}
+                    <img
+                      className="eggBigImg"
+                      src={ELEMENT_EGG_IMAGES[selectedEggIdentity.elementKey]}
+                      alt={selectedEggIdentity.label}
                     />
                   ) : (
                     <img

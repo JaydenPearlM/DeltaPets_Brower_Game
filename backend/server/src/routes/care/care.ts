@@ -330,7 +330,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
           const source = petMap.get(String(slot.pet_id));
           if (!source?.id) return null;
 
-          const rawElement = String(source.line ?? "null_element")
+          const rawElement = String(source.line ?? "")
             .trim()
             .toLowerCase();
 
@@ -354,8 +354,9 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
                 source.personality_key,
               "Mysterious",
             ),
-            element: titleCaseValue(source.line ?? "Voidborne", "Voidborne"),
-            elementKey: rawElement === "neutral" ? "null_element" : rawElement,
+            element: titleCaseValue(source.line, "Unknown"),
+            elementKey:
+              rawElement === "neutral" ? "null_element" : rawElement || null,
             level: Number(source.level ?? 1),
             isActive: Boolean(source.is_active),
             previewUrl:
