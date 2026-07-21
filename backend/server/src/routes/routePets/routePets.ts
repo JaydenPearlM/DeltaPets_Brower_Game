@@ -1270,7 +1270,7 @@ petsRouter.post(
         const { error: activateErr } = await supabaseAdmin
           .from("pets")
           .update({
-            location: "party",
+            location: "active",
             is_active: shouldBecomeActive,
           })
           .eq("id", egg.id)
@@ -1292,10 +1292,10 @@ petsRouter.post(
             );
           }
         } else {
-          finalLocation = "party";
+          finalLocation = "active";
           finalIsActive = shouldBecomeActive;
           storageResult = "party";
-          postHatchDestination = null;
+          postHatchDestination = "/pet";
         }
       }
 

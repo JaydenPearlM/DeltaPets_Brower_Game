@@ -137,7 +137,7 @@ function getElementValue(elements: PetElementsRow | null, key: string) {
   if (!elements) return 0;
 
   if (key === "null") {
-    return safeNum((elements as any).null_element ?? (elements as any).null);
+    return safeNum(elements.null_element);
   }
 
   return safeNum((elements as any)[key]);

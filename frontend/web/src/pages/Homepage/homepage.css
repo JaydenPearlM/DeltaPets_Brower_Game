@@ -1469,7 +1469,7 @@
   display: flex;
   gap: 48px;
   width: max-content;
-  animation: hp-scroll 70s linear infinite !important;
+  animation: hp-scroll 250s linear infinite !important;
 }
 
 .hp-bannerTickerItem {
