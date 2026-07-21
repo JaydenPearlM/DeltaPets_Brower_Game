@@ -13,13 +13,19 @@ export async function assignPetToMainParty(
   if (slotsError) throw slotsError;
 
   const rows = existingRows ?? [];
+
+  // If this pet is already in a slot, return that slot - no duplicate
   const alreadyAssigned = rows.find((row: any) => row.pet_id === petId);
   if (alreadyAssigned) return Number(alreadyAssigned.slot_index);
 
+  // If all 4 slots are occupied, go to storage
   const usedSlots = new Set<number>(
     rows.map((row: any) => Number(row.slot_index)).filter(Number.isFinite),
   );
 
+  if (usedSlots.size >= 4) return null;
+
+  // Find the lowest available slot (1, 2, 3, 4 in order)
   const targetSlot =
     Array.from({ length: 4 }, (_, idx) => idx + 1).find(
       (slot) => !usedSlots.has(slot),

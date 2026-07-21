@@ -854,23 +854,29 @@ export default function PetPage() {
               onOpenSkillTree={() => setShowSkillTree(true)}
             />
 
-            <SkillsChamber pet={pet} stats={totalStats} />
-
-            <KithProgressCard
-              name={getPetLabel(pet)}
-              level={safeNum(pet.level, 1)}
-              xp={safeNum(pet.experience ?? pet.xp, 0)}
-              xpToNext={safeNum(
-                pet.experience_to_next_level ??
-                  pet.xp_to_next_level ??
-                  pet.next_level_xp,
-                100,
-              )}
-              wins={safeNum(pet.wins, 0)}
-              losses={safeNum(pet.losses, 0)}
-              hatchCount={safeNum(pet.hatch_count, 0)}
-              corruptedEggsHatched={safeNum(pet.corrupted_eggs_hatched, 0)}
-            />
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "18px" }}
+            >
+              <SkillsChamber pet={pet} stats={totalStats} />
+              <KithProgressCard
+                name={getPetLabel(pet)}
+                level={safeNum(pet.level, 1)}
+                xp={safeNum(pet.experience ?? pet.xp, 0)}
+                xpToNext={safeNum(
+                  pet.experience_to_next_level ??
+                    pet.xp_to_next_level ??
+                    pet.next_level_xp,
+                  100,
+                )}
+                wins={safeNum(pet.wins, 0)}
+                losses={safeNum(pet.losses, 0)}
+                hatchCount={safeNum(pet.hatch_count, 0)}
+                corruptedEggsHatched={safeNum(pet.corrupted_eggs_hatched, 0)}
+                hatchedAt={pet.hatched_at ?? null}
+                favoriteCareAction={null}
+                elementRows={elementRows}
+              />
+            </div>
           </section>
 
           {showSkillTree ? (

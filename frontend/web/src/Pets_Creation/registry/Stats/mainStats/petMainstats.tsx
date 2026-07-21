@@ -57,7 +57,7 @@ function prettyGender(g?: string) {
 }
 
 function prettyElement(line?: string) {
-  if (!line) return "Voidborne";
+  if (!line) return "Unknown";
   if (line === "null_element" || line === "null") return "Voidborne";
   return line.charAt(0).toUpperCase() + line.slice(1);
 }

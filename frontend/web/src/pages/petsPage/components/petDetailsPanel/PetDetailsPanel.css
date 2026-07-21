@@ -1764,7 +1764,7 @@
   position: absolute !important;
 
   left: 50% !important;
-  bottom: 77px !important;
+  bottom: 70px !important;
   top: auto !important;
 
   transform: translateX(-196px) !important;
@@ -2132,9 +2132,8 @@
 }
 .petRepoFarmButtonWrap {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   margin-top: 8px;
-  margin-right: -795px;
   position: relative;
   z-index: 99999;
 }

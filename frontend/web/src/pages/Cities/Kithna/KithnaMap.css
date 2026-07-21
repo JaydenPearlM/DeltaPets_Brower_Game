@@ -1,7 +1,7 @@
 .kithnaMapPage {
   --kithna-map-page-bg: var(--dp-bg, #151827);
   min-height: 100vh;
-  padding: 24px;
+  padding: 24px 0;
   background:
     radial-gradient(
       circle at top,

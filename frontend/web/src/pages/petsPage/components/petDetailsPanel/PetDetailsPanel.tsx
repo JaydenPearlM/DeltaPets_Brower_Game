@@ -185,8 +185,8 @@ function getPreviewUrl(pet: PetRecord) {
 
 function getDisplayedElement(pet: PetRecord) {
   const value = String(pet.element || pet.line || "").toLowerCase();
-  if (!value || value === "null" || value === "null_element")
-    return "Voidborne";
+  if (!value) return "Unknown";
+  if (value === "null" || value === "null_element") return "Voidborne";
   return titleCase(value);
 }
 
@@ -870,17 +870,11 @@ export default function PetDetailsPanel({
                 </div>
               </div>
             </div>
-
             {showPetSpeech && petSpeech ? (
               <div className="petRepoTalkBubble" aria-live="polite">
                 <p>{petSpeech}</p>
               </div>
             ) : null}
-            <div className="petRepoFarmButtonWrap">
-              <Link to="/farm" className="btn btn-gold">
-                Farm
-              </Link>
-            </div>
             <div className="petRepoEnergyPanel" aria-label="Energy level">
               <span className="petRepoEnergyTitle">Energy</span>
 
@@ -975,6 +969,12 @@ export default function PetDetailsPanel({
             >
               Comfort {safeInventory.bed > 0 ? `· ${safeInventory.bed}` : ""}
             </button>
+          </div>
+
+          <div className="petRepoFarmButtonWrap">
+            <Link to="/farm" className="btn btn-gold">
+              Farm
+            </Link>
           </div>
 
           <div className="petRepoCareActionMessageSlot" aria-live="polite">

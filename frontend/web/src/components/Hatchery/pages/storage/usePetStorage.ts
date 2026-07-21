@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/lib/api/baseClient";
 import { supabase } from "@/lib/supabase/client";
 
 export type StorageStageFilter =
@@ -59,6 +60,7 @@ export type PartySlotView = {
 
 type UsePetStorageOptions = {
   userId?: string;
+  refreshSignal?: number;
   onMutated?: () => void;
 };
 export const PARTY_SLOT_COUNT = 4;
@@ -743,13 +745,6 @@ export function usePetStorage(options: UsePetStorageOptions) {
           throw new Error("Only eggs can go into the incubator.");
         }
 
-        const existingIncubatingEgg = pets.find(
-          (entry) =>
-            entry.location === "hatchery" &&
-            isEggStage(entry.stage) &&
-            entry.id !== petId,
-        );
-
         if (existingIncubatingEgg) {
           throw new Error(
             "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
@@ -945,24 +940,10 @@ export function usePetStorage(options: UsePetStorageOptions) {
 
         assertCanStorePet(pet);
 
-        const { error } = await supabase
-          .from("pets")
-          .update({
-            location: "storage",
-            is_active: false,
-          })
-          .eq("user_id", userId)
-          .eq("id", petId);
-
-        if (error) throw error;
-
-        const { error: slotError } = await supabase
-          .from("hatchery_slots")
-          .update({ pet_id: null })
-          .eq("user_id", userId)
-          .eq("pet_id", petId);
-
-        if (slotError) throw slotError;
+        await apiFetch("/api/pets/hatchery/move-to-storage", {
+          method: "POST",
+          json: { petId },
+        });
       });
     },
     [pets, storageCounts, userId],

@@ -1,0 +1,150 @@
+diff --git a/backend/server/src/routes/routePets/routePets.ts b/backend/server/src/routes/routePets/routePets.ts
+index cd92090..b9dd16e 100644
+--- a/backend/server/src/routes/routePets/routePets.ts
++++ b/backend/server/src/routes/routePets/routePets.ts
+@@ -764,6 +764,78 @@ petsRouter.post(
+   },
+ );
+ 
++// ============================================================
++// POST /api/pets/hatchery/move-to-storage
++// ============================================================
++petsRouter.post(
++  "/hatchery/move-to-storage",
++  requireUser,
++  async (req: AuthedRequest, res: Response) => {
++    try {
++      const userId = req.user!.id;
++      const petId = String(req.body?.petId ?? "");
++
++      if (
++        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
++          petId,
++        )
++      ) {
++        return res.status(400).json({ error: "Invalid pet id." });
++      }
++
++      const { data: egg, error: eggError } = await supabaseAdmin
++        .from("pets")
++        .select("id, stage, location")
++        .eq("id", petId)
++        .eq("user_id", userId)
++        .maybeSingle();
++
++      if (eggError) throw eggError;
++
++      if (!egg) {
++        return res.status(404).json({ error: "Egg not found." });
++      }
++
++      if (egg.stage !== "egg" || egg.location !== "hatchery") {
++        return res.status(400).json({
++          error: "Only an egg in the hatchery can be moved to storage.",
++        });
++      }
++
++      const { error: updateError } = await supabaseAdmin
++        .from("pets")
++        .update({
++          location: "storage",
++          is_active: false,
++        })
++        .eq("id", petId)
++        .eq("user_id", userId);
++
++      if (updateError) throw updateError;
++
++      try {
++        await releaseHatcherySlotsForPets(userId, [petId]);
++      } catch (slotCleanupError) {
++        await supabaseAdmin
++          .from("pets")
++          .update({ location: "hatchery" })
++          .eq("id", petId)
++          .eq("user_id", userId);
++
++        throw slotCleanupError;
++      }
++
++      return res.json({ success: true });
++    } catch (err: any) {
++      logger.error("[hatchery] move egg to storage failed", err);
++
++      return res.status(500).json({
++        error: err?.message ?? "Failed to move egg to storage.",
++      });
++    }
++  },
++);
++
+ // ============================================================
+ // GET /api/pets/hatchery
+ // ============================================================
+diff --git a/frontend/web/src/Pets_Creation/registry/Stats/mainStats/petMainstats.tsx b/frontend/web/src/Pets_Creation/registry/Stats/mainStats/petMainstats.tsx
+index 4b1c2bd..2080bc6 100644
+--- a/frontend/web/src/Pets_Creation/registry/Stats/mainStats/petMainstats.tsx
++++ b/frontend/web/src/Pets_Creation/registry/Stats/mainStats/petMainstats.tsx
+@@ -57,7 +57,7 @@ function prettyGender(g?: string) {
+ }
+ 
+ function prettyElement(line?: string) {
+-  if (!line) return "Voidborne";
++  if (!line) return "Unknown";
+   if (line === "null_element" || line === "null") return "Voidborne";
+   return line.charAt(0).toUpperCase() + line.slice(1);
+ }
+diff --git a/frontend/web/src/components/Hatchery/pages/storage/usePetStorage.ts b/frontend/web/src/components/Hatchery/pages/storage/usePetStorage.ts
+index 4b080b3..fec9b37 100644
+--- a/frontend/web/src/components/Hatchery/pages/storage/usePetStorage.ts
++++ b/frontend/web/src/components/Hatchery/pages/storage/usePetStorage.ts
+@@ -1,4 +1,5 @@
+ import { useCallback, useEffect, useMemo, useState } from "react";
++import { apiFetch } from "@/lib/api/baseClient";
+ import { supabase } from "@/lib/supabase/client";
+ 
+ export type StorageStageFilter =
+@@ -945,24 +946,10 @@ export function usePetStorage(options: UsePetStorageOptions) {
+ 
+         assertCanStorePet(pet);
+ 
+-        const { error } = await supabase
+-          .from("pets")
+-          .update({
+-            location: "storage",
+-            is_active: false,
+-          })
+-          .eq("user_id", userId)
+-          .eq("id", petId);
+-
+-        if (error) throw error;
+-
+-        const { error: slotError } = await supabase
+-          .from("hatchery_slots")
+-          .update({ pet_id: null })
+-          .eq("user_id", userId)
+-          .eq("pet_id", petId);
+-
+-        if (slotError) throw slotError;
++        await apiFetch("/api/pets/hatchery/move-to-storage", {
++          method: "POST",
++          json: { petId },
++        });
+       });
+     },
+     [pets, storageCounts, userId],
+diff --git a/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx b/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx
+index 79faf3c..60fc6c8 100644
+--- a/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx
++++ b/frontend/web/src/pages/petsPage/components/petDetailsPanel/PetDetailsPanel.tsx
+@@ -185,8 +185,8 @@ function getPreviewUrl(pet: PetRecord) {
+ 
+ function getDisplayedElement(pet: PetRecord) {
+   const value = String(pet.element || pet.line || "").toLowerCase();
+-  if (!value || value === "null" || value === "null_element")
+-    return "Voidborne";
++  if (!value) return "Unknown";
++  if (value === "null" || value === "null_element") return "Voidborne";
+   return titleCase(value);
+ }
+ 

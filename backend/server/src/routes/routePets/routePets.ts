@@ -765,6 +765,78 @@ petsRouter.post(
 );
 
 // ============================================================
+// POST /api/pets/hatchery/move-to-storage
+// ============================================================
+petsRouter.post(
+  "/hatchery/move-to-storage",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const petId = String(req.body?.petId ?? "");
+
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          petId,
+        )
+      ) {
+        return res.status(400).json({ error: "Invalid pet id." });
+      }
+
+      const { data: egg, error: eggError } = await supabaseAdmin
+        .from("pets")
+        .select("id, stage, location")
+        .eq("id", petId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (eggError) throw eggError;
+
+      if (!egg) {
+        return res.status(404).json({ error: "Egg not found." });
+      }
+
+      if (egg.stage !== "egg" || egg.location !== "hatchery") {
+        return res.status(400).json({
+          error: "Only an egg in the hatchery can be moved to storage.",
+        });
+      }
+
+      const { error: updateError } = await supabaseAdmin
+        .from("pets")
+        .update({
+          location: "storage",
+          is_active: false,
+        })
+        .eq("id", petId)
+        .eq("user_id", userId);
+
+      if (updateError) throw updateError;
+
+      try {
+        await releaseHatcherySlotsForPets(userId, [petId]);
+      } catch (slotCleanupError) {
+        await supabaseAdmin
+          .from("pets")
+          .update({ location: "hatchery" })
+          .eq("id", petId)
+          .eq("user_id", userId);
+
+        throw slotCleanupError;
+      }
+
+      return res.json({ success: true });
+    } catch (err: any) {
+      logger.error("[hatchery] move egg to storage failed", err);
+
+      return res.status(500).json({
+        error: err?.message ?? "Failed to move egg to storage.",
+      });
+    }
+  },
+);
+
+// ============================================================
 // GET /api/pets/hatchery
 // ============================================================
 petsRouter.get(
@@ -1165,34 +1237,65 @@ petsRouter.post(
       try {
         await releaseHatcherySlotsForPets(userId, [egg.id]);
       } catch (slotCleanupError) {
-        logger.error("[hatch] hatched egg slot cleanup failed", slotCleanupError);
+        logger.error(
+          "[hatch] hatched egg slot cleanup failed",
+          slotCleanupError,
+        );
       }
 
       const hatched = result.pet_row;
+
+      const { data: existingActivePet, error: activePetError } =
+        await supabaseAdmin
+          .from("pets")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("is_active", true)
+          .neq("id", egg.id)
+          .limit(1)
+          .maybeSingle();
+
+      if (activePetError) throw activePetError;
+
       const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
 
-      let finalLocation: "active" | "storage" = "storage";
+      let finalLocation: "party" | "storage" = "storage";
       let finalIsActive = false;
       let postHatchDestination: string | null = null;
       let storageResult: "party" | "storage" = "storage";
 
       if (assignedPartySlot) {
+        const shouldBecomeActive = !existingActivePet;
+
         const { error: activateErr } = await supabaseAdmin
           .from("pets")
           .update({
-            location: "active",
-            is_active: true,
+            location: "party",
+            is_active: shouldBecomeActive,
           })
           .eq("id", egg.id)
           .eq("user_id", userId);
 
         if (activateErr) {
           logger.error("[hatch] activate pet failed", activateErr);
+
+          const { error: rollbackPartyError } = await supabaseAdmin
+            .from("party_slots")
+            .delete()
+            .eq("user_id", userId)
+            .eq("pet_id", egg.id);
+
+          if (rollbackPartyError) {
+            logger.error(
+              "[hatch] party assignment rollback failed",
+              rollbackPartyError,
+            );
+          }
         } else {
-          finalLocation = "active";
-          finalIsActive = true;
+          finalLocation = "party";
+          finalIsActive = shouldBecomeActive;
           storageResult = "party";
-          postHatchDestination = "/pet";
+          postHatchDestination = null;
         }
       }
 

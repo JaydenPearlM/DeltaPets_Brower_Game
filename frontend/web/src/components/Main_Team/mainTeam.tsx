@@ -57,7 +57,14 @@ function resolveSpeciesLabel(value?: string | null) {
   const raw = String(value ?? "").trim();
   if (!raw) return "";
 
-  return STARTER_DISPLAY_NAMES[raw.toLowerCase()] ?? raw;
+  const normalized = raw.toLowerCase();
+  const species = SHARED_SPECIES.find(
+    (entry) => entry.id.toLowerCase() === normalized,
+  );
+
+  return (
+    STARTER_DISPLAY_NAMES[normalized] ?? species?.evolution.hatchling ?? raw
+  );
 }
 
 function getPetDisplayName(pet: StoragePet) {
@@ -65,8 +72,8 @@ function getPetDisplayName(pet: StoragePet) {
 
   return (
     source.nickname?.trim() ||
+    source.name?.trim() ||
     resolveSpeciesLabel(source.species) ||
-    resolveSpeciesLabel(pet.name) ||
     "Unnamed Kith"
   );
 }

@@ -162,3 +162,206 @@
     grid-template-columns: 1fr;
   }
 }
+.kithProgressCard__section {
+  display: grid;
+  gap: 10px;
+}
+
+.kithProgressCard__sectionLabel {
+  margin: 0;
+  color: var(--dp-cyber-cyan);
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.kithProgressCard__growthRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kithProgressCard__statItem {
+  display: grid;
+  gap: 4px;
+  min-height: 60px;
+  padding: 10px 12px;
+  border: 1px solid rgba(77, 234, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(9, 23, 45, 0.58);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.kithProgressCard__statLabel {
+  color: rgba(239, 244, 255, 0.78);
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.kithProgressCard__statValue {
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.kithProgressCard__deltaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(77, 234, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(9, 23, 45, 0.58);
+}
+
+.kithProgressCard__delta {
+  font-size: 1.4rem;
+  line-height: 1;
+  opacity: 0.28;
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease;
+}
+
+.kithProgressCard__delta--rainbow {
+  background: linear-gradient(
+    135deg,
+    #ff5a5f 0%,
+    #ff9f1c 18%,
+    #ffe95c 34%,
+    #63e77d 50%,
+    #4fc3ff 68%,
+    #8f7cff 84%,
+    #ff66c4 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.28;
+}
+.kithProgressCard__section {
+  display: grid;
+  gap: 10px;
+}
+
+.kithProgressCard__sectionLabel {
+  margin: 0;
+  color: var(--dp-cyber-cyan);
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.kithProgressCard__growthRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kithProgressCard__statItem {
+  display: grid;
+  gap: 4px;
+  min-height: 60px;
+  padding: 10px 12px;
+  border: 1px solid rgba(77, 234, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(9, 23, 45, 0.58);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.kithProgressCard__statLabel {
+  color: rgba(239, 244, 255, 0.78);
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.kithProgressCard__statValue {
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.kithProgressCard__deltaGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kithProgressCard__deltaItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid rgba(77, 234, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(9, 23, 45, 0.58);
+  opacity: 0.35;
+  transition:
+    opacity 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.kithProgressCard__deltaItem--unlocked {
+  opacity: 1;
+  border-color: rgba(77, 234, 255, 0.4);
+}
+
+.kithProgressCard__deltaItem--mystic {
+  opacity: 0.35;
+}
+
+.kithProgressCard__deltaSymbol {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.kithProgressCard__deltaSymbol--rainbow {
+  background: linear-gradient(
+    135deg,
+    #ff5a5f 0%,
+    #ff9f1c 18%,
+    #ffe95c 34%,
+    #63e77d 50%,
+    #4fc3ff 68%,
+    #8f7cff 84%,
+    #ff66c4 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.kithProgressCard__deltaLabel {
+  color: rgba(239, 244, 255, 0.7);
+  font-family: var(--font-heading);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+}
+
+.kithProgressCard__deltaCount {
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 1000;
+  line-height: 1;
+}
