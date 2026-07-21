@@ -317,6 +317,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
         if (isRunawayPet(pet)) return false;
         if (pet.location === "storage") return true;
         if (pet.location === "active" && !partyPetIds.has(pet.id)) return true;
+        if (pet.location === "party" && !partyPetIds.has(pet.id)) return true;
         return false;
       })
       .sort(sortPetsNewestFirst);

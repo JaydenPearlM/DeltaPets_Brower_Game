@@ -1259,7 +1259,7 @@ petsRouter.post(
 
       const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
 
-      let finalLocation: "party" | "storage" = "storage";
+      let finalLocation: "active" | "party" | "storage" = "storage";
       let finalIsActive = false;
       let postHatchDestination: string | null = null;
       let storageResult: "party" | "storage" = "storage";
@@ -1295,7 +1295,7 @@ petsRouter.post(
           finalLocation = "active";
           finalIsActive = shouldBecomeActive;
           storageResult = "party";
-          postHatchDestination = "/pet";
+          postHatchDestination = starter ? "/pet" : null;
         }
       }
 
