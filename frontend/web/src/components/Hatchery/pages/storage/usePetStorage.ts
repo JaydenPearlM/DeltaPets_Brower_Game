@@ -745,10 +745,15 @@ export function usePetStorage(options: UsePetStorageOptions) {
           throw new Error("Only eggs can go into the incubator.");
         }
 
+        const existingIncubatingEgg = pets.find(
+          (entry) =>
+            entry.location === "hatchery" &&
+            isEggStage(entry.stage) &&
+            entry.id !== petId,
+        );
+
         if (existingIncubatingEgg) {
-          throw new Error(
-            "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
-          );
+          throw new Error("Only one egg can be in the incubator at a time.");
         }
 
         const { data: openSlot, error: openSlotError } = await supabase
