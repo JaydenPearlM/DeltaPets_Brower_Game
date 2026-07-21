@@ -16,6 +16,8 @@ export type SharedElementLine =
   | "light"
   | "shadow";
 
+export const PRISMATIC_EGG_NAME = "Prismatic Egg" as const;
+
 export const ELEMENT_EGG_NAMES: Record<
   Exclude<SharedElementLine, "null_element">,
   string
@@ -122,7 +124,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "water_starter",
     line: "water",
     evolution: {
-      egg: ELEMENT_EGG_NAMES.water,
+      egg: PRISMATIC_EGG_NAME,
       hatchling: "Mizu",
       lowform: "Mizule",
       highform: "Zulelon",
@@ -143,7 +145,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "fire_starter",
     line: "fire",
     evolution: {
-      egg: ELEMENT_EGG_NAMES.fire,
+      egg: PRISMATIC_EGG_NAME,
       hatchling: "Kindlekin",
       lowform: "Moltikyn",
       highform: "Magnakyn",
@@ -164,7 +166,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "earth_starter",
     line: "earth",
     evolution: {
-      egg: ELEMENT_EGG_NAMES.earth,
+      egg: PRISMATIC_EGG_NAME,
       hatchling: "Twiglet",
       lowform: "Rootle",
       highform: "Radaroot",
@@ -185,7 +187,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "air_starter",
     line: "air",
     evolution: {
-      egg: ELEMENT_EGG_NAMES.air,
+      egg: PRISMATIC_EGG_NAME,
       hatchling: "Wistpip",
       lowform: "Zephyx",
       highform: "Phyxlion",
@@ -206,7 +208,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "ice_starter",
     line: "ice",
     evolution: {
-      egg: ELEMENT_EGG_NAMES.ice,
+      egg: PRISMATIC_EGG_NAME,
       hatchling: "Cribi",
       lowform: "Cribit",
       highform: "Crabbit",
@@ -227,7 +229,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "storm_starter",
     line: "storm",
     evolution: {
-      egg: ELEMENT_EGG_NAMES.storm,
+      egg: PRISMATIC_EGG_NAME,
       hatchling: "Volb",
       lowform: "Voltlet",
       highform: "Tovote",
@@ -248,7 +250,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     id: "light_starter",
     line: "light",
     evolution: {
-      egg: ELEMENT_EGG_NAMES.light,
+      egg: PRISMATIC_EGG_NAME,
       hatchling: "Solen",
       lowform: "Solkit",
       highform: "Solaryn",
@@ -271,7 +273,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     variant: "bad",
     preferredTime: "night",
     evolution: {
-      egg: ELEMENT_EGG_NAMES.shadow,
+      egg: PRISMATIC_EGG_NAME,
       hatchling: "Esperon",
       lowform: "Noctimp",
       highform: "Nightmareimp",
@@ -294,7 +296,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     variant: "good",
     preferredTime: "day",
     evolution: {
-      egg: ELEMENT_EGG_NAMES.shadow,
+      egg: PRISMATIC_EGG_NAME,
       hatchling: "Esperon",
       lowform: "Flareclaw",
       highform: "Shadeclaw",
