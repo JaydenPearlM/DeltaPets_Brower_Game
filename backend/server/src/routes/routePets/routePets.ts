@@ -765,6 +765,139 @@ petsRouter.post(
 );
 
 // ============================================================
+// POST /api/pets/hatchery/move-to-hatchery
+// ============================================================
+petsRouter.post(
+  "/hatchery/move-to-hatchery",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const petId = String(req.body?.petId ?? "");
+
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          petId,
+        )
+      ) {
+        return res.status(400).json({ error: "Invalid pet id." });
+      }
+
+      const { data: egg, error: eggError } = await supabaseAdmin
+        .from("pets")
+        .select("id, stage, location, pending_hatch_minutes")
+        .eq("id", petId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (eggError) throw eggError;
+
+      if (!egg) {
+        return res.status(404).json({ error: "Egg not found." });
+      }
+
+      if (
+        egg.stage !== "egg" ||
+        (egg.location !== "storage" && egg.location !== "inventory")
+      ) {
+        return res.status(400).json({
+          error: "Only an egg in storage or inventory can enter the hatchery.",
+        });
+      }
+
+      const { data: incubatingEgg, error: incubatingEggError } =
+        await supabaseAdmin
+          .from("pets")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("stage", "egg")
+          .eq("location", "hatchery")
+          .neq("id", petId)
+          .limit(1)
+          .maybeSingle();
+
+      if (incubatingEggError) throw incubatingEggError;
+
+      if (incubatingEgg) {
+        return res.status(400).json({
+          error:
+            "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
+        });
+      }
+
+      const { data: openSlot, error: openSlotError } = await supabaseAdmin
+        .from("hatchery_slots")
+        .select("id, slot_index")
+        .eq("user_id", userId)
+        .eq("unlocked", true)
+        .is("pet_id", null)
+        .order("slot_index", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (openSlotError) throw openSlotError;
+
+      if (!openSlot) {
+        return res.status(400).json({
+          error: "No open hatchery slot is available right now.",
+        });
+      }
+
+      const previousLocation = egg.location;
+      const hatchMinutes = egg.pending_hatch_minutes ?? 3;
+      const hatchEndsAt = new Date(
+        Date.now() + hatchMinutes * 60 * 1000,
+      ).toISOString();
+
+      const { error: updateError } = await supabaseAdmin
+        .from("pets")
+        .update({
+          location: "hatchery",
+          is_active: false,
+          hatch_ends_at: hatchEndsAt,
+          pending_hatch_minutes: null,
+        })
+        .eq("id", petId)
+        .eq("user_id", userId);
+
+      if (updateError) throw updateError;
+
+      const { error: slotError } = await supabaseAdmin
+        .from("hatchery_slots")
+        .update({ pet_id: petId })
+        .eq("id", openSlot.id)
+        .eq("user_id", userId);
+
+      if (slotError) {
+        await supabaseAdmin
+          .from("pets")
+          .update({
+            location: previousLocation,
+            hatch_ends_at: null,
+            pending_hatch_minutes: hatchMinutes,
+          })
+          .eq("id", petId)
+          .eq("user_id", userId);
+
+        throw slotError;
+      }
+
+      return res.json({
+        success: true,
+        slot_index: openSlot.slot_index,
+        hatch_ends_at: hatchEndsAt,
+      });
+    } catch (err: any) {
+      logger.error("[hatchery] move egg to hatchery failed", err);
+
+      return res.status(500).json({
+        error: err?.message ?? "Failed to move egg to hatchery.",
+      });
+    }
+  },
+);
+
+// ============================================================
 // POST /api/pets/hatchery/move-to-storage
 // ============================================================
 petsRouter.post(
@@ -1259,7 +1392,7 @@ petsRouter.post(
 
       const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
 
-      let finalLocation: "party" | "storage" = "storage";
+      let finalLocation: "active" | "party" | "storage" = "storage";
       let finalIsActive = false;
       let postHatchDestination: string | null = null;
       let storageResult: "party" | "storage" = "storage";

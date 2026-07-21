@@ -745,6 +745,13 @@ export function usePetStorage(options: UsePetStorageOptions) {
           throw new Error("Only eggs can go into the incubator.");
         }
 
+        const existingIncubatingEgg = pets.find(
+          (entry) =>
+            entry.location === "hatchery" &&
+            isEggStage(entry.stage) &&
+            entry.id !== petId,
+        );
+
         if (existingIncubatingEgg) {
           throw new Error(
             "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
@@ -793,8 +800,6 @@ export function usePetStorage(options: UsePetStorageOptions) {
           .eq("user_id", userId);
 
         if (slotError) {
-          // Roll back the location change so we don't leave an orphaned
-          // egg with no slot, better to fail the whole move than half-do it.
           await supabase
             .from("pets")
             .update({
@@ -804,6 +809,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
             })
             .eq("user_id", userId)
             .eq("id", petId);
+
           throw slotError;
         }
       });
