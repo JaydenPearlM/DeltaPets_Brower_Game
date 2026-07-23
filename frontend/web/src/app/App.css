@@ -329,8 +329,6 @@
   padding: 0;
   border: 0;
   background: transparent;
-  /* see the matching note on .headerRight further down this file */
-  transform: translateX(115.5px);
   cursor: pointer;
   text-decoration: none;
   z-index: 3;
@@ -380,14 +378,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  /* NOTE: this 31px nudge and the 115.5px nudge on .logoBlock below were
-     hand-tuned at one screen width. They are constant pixel offsets, not
-     tied to the grid track width, so they do not adapt if appShell's
-     centering math changes (e.g. once window width crosses the 1440px
-     max-width and margin: auto starts adding side margins). If the header
-     ever looks shifted compared to another screenshot at a different
-     window width or zoom level, this is the first place to check. */
-  transform: translateX(31px);
+
   z-index: 3;
   text-align: center;
 }
