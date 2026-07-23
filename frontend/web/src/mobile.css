@@ -692,8 +692,919 @@
     grid-template-columns: 1fr;
   }
 }
-@media (max-width: 420px) {
-  .wr-bar {
-    grid-template-columns: 1fr;
+
+/* =========================================================
+   PHONE TARGET REFERENCE (CSS viewport widths)
+   S22:        360px  <- design baseline
+   iPhone 8:   375px
+   S22 Ultra:  384px
+   Pixel 10:   412px
+   Safe upper: 430px  (covers all four phones)
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   15. PET PAGE - petRepoBottomGrid overflow fix
+   The right column uses minmax(420px, 0.82fr) which forces
+   a minimum 420px column. On any phone that is a guaranteed
+   overflow. Drop the minimum to 0 so the column can shrink.
+   The 1280px breakpoint already collapses to 1fr above that
+   threshold so this only fixes the 430-1280px range.
+   --------------------------------------------------------- */
+@media (max-width: 1280px) {
+  .petRepoBottomGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   16. PET PAGE HERO CARD - 3-column to single column
+   petRepoHeroCard is a 3-column grid (status | text | button)
+   on desktop. On phones the status box and button need to
+   stack under the title, not sit beside it.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .petRepoHeroCard {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+
+  .petRepoHeroStatus {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+  }
+
+  .petRepoTitle {
+    font-size: 1.6rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .petRepoSubtitle {
+    font-size: 0.82rem !important;
+    max-width: 100% !important;
+  }
+
+  .lostKithRegistryOpenButton {
+    width: 100% !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   17. S22 TIGHT TARGET (360px)
+   The S22 is the narrowest phone at 360px CSS viewport.
+   Extra padding and font reductions to keep things from
+   touching the edges.
+   --------------------------------------------------------- */
+@media (max-width: 365px) {
+  .petRepoHeroCard {
+    padding: 12px 10px !important;
+  }
+
+  .petRepoTitle {
+    font-size: 1.45rem !important;
+  }
+
+  .petRepoCareCard {
+    padding-inline: 8px !important;
+  }
+
+  .foodMerchantPanel {
+    padding: 16px 14px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   18. MAIN TEAM GRID - phone layout
+   On phones the 4-slot party strip needs to stay horizontal
+   but shrink its cards. Below 375px (S22) go to 2 columns.
+   --------------------------------------------------------- */
+@media (max-width: 375px) {
+  .mainTeamGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   19. KITHNA MAP - 430px and below (all 4 phones)
+   The 760px query already shrinks targets and labels, but
+   at 360-412px the labels become unreadably small (0.58rem).
+   Bring them up slightly and give the frame a minimum height
+   so the map does not collapse on short viewports.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .kithnaMapFrame {
+    min-height: 300px !important;
+  }
+
+  .kithnaBuildingLabel {
+    font-size: 0.65rem !important;
+  }
+
+  .kithnaMapTarget {
+    width: 20% !important;
+    height: 17% !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   20. FOOD MERCHANT PAGE - phone layout
+   The panel is max-width 480px and centered, which is fine,
+   but on a 360px phone the 22px/24px padding wastes too much
+   horizontal space. Tighten it up.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .foodMerchantPage {
+    padding: 20px 0 48px !important;
+  }
+
+  .foodMerchantPanel {
+    padding: 18px 16px !important;
+  }
+
+  .foodMerchantTitle {
+    font-size: 17px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   21. HATCHERY - 360px S22 edge cases
+   At 360px the selected egg preview area can still be taller
+   than needed. Cap it so the user does not have to scroll past
+   a giant empty orb before reaching the action buttons.
+   --------------------------------------------------------- */
+@media (max-width: 365px) {
+  .selectedEggPreviewArea {
+    height: min(340px, 92vw) !important;
+    max-height: 340px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   22. PROFILE PAGE - real layout for phones
+   ProfilePage is a flex column by default. These rules ensure
+   the panel, avatar row, and info blocks stack cleanly across
+   all four phone targets.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .dp-profile-page {
+    padding: 14px 0 !important;
+    gap: 10px !important;
+  }
+
+  .dp-profile-panel {
+    padding: 14px !important;
+    border-radius: 10px !important;
+  }
+
+  .dp-profile-avatar {
+    width: 52px !important;
+    height: 52px !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+@media (max-width: 365px) {
+  .dp-profile-panel {
+    padding: 12px 10px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   23. GLOBAL SAFETY NET - no horizontal scroll on any phone
+   Belt-and-suspenders for anything we missed. Applies to
+   every page at every phone width.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  * {
+    min-width: 0;
+  }
+
+  img,
+  canvas,
+  svg,
+  video {
+    max-width: 100% !important;
+  }
+}
+/* =========================================================
+   /pet PAGE - MOBILE FIXES (S22 360px baseline)
+   Addresses all issues from mobile review:
+   - Hero card column order (Current Focus left, title right)
+   - Care room orb/scene matching webapp look
+   - Energy panel inside Care Status inset (not floating)
+   - Passive trait box layout
+   - Skill tree text overlap
+   - Armory/Skill inventory scroll stays inside cyan border
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   24. HERO CARD - Current Focus LEFT, Delta Care Chamber RIGHT
+   The 920px query already collapses to 1fr but the status
+   box ends up below the title. On phones we want:
+     [Current Focus | pet name]   [Delta Care Chamber title]
+   So we keep the 2-col layout but shrink columns to fit.
+   Below 430px it fully stacks with status on top.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .petRepoHeroCard {
+    grid-template-columns: auto 1fr !important;
+    gap: 10px !important;
+    padding: 14px !important;
+    align-items: start !important;
+  }
+
+  /* Status box stays left, compact */
+  .petRepoHeroStatus {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 130px !important;
+    min-height: 0 !important;
+    padding: 10px 12px !important;
+    gap: 4px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .petRepoStatusLabel {
+    font-size: 0.62rem !important;
+  }
+
+  .petRepoHeroStatus strong {
+    font-size: 1rem !important;
+  }
+
+  /* Title block takes remaining width, right side */
+  .petRepoHeroTextShifted {
+    align-items: flex-start !important;
+    text-align: left !important;
+    padding: 0 !important;
+  }
+
+  .petRepoTitle {
+    font-size: 1.25rem !important;
+    line-height: 1.1 !important;
+    text-align: left !important;
+    margin-bottom: 4px !important;
+  }
+
+  .petRepoSubtitle {
+    font-size: 0.72rem !important;
+    text-align: left !important;
+    max-width: 100% !important;
+  }
+
+  /* Lost Kith button full width at bottom */
+  .lostKithRegistryOpenButton {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   25. CARE ROOM ORB - match the webapp purple border style
+   On mobile the orb scene lost its purple inner border.
+   Restore the inset border so it matches desktop.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .petRepoCareCard {
+    padding: 16px !important;
+    gap: 14px !important;
+  }
+
+  /* The 3-col layout already collapses at 1180px.
+     At phone width ensure it stacks cleanly. */
+  .petRepoDetailsTopPanel {
+    padding: 12px 14px !important;
+    margin-top: -10px !important;
+  }
+
+  .petRepoDetailsTopPanelTitle {
+    font-size: 1.2rem !important;
+  }
+
+  .petRepoDeltaDetailsTitle {
+    font-size: 2rem !important;
+  }
+
+  /* Scene orb: shrink to fit phone width */
+  .petRepoSceneOrb {
+    width: min(100%, 300px) !important;
+    height: 420px !important;
+    margin: 0 auto !important;
+  }
+
+  /* Restore the purple inner border that webapp has */
+  .petRepoSceneOrb::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    inset: 8px !important;
+    border-radius: inherit !important;
+    border: 3px solid var(--dp-panel-purple-border, #a969ff) !important;
+    pointer-events: none !important;
+    z-index: 2 !important;
+  }
+
+  /* Stat stack left column */
+  .petRepoStatStack {
+    padding: 12px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   26. ENERGY PANEL - inside Care Status, not floating
+   On desktop the energy panel is absolute-positioned over
+   the orb. On mobile it needs to live inside the Care Status
+   inset panel as a normal flow element, smaller.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  /* Detach from absolute positioning */
+  .petRepoEnergyPanel {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    margin-top: 8px !important;
+    padding: 0 4px !important;
+    pointer-events: auto !important;
+    z-index: auto !important;
+  }
+
+  /* Shrink the ENERGY label so it fits beside the bar */
+  .petRepoEnergyTitle {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.08em !important;
+    -webkit-text-stroke: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Bar itself stays full width */
+  .petRepoEnergyTrack {
+    height: 12px !important;
+  }
+
+  /* Talk bubble: relative flow on mobile */
+  .petRepoTalkBubble {
+    position: static !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: min(100%, 300px) !important;
+    margin: 8px auto 0 !important;
+    padding: 8px 14px !important;
+    font-size: 0.72rem !important;
+    box-sizing: border-box !important;
+    z-index: auto !important;
+  }
+
+  .petRepoTalkBubble::before {
+    content: none !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   27. CARE STATUS PANEL - make room for energy inside
+   The panel needs enough padding and flex direction to
+   accommodate the energy bar flowing into it naturally.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .petRepoCareStatusPanel {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding-bottom: 12px !important;
+  }
+
+  .petRepoBars {
+    padding: 0 !important;
+  }
+
+  /* Action buttons: 2-col grid instead of 4-col on phone */
+  .petRepoActionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   28. PASSIVE TRAIT BOX
+   Currently just an InfoRow. The request is a full box:
+   Name / description / rarity / battle effect.
+   These rules expand the passive trait InfoRow into a card
+   when on mobile. The data comes from the existing
+   petRepoInfoRow--passive class (or we target the label).
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  /* Make the passive trait row a block card instead of
+     a single line. Target via the label text approach
+     used by InfoRow. */
+  .petRepoInfoRow--passive-trait,
+  .petRepoInfoRow[data-label="Passive Trait"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--dp-border-panel-soft) !important;
+    background: rgba(10, 20, 42, 0.6) !important;
+  }
+
+  .petRepoInfoRow--passive-trait .petRepoInfoLabel,
+  .petRepoInfoRow[data-label="Passive Trait"] .petRepoInfoLabel {
+    font-size: 0.6rem !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    color: var(--dp-cyber-cyan) !important;
+    margin-bottom: 2px !important;
+  }
+
+  .petRepoInfoRow--passive-trait .petRepoInfoValue,
+  .petRepoInfoRow[data-label="Passive Trait"] .petRepoInfoValue {
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    color: var(--dp-text-primary) !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   29. SKILL TREE MODAL - text overlap fix
+   At 360px the talent node grid text overflows into adjacent
+   nodes. Force wrapping on all text inside nodes.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .skillTreeModal {
+    width: min(98vw, 420px) !important;
+    padding: 14px !important;
+  }
+
+  .talentNode {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .talentNodeName,
+  .talentNodeLabel {
+    font-size: 0.6rem !important;
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    line-height: 1.2 !important;
+  }
+
+  .talentNodeCost {
+    font-size: 0.58rem !important;
+  }
+
+  /* Node icon smaller so labels have room */
+  .talentNodeIcon {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .talentNodeDetails {
+    padding: 14px !important;
+  }
+
+  .talentNodeInfoRow {
+    font-size: 0.78rem !important;
+  }
+
+  .talentInfoValue {
+    font-size: 0.78rem !important;
+    overflow-wrap: break-word !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   30. ARMORY CLOSET GRID - scroll stays inside cyan border
+   The armoryClosetGrid uses overflow:auto with no height cap
+   so it grows unbounded and scrolls outside the popup border.
+   Cap it and ensure the scrollbar sits inside the inset.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .dpPopupWindow.armoryClosetWindow,
+  .dpPopupWindow {
+    width: min(96vw, 420px) !important;
+    max-height: min(88vh, 700px) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .dpPopupWindowContent {
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+  }
+
+  .armoryClosetModal {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+    overflow: hidden !important;
+  }
+
+  /* The grid itself scrolls, constrained inside the modal */
+  .armoryClosetGrid {
+    grid-template-columns: 1fr !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--dp-border-panel) transparent !important;
+    padding-right: 6px !important;
+  }
+
+  .armoryClosetSlot {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    min-height: 60px !important;
+  }
+
+  /* Hide the stat block column on very narrow screens */
+  .armoryClosetSlotStat {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   31. SKILL INVENTORY - same scroll-inside-border fix
+   The skillInventoryGrid also needs to be capped and scroll
+   inside the cyan inset border, not outside the panel.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .skillsPanel {
+    max-height: min(88vh, 700px) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .skillInventoryGrid {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--dp-border-panel) transparent !important;
+    padding-right: 4px !important;
+  }
+
+  .skillInventoryCard {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .skillSlotGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .skillSlotCard {
+    width: 100% !important;
+    min-height: 80px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   32. /pet PAGE - INSET BORDER TIGHTENING (mobile only)
+   All panels: inset border 4px thick, 5px padding between
+   the border and content. Desktop inset values untouched.
+   Targets:
+     - petRepoCareCard::after  (care room cyan inset)
+     - petRepoHeroCard::before (hero card purple inset)
+     - dp-standard-panel::before via CSS var override
+       (StatsChamber, SkillsPanel share this class)
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  /* Care room panel cyan inset border */
+  .petRepoCareCard::after {
+    inset: 5px !important;
+    border-width: 4px !important;
+  }
+
+  /* Hero card purple inset border */
+  .petRepoHeroCard::before {
+    inset: 5px !important;
+    border-width: 4px !important;
+  }
+
+  /* Hero card blue grid layer stays aligned with the border */
+  .petRepoHeroCard::after,
+  .petRepoHeroCard.dp-blue-grid-panel::after {
+    inset: 9px !important;
+  }
+
+  /* StatsChamber + SkillsPanel share dp-standard-panel::before.
+     Override the CSS vars so the inset shrinks without touching
+     the global rule or the desktop value. */
+  .petRepoPage .dp-standard-panel::before,
+  .petRepoPage .dp-standard-panel-purple::before {
+    inset: 5px !important;
+    border-width: 4px !important;
+  }
+
+  /* Content clearance: push children 5px away from the border.
+     The panels use padding for internal spacing; add just enough
+     extra padding to clear the new inset border position. */
+  .petRepoCareCard {
+    padding: 14px !important;
+  }
+
+  .petRepoStatStack {
+    padding: 10px !important;
+  }
+}
+/* =========================================================
+   /pet MOBILE FIXES - S22 Ultra (384px)
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   HERO CARD: "Delta Care Chamber" centered beside
+   "Current Focus", not stacked below it.
+   The card is already a 2-col grid at mobile widths from
+   section 24. This makes the right column center vertically
+   so the title sits at the same midpoint as the status box.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  /* Layout:
+     Row 1: [Current Focus box] [Delta Care Chamber title - vertically centered]
+     Row 2: [subtitle text spans full width below both]
+     Row 3: [Lost Kith button spans full width]
+     Card is taller to give the subtitle room.
+  */
+  .petRepoHeroCard {
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    grid-template-rows: auto auto auto !important;
+    align-items: center !important;
+    gap: 8px 12px !important;
+    padding: 16px !important;
+    min-height: 130px !important;
+  }
+
+  /* Status box: row 1, col 1 - stays left */
+  .petRepoHeroStatus {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    align-self: center !important;
+  }
+
+  /* Title block: row 1, col 2 - vertically centered beside status */
+  .petRepoHeroTextShifted {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    text-align: left !important;
+    align-self: center !important;
+  }
+
+  .petRepoTitle {
+    font-size: 1.05rem !important;
+    line-height: 1.15 !important;
+    margin: 0 0 4px !important;
+  }
+
+  /* Subtitle: spans both columns, sits under the status+title row */
+  .petRepoSubtitle {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    font-size: 0.63rem !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    opacity: 0.82 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Lost Kith button: row 3, spans full width */
+  .lostKithRegistryOpenButton {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+    width: 100% !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   SCENE ORB: remove the inset border that pulls UI back.
+   Bring the background and pet placeholder forward so the
+   orb feels like a proper little room.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .petRepoCareCard::after {
+    inset: 5px !important;
+    border-width: 4px !important;
+  }
+
+  .petRepoSceneOrb {
+    width: min(100%, 320px) !important;
+    height: 400px !important;
+    border-width: 2px !important;
+    /* Remove the inner inset border that was pulling content back */
+    box-shadow: none !important;
+  }
+
+  /* Bring scene inner content fully forward - no z retreat */
+  .petRepoSceneInner {
+    inset: 0 !important;
+    z-index: 2 !important;
+  }
+
+  /* Pet placeholder sits flush, not offset */
+  .petRepoScenePet {
+    bottom: 60px !important;
+    width: min(68%, 200px) !important;
+    height: min(64%, 200px) !important;
+  }
+
+  /* Platform stays at the bottom properly */
+  .petRepoScenePlatformWrap {
+    height: 100px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   FARM BUTTON: position it properly below the orb,
+   not overlapping the energy panel or care status.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .petRepoFarmButtonWrap {
+    position: relative !important;
+    z-index: 10 !important;
+    margin-top: 12px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .petRepoFarmButton {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   ENERGY: smaller bar, 5px gap above care status panel,
+   nothing cut off, farm button not overlapped.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .petRepoEnergyPanel {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-bottom: 5px !important;
+    padding: 0 4px !important;
+    pointer-events: auto !important;
+    z-index: auto !important;
+  }
+
+  .petRepoEnergyTitle {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.08em !important;
+    -webkit-text-stroke: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Smaller bar */
+  .petRepoEnergyTrack {
+    height: 10px !important;
+  }
+
+  /* Care status panel: 5px gap from energy above it */
+  .petRepoCareStatusPanel {
+    margin-top: 5px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   KITH TEAM: slot cards 5px away from the purple inset border.
+   The panel has inset:14px border:5px, so content starts at
+   19px from the panel edge. Padding of 5px from the border
+   means we need 24px total from the panel edge.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .mainTeamPanel {
+    padding: 24px 24px 50px !important;
+  }
+
+  /* The purple inset border itself: tighten to match */
+  .mainTeamPanel::before {
+    inset: 5px !important;
+    border-width: 4px !important;
+  }
+
+  /* Slot cards get 5px breathing room from the inset border */
+  .mainTeamGrid {
+    padding: 5px !important;
+    gap: 10px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   ARMORY MOBILE: hide the line, dot, and triangle accent.
+   Title left, button right, nothing else.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .petArmoryHeaderAccent {
+    display: none !important;
+  }
+
+  .petArmoryHeader {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .petArmoryTitle {
+    font-size: 1.2rem !important;
+    transform: none !important;
+  }
+
+  .petArmoryClosetButton {
+    position: static !important;
+    top: auto !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   SKILLS CHAMBER: Skill Inventory button moves beside the
+   "Skills Chamber" title. Mend slot moves inline between
+   Element Strike and Guard.
+   The button is currently in .skillChamberControlsRow below
+   the header. On mobile, we pull the header and controls
+   into one row.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  /* Collapse the separate header + controls into one flex row */
+  .skillsPanelHeader {
+    margin-bottom: 8px !important;
+  }
+
+  .skillsHeaderTopRow {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .skillsTitle {
+    font-size: 1.1rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* Move the Skill Inventory button up into the header row */
+  .skillChamberControlsRow {
+    margin-bottom: 8px !important;
+  }
+
+  .skillCenterActionRow {
+    /* The button needs to visually sit beside the title.
+       We can't move the DOM node without touching TSX, so
+       instead we hide the gap between header and controls
+       and make them read as one visual unit. */
+    margin-top: -44px !important;
+    justify-content: flex-end !important;
+  }
+
+  /* Command grid (Element Strike, Mend, Guard): force wrap
+     so Mend sits between Strike and Guard naturally */
+  .skillChamberCommandGrid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .skillChamberCommand {
+    flex: 1 1 calc(33% - 6px) !important;
+    min-width: 0 !important;
+    font-size: 0.7rem !important;
   }
 }

@@ -66,8 +66,9 @@ const TIMING = {
 /* =========================================================
    COPY  (edit freely; on-screen text stays short)
 ========================================================= */
-const GLITCH_1 = `...wait. you weren't supposed to find this screen.`;
-const GLITCH_2 = `but it seems the signal found you.`;
+const GLITCH_1 = `...who are you? you weren't supposed to find this.`;
+const GLITCH_2 = `it seems the signal found you though.`;
+const LORE_1 = `I have a gift. treat them well.`;
 const WIRE_LINE = `...Oh look, an egg, how quaint.`;
 
 /* =========================================================
@@ -755,6 +756,21 @@ export default function DeltaPetsCutscene() {
       await sleep(280);
       if (!alive()) return;
 
+      // lore beat before the egg
+      await typeText(LORE_1, setCenterText, TIMING.loreTypeMsPerChar, alive);
+      if (!alive()) return;
+      await sleep(2200);
+      if (!alive()) return;
+      await deleteText(
+        LORE_1,
+        setCenterText,
+        TIMING.loreDeleteMsPerChar,
+        alive,
+      );
+      if (!alive()) return;
+      await sleep(400);
+      if (!alive()) return;
+
       // rainbow Delta triangle falls in with a squash-and-stretch landing
       setPhase("triangle");
       tween(
@@ -959,7 +975,7 @@ const css = `
 
 .dpc-text{
   position:absolute; left:50%; top:50%;
-  transform:translate(-50%, calc(-50% + 175px));
+  transform:translate(-50%, calc(-50% + 230px));
   width:100%; max-width:780px; height:86px;
   display:flex; align-items:center; justify-content:center;
   overflow:visible;
@@ -967,8 +983,7 @@ const css = `
   text-shadow:0 0 18px rgba(70,220,255,0.28);
 }
 .dpc-text.dpc-text--goodluck{
-  transform:translate(-50%, calc(-50% + 200px));
-}
+  transform:translate(-50%, calc(-50% + 255px));
 }
 .dpc-text.glitch span{
   text-shadow: 2px 0 rgba(255,60,120,0.6), -2px 0 rgba(60,200,255,0.6), 0 0 18px rgba(120,230,255,0.4);
