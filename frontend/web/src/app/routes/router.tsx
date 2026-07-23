@@ -33,12 +33,11 @@ const ComingSoonPage = lazy(() =>
 );
 
 const FoodMerchantPage = lazy(
-  () => import("../../pages/Cities/Kithna/Merchants/FoodMerchantPage"),
+  () => import("../../pages/Cities/Kithna/merchant/kithna_Food_Shop"),
 );
 const MerchantClosedPage = lazy(
   () => import("../../pages/Cities/Kithna/Merchants/MerchantClosedPage"),
 );
-
 function PageLoader() {
   return <div style={{ padding: 16 }}>Loading...</div>;
 }
