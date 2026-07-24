@@ -1608,3 +1608,242 @@
     font-size: 0.7rem !important;
   }
 }
+
+/* =========================================================
+   PHONE TARGET PASS 2 - CHUNK LOAD ORDER FIXES
+   Vite loads page CSS as lazy chunks AFTER mobile.css runs.
+   Rules below use !important to guarantee they win against
+   any late-loading page stylesheet, regardless of order.
+
+   Targets (CSS viewport widths):
+     S22:        360px
+     iPhone 8:   375px
+     S22 Ultra:  384px
+     Pixel 10:   412px
+   Safe ceiling: 430px (covers all four phones)
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   33. PET PAGE - .petRepoStage 145px LATE-LOAD OVERRIDE FIX
+   PetPage.css (the Care Room redesign block near line 1381)
+   sets --petRepo-left-offset: 145px with no media query
+   guard. Because Vite loads PetPage.css as a lazy route
+   chunk it arrives AFTER mobile.css, so the page rule
+   silently wins even though mobile.css section 13 already
+   tried to zero it. This block re-applies the zero with
+   !important so it permanently wins on phones.
+   --------------------------------------------------------- */
+@media (max-width: 920px) {
+  .petRepoStage {
+    --petRepo-left-offset: 0px !important;
+    padding-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   34. PET PAGE - .hp-mainShell AND .hp-banner BLEED FIX
+   PetPage.css also defines .hp-mainShell { width: calc(100%
+   + 140px); margin-right: -140px } and a matching .hp-banner
+   bleed. These are desktop-only layout tricks that add 140px
+   to the right side of those elements. No media query ever
+   resets them, so on every phone every element that uses
+   these classes is 140px too wide and pushes a horizontal
+   scrollbar. This block kills the bleed at phone widths.
+   --------------------------------------------------------- */
+@media (max-width: 900px) {
+  .hp-mainShell {
+    width: 100% !important;
+    margin-right: 0 !important;
+  }
+
+  .petRepoPage .hp-banner {
+    width: 100% !important;
+    margin: 0 0 16px 0 !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   35. HOMEPAGE - hp-lowerGrid MINIMUM WIDTH FIX
+   homepage.css sets hp-lowerGrid to
+   minmax(260px, 0.9fr) minmax(0, 1.6fr). The 260px minimum
+   on the left column means the grid can never shrink below
+   260px + 1.6fr, which forces horizontal scroll on phones.
+   The 980px media query in homepage.css already collapses
+   to 1fr, but that file is also a lazy chunk and its rule
+   does not carry !important, so this re-enforces it.
+   --------------------------------------------------------- */
+@media (max-width: 700px) {
+  .hp-lowerGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   36. HOMEPAGE - HP-ROOT PADDING FIX FOR 360-412px PHONES
+   At 720px homepage.css sets padding to var(--space-3) but
+   that variable may resolve to more than 8px and still push
+   content off-screen on the narrowest phones. Tighten it.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .hp-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .hp-heroCard {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .hp-heroInner {
+    padding: 20px 14px 18px !important;
+  }
+
+  .hp-heroTitle--logo {
+    font-size: clamp(2.2rem, 8vw, 3.5rem) !important;
+  }
+
+  .hp-heroTagline {
+    font-size: 0.88rem !important;
+  }
+
+  /* CTA button: full width, no overflow */
+  .hp-primaryBtn {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   37. KITHNA MAP - PHONE LAYOUT (S22 through Pixel 10)
+   mobile.css section 3 already handles 640px and section
+   19 handles 430px, but the label text at 0.65rem is still
+   too small on a real 360px phone. These rules nudge the
+   map slightly and cap the frame height so users can see
+   all the building targets without needing to pan.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .kithnaMapFrame {
+    padding: 8px !important;
+    border-radius: 14px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+
+  .kithnaMapTarget {
+    width: 22% !important;
+    height: 18% !important;
+  }
+
+  .kithnaBuildingLabel {
+    font-size: 0.68rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 56px !important;
+  }
+
+  .kithnaBuildingIcon {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 370px) {
+  /* S22 (360px) - tightest target */
+  .kithnaMapFrame {
+    padding: 6px !important;
+  }
+
+  .kithnaBuildingLabel {
+    font-size: 0.6rem !important;
+    max-width: 44px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   38. APP SHELL - REDUCE SIDE PADDING ON ALL 4 PHONES
+   App.css sets 40px horizontal padding on .appShell and
+   .appContent at desktop. The 640px media query in App.css
+   drops .appShell to 16px but .appContent never gets reset
+   (it has no mobile rule at all), so on phones the content
+   area still has 40px of padding on each side, eating 80px
+   of the 360-412px viewport. This block zeros .appContent
+   padding on phones and tightens .appShell further at the
+   narrowest targets.
+   --------------------------------------------------------- */
+@media (max-width: 640px) {
+  .appContent {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .appShell {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+
+@media (max-width: 370px) {
+  .appShell {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   39. HATCHERY - SELECTED EGG PANEL BUTTON OVERFLOW
+   At 360-412px the hatchery action buttons (.hatcheryAction,
+   .hatchBtn, .hatchSlotHatchButton) can overflow the panel
+   horizontally when sitting side by side. Force them to wrap
+   into a column on the narrowest phones.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .hatcheryActionsRow,
+  .hatcheryBottomActions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .hatchBtn,
+  .hatcheryAction,
+  .hatchSlotHatchButton {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Incubation slot cards: compress internal padding */
+  .incubationSlot {
+    padding: 10px 10px !important;
+  }
+
+  .incubationSlotLabel {
+    font-size: 0.62rem !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   40. GLOBAL OVERFLOW SAFETY (all 4 phones)
+   Belt-and-suspenders on top of section 23. Any element that
+   is not a scrollable container must not force a horizontal
+   scrollbar. This catches anything the per-page rules missed.
+   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  html {
+    overflow-x: hidden !important;
+  }
+
+  body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    position: relative !important;
+  }
+}
