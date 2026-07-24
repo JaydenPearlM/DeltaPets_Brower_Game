@@ -602,7 +602,7 @@ export default function PetPage() {
 
     return Array.from({ length: 4 }, (_, index) => {
       const slotIndex = index + 1;
-      const teamPet = teamBySlot.get(slotIndex) ?? team[index] ?? null;
+      const teamPet = teamBySlot.get(slotIndex) ?? null;
       const storagePet: StoragePet | null = teamPet
         ? {
             id: teamPet.id,
