@@ -98,10 +98,34 @@ export default function StatsChamber({
                 rowClassNames.push("is-weak-stat");
               }
 
+              const traitEffects =
+                pet.passive_trait_effects &&
+                typeof pet.passive_trait_effects === "object" &&
+                !Array.isArray(pet.passive_trait_effects)
+                  ? (pet.passive_trait_effects as Record<string, unknown>)
+                  : {};
+              const mod = Number(traitEffects[statKey] ?? 0);
+              const showMod = Number.isFinite(mod) && mod !== 0;
+
               return (
                 <div key={statKey} className={rowClassNames.join(" ")}>
                   <span>{STAT_LABELS[statKey]}</span>
-                  <span>{String(value)}</span>
+
+                  <span className="petRepoStatValueGroup">
+                    {showMod ? (
+                      <span
+                        className={
+                          mod > 0
+                            ? "petRepoStatMod petRepoStatMod--pos"
+                            : "petRepoStatMod petRepoStatMod--neg"
+                        }
+                      >
+                        {mod > 0 ? `+${mod}` : String(mod)}
+                      </span>
+                    ) : null}
+
+                    {String(value)}
+                  </span>
                 </div>
               );
             })}

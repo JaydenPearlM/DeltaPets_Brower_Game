@@ -1499,7 +1499,7 @@
   border: 2px solid var(--border-color, #00fff2);
   border-radius: 8px;
   color: var(--color-accent, #00fff2);
-  font-family: "VT323", monospace;
+  font-family: var(--font-heading);
   font-size: 24px;
   cursor: pointer;
   transition: all 0.3s ease;

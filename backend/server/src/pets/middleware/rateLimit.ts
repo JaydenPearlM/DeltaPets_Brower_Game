@@ -1,6 +1,6 @@
 import rateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
-import { env } from "../env.server";
+import { env } from "../../env.server";
 
 export const apiLimiter = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,

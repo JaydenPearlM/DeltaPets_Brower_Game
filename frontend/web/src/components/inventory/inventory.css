@@ -237,11 +237,153 @@
 .inventoryFooter {
   display: flex;
   justify-content: flex-start;
-  margin-top: 4px;
+  margin-top: 0px;
+  padding-left: 6px;
+  transform: translateY(-1px);
 }
 
 .inventoryFooterClose {
   min-width: 96px;
+  transform: translateX(-3px);
+}
+
+.inventoryCarePackageCard {
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.inventoryCarePackageReward {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.inventoryCarePackageButton {
+  position: relative;
+  display: block;
+  width: auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.inventoryCarePackageButton:disabled {
+  cursor: default;
+}
+
+.inventoryCarePackageImageWrap {
+  position: relative;
+  display: block;
+  width: 92px;
+  height: 92px;
+}
+
+.inventoryCarePackageImage {
+  display: block;
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  mix-blend-mode: screen;
+}
+
+.inventoryCarePackageQty {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  font-size: 0.76rem;
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(3, 12, 28, 0.95);
+}
+
+.inventoryCarePackageHint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  z-index: 20;
+  display: grid;
+  gap: 4px;
+  width: max-content;
+  max-width: 220px;
+  padding: 10px 12px;
+  border: 2px solid var(--dp-cyber-cyan, #4deaff);
+  border-radius: 14px;
+  background: var(--dp-panel-blue, #08375f);
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  transform: translateX(-50%) translateY(4px);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.inventoryCarePackageHint::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--dp-cyber-cyan, #4deaff);
+  border-bottom: 2px solid var(--dp-cyber-cyan, #4deaff);
+  background: var(--dp-panel-blue, #08375f);
+  transform: translate(-50%, -5px) rotate(45deg);
+}
+
+.inventoryCarePackageHint strong,
+.inventoryCarePackageHint span {
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+}
+
+.inventoryCarePackageButton:hover .inventoryCarePackageHint,
+.inventoryCarePackageButton:focus-visible .inventoryCarePackageHint {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.inventoryCarePackageNotice {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(3, 12, 28, 0.78);
+}
+
+.inventoryCarePackageNoticeCard {
+  display: grid;
+  gap: 16px;
+  width: min(420px, 100%);
+  border: 2px solid var(--dp-cyber-cyan, #4deaff);
+  border-radius: 16px;
+  padding: 20px;
+  background: rgba(3, 12, 28, 0.96);
+  text-align: center;
+}
+
+.inventoryCarePackageNoticeCard p,
+.inventoryCarePackageMessage {
+  margin: 0;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.inventoryCarePackageMessage {
+  text-align: center;
 }
 
 @media (max-width: 640px) {
@@ -249,9 +391,20 @@
     grid-template-columns: 1fr;
   }
 
+  .inventoryCarePackageReward {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .inventoryCarePackageButton {
+    margin-inline: auto;
+  }
+
   .inventoryGrid--slots {
-    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
-    grid-auto-rows: 76px;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    grid-auto-rows: 60px;
+    max-height: 200px;
+    overflow-y: auto;
   }
 
   .inventoryItemCardHeader {
@@ -266,4 +419,35 @@
   .inventoryItemQty {
     width: fit-content;
   }
+
+  .inventoryIntro {
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .inventorySectionLabel {
+    margin: 10px 0 6px;
+  }
+
+  .inventoryCarePackageNoticeCard {
+    padding: 16px;
+    gap: 12px;
+  }
+}
+
+/* =========================================================
+   Care Package - visible tap hint for mobile (S22 has no hover)
+   ========================================================= */
+.inventoryCarePackageTapHint {
+  margin: 8px 0 0;
+  color: var(--dp-cyber-cyan, #4deaff);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-align: left;
+}
+
+/* Rewards promoted above items grid: no extra top margin needed */
+.inventorySectionLabel--rewards {
+  margin-top: 0;
 }

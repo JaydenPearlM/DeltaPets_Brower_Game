@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import { requireUser, type AuthedRequest } from "../middleware/auth";
+import { requireUser, type AuthedRequest } from "../pets/middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 import {
   CooldownKey,
@@ -10,7 +10,7 @@ import {
 } from "../pets/cooldowns";
 import { fetchActivePet } from "./routePets/petsRepo";
 import { safeNum } from "../lib/utils";
-import { validateBody } from "../middleware/validateRequest";
+import { validateBody } from "../pets/middleware/validateRequest";
 import { petActionSchema } from "../lib/validation";
 
 export const petActionsRouter = Router();

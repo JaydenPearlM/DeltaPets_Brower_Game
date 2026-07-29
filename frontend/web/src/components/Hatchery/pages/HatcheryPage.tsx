@@ -249,9 +249,7 @@ function resolveEggIdentity(
     const key = line as ElementalLineKey;
     return {
       label:
-        key === "null_element"
-          ? VOIDBORNE_EGG_NAME
-          : ELEMENT_EGG_NAMES[key],
+        key === "null_element" ? VOIDBORNE_EGG_NAME : ELEMENT_EGG_NAMES[key],
       elementKey: key,
     };
   }
@@ -695,6 +693,14 @@ export default function HatcheryPage() {
       : `Hatches in ${formatDuration(selectedCd.remainingMs ?? 0)}`
     : "";
 
+  const canHatchSelected = Boolean(
+    selectedEgg &&
+    selectedCd.done &&
+    selected &&
+    !selected.locked &&
+    !isHatching,
+  );
+
   const displayedStats = useMemo(() => {
     if (!selectedEgg) return EMPTY_STATS;
 
@@ -798,16 +804,30 @@ export default function HatcheryPage() {
                     <div className="selectedPreviewEyebrow">
                       Incubator Core Activated.
                     </div>
+
                     <div className="selectedName">
                       {selectedEggIdentity.label}
                     </div>
+
                     <div className="selectedSub">{countdownText}</div>
+
+                    <button
+                      type="button"
+                      className="primaryBtn selectedPreviewHatchBtn"
+                      disabled={!canHatchSelected}
+                      onClick={() => {
+                        if (selected) {
+                          void onHatchFromSlot(selected);
+                        }
+                      }}
+                    >
+                      {isHatching ? "Hatching..." : "Hatch Egg"}
+                    </button>
                   </div>
                 </div>
               )}
             </div>
           </section>
-
           <div className="hatcheryBottomRow">
             <div className="hatcheryBottomRowInner">
               <section className="selectedEggStatsInset statsPanelBottom">

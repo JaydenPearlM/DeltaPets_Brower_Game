@@ -55,14 +55,10 @@
 .statsChamberPetName {
   margin: -2px 0 2px;
   padding-left: 34px;
-  font-family: var(--font-accent);
+  font-family: var(--font-pet-name) !important;
   font-size: clamp(1.35rem, 2.2vw, 1.8rem);
-  font-weight: 800;
-  font-variation-settings: "wght" 800;
-  font-feature-settings:
-    "kern" 1,
-    "liga" 1;
-  letter-spacing: 0.045em;
+  font-weight: 400;
+  letter-spacing: 0.1em;
   line-height: 1.05;
   text-transform: none;
   text-wrap: balance;
@@ -198,6 +194,42 @@
   font-size: 0.95rem;
   font-weight: 900;
   text-align: right;
+}
+
+.statsChamber .petRepoStatValueGroup {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.statsChamber .petRepoInfoRow .petRepoStatMod {
+  position: absolute;
+  right: calc(100% + 12px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: var(--dp-title-gold, var(--dp-brand-yellow-bright));
+  background: rgba(255, 217, 77, 0.1);
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.statsChamber .petRepoInfoRow .petRepoStatMod.petRepoStatMod--pos {
+  color: var(--dp-title-gold, var(--dp-brand-yellow-bright));
+  background: rgba(255, 217, 77, 0.1);
+}
+
+.statsChamber .petRepoInfoRow .petRepoStatMod.petRepoStatMod--neg {
+  color: var(--dp-stat-weak);
+  background: var(--dp-stat-weak-bg);
 }
 
 .statsChamber .petRepoInfoRow.is-strong-stat {

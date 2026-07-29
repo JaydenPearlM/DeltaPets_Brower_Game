@@ -1,32 +1,24 @@
 /* =========================================================
    DELTAPETS - MOBILE LAYER
    =========================================================
-   How this works:
-   This is NOT a separate "mobile page" or JS device check.
-   It is a CSS layer that activates automatically based on
-   real viewport width, using @media queries. That is the
-   correct way to do this in a browser game, it reacts live
-   to screen size (phones, small tablets, resized windows,
-   rotation) instead of guessing from user-agent strings,
-   which break constantly and lag behind new devices.
+   Single source of truth for all phone/tablet overrides.
+   Imported last in main.tsx after global.css so it wins
+   the cascade. Uses !important only where a component CSS
+   file re-declares the same property outside a media query
+   and Vite loads that chunk after this file.
 
-   Import this file LAST, after global.css, so it wins the
-   cascade without needing !important everywhere:
-
-     // main.tsx
-     import "./global.css";
-     import "./mobile.css";   // add this line
-
-   Breakpoints used sitewide (kept consistent with the ones
-   already in App.css so nothing double-fires):
+   Breakpoints:
      900px  -> tablet / narrow desktop
+     720px  -> large phone landscape
      640px  -> phone landscape / small tablet
-     420px  -> phone portrait
+     480px  -> phone portrait wide
+     430px  -> S22 / Pixel 10 portrait
+     380px  -> smallest supported phone
    ========================================================= */
 
-/* ---------------------------------------------------------
-   1. BASE SAFETY NET (applies to every page)
-   --------------------------------------------------------- */
+/* =========================================================
+   1. BASE SAFETY NET
+   ========================================================= */
 @media (max-width: 900px) {
   html,
   body {
@@ -48,7 +40,6 @@
     padding-right: 0;
   }
 
-  /* keep any decorative canvas/art from forcing horizontal scroll */
   img,
   canvas,
   svg {
@@ -56,7 +47,6 @@
     height: auto;
   }
 
-  /* touch targets: anything acting as a button gets a real tap size */
   button,
   .dp-btn,
   .exploreButton,
@@ -72,12 +62,587 @@
   }
 }
 
-/* ---------------------------------------------------------
-   2. MAIN TEAM PANEL (Homepage / dashboard team strip)
-   Current: fixed 4-column grid, min 165px each (~660px min).
-   That is wider than most phones, so it was overflowing
-   or forcing a squeeze. Step it down instead.
-   --------------------------------------------------------- */
+@media (max-width: 430px) {
+  .appShell {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .appContent {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+@media (max-width: 400px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .appShell {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  html,
+  body,
+  #root {
+    overflow-x: hidden !important;
+  }
+
+  .petRepoStage,
+  .petRepoPage,
+  .appShell,
+  .appContent {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+}
+
+/* =========================================================
+   2. HAMBURGER MENU STACKING FIX
+   Root cause: .appHeader is z-index 9999 but .hamburgerMenuModal
+   is z-index 40 inside .exploreWrapper (z-index 30). Page panels
+   use isolation: isolate which creates new stacking contexts that
+   trap the menu behind them. Fix: give the header explicit
+   isolation so the menu z-index is scoped inside it and beats
+   every page panel underneath.
+   ========================================================= */
+@media (max-width: 900px) {
+  .appHeader {
+    isolation: isolate !important;
+    z-index: 9999 !important;
+  }
+
+  .exploreWrapper {
+    position: relative !important;
+    z-index: 200 !important;
+  }
+
+  .hamburgerMenuModal {
+    z-index: 9000 !important;
+  }
+
+  .exploreThoughtBubble {
+    z-index: 9000 !important;
+    width: min(360px, calc(100vw - 24px));
+  }
+}
+
+/* =========================================================
+   3. PETS PAGE - STAGE OFFSET
+   PetPage.css redeclares --petRepo-left-offset: 145px at the
+   bottom of the file with no media guard. !important is needed
+   to win the Vite chunk ordering race.
+   ========================================================= */
+@media (max-width: 920px) {
+  .petRepoStage {
+    --petRepo-left-offset: 0px !important;
+    padding-left: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* =========================================================
+   4. PETS PAGE - HERO HEADER CARD
+   Desktop: two columns (190px status box | title + subtitle)
+   Mobile: two columns side by side (Current Focus LEFT |
+   Delta Care Chamber RIGHT) with subtitle spanning below both.
+   At 920px PetPage.css collapses to 1fr which stacks everything.
+   We override that for phones to restore the side-by-side layout
+   but at a narrower, phone-appropriate size.
+   ========================================================= */
+@media (max-width: 920px) {
+  .petRepoHeroCard {
+    /* Two columns: compact focus box left, title right */
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 12px !important;
+    padding: 18px !important;
+    align-items: start !important;
+  }
+
+  .petRepoHeroStatus {
+    width: auto !important;
+    max-width: 160px !important;
+    min-height: 80px !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
+  .petRepoHeroTextShifted {
+    transform: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .petRepoTitle {
+    font-size: clamp(1.4rem, 5vw, 2.2rem) !important;
+    line-height: 1.1 !important;
+    margin-bottom: 6px !important;
+    text-align: left !important;
+  }
+
+  .petRepoSubtitle {
+    font-size: 0.82rem !important;
+    line-height: 1.5 !important;
+    text-align: left !important;
+  }
+
+  /* Lost Kith Registry button: sits below the two columns */
+  .lostKithRegistryOpenButton {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* On the narrowest phones shrink the focus box further */
+@media (max-width: 430px) {
+  .petRepoHeroCard {
+    padding: 14px !important;
+    gap: 10px !important;
+  }
+
+  .petRepoHeroStatus {
+    max-width: 120px !important;
+    min-height: 70px !important;
+    padding: 10px 12px !important;
+  }
+
+  .petRepoTitle {
+    font-size: clamp(1.2rem, 5.5vw, 1.8rem) !important;
+  }
+}
+
+/* =========================================================
+   5. PETS PAGE - FULL PAGE BLEED
+   ========================================================= */
+@media (max-width: 430px) {
+  .petRepoPage {
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* =========================================================
+   6. PETS PAGE - PANEL GRIDS SINGLE COLUMN
+   ========================================================= */
+@media (max-width: 430px) {
+  .petRepoMainGrid,
+  .petRepoBottomGrid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .petRepoDataTwoCol {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* =========================================================
+   7. PETS PAGE - PANEL PADDING (10px clearance from inset border)
+   ========================================================= */
+@media (max-width: 430px) {
+  .petRepoPanel--infoShell,
+  .petRepoTeamPanel,
+  .petRepoPanel,
+  .petRepoStateCard {
+    padding: 20px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* =========================================================
+   8. PETS PAGE - KITH TEAM PANEL (10px from purple border)
+   ========================================================= */
+@media (max-width: 640px) {
+  .petRepoTeamPanel {
+    padding: 22px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* =========================================================
+   9. PETS PAGE - TEAM ORB GRID
+   ========================================================= */
+@media (max-width: 920px) {
+  .petRepoFarmButtonWrap {
+    width: 100%;
+    margin-right: 0;
+    justify-content: center;
+  }
+
+  .mainTeamTitleShell {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 430px) {
+  .petRepoTeamGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .petRepoTeamOrb {
+    width: 180px !important;
+    height: 180px !important;
+  }
+
+  .petRepoTeamPreview--circle {
+    width: 118px !important;
+    height: 118px !important;
+  }
+
+  .petRepoBondPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .petRepoBondTitle {
+    text-align: center;
+    transform: none;
+  }
+}
+
+/* =========================================================
+   10. CARE ROOM SCENE ORB - ARCH FIX
+   PetDetailsPanel.css (line 2319) sets overflow: visible and
+   height: 110% on walls inside its 640px block. overflow: visible
+   breaks the arch clip (border-radius: 180px 180px 0 0 requires
+   overflow: hidden to clip children). Walls escape outside the
+   doorway. Fix: restore overflow: hidden, correct height and wall.
+   ========================================================= */
+@media (max-width: 640px) {
+  .petRepoSceneOrb {
+    overflow: hidden !important;
+    height: 420px !important;
+  }
+
+  .petRepoSceneWallLeft,
+  .petRepoSceneWallRight {
+    height: 100% !important;
+  }
+
+  .petRepoSceneInner {
+    inset: 0 !important;
+  }
+
+  .petRepoScenePet {
+    bottom: 60px !important;
+    width: min(68%, 220px) !important;
+    height: min(65%, 220px) !important;
+  }
+
+  .petRepoScenePlatformWrap {
+    height: 120px !important;
+  }
+}
+
+/* =========================================================
+   11. CARE STATUS PANEL (10px clearance + energy visible)
+   ========================================================= */
+@media (max-width: 640px) {
+  .petRepoCareCard {
+    padding: 22px !important;
+  }
+
+  .petRepoCareStatusPanel {
+    padding: 22px !important;
+  }
+
+  .petRepoEnergyPanel {
+    left: 22px !important;
+    right: 22px !important;
+    bottom: 38px !important;
+    width: auto !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  .petRepoEnergyTitle {
+    font-size: 1.1rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .petRepoEnergyTrack {
+    height: 10px !important;
+  }
+
+  .petRepoFarmButtonWrap {
+    width: 100% !important;
+    justify-content: center !important;
+    margin-top: 12px !important;
+  }
+
+  .petRepoCareActionMessageSlot {
+    margin-top: 8px !important;
+  }
+
+  .petRepoInlineMessage {
+    max-width: 100% !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+}
+
+/* Talk bubble: fixed transform breaks on narrow screens */
+@media (max-width: 480px) {
+  .petRepoTalkBubble {
+    width: min(340px, calc(100% - 24px)) !important;
+    transform: none !important;
+    padding: 8px 18px !important;
+    font-size: 0.72rem !important;
+  }
+}
+
+/* =========================================================
+   12. SKILLS CHAMBER - 3 skills on one row, inventory below
+   skillSlotGrid is repeat(5, minmax(112px, 1fr)) = 560px min.
+   Override to exactly 3 columns so Element Strike, Mend, Guard
+   stay on one row. Skill Inventory is a separate element after
+   the grid so it naturally falls below.
+   ========================================================= */
+@media (max-width: 640px) {
+  .skillChamber,
+  .skillChamberPanel,
+  .skillChamberInner {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .skillSlotGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .skillSlotCard {
+    width: min(96px, calc((100vw - 80px) / 3)) !important;
+    height: min(96px, calc((100vw - 80px) / 3)) !important;
+    padding: 10px !important;
+  }
+
+  .skillSlotCard h4 {
+    font-size: 0.76rem !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  .skillSlotCard span {
+    font-size: 0.52rem !important;
+  }
+
+  .skillInventoryPanel {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-top: 14px !important;
+  }
+}
+
+/* =========================================================
+   13. PROGRESS CHAMBER
+   kithProgressCard__eyebrow shows "Progress" -- redundant.
+   Hide it on mobile. Title uses existing gold heading tokens.
+   Pet name uses --font-accent (Space Grotesk) per global.css.
+   No new font imported.
+   ========================================================= */
+@media (max-width: 640px) {
+  .kithProgressCard__eyebrow {
+    display: none !important;
+  }
+
+  /* kithProgressCard__title replaced by panelTitle and petName in section 30 */
+
+  .kithProgressCard {
+    padding-inline: 24px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* =========================================================
+   14. HOMEPAGE - 10px clearance from inset borders
+   hp-heroCard uses border-radius 30px with a ::before inset at
+   10px. hp-heroInner needs enough padding to keep content clear.
+   Spotlight uses dp-standard-panel-purple (inset 18px + 6px border
+   = 24px). Feature cards have inset 10px.
+   ========================================================= */
+@media (max-width: 640px) {
+  .hp-heroInner {
+    padding: 24px 24px 28px !important;
+  }
+
+  .hp-heroFeatureRow {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .hp-heroFeatureCopy {
+    padding: 0 12px 12px !important;
+  }
+
+  .hp-bannerContent {
+    padding: 8px 20px !important;
+  }
+
+  .hp-lowerGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Spotlight panel: content 10px from cyan inset border */
+  .hp-spotlightBody {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "top"
+      "visual"
+      "content" !important;
+    justify-items: center !important;
+    text-align: center !important;
+    padding: 1rem 34px 1.25rem !important;
+    transform: none !important;
+  }
+
+  .hp-spotlightPanel .hp-panelBody.hp-spotlightBody {
+    padding: 1rem 34px 30px !important;
+  }
+
+  .hp-spotlightTop,
+  .hp-spotlightIdentity {
+    justify-self: start !important;
+    text-align: left !important;
+  }
+
+  .hp-spotlightPanel .hp-spotlightContent {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .hp-spotlightText {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    font-size: 0.94rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Sign In / Sign Up popups */
+  .dpPopupWindowContent {
+    padding: 22px 20px 20px !important;
+  }
+}
+
+/* Spotlight panel width reset */
+@media (max-width: 980px) {
+  .hp-spotlightPanel {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .hp-spotlightPanel .hp-panelHeader {
+    padding-left: 0 !important;
+  }
+
+  .hp-spotlightPanel .hp-panelTitle {
+    transform: none !important;
+  }
+}
+
+/* =========================================================
+   15. HATCHERY - Kith Team 10px from purple inset border
+   ========================================================= */
+@media (max-width: 900px) {
+  .hatcheryPage {
+    width: 100%;
+    min-height: 0;
+  }
+
+  .hatcheryPage .panelHeader,
+  .hatcheryTopActions {
+    flex-wrap: wrap;
+  }
+
+  .hatcheryLeftColumn,
+  .storagePanel,
+  .rackPanelSide,
+  .selectedEggPanel,
+  .selectedEggStatsInset,
+  .incubationInsetPanel {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .hatcheryWorkbenchLayout,
+  .hatcheryBottomRowInner {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hatcheryLeftColumn {
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Team pet cards 10px from purple inset border */
+  .rackPanelSide {
+    padding: 24px !important;
+    box-sizing: border-box !important;
+  }
+
+  .selectedEggPreviewArea {
+    height: min(420px, 105vw);
+    min-height: 0;
+    max-height: 420px;
+  }
+
+  .storagePetTooltip {
+    width: min(220px, calc(100vw - 48px));
+  }
+}
+
+@media (max-width: 420px) {
+  .compactStatsGrid,
+  .itemsGrid,
+  .eggGridCompact {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hatcheryTopActions > * {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   16. KITHNA EGG TRAY
+   ========================================================= */
+@media (max-width: 720px) {
+  .kithnaEggTray {
+    width: 100%;
+    margin: 14px 0 0;
+    box-sizing: border-box;
+  }
+
+  .kithnaEggTrayGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   17. MAIN TEAM PANEL
+   ========================================================= */
 @media (max-width: 900px) {
   .mainTeamGrid {
     grid-template-columns: repeat(2, minmax(140px, 1fr)) !important;
@@ -90,25 +655,34 @@
     grid-template-columns: 1fr !important;
   }
 
-  .mainTeamHeader {
-    grid-template-columns: 1fr !important;
-    row-gap: 8px !important;
-    justify-items: center !important;
-    text-align: center !important;
+  .mainTeamTitleShell {
+    padding-left: 18px;
+    padding-right: 18px;
   }
 
   .mainTeamTitle {
-    grid-template-columns: 1fr !important;
-    text-align: center !important;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .mainTeamTitle span:first-child,
+  .mainTeamTitle span:last-child {
+    transform: none;
   }
 }
 
-/* ---------------------------------------------------------
-   3. KITHNA MAP (percentage-positioned world map)
-   Already uses %-based positioning, which scales, but the
-   frame itself needs to give up its desktop max-width and
-   the building labels need to stay legible at small sizes.
-   --------------------------------------------------------- */
+/* =========================================================
+   18. DELTA CLOCK
+   ========================================================= */
+@media (max-width: 900px) {
+  .deltaClock {
+    padding-bottom: 14px !important;
+  }
+}
+
+/* =========================================================
+   19. KITHNA MAP
+   ========================================================= */
 @media (max-width: 640px) {
   .kithnaMapFrame {
     max-width: 100% !important;
@@ -125,11 +699,9 @@
   }
 }
 
-/* ---------------------------------------------------------
-   4. PROFILE PAGE
-   Already a single flex column, just needs tighter spacing
-   and a smaller avatar so it doesn't feel oversized on phones.
-   --------------------------------------------------------- */
+/* =========================================================
+   20. PROFILE PAGE
+   ========================================================= */
 @media (max-width: 640px) {
   .dp-profile-page {
     padding: 16px !important;
@@ -146,51 +718,18 @@
   }
 }
 
-/* ---------------------------------------------------------
-   5. STATS CHAMBER
-   The two-column stat grid is already fluid (minmax(0,1fr)),
-   so it survives narrow screens on its own. Only the text
-   sizing needs to come down so rows do not wrap awkwardly.
-   --------------------------------------------------------- */
+/* =========================================================
+   21. STATS CHAMBER
+   ========================================================= */
 @media (max-width: 420px) {
   .statsChamber .petRepoInfoRow {
     font-size: 0.85rem !important;
   }
 }
 
-/* ---------------------------------------------------------
-   6. GENERIC TWO-COLUMN / ROW LAYOUTS + HATCHERY WORKBENCH
-   A lot of panels across Hatchery, PetPage, and Skills reuse
-   the "left column + right column" pattern via flex/grid on
-   a handful of shared class names. hatcheryWorkbenchLayout is
-   a fixed 500px + 300px + 320px 3-column grid (~1070px min)
-   that neither this file nor Hatchery's own 8 media queries
-   ever collapsed. Force a stack past 900px.
-   --------------------------------------------------------- */
-@media (max-width: 900px) {
-  .hatcheryWorkbenchLayout,
-  .hatcheryBottomRowInner {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* this 149px offset is a desktop-only spacing hack, kills mobile layout */
-  .hatcheryLeftColumn {
-    margin-left: 0 !important;
-  }
-}
-
-/* ---------------------------------------------------------
-   7. TALENT TREE DETAILS PANEL (Skills Chamber)
-   The "locked" bottom panel (talentNodeInfoRow, talentDetailsButtons,
-   talentSaveRow, talentTreeSaveStatus, talentNodeTradeoff,
-   talentDetailsClose) is absolute-positioned pixel math built
-   for a wide desktop card (up to 430px wide, positioned by
-   right-edge offsets). None of it was covered by the file's
-   own 760px media query, so on a phone it overflows the talent
-   tree modal instead of resizing. This does not change the
-   locked desktop behavior above 480px, it only adds a mobile
-   fallback that stacks the same pieces in normal document flow.
-   --------------------------------------------------------- */
+/* =========================================================
+   22. TALENT TREE DETAILS PANEL
+   ========================================================= */
 @media (max-width: 480px) {
   .talentNodeDetails {
     height: auto !important;
@@ -261,363 +800,23 @@
   }
 }
 
-/* ---------------------------------------------------------
-   8. PET TALK BUBBLE + ENERGY PANEL (Pet detail scene)
-   Both are fixed at 390px wide and centered with a hardcoded
-   translateX(-196px), which only works if the element is
-   exactly 390px. On a 384px-wide screen (Galaxy S22 Ultra and
-   similar) that math pushes the bubble off-screen on one side.
-   Swap to a real center transform and cap the width to the
-   viewport so it centers correctly at any size.
-   --------------------------------------------------------- */
-@media (max-width: 480px) {
-  .petRepoTalkBubble {
-    width: min(340px, calc(100% - 24px)) !important;
-    transform: none !important;
-    padding: 8px 18px !important;
-    font-size: 0.72rem !important;
-  }
-
-  .petRepoEnergyPanel {
-    left: 10px !important;
-    right: 10px !important;
-    width: auto !important;
-    transform: none !important;
-  }
-}
-
-/* ---------------------------------------------------------
-   9. HOMEPAGE SPOTLIGHT PANEL (the featured pet card)
-   .hp-spotlightPanel is deliberately set wider than its own
-   column on purpose, width: calc(100% + 100px) plus a 56px
-   left shift, to create a desktop bleed/shadow effect. None
-   of the file's four existing media queries ever reset this,
-   so on a phone the whole card renders 100px too wide and
-   shifted right, which is why stat text runs off the right
-   edge of the screen instead of wrapping. The internal grid
-   reflow at 980px was already correct, it just never had a
-   correctly sized box to reflow inside of.
-   --------------------------------------------------------- */
-@media (max-width: 980px) {
-  .hp-spotlightPanel {
-    width: 100% !important;
-    margin-left: 0 !important;
-  }
-
-  .hp-spotlightPanel .hp-panelHeader {
-    padding-left: 0 !important;
-  }
-
-  .hp-spotlightPanel .hp-panelTitle {
-    transform: none !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .hp-spotlightBody {
-    grid-template-columns: 1fr !important;
-    grid-template-areas:
-      "top"
-      "visual"
-      "content" !important;
-    justify-items: center !important;
-    text-align: center !important;
-    /* the locked blue-grid inner border sits 18px inset from the
-       panel edge and is 6px thick, so content needs at least 24px
-       of clearance to clear it, not touch or cross it. Left/right
-       bumped to 26px, this is the fix for the description text
-       overflowing into the inset border. Nothing about the border
-       itself, .dp-standard-panel-purple, is touched. */
-    padding: 1rem 26px 1.25rem !important;
-    transform: none !important;
-  }
-
-  .hp-spotlightTop,
-  .hp-spotlightIdentity {
-    justify-self: start !important;
-    text-align: left !important;
-  }
-
-  .hp-spotlightPanel .hp-panelBody.hp-spotlightBody {
-    padding: 1rem 28px 30px !important;
-  }
-
-  .hp-spotlightPanel .hp-spotlightContent {
+/* =========================================================
+   23. ARMORY
+   ========================================================= */
+@media (max-width: 430px) {
+  .armoryPage,
+  .armoryContainer,
+  .armoryPanel {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    margin-top: 1px !important;
-  }
-
-  .hp-spotlightText {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    overflow-wrap: break-word !important;
-    word-break: break-word !important;
-    font-size: 0.94rem !important;
-    line-height: 1.5 !important;
+    overflow-x: hidden !important;
   }
 }
 
-/* ---------------------------------------------------------
-   11. DELTA CLOCK (header time/phase box)
-   The phase label (NIGHT, DAY, DUSK, etc) was sitting right up
-   against the inner decorative border on mobile. This file had
-   no mobile coverage for the clock at all before this. Just
-   adding a bit of bottom breathing room, nothing else touched.
-   --------------------------------------------------------- */
-@media (max-width: 900px) {
-  .deltaClock {
-    padding-bottom: 14px !important;
-  }
-}
-
-/* ---------------------------------------------------------
-   13. PETS PAGE ROOT OFFSET (the whole page was pushed right)
-   .petRepoStage sets a 145px left offset for a desktop "Care
-   Room redesign" layout. That rule sits outside any media
-   query near the bottom of PetPage.css, after the file's own
-   mobile breakpoints that reset it to 0, so it silently wins
-   and re-applies the 150px push at every screen width,
-   including phones. This is the confirmed cause of the large
-   blank strip on the left of the entire pets page on mobile,
-   with every panel squeezed into the remaining width and
-   clipping on the right edge as a result. Nothing about the
-   desktop "Care Room" offset is touched, this only fires
-   under 920px, matching the breakpoint already used elsewhere
-   in that file for this exact class.
-   --------------------------------------------------------- */
-@media (max-width: 920px) {
-  .petRepoStage {
-    padding-left: 0 !important;
-    width: 100% !important;
-  }
-}
-
-/* ---------------------------------------------------------
-   14. GALAXY S22 ULTRA HARD TARGET (384 x 824 CSS viewport, DPR 3.75)
-   Everything above already covers this width through the 420 and
-   480 tiers. This block is a final safety net: nothing in the
-   game should ever force a horizontal scrollbar under 400px.
-   --------------------------------------------------------- */
-@media (max-width: 400px) {
-  html,
-  body {
-    overflow-x: hidden;
-  }
-
-  .appShell {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-}
-
-@media (max-width: 720px) {
-  .alpha-panel,
-  .alpha-header,
-  .alpha-body,
-  .alpha-table,
-  .alpha-patchView,
-  .alpha-patchTable {
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-
-  .alpha-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .alpha-title {
-    margin-left: 0;
-    text-align: center;
-  }
-
-  .alpha-button {
-    width: 100%;
-  }
-
-  .alpha-tableHeader,
-  .alpha-patchTableHeader {
-    display: none;
-  }
-
-  .alpha-row,
-  .alpha-patchTableRow {
-    grid-template-columns: 1fr;
-  }
-
-  .alpha-row > span,
-  .alpha-patchTableCell {
-    min-width: 0;
-    min-height: 0;
-    overflow-wrap: anywhere;
-  }
-
-  .alpha-row > span:not(:last-child),
-  .alpha-patchTableCell:not(:last-child) {
-    border-right: none;
-    border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
-  }
-
-  .alpha-row > span::before,
-  .alpha-patchTableCell::before {
-    display: block;
-    margin-bottom: 4px;
-    color: var(--dp-panel-muted);
-    font-size: 0.66rem;
-    font-weight: 900;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .alpha-row > span:nth-child(1)::before {
-    content: "System";
-  }
-
-  .alpha-row > span:nth-child(2)::before {
-    content: "Description";
-  }
-
-  .alpha-row > span:nth-child(3)::before {
-    content: "Date";
-  }
-
-  .alpha-patchTableCell:nth-child(1)::before {
-    content: "New";
-  }
-
-  .alpha-patchTableCell:nth-child(2)::before {
-    content: "Updated";
-  }
-
-  .alpha-patchTableCell:nth-child(3)::before {
-    content: "Fixed";
-  }
-
-  .alpha-patchTableCell:nth-child(4)::before {
-    content: "Notes";
-  }
-
-  .alpha-date {
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-  .kithnaEggTray {
-    width: 100%;
-    margin: 14px 0 0;
-    box-sizing: border-box;
-  }
-
-  .kithnaEggTrayGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 900px) {
-  .hatcheryPage {
-    width: 100%;
-    min-height: 0;
-  }
-
-  .hatcheryPage .panelHeader,
-  .hatcheryTopActions {
-    flex-wrap: wrap;
-  }
-
-  .hatcheryLeftColumn,
-  .storagePanel,
-  .rackPanelSide,
-  .selectedEggPanel,
-  .selectedEggStatsInset,
-  .incubationInsetPanel {
-    min-width: 0;
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 640px) {
-  .selectedEggPreviewArea {
-    height: min(420px, 105vw);
-    min-height: 0;
-    max-height: 420px;
-  }
-
-  .storagePetTooltip {
-    width: min(220px, calc(100vw - 48px));
-  }
-}
-
-@media (max-width: 420px) {
-  .compactStatsGrid,
-  .itemsGrid,
-  .eggGridCompact {
-    grid-template-columns: 1fr !important;
-  }
-
-  .hatcheryTopActions > * {
-    width: 100%;
-  }
-}
-@media (max-width: 920px) {
-  .petRepoHeroCard {
-    grid-template-columns: 1fr !important;
-  }
-
-  .petRepoHeroTextShifted {
-    transform: none !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-
-  .petRepoHeroStatus {
-    width: 100% !important;
-    max-width: none !important;
-    min-height: 0 !important;
-    box-sizing: border-box;
-  }
-
-  .petRepoFarmButtonWrap {
-    width: 100%;
-    margin-right: 0;
-    justify-content: center;
-  }
-
-  .mainTeamTitleShell {
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-  }
-}
-
-@media (max-width: 420px) {
-  .mainTeamTitleShell {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .mainTeamTitle {
-    min-width: 0;
-    gap: 8px;
-  }
-
-  .mainTeamTitle span:first-child,
-  .mainTeamTitle span:last-child {
-    transform: none;
-  }
-
-  .petRepoBondPanel {
-    grid-template-columns: 1fr;
-  }
-
-  .petRepoBondTitle {
-    text-align: center;
-    transform: none;
-  }
-}
+/* =========================================================
+   24. DEBUG OVERLAY / TOASTS / REWARDS BAR
+   ========================================================= */
 @media (max-width: 640px) {
   .debugOverlayPanel {
     left: 12px !important;
@@ -694,6 +893,7 @@
 }
 
 /* =========================================================
+<<<<<<< HEAD
    PHONE TARGET REFERENCE (CSS viewport widths)
    S22:        360px  <- design baseline
    iPhone 8:   375px
@@ -1845,5 +2045,247 @@
     overflow-x: hidden !important;
     width: 100% !important;
     position: relative !important;
+=======
+   25. ALPHA SYSTEMS TABLE
+   ========================================================= */
+@media (max-width: 720px) {
+  .alpha-panel,
+  .alpha-header,
+  .alpha-body,
+  .alpha-table,
+  .alpha-patchView,
+  .alpha-patchTable {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .alpha-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .alpha-title {
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .alpha-button {
+    width: 100%;
+  }
+
+  .alpha-tableHeader,
+  .alpha-patchTableHeader {
+    display: none;
+  }
+
+  .alpha-row,
+  .alpha-patchTableRow {
+    grid-template-columns: 1fr;
+  }
+
+  .alpha-row > span,
+  .alpha-patchTableCell {
+    min-width: 0;
+    min-height: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .alpha-row > span:not(:last-child),
+  .alpha-patchTableCell:not(:last-child) {
+    border-right: none;
+    border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
+  }
+
+  .alpha-row > span::before,
+  .alpha-patchTableCell::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--dp-panel-muted);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .alpha-row > span:nth-child(1)::before {
+    content: "System";
+  }
+  .alpha-row > span:nth-child(2)::before {
+    content: "Description";
+  }
+  .alpha-row > span:nth-child(3)::before {
+    content: "Date";
+  }
+  .alpha-patchTableCell:nth-child(1)::before {
+    content: "New";
+  }
+  .alpha-patchTableCell:nth-child(2)::before {
+    content: "Updated";
+  }
+  .alpha-patchTableCell:nth-child(3)::before {
+    content: "Fixed";
+  }
+  .alpha-patchTableCell:nth-child(4)::before {
+    content: "Notes";
+  }
+
+  .alpha-date {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
+}
+
+@media (max-width: 640px) {
+  .talentTreeGenesisTab {
+    display: none !important;
+  }
+}
+/* =========================================================
+   26. HATCHERY - Selected egg panel mobile reorder
+   On mobile, show eyebrow+name ABOVE the egg image.
+   selectedTextAbove is hidden on desktop (desktop uses the
+   existing selectedText overlay). selectedSubBelow shows
+   the countdown below the image in black text.
+   ========================================================= */
+.selectedTextAbove {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .selectedPreviewFilled {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .selectedTextAbove {
+    display: block;
+    text-align: center;
+    width: 100%;
+    order: 1;
+  }
+
+  .eggBigImg {
+    order: 2;
+  }
+
+  .selectedSubBelow {
+    order: 3;
+    color: #000000 !important;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+}
+
+/* =========================================================
+   27. SKILL TREE BOARD - Mobile scrollable viewport
+   ========================================================= */
+@media (max-width: 640px) {
+  .talentTreeBoard,
+  .talentTreeBoard--feral {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    height: min(520px, 65vh) !important;
+    min-height: 0 !important;
+  }
+
+  .talentTreeLegend {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .talentTreeLegend button {
+    flex: 1 1 auto !important;
+    min-width: 80px !important;
+    font-size: 0.72rem !important;
+    padding: 6px 8px !important;
+  }
+}
+
+/* =========================================================
+   28. ARMORY - Hide decorative accent on mobile
+   ========================================================= */
+@media (max-width: 640px) {
+  .petArmoryHeaderAccent {
+    display: none !important;
+  }
+}
+
+/* =========================================================
+   29. ARMORY CLOSET POPUP - Scroll clipping on mobile
+   ========================================================= */
+@media (max-width: 640px) {
+  .armoryClosetGrid {
+    max-height: min(360px, 45vh) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  .armoryClosetWindow {
+    width: min(calc(100vw - 24px), 480px) !important;
+  }
+
+  .armoryClosetToolbar {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+/* =========================================================
+   30. PROGRESS PANEL - New class names + mobile sizing
+   ========================================================= */
+@media (max-width: 640px) {
+  .kithProgressCard__panelTitle {
+    font-family: var(--font-heading) !important;
+    color: var(--dp-title-gold) !important;
+    font-size: clamp(1.3rem, 5vw, 1.8rem) !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    text-shadow: 0 0 12px rgba(255, 217, 77, 0.28) !important;
+  }
+
+  .kithProgressCard__petName {
+    font-family: var(--font-accent) !important;
+    font-size: clamp(1rem, 4vw, 1.3rem) !important;
+  }
+
+  .kithProgressCard {
+    padding-inline: 24px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* =========================================================
+   31. STATS CHAMBER - Modifier badge mobile safety
+   ========================================================= */
+@media (max-width: 380px) {
+  .statsChamber .petRepoInfoRow {
+    padding: 0 8px !important;
+    gap: 6px !important;
+  }
+
+  .statsChamber .petRepoStatMod {
+    font-size: 0.7rem !important;
+    padding: 1px 4px !important;
+  }
+}
+
+/* =========================================================
+   32. INVENTORY POPUP - Mobile height and rewards visibility
+   ========================================================= */
+@media (max-width: 640px) {
+  .dpPopupWindow.dpPopupWindow--compact {
+    max-height: min(640px, calc(100vh - 40px)) !important;
+    overflow: hidden !important;
+  }
+
+  .dpPopupWindowContent.inventoryModal {
+    max-height: min(580px, calc(100vh - 80px)) !important;
+    overflow-y: auto !important;
+    padding: 18px !important;
   }
 }

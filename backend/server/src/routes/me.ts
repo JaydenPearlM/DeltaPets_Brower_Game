@@ -2,7 +2,7 @@
 
 import { Router } from "express";
 import type { Response } from "express";
-import { requireUser, type AuthedRequest } from "../middleware/auth";
+import { requireUser, type AuthedRequest } from "../pets/middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 import { logger } from "../lib/logger";
 

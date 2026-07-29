@@ -411,8 +411,8 @@
 .talentNode {
   position: absolute;
   z-index: 2;
-  width: 138px;
-  min-height: 120px;
+  width: 124px;
+  min-height: 106px;
   transform: translate(-50%, -50%);
   padding: 0;
   border: 0;
@@ -440,10 +440,10 @@
   display: flex !important;
   align-items: center;
   justify-content: center;
-  width: 58px;
-  height: 58px;
+  width: 50px;
+  height: 50px;
   border: 2px solid rgba(77, 234, 255, 0.42);
-  border-radius: 14px;
+  border-radius: 12px;
   background:
     radial-gradient(circle at top, rgba(255, 216, 76, 0.14), transparent 44%),
     linear-gradient(145deg, #274e7c, #102d55, #06162c);
@@ -1122,31 +1122,34 @@
 }
 /* =========================================================
    FIX: all talent paths use the same fixed board height
-   Keep Feral, Aegis, Majo, and Genesis visually identical.
+   Keep Feral, Aegis, Majo, and Hybrid visually identical.
 ========================================================= */
 
 .skillTreeModal {
-  --talent-board-fixed-height: 800px;
+  --talent-board-fixed-height: 720px;
 }
 
 .skillTreeModal .talentTreeBoard,
 .skillTreeModal .talentTreeBoard--feral,
 .skillTreeModal .talentTreeBoard--aegis,
 .skillTreeModal .talentTreeBoard--majo,
-.skillTreeModal .talentTreeBoard--genesis {
+.skillTreeModal .talentTreeBoard--hybrid {
   height: var(--talent-board-fixed-height) !important;
   min-height: var(--talent-board-fixed-height) !important;
   max-height: var(--talent-board-fixed-height) !important;
   overflow: hidden !important;
 }
 
-/* Stop mobile/responsive rules from making one path shorter/taller. */
 @media (max-width: 760px) {
+  .skillTreeModal {
+    --talent-board-fixed-height: 800px;
+  }
+
   .skillTreeModal .talentTreeBoard,
   .skillTreeModal .talentTreeBoard--feral,
   .skillTreeModal .talentTreeBoard--aegis,
   .skillTreeModal .talentTreeBoard--majo,
-  .skillTreeModal .talentTreeBoard--genesis {
+  .skillTreeModal .talentTreeBoard--hybrid {
     height: var(--talent-board-fixed-height) !important;
     min-height: var(--talent-board-fixed-height) !important;
     max-height: var(--talent-board-fixed-height) !important;

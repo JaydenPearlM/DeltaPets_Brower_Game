@@ -3,16 +3,20 @@ import fs from "node:fs";
 import path from "node:path";
 import helmet from "helmet";
 import { healthRouter } from "./routes/health";
-import { authRouter, publicAuthRouter, requireUser } from "./middleware/auth";
+import {
+  authRouter,
+  publicAuthRouter,
+  requireUser,
+} from "./pets/middleware/auth";
 import {
   apiLimiter,
   apiSpeedLimiter,
   authLimiter,
-} from "./middleware/rateLimit";
+} from "./pets/middleware/rateLimit";
 import { apiRouter } from "./routes";
 import { worldRouter } from "./routes/world/world";
 import { alphaAccessRouter } from "./routes/alphaAccess/alphaAccess";
-import { errorHandler } from "./middleware/errorHandler";
+import { errorHandler } from "./pets/middleware/errorHandler";
 import { debugRouter } from "./routes/debug/debugRoutes";
 import { env } from "./env.server";
 

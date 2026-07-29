@@ -4,8 +4,8 @@
 // ========================================
 
 import { Router, Response } from "express";
-import { requireUser, type AuthedRequest } from "../../middleware/auth";
-import { validateBody } from "../../middleware/validateRequest";
+import { requireUser, type AuthedRequest } from "../../pets/middleware/auth";
+import { validateBody } from "../../pets/middleware/validateRequest";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { rollIV, sumStats } from "../../lib/stats/individualValues";
 import { applyCareDecay } from "../../shared/pets/care/CareDecay";

@@ -16,8 +16,12 @@ type SkillTreeProps = {
 };
 
 type TalentRanks = Partial<Record<TalentNodeId, number>>;
-
-const ACTIVE_TALENT_TREE_KEYS: TalentTreeKey[] = ["feral", "aegis", "majo"];
+const ACTIVE_TALENT_TREE_KEYS: TalentTreeKey[] = [
+  "feral",
+  "aegis",
+  "majo",
+  "hybrid",
+];
 
 const ROW_UNLOCK_THRESHOLDS: Record<number, number> = {
   1: 0,
@@ -334,10 +338,6 @@ export default function SkillTree({ pet, onClose }: SkillTreeProps) {
             {TALENT_TREE_LABELS[treeKey]}
           </button>
         ))}
-
-        <button type="button" disabled>
-          {TALENT_TREE_LABELS.genesis}
-        </button>
       </div>
 
       {activeTreeNodes.length <= 0 ? (

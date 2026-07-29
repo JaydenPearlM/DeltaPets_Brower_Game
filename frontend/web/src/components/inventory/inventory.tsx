@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
+import carePackageImage from "@/Pets_Creation/assets/present/ChatGPT Image Jul 24, 2026, 12_57_06 PM.png";
 import "./inventory.css";
 
 // Backend-tracked items (GET /api/inventory). Separate from the local
@@ -15,6 +17,18 @@ export type BackendInventoryItem = {
   effects: Record<string, unknown>;
   qty: number;
   updatedAt: string;
+};
+
+type ClosedAlphaCarePackageItem = InventoryItemDefinition & {
+  qty: number;
+};
+
+type ClosedAlphaCarePackageResponse = {
+  opened: true;
+  wallet: {
+    dots: number;
+  };
+  careItems: ClosedAlphaCarePackageItem[];
 };
 
 export type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
@@ -51,7 +65,7 @@ type InventoryStorageState = {
 // seeds when this key is completely absent, so a stale v1 blob (even one
 // sitting at all zeros) would otherwise block them forever. Old v1 data
 // is simply orphaned in localStorage, harmless, nothing reads it anymore.
-const INVENTORY_STORAGE_KEY = "deltapets:care-inventory:v2";
+const INVENTORY_STORAGE_KEY = "deltapets:care-inventory:v3";
 const INVENTORY_CHANGE_EVENT = "deltapets:care-inventory-change";
 
 // Fixed bag size for now. Later this becomes level-gated and expandable by
@@ -203,18 +217,9 @@ export function getInventoryChangeEventName() {
 // play were permanently unusable for every player, since nothing else in
 // the app ever legitimately added a care item. This seeds a small starting
 // stock instead of an empty shell.
-const STARTER_CARE_ITEM_QTY = 5;
-
 export function ensureStarterCareInventory() {
   if (window.localStorage.getItem(INVENTORY_STORAGE_KEY)) return;
-
   writeInventoryState(emptyInventoryState());
-
-  (Object.keys(CARE_ITEM_DEFINITIONS) as CareInventoryCategory[]).forEach(
-    (category) => {
-      addInventoryItem(CARE_ITEM_DEFINITIONS[category], STARTER_CARE_ITEM_QTY);
-    },
-  );
 }
 
 export function getInventoryItems() {
@@ -308,11 +313,34 @@ export function consumeCareItem(category: CareInventoryCategory, amount = 1) {
   return consumeInventoryItem(item.slug, amount);
 }
 
+function getPlayerName(user: any) {
+  const meta = user?.user_metadata ?? {};
+  const fromMeta =
+    meta.username || meta.display_name || meta.displayName || meta.name;
+
+  if (typeof fromMeta === "string" && fromMeta.trim()) return fromMeta.trim();
+
+  const email = user?.email;
+  if (typeof email === "string" && email.includes("@")) {
+    return email.split("@")[0];
+  }
+
+  return "Traveler";
+}
+
+type InventoryWallet = {
+  dots: number;
+  crystals: number;
+};
+
 type InventoryProps = {
   onClose: () => void;
 };
 
 export default function Inventory({ onClose }: InventoryProps) {
+  const { user } = useAuth();
+  const playerName = useMemo(() => getPlayerName(user), [user]);
+
   const [inventoryItems, setInventoryItems] = useState(() =>
     getInventoryItems(),
   );
@@ -321,6 +349,14 @@ export default function Inventory({ onClose }: InventoryProps) {
   const [backendItems, setBackendItems] = useState<BackendInventoryItem[]>([]);
   const [backendLoading, setBackendLoading] = useState(true);
   const [backendError, setBackendError] = useState("");
+  const [, setWallet] = useState<InventoryWallet>({
+    dots: 0,
+    crystals: 0,
+  });
+  const [openingCarePackage, setOpeningCarePackage] = useState(false);
+  const [carePackageClickReady, setCarePackageClickReady] = useState(false);
+  const [showCarePackageNotice, setShowCarePackageNotice] = useState(false);
+  const [carePackageMessage, setCarePackageMessage] = useState("");
 
   useEffect(() => {
     const handleInventoryChange = () => {
@@ -346,11 +382,27 @@ export default function Inventory({ onClose }: InventoryProps) {
       setBackendError("");
 
       try {
-        const json = await apiFetch<{ items: BackendInventoryItem[] }>(
-          "/api/inventory",
-        );
+        const json = await apiFetch<{
+          items: BackendInventoryItem[];
+          wallet: InventoryWallet;
+        }>("/api/inventory");
+
         if (!cancelled) {
-          setBackendItems(json.items ?? []);
+          const nextBackendItems = json.items ?? [];
+
+          setBackendItems(nextBackendItems);
+          setWallet(
+            json.wallet ?? {
+              dots: 0,
+              crystals: 0,
+            },
+          );
+
+          setShowCarePackageNotice(
+            nextBackendItems.some(
+              (item) => item.slug === "closed-alpha-care-package",
+            ),
+          );
         }
       } catch (err) {
         if (!cancelled) {
@@ -372,6 +424,52 @@ export default function Inventory({ onClose }: InventoryProps) {
     };
   }, []);
 
+  async function openClosedAlphaCarePackage() {
+    if (openingCarePackage) return;
+
+    setOpeningCarePackage(true);
+    setCarePackageMessage("");
+
+    try {
+      const result = await apiFetch<ClosedAlphaCarePackageResponse>(
+        "/api/inventory/open-closed-alpha-care-package",
+        { method: "POST" },
+      );
+
+      result.careItems.forEach(({ qty, ...item }) => {
+        addInventoryItem(item, qty);
+      });
+
+      setBackendItems((items) =>
+        items.filter((item) => item.slug !== "closed-alpha-care-package"),
+      );
+
+      setShowCarePackageNotice(false);
+      setCarePackageClickReady(false);
+
+      setCarePackageMessage(
+        `Care Package opened! You received 50 Meat, 50 Vegetables, 50 Clean, 50 Mood, 50 Comfort, and 1,000 Dots. Balance: ${result.wallet.dots.toLocaleString()} Dots.`,
+      );
+    } catch (err) {
+      setCarePackageMessage(
+        err instanceof Error ? err.message : "Failed to open care package.",
+      );
+    } finally {
+      setOpeningCarePackage(false);
+    }
+  }
+
+  function handleCarePackageClick() {
+    if (openingCarePackage) return;
+
+    if (!carePackageClickReady) {
+      setCarePackageClickReady(true);
+      return;
+    }
+
+    void openClosedAlphaCarePackage();
+  }
+
   const sortedInventoryItems = useMemo(
     () =>
       [...inventoryItems].sort((firstItem, secondItem) =>
@@ -391,9 +489,11 @@ export default function Inventory({ onClose }: InventoryProps) {
   // added.
   const inventorySlots = useMemo(() => {
     const slots: (InventoryItemRecord | null)[] = [...visibleInventoryItems];
+
     while (slots.length < MAX_INVENTORY_SLOTS) {
       slots.push(null);
     }
+
     return slots.slice(
       0,
       Math.max(MAX_INVENTORY_SLOTS, visibleInventoryItems.length),
@@ -410,6 +510,37 @@ export default function Inventory({ onClose }: InventoryProps) {
 
   return (
     <section className="inventoryPanel" aria-label="Inventory">
+      {showCarePackageNotice ? (
+        <div
+          className="inventoryCarePackageNotice"
+          role="alertdialog"
+          aria-modal="true"
+          aria-label="Closed Alpha Care Package"
+        >
+          <div className="inventoryCarePackageNoticeCard">
+            <p className="inventoryCarePackageStillHere">
+              This is for all of you who are actively testing.
+            </p>
+
+            <h2 className="inventoryCarePackageThankYou">
+              Thank you for joining this journey with me, {playerName}!
+            </h2>
+
+            <p className="inventoryCarePackageJourney">
+              Can not wait to see what lies ahead.
+            </p>
+
+            <button
+              type="button"
+              className="dp-btn--close"
+              onClick={() => setShowCarePackageNotice(false)}
+            >
+              Get Gift
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <header className="inventoryHeader">
         <div className="inventoryHeaderRow">
           <h2>Inventory</h2>
@@ -458,6 +589,63 @@ export default function Inventory({ onClose }: InventoryProps) {
         </p>
       </header>
 
+      {sortedBackendItems.some(
+        (item) => item.slug === "closed-alpha-care-package",
+      ) ? (
+        <>
+          <p className="inventorySectionLabel inventorySectionLabel--rewards">
+            Rewards
+          </p>
+
+          <div
+            className="inventoryGrid inventoryGrid--rewards"
+            aria-label="Reward items"
+          >
+            {sortedBackendItems
+              .filter((item) => item.slug === "closed-alpha-care-package")
+              .map((item) => (
+                <article
+                  className="inventoryItemCard inventoryCarePackageCard"
+                  key={item.slug}
+                >
+                  <div className="inventoryCarePackageReward">
+                    <button
+                      type="button"
+                      className="inventoryCarePackageButton"
+                      disabled={openingCarePackage}
+                      onClick={handleCarePackageClick}
+                      aria-label="Closed Alpha Care Package"
+                    >
+                      <span className="inventoryCarePackageImageWrap">
+                        <img
+                          className="inventoryCarePackageImage"
+                          src={carePackageImage}
+                          alt="Closed Alpha Care Package present"
+                        />
+
+                        <span className="inventoryCarePackageQty">
+                          ×{item.qty}
+                        </span>
+                      </span>
+
+                      <span className="inventoryCarePackageHint" role="tooltip">
+                        <strong>Closed Alpha Care Package</strong>
+                        <span>Thank you!</span>
+                      </span>
+                    </button>
+
+                    {carePackageClickReady ? (
+                      <p className="inventoryCarePackageTapHint" role="status">
+                        Tap again to open.
+                      </p>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+          </div>
+        </>
+      ) : null}
+
       <p className="inventorySectionLabel">
         Items ({visibleInventoryItems.length}/{MAX_INVENTORY_SLOTS})
       </p>
@@ -474,6 +662,7 @@ export default function Inventory({ onClose }: InventoryProps) {
                   <p className="inventoryItemType">{item.type}</p>
                   <h3>{item.name}</h3>
                 </div>
+
                 <span className="inventoryItemQty">×{item.qty}</span>
               </div>
 
@@ -495,41 +684,71 @@ export default function Inventory({ onClose }: InventoryProps) {
         )}
       </div>
 
-      <p className="inventorySectionLabel">Rewards</p>
+      {(() => {
+        const nonPackageItems = sortedBackendItems.filter(
+          (item) => item.slug !== "closed-alpha-care-package",
+        );
 
-      {backendLoading ? (
-        <div className="inventoryEmpty" role="status">
-          <p>Loading rewards...</p>
-        </div>
-      ) : backendError ? (
-        <div className="inventoryEmpty" role="status">
-          <p className="inventoryEmptyTitle">Couldn't load rewards.</p>
-          <p>{backendError}</p>
-        </div>
-      ) : sortedBackendItems.length > 0 ? (
-        <div className="inventoryGrid" aria-label="Reward items">
-          {sortedBackendItems.map((item) => (
-            <article className="inventoryItemCard" key={item.slug}>
-              <div className="inventoryItemCardHeader">
-                <div>
-                  <p className="inventoryItemType">{item.type}</p>
-                  <h3>{item.name}</h3>
-                </div>
-                <span className="inventoryItemQty">×{item.qty}</span>
+        if (backendLoading) {
+          return (
+            <>
+              <p className="inventorySectionLabel">Rewards</p>
+              <div className="inventoryEmpty" role="status">
+                <p>Loading rewards...</p>
               </div>
+            </>
+          );
+        }
 
-              {item.description ? (
-                <p className="inventoryItemDescription">{item.description}</p>
-              ) : null}
-            </article>
-          ))}
-        </div>
-      ) : (
-        <div className="inventoryEmpty" role="status">
-          <p className="inventoryEmptyTitle">No rewards claimed yet.</p>
-          <p>Weekly reward items you claim will show up here.</p>
-        </div>
-      )}
+        if (backendError) {
+          return (
+            <>
+              <p className="inventorySectionLabel">Rewards</p>
+              <div className="inventoryEmpty" role="status">
+                <p className="inventoryEmptyTitle">Couldn't load rewards.</p>
+                <p>{backendError}</p>
+              </div>
+            </>
+          );
+        }
+
+        if (nonPackageItems.length === 0) return null;
+
+        return (
+          <>
+            <p className="inventorySectionLabel">Rewards</p>
+            <div
+              className="inventoryGrid inventoryGrid--rewards"
+              aria-label="Reward items"
+            >
+              {nonPackageItems.map((item) => (
+                <article className="inventoryItemCard" key={item.slug}>
+                  <div className="inventoryItemCardHeader">
+                    <div>
+                      <p className="inventoryItemType">{item.type}</p>
+                      <h3>{item.name}</h3>
+                    </div>
+
+                    <span className="inventoryItemQty">×{item.qty}</span>
+                  </div>
+
+                  {item.description ? (
+                    <p className="inventoryItemDescription">
+                      {item.description}
+                    </p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </>
+        );
+      })()}
+
+      {carePackageMessage ? (
+        <p className="inventoryCarePackageMessage" role="status">
+          {carePackageMessage}
+        </p>
+      ) : null}
 
       <div className="inventoryFooter">
         <button

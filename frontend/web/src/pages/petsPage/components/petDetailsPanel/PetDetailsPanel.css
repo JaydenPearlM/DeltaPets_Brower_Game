@@ -2286,4 +2286,51 @@
   .petRepoEnergyTrack {
     min-width: 0;
   }
+}/* =============================================================
+   MOBILE FIXES - S22 - DO NOT EDIT ABOVE THIS LINE
+   ============================================================= */
+
+/* Fix 1: Care card padding clears the 18px inset border on mobile */
+@media (max-width: 640px) {
+  .petRepoCareCard {
+    padding: 22px;
+  }
+
+  /* Fix 2: Energy bar smaller + stays inside inset border */
+  .petRepoEnergyPanel {
+    left: 22px !important;
+    right: 22px !important;
+    bottom: 38px !important;
+    width: auto !important;
+    transform: none !important;
+    box-sizing: border-box;
+  }
+
+  .petRepoEnergyTrack {
+    height: 10px;
+  }
+
+  .petRepoEnergyTitle {
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* Fix 3: Scene orb background pushed forward to remove gap */
+  .petRepoSceneOrb {
+    overflow: visible;
+  }
+
+  .petRepoScenePlatformWrap {
+    height: 120px;
+  }
+
+  .petRepoSceneWallLeft,
+  .petRepoSceneWallRight {
+    height: 110%;
+  }
+
+  /* Fix 4: Care status panel content 10px clear of its inset border */
+  .petRepoCareStatusPanel {
+    padding: 22px;
+  }
 }

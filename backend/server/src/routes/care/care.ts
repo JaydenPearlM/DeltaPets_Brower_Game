@@ -4,7 +4,7 @@ import { Router } from "express";
 import type { NextFunction, Response } from "express";
 import { safeNum } from "../../lib/utils";
 import { logger } from "../../lib/logger";
-import { requireUser, type AuthedRequest } from "../../middleware/auth";
+import { requireUser, type AuthedRequest } from "../../pets/middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
 import { fetchActivePet } from "../routePets/petsRepo";

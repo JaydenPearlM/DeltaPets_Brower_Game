@@ -282,7 +282,6 @@ function StoragePetCard(props: {
 
 export function PetStoragePanel(props: PetStoragePanelProps) {
   const { userId, refreshSignal, onStorageChanged } = props;
-
   const [filter, setFilter] = useState<StorageStageFilter>("all");
   const [search, setSearch] = useState("");
   const [selectedPartySlot, setSelectedPartySlot] = useState<number | null>(1);
