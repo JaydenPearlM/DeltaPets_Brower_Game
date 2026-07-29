@@ -40,6 +40,14 @@ export type StoragePet = {
   spd?: number | null;
   mana?: number | null;
   personality_key?: string | null;
+  passive_trait_id?: string | null;
+  passive_trait_key?: string | null;
+  passive_trait_name?: string | null;
+  passive_trait_rarity?: string | null;
+  passive_trait_description?: string | null;
+  passive_trait_effect_summary?: string | null;
+  passive_trait_effects?: Record<string, unknown> | null;
+  passive_trait_stat_key?: string | null;
   base_total?: number | null;
   pending_hatch_minutes?: number | null;
 };

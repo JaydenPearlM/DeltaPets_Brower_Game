@@ -344,7 +344,9 @@ petsRouter.get(
       }
 
       const normalizedPet = normalizePetForClient(pet);
-      const hydratedPet = normalizePetForClient(applyCareDecay(normalizedPet));
+      const hydratedPet = await hydrateHatchedPassiveTrait(
+        normalizePetForClient(applyCareDecay(normalizedPet)),
+      );
 
       const careChanged =
         hydratedPet.hunger !== normalizedPet.hunger ||

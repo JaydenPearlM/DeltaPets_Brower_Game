@@ -73,6 +73,7 @@ export async function insertBaseStats(petId: string, s: BaseStatsTemplate) {
 }
 
 /**
+/**
  * IMPORTANT:
  * Level 1 allocation = your IV roll (7 points).
  * So we MUST include level >= 1, not just > 1.
@@ -104,21 +105,86 @@ export async function fetchAllocTotals(petId: string) {
 }
 
 export async function fetchTotalPoints(petId: string) {
-  const [base, alloc] = await Promise.all([
+  const [base, alloc, petResult] = await Promise.all([
     fetchBaseStatsMapped(petId),
     fetchAllocTotals(petId),
+    supabaseAdmin
+      .from("pets")
+      .select("passive_trait_id, passive_trait_key")
+      .eq("id", petId)
+      .maybeSingle(),
   ]);
 
   if (!base) return null;
+  if (petResult.error) throw petResult.error;
 
-  // base(10) + iv(7) => total points 17 at level 1
+  let passiveEffects: Record<string, unknown> = {};
+
+  if (petResult.data?.passive_trait_id || petResult.data?.passive_trait_key) {
+    let passiveTraitQuery = supabaseAdmin
+      .from("passive_traits")
+      .select("effects")
+      .eq("is_active", true);
+
+    if (petResult.data.passive_trait_id) {
+      passiveTraitQuery = passiveTraitQuery.eq(
+        "id",
+        petResult.data.passive_trait_id,
+      );
+    } else {
+      passiveTraitQuery = passiveTraitQuery.eq(
+        "key",
+        petResult.data.passive_trait_key,
+      );
+    }
+
+    const passiveTraitResult = await passiveTraitQuery.maybeSingle();
+
+    if (passiveTraitResult.error) throw passiveTraitResult.error;
+
+    if (
+      passiveTraitResult.data?.effects &&
+      typeof passiveTraitResult.data.effects === "object" &&
+      !Array.isArray(passiveTraitResult.data.effects)
+    ) {
+      passiveEffects = passiveTraitResult.data.effects as Record<
+        string,
+        unknown
+      >;
+    }
+  }
+
+  const passiveHp = Number(passiveEffects.hp ?? 0);
+  const passiveAtk = Number(passiveEffects.atk ?? 0);
+  const passiveMagi = Number(passiveEffects.magi ?? 0);
+  const passiveDef = Number(passiveEffects.def ?? 0);
+  const passiveSpd = Number(passiveEffects.spd ?? 0);
+  const passiveMana = Number(passiveEffects.mana ?? 0);
+
+  // base(10) + iv(7) + passive trait => total points at level 1
   const total = {
-    hp: (base.hp ?? 0) + alloc.hp,
-    atk: (base.atk ?? 0) + alloc.atk,
-    magi: (base.magi ?? 0) + alloc.magi,
-    def: (base.def ?? 0) + alloc.def,
-    spd: (base.spd ?? 0) + alloc.spd,
-    mana: (base.mana ?? 0) + (alloc.mana ?? 0),
+    hp:
+      (base.hp ?? 0) + alloc.hp + (Number.isFinite(passiveHp) ? passiveHp : 0),
+    atk:
+      (base.atk ?? 0) +
+      alloc.atk +
+      (Number.isFinite(passiveAtk) ? passiveAtk : 0),
+    magi:
+      (base.magi ?? 0) +
+      alloc.magi +
+      (Number.isFinite(passiveMagi) ? passiveMagi : 0),
+    def:
+      (base.def ?? 0) +
+      alloc.def +
+      (Number.isFinite(passiveDef) ? passiveDef : 0),
+    spd:
+      (base.spd ?? 0) +
+      alloc.spd +
+      (Number.isFinite(passiveSpd) ? passiveSpd : 0),
+    mana:
+      (base.mana ?? 0) +
+      (alloc.mana ?? 0) +
+      (Number.isFinite(passiveMana) ? passiveMana : 0),
   };
 
   const total_points =
