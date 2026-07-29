@@ -2045,7 +2045,10 @@
     overflow-x: hidden !important;
     width: 100% !important;
     position: relative !important;
-=======
+  }
+}
+
+/* =========================================================
    25. ALPHA SYSTEMS TABLE
    ========================================================= */
 @media (max-width: 720px) {
