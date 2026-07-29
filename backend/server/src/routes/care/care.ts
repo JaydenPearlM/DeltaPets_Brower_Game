@@ -364,6 +364,15 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
               source.sprite_url ||
               source.image_url ||
               null,
+            passive_trait_id: source.passive_trait_id ?? null,
+            passive_trait_key: source.passive_trait_key ?? null,
+            passive_trait_name: source.passive_trait_name ?? null,
+            passive_trait_rarity: source.passive_trait_rarity ?? null,
+            passive_trait_description: source.passive_trait_description ?? null,
+            passive_trait_effect_summary:
+              source.passive_trait_effect_summary ?? null,
+            passive_trait_effects: source.passive_trait_effects ?? null,
+            passive_trait_stat_key: source.passive_trait_stat_key ?? null,
           };
         })
         .filter(Boolean);

@@ -77,6 +77,14 @@ type TeamCardPet = {
   spd?: number | null;
   personality?: string | null;
   personality_key?: string | null;
+  passive_trait_id?: string | null;
+  passive_trait_key?: string | null;
+  passive_trait_name?: string | null;
+  passive_trait_rarity?: string | null;
+  passive_trait_description?: string | null;
+  passive_trait_effect_summary?: string | null;
+  passive_trait_effects?: Record<string, unknown> | null;
+  passive_trait_stat_key?: string | null;
 };
 
 type StarterMerchantState = {
@@ -630,6 +638,16 @@ export default function PetPage() {
             spd: teamPet.spd ?? null,
             personality_key:
               teamPet.personality_key ?? teamPet.personality ?? null,
+            passive_trait_id: teamPet.passive_trait_id ?? null,
+            passive_trait_key: teamPet.passive_trait_key ?? null,
+            passive_trait_name: teamPet.passive_trait_name ?? null,
+            passive_trait_rarity: teamPet.passive_trait_rarity ?? null,
+            passive_trait_description:
+              teamPet.passive_trait_description ?? null,
+            passive_trait_effect_summary:
+              teamPet.passive_trait_effect_summary ?? null,
+            passive_trait_effects: teamPet.passive_trait_effects ?? null,
+            passive_trait_stat_key: teamPet.passive_trait_stat_key ?? null,
           }
         : null;
 
@@ -859,7 +877,7 @@ export default function PetPage() {
 
           <section className="petRepoBottomGrid">
             <StatsChamber
-              pet={viewedPet ?? pet}
+              pet={viewedPet?.id === pet?.id ? pet : (viewedPet ?? pet)}
               petLabel={viewedPetLabel}
               totalStats={totalStats}
               elementRows={elementRows}
