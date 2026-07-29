@@ -6,7 +6,7 @@
 
 import { Router, Response } from "express";
 import { randomInt as cryptoRandomInt } from "node:crypto";
-import { requireUser, type AuthedRequest } from "../../../middleware/auth";
+import { requireUser, type AuthedRequest } from "../../../pets/middleware/auth";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { logger } from "../../../lib/logger";
 import { getDeltaTime } from "../../../lib/deltaTime";
@@ -21,7 +21,8 @@ export const kithnaRouter = Router();
 
 // Alpha tuning. Move to game_config later if this needs to be adjustable
 // without a redeploy.
-const ROAM_FIND_CHANCE_PERCENT = 100; // alpha testing: guaranteed Kithna egg finds
+const ROAM_FIND_CHANCE_PERCENT = 45;
+const MERCHANT_FIND_CHANCE_PERCENT = 15;
 const ROAM_COOLDOWN_MS = 60_000; // 60 seconds between rolls per user
 
 // Lost Kith Registry tuning.

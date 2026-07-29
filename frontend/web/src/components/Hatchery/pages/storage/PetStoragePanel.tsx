@@ -281,7 +281,7 @@ function StoragePetCard(props: {
 }
 
 export function PetStoragePanel(props: PetStoragePanelProps) {
-  const { userId } = props;
+  const { userId, onStorageChanged } = props;
 
   const [filter, setFilter] = useState<StorageStageFilter>("all");
   const [search, setSearch] = useState("");
@@ -309,7 +309,10 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
     moveEggToIncubator,
     normalizeStage,
     caps,
-  } = usePetStorage({ userId });
+  } = usePetStorage({
+    userId,
+    onMutated: onStorageChanged,
+  });
 
   const filteredPets = useMemo(() => {
     const q = search.trim().toLowerCase();

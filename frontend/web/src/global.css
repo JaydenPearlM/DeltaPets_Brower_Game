@@ -4,6 +4,8 @@
   --font-body: "Inter", system-ui, sans-serif;
   --font-display: "New Rocker", cursive;
   --font-accent: "Space Grotesk", sans-serif;
+  --font-pet-name: var(--font-display);
+  --dp-font-display: var(--font-display);
 
   /* warm background */
   --bg-page: #efe1b8;

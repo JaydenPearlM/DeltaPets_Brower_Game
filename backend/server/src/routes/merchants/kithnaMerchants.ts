@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { requireUser, type AuthedRequest } from "../../middleware/auth";
+
+import { requireUser, type AuthedRequest } from "../../pets/middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 
 export const kithnaMerchantsRouter = Router();

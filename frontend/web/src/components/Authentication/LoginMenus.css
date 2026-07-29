@@ -305,13 +305,14 @@
   }
 
   .auth-actions--bottomLeft {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
   }
 
-  .auth-submitButton,
-  .auth-inlineClose {
-    width: 100%;
+  .auth-actions--bottomLeft .auth-submitButton {
+    flex: 1;
   }
 }
 .auth-submitButton {

@@ -1378,10 +1378,18 @@
   color: var(--dp-panel-text);
 }
 
+/* NEW */
 .petRepoStage {
   --petRepo-left-offset: 145px;
   width: 100%;
   padding-left: var(--petRepo-left-offset);
+}
+
+@media (max-width: 920px) {
+  .petRepoStage {
+    --petRepo-left-offset: 0px;
+    padding-left: 0;
+  }
 }
 
 .petRepoHeroCard,
@@ -2004,4 +2012,56 @@
   color: #f28b82;
   font-size: 13px;
   text-align: center;
+}
+@media (max-width: 920px) {
+  .petRepoStage {
+    --petRepo-left-offset: 0px;
+    padding-left: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 430px) {
+  .petRepoPage {
+    padding-left: 0;
+    padding-right: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .petRepoHeroCard {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 20px;
+  }
+
+  .petRepoHeroText {
+    transform: none;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .petRepoHeroStatus {
+    width: 100%;
+    max-width: 100%;
+    min-height: 90px;
+    padding: 16px 20px;
+    box-sizing: border-box;
+  }
+
+  .petRepoTitle {
+    font-size: clamp(1.6rem, 7vw, 2.2rem);
+    line-height: 1.1;
+  }
+
+  .petRepoMainGrid,
+  .petRepoBottomGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .petRepoTeamGrid {
+    grid-template-columns: 1fr;
+  }
 }

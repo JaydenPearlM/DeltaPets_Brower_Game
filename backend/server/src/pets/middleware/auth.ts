@@ -2,8 +2,8 @@
 
 import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
-import { supabaseAdmin } from "../lib/supabaseAdmin";
-import { logger } from "../lib/logger";
+import { supabaseAdmin } from "../../lib/supabaseAdmin";
+import { logger } from "../../lib/logger";
 
 export type AuthedRequest = Request & {
   user?: {

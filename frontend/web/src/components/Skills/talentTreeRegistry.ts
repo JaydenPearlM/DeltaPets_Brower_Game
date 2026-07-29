@@ -1,8 +1,9 @@
 import { FERAL_NODES } from "./talentTrees/feralPath";
 import { AEGIS_NODES } from "./talentTrees/aegisPath";
 import { MAJO_NODES } from "./talentTrees/majoPath";
+import { HYBRID_NODES } from "./talentTrees/hybridPath";
 
-export type TalentTreeKey = "feral" | "aegis" | "majo" | "genesis";
+export type TalentTreeKey = "feral" | "aegis" | "majo" | "hybrid";
 export type TalentNodeTree = TalentTreeKey;
 
 export type TalentBranch =
@@ -110,11 +111,12 @@ export const TALENT_TREE_LABELS: Record<TalentTreeKey, string> = {
   feral: "Feral Path",
   aegis: "Aegis Path",
   majo: "Majo Path",
-  genesis: "Genesis Path",
+  hybrid: "Hybrid Path",
 };
 
 export const TALENT_NODES: TalentNode[] = [
   ...FERAL_NODES,
   ...AEGIS_NODES,
   ...MAJO_NODES,
+  ...HYBRID_NODES,
 ];
