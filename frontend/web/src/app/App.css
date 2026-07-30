@@ -34,7 +34,7 @@
       transparent 42%
     ),
     linear-gradient(180deg, #073a78 0%, #062b5c 48%, #041936 100%);
-  border-bottom: 3px solid var(--dp-panel-border);
+
   box-shadow:
     inset 0 0 0 2px var(--dp-panel-purple-border),
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
