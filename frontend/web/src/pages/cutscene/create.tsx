@@ -13,81 +13,68 @@ import { apiFetch } from "../../lib/api/baseClient";
  * --------------------------------------------------------------
  * Beats:
  *   1. Black fade in
- *   2. "Wrong screen" glitch boot: text scrambles, then steadies (subtle)
- *   3. One lore line, then the cyan digital grid blooms in
- *   4. A rainbow Delta triangle draws on at center and pulses
- *   5. The triangle MORPHS into the wireframe egg (rainbow longitude/latitude
- *      lines wrapping the form, like the concept sketch). It reads as digital.
- *   6. The egg pulses: a shockwave shoves the grid away AND the egg breaks free,
- *      filling in as a solid color-shifting rainbow egg (the Mystery Golden Egg).
- *   7. "Good luck, <name>." -> fade out -> done
- *
- * Architecture matches your real CreatePage so it ports back:
- *   - phase state machine, TIMING constants, typeText/deleteText, runIdRef guard.
- *   - The grid, triangle, and egg all render on ONE canvas (shared coordinates),
- *     driven by visualRef values that the tween() helper animates.
- *
- * PORT NOTES: search  // [PORT]
- *   - swap mock playerName for useAuth()
- *   - swap the code-drawn egg for your art whenever you want (see drawEggSolid)
- *   - put your ensure-egg / intro-seen API + navigate("/hatchery") before setPhase("done")
+ *   2. Aliune Signal rockets up from below, grows in perspective, impacts,
+ *      then settles above the egg and blinks red
+ *   3. Man talks via glitch text (label still blinking red)
+ *   4. Lore line, triangle falls in
+ *   5. Triangle morphs into wireframe egg -> label cross-fades to cyan, stops blinking
+ *   6. Egg shockwave, solid rainbow egg
+ *   7. Goodluck text -> fade to hatchery
  */
 
 /* =========================================================
-   TIMING  (tweak the whole pace here)
+   TIMING
 ========================================================= */
 const TIMING = {
   fadeInMs: 700,
 
-  glitch1RevealMs: 2200,
-  glitch1HoldMs: 1600,
-  glitch2RevealMs: 1800,
-  glitch2HoldMs: 1500,
+  glitch1RevealMs: 3200,
+  glitch1HoldMs: 2800,
+  glitch2RevealMs: 3600,
+  glitch2HoldMs: 3000,
 
-  loreTypeMsPerChar: 70,
-  lorePauseMs: 900,
+  loreTypeMsPerChar: 52,
+  loreDeleteMsPerChar: 30,
+
   gridFadeInMs: 1300,
-  loreDeleteMsPerChar: 35,
 
   triangleDrawMs: 1400,
   trianglePulseMs: 900,
-  morphMs: 1900, // triangle -> wireframe egg
-  wireHoldMs: 2000, // egg sits as digital wireframe
+  morphMs: 1900,
 
   shockEggFlashMs: 320,
-  shockMs: 2200, // grid pushed away
-  solidMs: 1500, // wireframe -> solid rainbow egg
+  shockMs: 2200,
+  solidMs: 1500,
 
-  typeGoodluckMsPerChar: 75,
-  holdMs: 3000,
-  fadeOutMs: 1700,
+  typeGoodluckMsPerChar: 62,
+  holdMs: 3800,
+  fadeOutMs: 2000,
 };
 
 /* =========================================================
-   COPY  (edit freely; on-screen text stays short)
+   COPY
 ========================================================= */
-const GLITCH_1 = `...who are you? you weren't supposed to find this.`;
-const GLITCH_2 = `it seems the signal found you though.`;
-const LORE_1 = `I have a gift. treat them well.`;
-const WIRE_LINE = `...Oh look, an egg, how quaint.`;
+const GLITCH_1 = `...Wait... Who... are you?`;
+const GLITCH_2 = `You should not be here. This is confidential to the real world! But... the signal...`;
+const LORE_1 = `This signal is buried beneath corrupted data..... What's happening? There's something coming through.`;
+const WIRE_LINE = `That... that is impossible. A Prismatic Egg...? The signal chose you. Take care of it.`;
 
 /* =========================================================
    LOOK
 ========================================================= */
 const C = {
   bg: "#02040a",
-  gridGreen: [70, 220, 255], // cyan digital world
+  gridGreen: [70, 255, 170] as const,
   text: "rgba(225,248,255,0.95)",
 };
 
-/* egg + grid geometry (all tweakable) */
 const EGG = {
-  H: 305, // egg height (px)
-  R: 118, // egg half-width (px)
-  latTilt: 0.22, // how "flat" the latitude rings look (3D feel)
+  H: 305,
+  R: 118,
+  latTilt: 0.22,
   meridians: [-1, -0.66, -0.33, 0, 0.33, 0.66, 1],
   latitudes: [0.14, 0.32, 0.5, 0.68, 0.86],
-  triSize: 165, // delta triangle size before morph
+  triSize: 165,
 };
 const GRIDCFG = {
   spacing: 56,
@@ -107,9 +94,9 @@ type AliveCheck = () => boolean;
 type TextSetter = Dispatch<SetStateAction<string>>;
 type TimelinePhase =
   | "fadeInBlack"
+  | "gridFadeIn"
   | "glitchBoot"
   | "lore"
-  | "gridFadeIn"
   | "triangle"
   | "morph"
   | "wireHold"
@@ -120,6 +107,7 @@ type TimelinePhase =
   | "done";
 type VisualState = {
   gridAlpha: number;
+  introPulse: number;
   shock: number;
   triProg: number;
   triDropY: number;
@@ -138,19 +126,6 @@ const easeInCubic = (t: number) => t * t * t;
 const easeInOutCubic = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-async function typeText(
-  full: string,
-  set: TextSetter,
-  msPerChar: number,
-  alive: AliveCheck,
-) {
-  set("");
-  for (let i = 1; i <= full.length; i++) {
-    if (!alive()) return;
-    set(full.slice(0, i));
-    await sleep(msPerChar);
-  }
-}
 async function deleteText(
   current: string,
   set: TextSetter,
@@ -164,7 +139,6 @@ async function deleteText(
   }
 }
 
-/* glitch reveal: scrambles, locks in left-to-right, then steadies */
 function glitchReveal(
   target: string,
   set: TextSetter,
@@ -203,7 +177,6 @@ function glitchReveal(
   });
 }
 
-/* tween 0..1 over duration; resolves on done or when alive() is false */
 function tween(
   durationMs: number,
   onUpdate: (eased: number, raw: number) => void,
@@ -229,7 +202,6 @@ function tween(
   });
 }
 
-/* resample a closed point loop to N evenly spaced points (by arc length) */
 function resampleClosed(pts: Point[], N: number) {
   const segLen: number[] = [];
   let total = 0;
@@ -261,17 +233,16 @@ function resampleClosed(pts: Point[], N: number) {
 /* =========================================================
    component
 ========================================================= */
-export default function DeltaPetsCutscene() {
+
+export default function CreatePage() {
   const navigate = useNavigate();
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const crackRef = useRef<HTMLDivElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [playerName, setPlayerName] = useState("Traveler");
 
-  // Was hardcoded to the literal string "Jayden" (a leftover dev placeholder,
-  // see the removed [PORT] comment that used to sit here). Pulls the real
-  // trainer's name from /api/me so "Good luck, <name>." addresses the
-  // actual player instead of always saying "Jayden."
   useEffect(() => {
     let cancelled = false;
-
     (async () => {
       try {
         const me = await apiFetch<{
@@ -280,18 +251,12 @@ export default function DeltaPetsCutscene() {
             username?: string | null;
           } | null;
         }>("/api/me");
-
         const name = me?.profile?.display_name || me?.profile?.username;
-
-        if (!cancelled && name) {
-          setPlayerName(name);
-        }
+        if (!cancelled && name) setPlayerName(name);
       } catch {
-        // Keep the "Traveler" fallback if this fails, not worth blocking
-        // the cutscene over a name lookup.
+        // keep "Traveler" fallback
       }
     })();
-
     return () => {
       cancelled = true;
     };
@@ -301,24 +266,270 @@ export default function DeltaPetsCutscene() {
   const [centerText, setCenterText] = useState("");
   const [glitching, setGlitching] = useState(false);
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const visualRef = useRef<VisualState>({
     gridAlpha: 0,
-    shock: -1, // -1 inactive, else 0..1
-    triProg: 0, // triangle fade/scale in
-    triDropY: 0, // triangle fall-in offset (negative = above final position)
-    triSquash: 0, // squash/stretch punch: negative = stretch, positive = squash
-    morphProg: 0, // 0 triangle -> 1 egg outline
-    wireAlpha: 0, // interior wireframe opacity
-    solidProg: 0, // wireframe -> solid rainbow
-    eggScale: 1, // egg pushes outward on the break
+    introPulse: 0,
+    shock: -1,
+    triProg: 0,
+    triDropY: 0,
+    triSquash: 0,
+    morphProg: 0,
+    wireAlpha: 0,
+    solidProg: 0,
+    eggScale: 1,
     eggGlow: 0,
   });
 
   const runIdRef = useRef(0);
-  // Replay button (dev-only) removed; keep a stable replay key so the
-  // effect below still has a consistent dependency.
   const [replayKey] = useState(0);
+
+  /*
+    The label stays mounted for the entire cutscene and is driven imperatively.
+    Its entrance animation is awaited so dialogue cannot begin early.
+  */
+  const labelRef = useRef<HTMLDivElement | null>(null);
+
+  async function labelSlam(reduceMotion: boolean) {
+    const el = labelRef.current;
+    if (!el) return;
+
+    el.getAnimations().forEach((animation) => animation.cancel());
+    el.className = "dpc-syslabel";
+    el.style.opacity = "0";
+    el.style.color = "rgba(255,70,90,0.95)";
+    el.style.textShadow = "none";
+
+    if (reduceMotion) {
+      const entrance = el.animate(
+        [
+          {
+            top: "calc(50% - 212px)",
+            transform: "translateX(-50%) scale(0.8)",
+            opacity: 0,
+          },
+          {
+            top: "calc(50% - 212px)",
+            transform: "translateX(-50%) scale(1)",
+            opacity: 1,
+          },
+        ],
+        {
+          duration: 260,
+          easing: "ease-out",
+          fill: "forwards",
+        },
+      );
+
+      await new Promise<void>((resolve) => {
+        entrance.onfinish = () => resolve();
+        entrance.oncancel = () => resolve();
+      });
+
+      el.style.opacity = "1";
+      el.style.color = "";
+      el.style.textShadow = "";
+      el.className = "dpc-syslabel dpc-syslabel--red";
+      return;
+    }
+
+    const impact = el.animate(
+      [
+        {
+          top: "calc(50% - 212px)",
+          transform:
+            "translateX(-50%) translate(-52px, 46px) perspective(900px) translateZ(-1150px) scale(0.035)",
+          opacity: 0,
+        },
+        {
+          offset: 0.2,
+          top: "calc(50% - 212px)",
+          transform:
+            "translateX(-50%) translate(-84px, 72px) perspective(900px) translateZ(-980px) scale(0.07)",
+          opacity: 0.18,
+        },
+        {
+          offset: 0.42,
+          top: "calc(50% - 212px)",
+          transform:
+            "translateX(-50%) translate(-46px, -38px) perspective(900px) translateZ(-620px) scale(0.22)",
+          opacity: 0.48,
+        },
+        {
+          offset: 0.66,
+          top: "calc(50% - 212px)",
+          transform:
+            "translateX(-50%) translate(24px, -62px) perspective(900px) translateZ(-280px) scale(0.72)",
+          opacity: 0.82,
+        },
+        {
+          offset: 0.86,
+          top: "calc(50% - 212px)",
+          transform:
+            "translateX(-50%) translate(12px, -26px) perspective(900px) translateZ(-80px) scale(1.55)",
+          opacity: 1,
+        },
+        {
+          top: "calc(50% - 212px)",
+          transform:
+            "translateX(-50%) translate(0, 0) perspective(900px) translateZ(0) scale(4.2)",
+          opacity: 1,
+        },
+      ],
+      {
+        duration: 1600,
+        easing: "cubic-bezier(0.58, 0.02, 0.72, 0.18)",
+        fill: "forwards",
+      },
+    );
+
+    await new Promise<void>((resolve) => {
+      impact.onfinish = () => resolve();
+      impact.oncancel = () => resolve();
+    });
+
+    await sleep(10);
+
+    if (crackRef.current) {
+      crackRef.current.className = "dpc-impact-crack active";
+    }
+
+    const shake = rootRef.current?.animate(
+      [
+        { transform: "translate(0, 0)" },
+        { transform: "translate(-10px, 6px)" },
+        { transform: "translate(9px, -5px)" },
+        { transform: "translate(-6px, 3px)" },
+        { transform: "translate(0, 0)" },
+      ],
+      {
+        duration: 70,
+        easing: "linear",
+      },
+    );
+
+    if (shake) {
+      await new Promise<void>((resolve) => {
+        shake.onfinish = () => resolve();
+        shake.oncancel = () => resolve();
+      });
+    }
+
+    el.style.opacity = "1";
+    el.style.color = "rgba(255,70,90,0.95)";
+    el.style.textShadow = "none";
+    el.className = "dpc-syslabel";
+
+    const wobble = el.animate(
+      [
+        {
+          transform: "translateX(-50%) translate(0, 0) scale(4.2) rotate(0deg)",
+        },
+        {
+          offset: 0.25,
+          transform:
+            "translateX(-50%) translate(-5px, 2px) scale(4.12) rotate(-1.4deg)",
+        },
+        {
+          offset: 0.5,
+          transform:
+            "translateX(-50%) translate(4px, -2px) scale(4.24) rotate(1.1deg)",
+        },
+        {
+          offset: 0.75,
+          transform:
+            "translateX(-50%) translate(-2px, 1px) scale(4.16) rotate(-0.6deg)",
+        },
+        {
+          transform: "translateX(-50%) translate(0, 0) scale(4.2) rotate(0deg)",
+        },
+      ],
+      {
+        duration: 360,
+        easing: "cubic-bezier(0.22, 0.61, 0.36, 1)",
+        fill: "forwards",
+      },
+    );
+
+    await new Promise<void>((resolve) => {
+      wobble.onfinish = () => resolve();
+      wobble.oncancel = () => resolve();
+    });
+
+    await sleep(480);
+
+    if (crackRef.current) {
+      crackRef.current.className = "dpc-impact-crack fading";
+    }
+
+    const settle = el.animate(
+      [
+        {
+          top: "calc(50% - 212px)",
+          transform: "translateX(-50%) translate(0, 0) scale(4.2)",
+        },
+        {
+          offset: 0.4,
+          top: "calc(50% - 212px)",
+          transform: "translateX(-50%) translate(34px, 58px) scale(2.45)",
+        },
+        {
+          offset: 0.74,
+          top: "calc(50% - 212px)",
+          transform: "translateX(-50%) translate(14px, 30px) scale(1.45)",
+        },
+        {
+          top: "calc(50% - 212px)",
+          transform: "translateX(-50%) translate(0, 0) scale(1)",
+        },
+      ],
+      {
+        duration: 2050,
+        easing: "cubic-bezier(0.45, 0, 0.2, 1)",
+        fill: "forwards",
+      },
+    );
+
+    await new Promise<void>((resolve) => {
+      settle.onfinish = () => resolve();
+      settle.oncancel = () => resolve();
+    });
+
+    if (crackRef.current) {
+      crackRef.current.className = "dpc-impact-crack";
+    }
+
+    el.style.color = "";
+    el.className = "dpc-syslabel dpc-syslabel--red";
+  }
+
+  function startMorphColorTransition(durationMs: number) {
+    const el = labelRef.current;
+    if (!el) return;
+
+    el.className = "dpc-syslabel";
+
+    const colorTransition = el.animate(
+      [
+        {
+          color: "rgba(255,70,90,0.95)",
+          textShadow: "none",
+        },
+        {
+          color: "rgba(120,230,255,0.8)",
+          textShadow: "0 0 14px rgba(120,230,255,0.5)",
+        },
+      ],
+      {
+        duration: durationMs,
+        easing: "ease-in-out",
+        fill: "forwards",
+      },
+    );
+
+    colorTransition.onfinish = () => {
+      el.className = "dpc-syslabel dpc-syslabel--cyan";
+    };
+  }
 
   /* ---------------- canvas: grid + triangle + egg ---------------- */
   useEffect(() => {
@@ -348,11 +559,10 @@ export default function DeltaPetsCutscene() {
     const rgba = (c: readonly number[], a: number) =>
       `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
-    /* egg geometry around a center */
     function halfW(t: number, scale: number) {
-      const y = t * 2 - 1; // -1 top .. 1 bottom
+      const y = t * 2 - 1;
       const base = Math.sqrt(Math.max(0, 1 - y * y));
-      return EGG.R * scale * base * (1 + 0.3 * y); // skew: fatter bottom
+      return EGG.R * scale * base * (1 + 0.3 * y);
     }
     function yAt(t: number, cy: number, scale: number) {
       return cy + (t - 0.5) * EGG.H * scale;
@@ -476,9 +686,7 @@ export default function DeltaPetsCutscene() {
       prog: number,
     ) {
       if (prog <= 0.01) return;
-      // [PORT] To use your own art instead of this code-drawn egg:
-      //   draw your sprite here with globalAlpha = prog, centered at (cx,cy),
-      //   and delete the gradient block below.
+      // [PORT] swap with your art: draw sprite at globalAlpha=prog centered at (cx,cy)
       const outline = eggOutlineRaw(cx, cy, scale);
       renderCtx.save();
       renderCtx.globalAlpha = prog;
@@ -549,7 +757,6 @@ export default function DeltaPetsCutscene() {
       const cy = h / 2;
       const time = now * 0.001;
 
-      /* ---- grid ---- */
       if (v.gridAlpha > 0.001) {
         const maxR = Math.hypot(w, h) / 2;
         const waveActive = v.shock >= 0;
@@ -570,15 +777,22 @@ export default function DeltaPetsCutscene() {
             const i = r * cols + c;
             const bx = x0 + c * sp;
             const by = y0 + r * sp;
+            const introTargetY = cy - 212;
             const dx = bx - cx;
-            const dy = by - cy;
+            const dy = by - (v.introPulse > 0 ? introTargetY : cy);
             const d = Math.hypot(dx, dy) || 0.0001;
             const ux = dx / d;
             const uy = dy / d;
             const shimmer = 0.85 + 0.15 * Math.sin(d * 0.012 - time * 1.8);
-            let ox = bx;
-            let oy = by;
-            let a = shimmer;
+            const introWave =
+              v.introPulse > 0
+                ? Math.sin(Math.max(0, Math.min(1, v.introPulse)) * Math.PI)
+                : 0;
+            const introPull =
+              introWave * Math.max(0, 1 - d / maxR) * (10 + v.introPulse * 20);
+            let ox = bx - ux * introPull;
+            let oy = by - uy * introPull;
+            let a = Math.min(1, shimmer + introWave * 0.2);
             let gold = 0;
             if (waveActive) {
               const front = d - waveR;
@@ -631,7 +845,6 @@ export default function DeltaPetsCutscene() {
         renderCtx.shadowBlur = 0;
       }
 
-      /* ---- triangle -> wireframe egg -> solid egg ---- */
       const scale = v.eggScale;
 
       if (v.solidProg > 0.01) {
@@ -691,6 +904,7 @@ export default function DeltaPetsCutscene() {
     setGlitching(false);
     visualRef.current = {
       gridAlpha: 0,
+      introPulse: 0,
       shock: -1,
       triProg: 0,
       triDropY: 0,
@@ -702,12 +916,22 @@ export default function DeltaPetsCutscene() {
       eggGlow: 0,
     };
 
+    // Reset the single mounted label before the entrance animation.
+    if (labelRef.current) {
+      labelRef.current
+        .getAnimations()
+        .forEach((animation) => animation.cancel());
+      labelRef.current.className = "dpc-syslabel";
+      labelRef.current.style.opacity = "0";
+    }
+
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     async function run() {
+      const TAKE_CARE = `"Take Care of it."`;
       const GOODLUCK = `"Good luck, ${playerName}."`;
       const V = visualRef.current;
 
@@ -715,19 +939,71 @@ export default function DeltaPetsCutscene() {
       await sleep(reduce ? 150 : TIMING.fadeInMs);
       if (!alive()) return;
 
-      // grid blooms in first, low opacity, ambient backdrop for the glitch text
+      // The opening shows only the green grid.
       setPhase("gridFadeIn");
       await tween(
         TIMING.gridFadeInMs,
         (e) => {
-          V.gridAlpha = e * 0.4; // low opacity, not full grid
+          V.gridAlpha = e * 0.4;
         },
         alive,
         easeOutCubic,
       );
       if (!alive()) return;
 
-      // wrong-screen glitch boot (subtle)
+      await sleep(reduce ? 80 : 500);
+      if (!alive()) return;
+
+      if (!reduce) {
+        await tween(
+          1500,
+          (e, raw) => {
+            V.introPulse = raw;
+            V.gridAlpha = 0.4 + e * 0.12;
+          },
+          alive,
+          easeInOutCubic,
+        );
+        if (!alive()) return;
+
+        V.introPulse = 0;
+        V.gridAlpha = 0.4;
+
+        const interference = rootRef.current?.animate(
+          [
+            { filter: "brightness(1)" },
+            { filter: "brightness(1.7)" },
+            { filter: "brightness(0.72)" },
+            { filter: "brightness(1.18)" },
+            { filter: "brightness(1)" },
+          ],
+          {
+            duration: 130,
+            easing: "steps(2, end)",
+          },
+        );
+
+        if (interference) {
+          await new Promise<void>((resolve) => {
+            interference.onfinish = () => resolve();
+            interference.oncancel = () => resolve();
+          });
+        }
+
+        await sleep(120);
+        if (!alive()) return;
+      }
+
+      // The single Aliune Signal element appears through depth, impacts once,
+      // holds against the screen, then slowly settles into its assigned seat.
+      await labelSlam(reduce);
+      if (!alive()) return;
+
+      // Brief pause after the label settles, then dialogue begins.
+      await sleep(reduce ? 120 : 500);
+      if (!alive()) return;
+
+      // Man starts talking. Label still blinking red, sitting still.
       setPhase("glitchBoot");
       setGlitching(true);
       await glitchReveal(
@@ -756,10 +1032,17 @@ export default function DeltaPetsCutscene() {
       await sleep(280);
       if (!alive()) return;
 
-      // lore beat before the egg
-      await typeText(LORE_1, setCenterText, TIMING.loreTypeMsPerChar, alive);
+      setPhase("lore");
+      setGlitching(true);
+      await glitchReveal(
+        LORE_1,
+        setCenterText,
+        LORE_1.length * TIMING.loreTypeMsPerChar,
+        alive,
+      );
       if (!alive()) return;
-      await sleep(2200);
+      setGlitching(false);
+      await sleep(2800);
       if (!alive()) return;
       await deleteText(
         LORE_1,
@@ -771,7 +1054,7 @@ export default function DeltaPetsCutscene() {
       await sleep(400);
       if (!alive()) return;
 
-      // rainbow Delta triangle falls in with a squash-and-stretch landing
+      // Triangle + morph. Label still red, still blinking.
       setPhase("triangle");
       tween(
         reduce ? 200 : TIMING.triangleDrawMs,
@@ -784,23 +1067,19 @@ export default function DeltaPetsCutscene() {
       await tween(
         reduce ? 200 : TIMING.triangleDrawMs,
         (e) => {
-          V.triDropY = lerp(-220, 0, e); // falls from above into place
-          // Stretch builds as it speeds up (matches easeInCubic acceleration),
-          // then eases off right before impact instead of cutting out early.
+          V.triDropY = lerp(-220, 0, e);
           V.triSquash =
             e < 0.85
               ? lerp(0, -0.5, e / 0.85)
               : lerp(-0.5, -0.15, (e - 0.85) / 0.15);
         },
         alive,
-        easeInCubic, // gravity: slow start, fast landing
+        easeInCubic,
       );
       if (!alive()) return;
       await tween(
         reduce ? 120 : 420,
         (e) => {
-          // Springy landing: a couple of diminishing bounces instead of
-          // one flat squash-and-release.
           const decay = Math.exp(-e * 4.2);
           V.triSquash = Math.sin(e * Math.PI * 2.4) * 0.85 * decay;
         },
@@ -811,10 +1090,11 @@ export default function DeltaPetsCutscene() {
       await sleep(TIMING.trianglePulseMs);
       if (!alive()) return;
 
-      // morph triangle -> wireframe egg
       setPhase("morph");
+      const morphDuration = reduce ? 250 : TIMING.morphMs;
+      startMorphColorTransition(morphDuration);
       await tween(
-        reduce ? 250 : TIMING.morphMs,
+        morphDuration,
         (e) => {
           V.morphProg = e;
           V.wireAlpha = e;
@@ -824,15 +1104,18 @@ export default function DeltaPetsCutscene() {
       );
       if (!alive()) return;
 
+      // Morph complete. The onfinish handler applies the cyan resting class.
       setPhase("wireHold");
-      await typeText(
+      setGlitching(true);
+      await glitchReveal(
         `"${WIRE_LINE}"`,
         setCenterText,
-        TIMING.loreTypeMsPerChar,
+        WIRE_LINE.length * TIMING.loreTypeMsPerChar,
         alive,
       );
       if (!alive()) return;
-      await sleep(TIMING.wireHoldMs);
+      setGlitching(false);
+      await sleep(2400);
       if (!alive()) return;
       await deleteText(
         `"${WIRE_LINE}"`,
@@ -842,7 +1125,6 @@ export default function DeltaPetsCutscene() {
       );
       if (!alive()) return;
 
-      // SHOCK: grid pushed away + egg breaks free into solid rainbow
       setPhase("shock");
       tween(
         TIMING.shockEggFlashMs,
@@ -872,8 +1154,27 @@ export default function DeltaPetsCutscene() {
       V.gridAlpha = 0;
       V.shock = -1;
 
-      // good luck (uses the same glitch effect as the intro lines)
       setPhase("goodluck");
+      setGlitching(true);
+      await glitchReveal(
+        TAKE_CARE,
+        setCenterText,
+        TAKE_CARE.length * TIMING.typeGoodluckMsPerChar,
+        alive,
+      );
+      if (!alive()) return;
+      setGlitching(false);
+      await sleep(1800);
+      if (!alive()) return;
+      await deleteText(
+        TAKE_CARE,
+        setCenterText,
+        TIMING.loreDeleteMsPerChar,
+        alive,
+      );
+      if (!alive()) return;
+      await sleep(350);
+      if (!alive()) return;
       setGlitching(true);
       await glitchReveal(
         GOODLUCK,
@@ -891,7 +1192,6 @@ export default function DeltaPetsCutscene() {
       await sleep(TIMING.fadeOutMs);
       if (!alive()) return;
 
-      // [PORT] real flow: await ensure-egg; fire intro-seen; navigate("/hatchery")
       await apiFetch("/api/pets/ensure-egg", {
         method: "POST",
         json: { line: "random" },
@@ -915,22 +1215,31 @@ export default function DeltaPetsCutscene() {
     phase === "fadeInBlack" || phase === "fadeOut" || phase === "done";
   const centerFadesOut = phase === "fadeOut" || phase === "done";
   const typingPhase =
-    phase === "lore" ||
-    phase === "gridFadeIn" ||
-    phase === "wireHold" ||
-    phase === "goodluck";
+    phase === "lore" || phase === "wireHold" || phase === "goodluck";
   const isGoodluckText =
     phase === "goodluck" || phase === "hold" || phase === "fadeOut";
 
   return (
-    <div className="dpc-root">
+    <div ref={rootRef} className="dpc-root">
       <style>{css}</style>
       <canvas ref={canvasRef} className="dpc-canvas" />
       <div className={`dpc-black ${blackOn ? "on" : "off"}`} />
+      <div ref={crackRef} className="dpc-impact-crack" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
 
-      {phase === "glitchBoot" ? (
-        <div className="dpc-syslabel">SYSTEM // ALIUNE SIGNAL</div>
-      ) : null}
+      {/*
+        Always in the DOM. Hidden until labelSlam() fires.
+        Never conditionally mounted -- that was the bug causing animation replays.
+      */}
+      <div ref={labelRef} className="dpc-syslabel" style={{ opacity: 0 }}>
+        Systems // Aliune Signal
+      </div>
 
       <div className={`dpc-center ${centerFadesOut ? "fade-out" : ""}`}>
         <div
@@ -963,37 +1272,121 @@ const css = `
   transition:opacity 900ms ease; }
 .dpc-black.on{ opacity:1; } .dpc-black.off{ opacity:0; }
 
-.dpc-syslabel{
-  position:absolute; top:34px; left:50%; transform:translateX(-50%);
-  color:rgba(120,230,255,0.7); font-size:12px; letter-spacing:3px;
-  animation: dpcFlicker 1.6s steps(2) infinite;
+.dpc-impact-crack{
+  position:absolute;
+  left:50%;
+  top:calc(50% - 212px);
+  width:210px;
+  height:190px;
+  transform:translate(-50%,-50%) scale(.9);
+  opacity:0;
+  z-index:9;
+  pointer-events:none;
 }
-@keyframes dpcFlicker{ 0%,100%{opacity:.7} 48%{opacity:.25} 52%{opacity:.85} }
+.dpc-impact-crack.active{
+  opacity:.9;
+  transform:translate(-50%,-50%) scale(1);
+  transition:opacity 20ms linear, transform 70ms ease-out;
+}
+.dpc-impact-crack.fading{
+  opacity:0;
+  transform:translate(-50%,-50%) scale(1.04);
+  transition:opacity 900ms ease-out, transform 900ms ease-out;
+}
+.dpc-impact-crack span{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:3px;
+  height:92px;
+  background:rgba(225,248,255,.8);
+  box-shadow:0 0 4px rgba(225,248,255,.35);
+  transform-origin:50% 0;
+  clip-path:polygon(38% 0,100% 0,62% 30%,100% 48%,48% 72%,70% 100%,0 100%,30% 70%,0 50%,42% 28%);
+}
+.dpc-impact-crack span:nth-child(1){ transform:rotate(8deg); height:104px; }
+.dpc-impact-crack span:nth-child(2){ transform:rotate(58deg); height:88px; }
+.dpc-impact-crack span:nth-child(3){ transform:rotate(112deg); height:96px; }
+.dpc-impact-crack span:nth-child(4){ transform:rotate(168deg); height:82px; }
+.dpc-impact-crack span:nth-child(5){ transform:rotate(226deg); height:100px; }
+.dpc-impact-crack span:nth-child(6){ transform:rotate(302deg); height:86px; }
 
-.dpc-center{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
-.dpc-center.fade-out{ opacity:0; transition:opacity ${TIMING.fadeOutMs}ms ease; }
+/* =====================================================
+   ALIUNE SIGNAL LABEL
+   Resting spot: horizontally centered, above the egg.
+===================================================== */
+.dpc-syslabel{
+  position:absolute;
+  top:calc(50% - 212px);
+  left:50%;
+  transform:translateX(-50%);
+  z-index:10;
+  font-size:18px;
+  letter-spacing:5px;
+  white-space:nowrap;
+  pointer-events:none;
+}
+
+.dpc-syslabel--red{
+  color:rgba(255,70,90,0.95);
+  text-shadow:none;
+  animation:dpcSignalBlink 0.9s steps(1) infinite;
+}
+
+.dpc-syslabel--cyan{
+  color:rgba(120,230,255,0.8);
+  text-shadow:0 0 14px rgba(120,230,255,0.5);
+  animation:none;
+}
+
+@keyframes dpcSignalBlink{
+  0%,100%{ color:rgba(255,70,90,0.95); }
+  50%{ color:rgba(255,70,90,0.28); }
+}
+
+/* =====================================================
+   CENTER TEXT
+===================================================== */
+.dpc-center{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.dpc-center.fade-out{
+  opacity:0;
+  transition:opacity ${TIMING.fadeOutMs}ms ease;
+}
 
 .dpc-text{
   position:absolute; left:50%; top:50%;
-  transform:translate(-50%, calc(-50% + 230px));
-  width:100%; max-width:780px; height:86px;
+  transform:translate(-50%, calc(-50% + 220px));
+  width:100%; max-width:780px; min-height:86px;
+  padding:0 20px;
   display:flex; align-items:center; justify-content:center;
   overflow:visible;
-  color:${C.text}; font-size:22px; letter-spacing:.3px; text-align:center;
+  color:${C.text}; font-size:22px; line-height:1.35;
+  letter-spacing:.3px; text-align:center;
+  text-wrap:balance;
   text-shadow:0 0 18px rgba(70,220,255,0.28);
 }
 .dpc-text.dpc-text--goodluck{
-  transform:translate(-50%, calc(-50% + 255px));
+  font-size:20px;
 }
 .dpc-text.glitch span{
-  text-shadow: 2px 0 rgba(255,60,120,0.6), -2px 0 rgba(60,200,255,0.6), 0 0 18px rgba(120,230,255,0.4);
-  animation: dpcJit .12s steps(2) infinite;
+  text-shadow:2px 0 rgba(255,60,120,0.6), -2px 0 rgba(60,200,255,0.6), 0 0 18px rgba(120,230,255,0.4);
+  animation:dpcJit .12s steps(2) infinite;
 }
-@keyframes dpcJit{ 0%{transform:translate(0,0)} 50%{transform:translate(0.6px,-0.6px)} 100%{transform:translate(-0.5px,0.5px)} }
+@keyframes dpcJit{
+  0%  { transform:translate(0,0); }
+  50% { transform:translate(0.6px,-0.6px); }
+  100%{ transform:translate(-0.5px,0.5px); }
+}
 
-.dpc-caret{ display:inline-block; width:.7ch; margin-left:2px;
-  color:rgba(120,230,255,0.95); animation:dpcBlink .7s steps(1) infinite; }
-@keyframes dpcBlink{ 50%{opacity:0} }
+.dpc-caret{
+  display:inline-block; width:.7ch; margin-left:2px;
+  color:rgba(120,230,255,0.95);
+  animation:dpcBlink .7s steps(1) infinite;
+}
+@keyframes dpcBlink{ 50%{ opacity:0; } }
 
 .dpc-controls{ position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
   display:flex; gap:8px; z-index:10; }

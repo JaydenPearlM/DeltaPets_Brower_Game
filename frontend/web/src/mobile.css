@@ -893,7 +893,6 @@
 }
 
 /* =========================================================
-<<<<<<< HEAD
    PHONE TARGET REFERENCE (CSS viewport widths)
    S22:        360px  <- design baseline
    iPhone 8:   375px
@@ -2137,7 +2136,6 @@
     justify-content: flex-start;
     text-align: left;
   }
-}
 }
 
 @media (max-width: 640px) {

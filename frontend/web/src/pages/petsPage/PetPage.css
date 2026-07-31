@@ -56,17 +56,6 @@
   --pet-home-shell-mid: #232b48;
   --pet-home-shell-bottom: #161c34;
 }
-.hp-mainShell {
-  width: calc(100% + 140px);
-  margin-right: -140px;
-}
-.hp-banner {
-  width: calc(100% + 140px);
-  margin: 0 -140px 16px 0;
-  border-radius: 16px;
-  border: 2px solid rgba(78, 105, 148, 0.48);
-  overflow: hidden;
-}
 
 .petRepoHeroCard {
   display: grid;

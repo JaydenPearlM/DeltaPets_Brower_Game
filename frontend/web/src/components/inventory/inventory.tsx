@@ -589,6 +589,44 @@ export default function Inventory({ onClose }: InventoryProps) {
         </p>
       </header>
 
+      <p className="inventorySectionLabel">
+        Items ({visibleInventoryItems.length}/{MAX_INVENTORY_SLOTS})
+      </p>
+
+      <div
+        className="inventoryGrid inventoryGrid--slots"
+        aria-label="Inventory items"
+      >
+        {inventorySlots.map((item, slotIndex) =>
+          item ? (
+            <article className="inventoryItemCard" key={item.slug}>
+              <div className="inventoryItemCardHeader">
+                <div>
+                  <p className="inventoryItemType">{item.type}</p>
+                  <h3>{item.name}</h3>
+                </div>
+
+                <span className="inventoryItemQty">×{item.qty}</span>
+              </div>
+
+              <p className="inventoryItemDescription">{item.description}</p>
+
+              {item.careCategory ? (
+                <p className="inventoryItemMeta">
+                  Care target: {item.careCategory}
+                </p>
+              ) : null}
+            </article>
+          ) : (
+            <div
+              className="inventorySlotEmpty"
+              key={`empty-${slotIndex}`}
+              aria-hidden="true"
+            />
+          ),
+        )}
+      </div>
+
       {sortedBackendItems.some(
         (item) => item.slug === "closed-alpha-care-package",
       ) ? (
@@ -645,44 +683,6 @@ export default function Inventory({ onClose }: InventoryProps) {
           </div>
         </>
       ) : null}
-
-      <p className="inventorySectionLabel">
-        Items ({visibleInventoryItems.length}/{MAX_INVENTORY_SLOTS})
-      </p>
-
-      <div
-        className="inventoryGrid inventoryGrid--slots"
-        aria-label="Inventory items"
-      >
-        {inventorySlots.map((item, slotIndex) =>
-          item ? (
-            <article className="inventoryItemCard" key={item.slug}>
-              <div className="inventoryItemCardHeader">
-                <div>
-                  <p className="inventoryItemType">{item.type}</p>
-                  <h3>{item.name}</h3>
-                </div>
-
-                <span className="inventoryItemQty">×{item.qty}</span>
-              </div>
-
-              <p className="inventoryItemDescription">{item.description}</p>
-
-              {item.careCategory ? (
-                <p className="inventoryItemMeta">
-                  Care target: {item.careCategory}
-                </p>
-              ) : null}
-            </article>
-          ) : (
-            <div
-              className="inventorySlotEmpty"
-              key={`empty-${slotIndex}`}
-              aria-hidden="true"
-            />
-          ),
-        )}
-      </div>
 
       {(() => {
         const nonPackageItems = sortedBackendItems.filter(

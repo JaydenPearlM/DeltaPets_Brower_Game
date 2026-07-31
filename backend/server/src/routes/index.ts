@@ -45,9 +45,9 @@ apiRouter.use("/kithna", kithnaRouter);
 apiRouter.use("/care", careRouter);
 
 /* ===============================
-   DAILY CARE / STREAK SYSTEM
+   Daily Care System
 =============================== */
-apiRouter.use("/kithna", kithnaRouter);
+apiRouter.use("/daily-care", dailyCareRouter);
 
 /* ===============================
    Merchant Stores

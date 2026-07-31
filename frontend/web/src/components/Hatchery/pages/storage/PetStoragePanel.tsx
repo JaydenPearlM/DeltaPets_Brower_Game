@@ -9,6 +9,16 @@ import {
 } from "./usePetStorage";
 import MainTeam from "../../../Main_Team/mainTeam";
 import { ELEMENT_EGG_NAMES, SHARED_SPECIES } from "@shared/pets/species";
+import prismaticEggPng from "@/Pets_Creation/assets/eggs/prismatic_egg.png";
+import tideEggPng from "@/Pets_Creation/assets/eggs/tide_egg.png";
+import emberEggPng from "@/Pets_Creation/assets/eggs/ember_egg.png";
+import groveEggPng from "@/Pets_Creation/assets/eggs/grove_egg.png";
+import zephyrEggPng from "@/Pets_Creation/assets/eggs/zephr_egg.png";
+import frostveilEggPng from "@/Pets_Creation/assets/eggs/frostviel_egg.png";
+import stormEggPng from "@/Pets_Creation/assets/eggs/storm.png";
+import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light.png";
+import eclipseEggPng from "@/Pets_Creation/assets/eggs/eclipse_egg.png";
+import voidborneEggPng from "@/Pets_Creation/assets/eggs/Voidborne_egg.png";
 import "./PetStoragePanel.css";
 type PetStoragePanelProps = {
   userId?: string;
@@ -46,6 +56,19 @@ const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
 const STARTER_SPECIES_IDS = new Set<string>(
   SHARED_SPECIES.map((species) => species.id),
 );
+
+const ELEMENT_EGG_IMAGES: Record<string, string> = {
+  null: voidborneEggPng,
+  null_element: voidborneEggPng,
+  water: tideEggPng,
+  fire: emberEggPng,
+  earth: groveEggPng,
+  air: zephyrEggPng,
+  ice: frostveilEggPng,
+  storm: stormEggPng,
+  light: dawnshardEggPng,
+  shadow: eclipseEggPng,
+};
 
 function resolveEggIdentity(
   egg?: { line?: string | null; species?: string | null } | null,
@@ -147,11 +170,6 @@ function StoragePetStatsTooltip(props: { pet: StoragePet }) {
             <strong>{pet[row.key] ?? 0}</strong>
           </div>
         ))}
-
-        <div className="storagePetTooltipRow total">
-          <span>TOTAL</span>
-          <strong>{pet.base_total ?? 0}</strong>
-        </div>
       </div>
     </div>
   );
@@ -186,6 +204,7 @@ function StoragePetCard(props: {
       .toLowerCase() === "egg";
   const draggable = !isEgg;
   const eggIdentity = isEgg ? resolveEggIdentity(pet) : null;
+  const isStarterEgg = isEgg && eggIdentity?.label === "Prismatic Egg";
 
   return (
     <article
@@ -213,35 +232,54 @@ function StoragePetCard(props: {
           <div className="storagePetName">
             {isEgg ? eggIdentity!.label : pet.name?.trim() || "Unnamed Delta"}
           </div>
-          <div className="storagePetMeta">
-            {isEgg
-              ? `Lv. ${pet.level ?? 1}`
-              : `${formatLineLabel(pet.line)} • Lv. ${pet.level ?? 1}`}
-          </div>
+          {!isEgg ? (
+            <div className="storagePetMeta">
+              {formatLineLabel(pet.line)} • Lv. {pet.level ?? 1}
+            </div>
+          ) : null}
         </div>
 
         <div className="storageBadgeStack">
           <span className="storageStageBadge">
-            {formatStageLabel(pet.stage)}
+            {isEgg ? formatLineLabel(pet.line) : formatStageLabel(pet.stage)}
           </span>
 
-          <span className="storageLocationBadge stored">Stored</span>
+          {isStarterEgg ? (
+            <span className="storageRarityBadge epic">Epic</span>
+          ) : null}
         </div>
       </div>
 
       <div className="storagePetBody">
         <div className="storagePetOrb">
-          <div className="storagePetOrbInner">
-            {isEgg ? "🥚" : pet.name?.trim()?.charAt(0).toUpperCase() || "D"}
-          </div>
+          {isEgg ? (
+            <img
+              className="storageEggImage"
+              src={
+                isStarterEgg
+                  ? prismaticEggPng
+                  : (ELEMENT_EGG_IMAGES[
+                      String(pet.line ?? "")
+                        .trim()
+                        .toLowerCase()
+                    ] ?? prismaticEggPng)
+              }
+              alt={eggIdentity!.label}
+            />
+          ) : (
+            <div className="storagePetOrbInner">
+              {pet.name?.trim()?.charAt(0).toUpperCase() || "D"}
+            </div>
+          )}
         </div>
 
-        <div className="storagePetLore">
-          {isEgg
-            ? incubatorBusy
-              ? "An egg is already incubating. Current wiring still supports one incubating egg."
-              : "This egg can be moved from storage into the incubator."
-            : "Hover to inspect stats. Drag this pet into any Main Team slot."}
+        <div className="storagePetStats">
+          {STAT_ROWS.map((row) => (
+            <div key={row.key} className="storagePetStat">
+              <span>{row.label}</span>
+              <strong>{pet[row.key] ?? 0}</strong>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -253,7 +291,7 @@ function StoragePetCard(props: {
             disabled={incubatorBusy}
             onClick={() => onMoveEggToIncubator?.(pet.id)}
           >
-            {incubatorBusy ? "Incubator Busy" : "Move to Incubator"}
+            {incubatorBusy ? "Incubator Busy" : "Incubate"}
           </button>
         ) : (
           <>
@@ -283,6 +321,7 @@ function StoragePetCard(props: {
 export function PetStoragePanel(props: PetStoragePanelProps) {
   const { userId, refreshSignal, onStorageChanged } = props;
   const [filter, setFilter] = useState<StorageStageFilter>("all");
+  const [elementFilter, setElementFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selectedPartySlot, setSelectedPartySlot] = useState<number | null>(1);
 
@@ -296,18 +335,15 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
     pets,
     partySlots,
     firstEmptyPartySlot,
-    counts,
     loading,
     error,
     workingPetId,
     workingSlotIndex,
-    storageCounts,
     incubatingEggs,
     assignPetToParty,
     storePet,
     moveEggToIncubator,
     normalizeStage,
-    caps,
     reload,
   } = usePetStorage({ userId, onMutated: onStorageChanged });
 
@@ -324,6 +360,14 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
         filter === "all" || normalizeStage(pet.stage) === filter;
 
       if (!stageMatch) return false;
+
+      const elementMatch =
+        elementFilter === "all" ||
+        String(pet.line ?? "")
+          .trim()
+          .toLowerCase() === elementFilter;
+
+      if (!elementMatch) return false;
       if (!q) return true;
 
       const haystack = [
@@ -337,7 +381,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
 
       return haystack.includes(q);
     });
-  }, [filter, normalizeStage, pets, search]);
+  }, [elementFilter, filter, normalizeStage, pets, search]);
 
   const partyCount = partySlots.filter((slot) => slot.petId).length;
   const targetSlot = firstEmptyPartySlot ?? selectedPartySlot;
@@ -498,43 +542,56 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
         onDragLeave={() => setIsStorageDragOver(false)}
         onDrop={handleDropToStorage}
       >
-        <div className="storedPetsSectionHeader">
-          <div className="panelTitle panelTitleSmall">Storage</div>
-          <div className="panelSubtext">
-            {storageCounts.total}/{caps.total} total stored.{" "}
-            {storageCounts.eggs}/{caps.eggs} egg spaces. {storageCounts.pets}/
-            {caps.pets} pet spaces.
-          </div>
-        </div>
-
-        <div className="storageTopSummary">
-          <div className="storageHeroCard">
-            <div className="storageHeroLabel">Stored Total</div>
-            <div className="storageHeroValue">
-              {storageCounts.total}/{caps.total}
+        <div className="storageSectionTop">
+          <div className="storedPetsSectionHeader storageSectionCopy">
+            <div className="panelTitle panelTitleSmall">Storage</div>
+            <div className="panelSubtext">
+              Pets and eggs currently held in storage.
             </div>
           </div>
 
-          <div className="storageHeroCard">
-            <div className="storageHeroLabel">Stored Eggs</div>
-            <div className="storageHeroValue">
-              {storageCounts.eggs}/{caps.eggs}
-            </div>
-          </div>
+          <details className="storageMenu">
+            <summary aria-label="Open storage filters">☰</summary>
+            <div className="storageMenuPanel">
+              <label className="storageMenuLabel" htmlFor="storage-type-filter">
+                Type or stage
+              </label>
+              <select
+                id="storage-type-filter"
+                className="storageMenuSelect"
+                value={filter}
+                onChange={(event) =>
+                  setFilter(event.target.value as StorageStageFilter)
+                }
+              >
+                {FILTERS.map((item) => (
+                  <option key={item.key} value={item.key}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
 
-          <div className="storageHeroCard">
-            <div className="storageHeroLabel">Stored Pets</div>
-            <div className="storageHeroValue">
-              {storageCounts.pets}/{caps.pets}
+              <label
+                className="storageMenuLabel"
+                htmlFor="storage-element-filter"
+              >
+                Element
+              </label>
+              <select
+                id="storage-element-filter"
+                className="storageMenuSelect"
+                value={elementFilter}
+                onChange={(event) => setElementFilter(event.target.value)}
+              >
+                <option value="all">All elements</option>
+                {Array.from(ELEMENT_LINE_KEYS).map((element) => (
+                  <option key={element} value={element}>
+                    {formatLineLabel(element)}
+                  </option>
+                ))}
+              </select>
             </div>
-          </div>
-
-          <div className="storageHeroCard">
-            <div className="storageHeroLabel">Incubator</div>
-            <div className="storageHeroValue">
-              {incubatingEgg ? "1/1" : "0/1"}
-            </div>
-          </div>
+          </details>
         </div>
 
         <div className="storageSearchWrap">
@@ -543,25 +600,19 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
             className="storageSearchInput"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search stored pets, eggs, stages, or elements..."
+            placeholder="Search pets or eggs..."
           />
         </div>
 
-        {incubatingEgg ? (
-          <div className="storageIncubatorNotice">
-            Incubating now:{" "}
-            <strong>
-              {incubatingEgg.name?.trim() ||
-                resolveEggIdentity(incubatingEgg).label}
-            </strong>
-            {" • "}
-            {formatStageLabel(incubatingEgg.stage)}
-          </div>
-        ) : (
-          <div className="storageIncubatorNotice">
-            No egg is in the incubator right now.
-          </div>
-        )}
+        <div className="storageIncubatorNotice">
+          Incubating now:{" "}
+          <strong>
+            {incubatingEgg
+              ? incubatingEgg.name?.trim() ||
+                resolveEggIdentity(incubatingEgg).label
+              : "None"}
+          </strong>
+        </div>
 
         <div className="storageGridScroll">
           {loading ? (
@@ -602,23 +653,6 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
               ))}
             </div>
           )}
-        </div>
-
-        <div className="storageBottomFilters">
-          {FILTERS.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={[
-                "storageFilterChip",
-                filter === item.key ? "active" : "",
-              ].join(" ")}
-              onClick={() => setFilter(item.key)}
-            >
-              <span>{item.label}</span>
-              <strong>{counts[item.key]}</strong>
-            </button>
-          ))}
         </div>
 
         {error ? <div className="storageErrorText">Error: {error}</div> : null}

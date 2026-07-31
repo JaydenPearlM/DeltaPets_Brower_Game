@@ -643,7 +643,7 @@ export default function HatcheryPage() {
 
   const shelfSlots: ShelfSlot[] = useMemo(() => {
     if (data?.shelf_slots && data.shelf_slots.length > 0) {
-      return data.shelf_slots.map((slot) => ({
+      return data.shelf_slots.slice(0, 5).map((slot) => ({
         id: slot.id,
         index: slot.slot_index,
         locked: !slot.unlocked,
@@ -651,7 +651,7 @@ export default function HatcheryPage() {
       }));
     }
 
-    return Array.from({ length: 10 }, (_, idx) => ({
+    return Array.from({ length: 5 }, (_, idx) => ({
       id: `fallback-shelf-${idx + 1}`,
       index: idx + 1,
       locked: idx !== 0,
@@ -720,6 +720,9 @@ export default function HatcheryPage() {
   const selectedEggIdentity = useMemo(() => {
     return resolveEggIdentity(selectedEgg);
   }, [selectedEgg]);
+
+  const selectedEggRarity =
+    selectedEggIdentity.label === MYSTERY_EGG.name ? "Epic" : null;
 
   async function refreshAfterHatch() {
     const next = await fetchHatchery();
@@ -809,6 +812,12 @@ export default function HatcheryPage() {
                       {selectedEggIdentity.label}
                     </div>
 
+                    {selectedEggRarity ? (
+                      <div className="selectedEggRarity">
+                        {selectedEggRarity}
+                      </div>
+                    ) : null}
+
                     <div className="selectedSub">{countdownText}</div>
 
                     <button
@@ -866,11 +875,6 @@ export default function HatcheryPage() {
                       </div>
                     );
                   })}
-
-                  <div className="statRow statRowTotal">
-                    <div className="statLabel">TOTAL</div>
-                    <div className="statValue">{displayedStats.base_total}</div>
-                  </div>
                 </div>
 
                 <div className="eggTraitFlavorText">

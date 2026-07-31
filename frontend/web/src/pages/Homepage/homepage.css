@@ -17,8 +17,7 @@
   overflow: hidden;
   box-shadow:
     0 8px 20px rgba(8, 18, 38, 0.22),
-    inset 0 1px 0 var(--dp-panel-inner-highlight),
-    0 0 14px var(--dp-panel-glow);
+    inset 0 1px 0 var(--dp-panel-inner-highlight);
 }
 
 .hp-bannerContent {
@@ -39,7 +38,7 @@
 }
 
 .hp-bannerTickerTrack {
-  animation: hp-scroll 20s linear infinite !important;
+  animation: hp-scroll 70s linear infinite !important;
 }
 
 @keyframes hpBannerTickerLeft {
@@ -133,8 +132,6 @@
     );
   box-shadow:
     0 0 0 1px var(--dp-panel-inner-border) inset,
-    0 0 18px var(--dp-panel-glow),
-    0 0 42px var(--dp-cyber-blue-soft),
     inset 0 0 24px var(--dp-panel-inner-shadow);
   overflow: hidden;
 }
@@ -1468,8 +1465,9 @@
 .hp-bannerTickerTrack {
   display: flex;
   gap: 48px;
+
   width: max-content;
-  animation: hp-scroll 250s linear infinite !important;
+  animation: hp-scroll 25s linear infinite !important;
 }
 
 .hp-bannerTickerItem {

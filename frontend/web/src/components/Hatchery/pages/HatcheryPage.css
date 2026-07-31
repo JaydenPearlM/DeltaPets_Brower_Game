@@ -2025,3 +2025,1265 @@ textarea {
     max-height: 52vh;
   }
 }
+
+/* =========================================================
+   FINAL HATCHERY UI LAYOUT OVERRIDE
+   UI only: no TSX, storage logic, hatch logic, or breeding
+   stat behavior is changed.
+   ========================================================= */
+
+.hatcheryWorkbenchLayout {
+  width: min(100%, var(--dp-page-max));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
+  grid-template-areas:
+    "team team"
+    "left storage"
+    "rack rack";
+  gap: 14px;
+  align-items: start;
+}
+
+.storagePanel {
+  display: contents;
+}
+
+.storagePanel > .storageHeader,
+.storageSectionDivider {
+  display: none;
+}
+
+.mainPartyInlineSection {
+  grid-area: team;
+  width: 100%;
+  min-width: 0;
+}
+
+.hatcheryLeftColumn {
+  grid-area: left;
+  width: 100%;
+  min-width: 0;
+  margin-left: 0;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 14px;
+}
+
+.storedPetsInlineSection {
+  grid-area: storage;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 18px;
+  border: 2px solid var(--hatch-shell-border);
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(122, 151, 199, 0.98) 0%,
+    rgba(92, 125, 180, 0.98) 30%,
+    rgba(71, 104, 150, 0.98) 100%
+  );
+  box-shadow:
+    14px 16px 28px rgba(18, 28, 49, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -12px 18px rgba(17, 31, 58, 0.12);
+  overflow: hidden;
+}
+
+.rackPanelSide {
+  grid-area: rack;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+}
+
+.eggGridCompact {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+/* Compact Selected Egg chamber */
+
+.selectedEggPanelMain {
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  padding: 12px;
+}
+
+.selectedEggPanelMain > .panelHeader {
+  display: none;
+}
+
+.selectedEggPreviewArea {
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+  max-height: 300px;
+  padding: 24px;
+  border: 2px solid var(--dp-standard-panel-border);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      circle at 18% 24%,
+      rgba(255, 255, 255, 0.9) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 72% 18%,
+      rgba(77, 234, 255, 0.9) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 84% 72%,
+      rgba(255, 217, 77, 0.9) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 36% 78%,
+      rgba(255, 255, 255, 0.82) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 50% 34%,
+      rgba(22, 183, 255, 0.16) 0%,
+      transparent 42%
+    ),
+    linear-gradient(
+      180deg,
+      var(--dp-panel-bg-top) 0%,
+      var(--dp-panel-bg-mid) 52%,
+      var(--dp-panel-bg-bottom) 100%
+    );
+  background-size:
+    84px 84px,
+    126px 126px,
+    168px 168px,
+    204px 204px,
+    auto,
+    auto;
+  box-shadow:
+    0 0 0 4px var(--dp-panel-purple-border) inset,
+    inset 0 0 24px rgba(0, 0, 0, 0.26),
+    0 10px 24px rgba(31, 52, 86, 0.18);
+}
+
+.selectedEggPreviewArea::before {
+  content: none;
+}
+
+.selectedEggPreviewArea::after {
+  content: none;
+}
+
+.incubatorGlass,
+.selectedEggHalo,
+.selectedPreviewEyebrow {
+  display: none;
+}
+
+.selectedPreviewFilled {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.eggBigImg,
+.eggElementPlaceholderBig {
+  width: 126px;
+  height: 126px;
+}
+
+.eggBigImg {
+  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.28));
+}
+
+.selectedText {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.selectedName {
+  margin: 0;
+  color: var(--dp-brand-yellow);
+  font-size: 1.35rem;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: none;
+}
+
+.selectedSub {
+  margin: 0;
+  color: var(--dp-panel-text);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.selectedPreviewHatchBtn {
+  width: min(180px, 100%);
+  min-height: 42px;
+  margin-top: 4px;
+  padding: 9px 16px 12px;
+  border: 2px solid var(--btn-gold-border);
+  border-radius: 18px;
+  color: var(--btn-gold-text);
+  background: var(--dp-gradient-yellow-button);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 8px 16px rgba(203, 141, 18, 0.25);
+}
+
+.selectedPreviewHatchBtn:hover:not(:disabled) {
+  background: var(--dp-gradient-yellow-button-hover);
+}
+
+/* Egg stats and incubation shelf remain under Selected Egg */
+
+.hatcheryBottomRow,
+.hatcheryBottomRowInner {
+  width: 100%;
+  min-width: 0;
+}
+
+.hatcheryBottomRowInner {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.statsPanelBottom,
+.shelfPanelBottom {
+  min-width: 0;
+}
+
+.itemsGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Tablet */
+
+@media (max-width: 1100px) {
+  .hatcheryWorkbenchLayout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "team"
+      "left"
+      "storage"
+      "rack";
+  }
+
+  .eggGridCompact {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Phones: Galaxy S22, S22 Ultra, Pixel 10 */
+
+@media (max-width: 700px) {
+  .hatcheryPage {
+    width: 100%;
+    min-height: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .hatcheryWorkbenchLayout {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "team"
+      "left"
+      "storage"
+      "rack";
+    gap: 12px;
+  }
+
+  .hatcheryLeftColumn,
+  .mainPartyInlineSection,
+  .storedPetsInlineSection,
+  .rackPanelSide,
+  .selectedEggPanelMain,
+  .statsPanelBottom,
+  .shelfPanelBottom {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hatcheryBottomRowInner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .selectedEggPreviewArea {
+    height: min(320px, 88vw);
+    min-height: 280px;
+    max-height: 320px;
+    padding: 18px;
+  }
+
+  .eggBigImg,
+  .eggElementPlaceholderBig {
+    width: min(126px, 34vw);
+    height: min(126px, 34vw);
+  }
+
+  .selectedName {
+    font-size: clamp(1.1rem, 5vw, 1.35rem);
+  }
+
+  .storedPetsInlineSection {
+    padding: 16px;
+  }
+
+  .eggGridCompact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .itemsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 365px) {
+  .hatcheryPage {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .selectedEggPreviewArea {
+    height: 290px;
+    min-height: 290px;
+    max-height: 290px;
+    padding: 14px;
+  }
+
+  .storedPetsInlineSection {
+    padding: 14px;
+  }
+}
+
+/* =========================================================
+   SELECTED EGG + STATS DESKTOP ALIGNMENT
+   UI only. Storage position and logic remain untouched.
+   ========================================================= */
+
+@media (min-width: 1101px) {
+  .hatcheryLeftColumn {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.82fr) minmax(260px, 1fr);
+    grid-template-areas:
+      "selected stats"
+      "shelf shelf";
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .hatcheryBottomRow,
+  .hatcheryBottomRowInner {
+    display: contents;
+  }
+
+  .selectedEggPanelMain {
+    grid-area: selected;
+  }
+
+  .statsPanelBottom {
+    grid-area: stats;
+    height: 100%;
+  }
+
+  .shelfPanelBottom {
+    grid-area: shelf;
+  }
+}
+
+/* Remove only the extra light-blue shell behind the star chamber. */
+.selectedEggPanelMain {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.selectedEggPanelMain::before,
+.selectedEggPanelMain::after {
+  content: none;
+  display: none;
+}
+
+.selectedEggPreviewArea {
+  height: 260px;
+  min-height: 260px;
+  max-height: 260px;
+  padding: 18px;
+}
+
+.eggBigImg,
+.eggElementPlaceholderBig {
+  width: 108px;
+  height: 108px;
+}
+
+.selectedName {
+  font-size: 1.2rem;
+}
+
+@media (max-width: 1100px) {
+  .selectedEggPanelMain {
+    padding: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .hatcheryBottomRow,
+  .hatcheryBottomRowInner {
+    display: block;
+  }
+
+  .statsPanelBottom,
+  .shelfPanelBottom {
+    width: 100%;
+  }
+
+  .shelfPanelBottom {
+    margin-top: 12px;
+  }
+
+  .selectedEggPreviewArea {
+    height: min(290px, 82vw);
+    min-height: 250px;
+    max-height: 290px;
+  }
+}
+
+/* =========================================================
+   SELECTED STARTER EGG RARITY
+   Starter-only label; Kithna eggs render no rarity element.
+   ========================================================= */
+
+.selectedEggRarity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 4px 12px;
+  border: 1px solid var(--dp-panel-purple-border);
+  border-radius: var(--radius-pill);
+  background: rgba(177, 92, 255, 0.14);
+  color: var(--dp-panel-purple-border);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+@media (max-width: 430px) {
+  .selectedEggRarity {
+    min-height: 22px;
+    padding: 4px 10px;
+    font-size: 0.66rem;
+  }
+}
+
+/* =========================================================
+   SELECTED EGG STATS PANEL
+   Purple outer border, cyan inset, 15px content clearance.
+   Scoped to Hatchery only; global panel system is untouched.
+   ========================================================= */
+
+.selectedEggStatsInset {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-width: 0;
+  height: 100%;
+  padding: 39px;
+  border: 2px solid var(--dp-panel-purple-border);
+  border-radius: 24px;
+  background: var(--dp-standard-panel-bg);
+  box-shadow: 0 0 2px var(--dp-panel-purple-glow);
+  color: var(--dp-panel-text);
+}
+
+.selectedEggStatsInset::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-standard-panel-inset-gap);
+  z-index: 0;
+  border: var(--dp-standard-panel-inner-size) solid var(--dp-cyber-cyan);
+  border-radius: 14px;
+  background-image:
+    var(--dp-standard-panel-blue-grid),
+    radial-gradient(
+      circle at 100% 100%,
+      var(--dp-standard-panel-cyan-inset-splash-gold) 0%,
+      var(--dp-standard-panel-cyan-inset-splash-gold) 18%,
+      var(--dp-standard-panel-cyan-inset-splash-orange) 46%,
+      transparent 76%
+    ),
+    var(--dp-standard-panel-bg);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
+    auto;
+  background-position:
+    0 0,
+    0 0,
+    100% 100%,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  background-clip: padding-box;
+  background-origin: padding-box;
+  pointer-events: none;
+}
+
+.selectedEggStatsInset::after {
+  content: none;
+  display: none;
+}
+
+.selectedEggStatsInset > * {
+  position: relative;
+  z-index: 1;
+}
+
+.selectedEggStatsInset .panelTitle {
+  color: var(--dp-title-gold);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+.selectedEggStatsInset .statsIntro {
+  margin-top: 10px;
+  margin-bottom: 12px;
+  color: var(--dp-panel-muted);
+}
+
+.selectedEggStatsInset .compactStatsGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.selectedEggStatsInset .statRow {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(3, 12, 28, 0.72);
+  color: var(--dp-panel-text);
+  box-shadow: inset 0 1px 0 var(--dp-white-06);
+}
+
+.selectedEggStatsInset .statLabel {
+  color: var(--dp-panel-muted);
+}
+
+.selectedEggStatsInset .statValue {
+  color: var(--dp-panel-text);
+}
+
+.selectedEggStatsInset .statRowStrong {
+  border-color: var(--dp-stat-strong);
+  box-shadow:
+    0 0 0 1px var(--dp-stat-strong-bg),
+    0 0 16px rgba(102, 255, 143, 0.18),
+    inset 0 0 14px rgba(102, 255, 143, 0.08);
+}
+
+.selectedEggStatsInset .statRowWeak {
+  border-color: var(--dp-stat-weak);
+  box-shadow:
+    0 0 0 1px var(--dp-stat-weak-bg),
+    0 0 16px rgba(255, 83, 83, 0.16),
+    inset 0 0 14px rgba(255, 83, 83, 0.08);
+}
+
+.selectedEggStatsInset .eggTraitFlavorText {
+  min-height: 0;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--dp-border-panel-soft);
+  border-radius: 10px;
+  background: rgba(3, 12, 28, 0.72);
+  color: var(--dp-panel-text);
+  line-height: 1.5;
+}
+
+/* The Total JSX row was removed. Keep this hidden as a safety net. */
+.selectedEggStatsInset .statRowTotal {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .selectedEggStatsInset {
+    padding: 35px;
+  }
+}
+
+@media (max-width: 430px) {
+  .selectedEggStatsInset {
+    padding: 30px;
+    border-radius: 20px;
+  }
+
+  .selectedEggStatsInset::before {
+    inset: 10px;
+    border-width: 4px;
+  }
+
+  .selectedEggStatsInset .compactStatsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .selectedEggStatsInset .statRow {
+    padding: 9px 8px;
+  }
+
+  .selectedEggStatsInset .eggTraitFlavorText {
+    padding: 10px;
+  }
+}
+
+/* =========================================================
+   HATCHERY SHELF + EGG RACK FINAL UI PASS
+   UI only. Storage and locked global grid selectors untouched.
+   ========================================================= */
+
+/* Match Selected Egg bottom edge to Selected Egg Stats. */
+@media (min-width: 1101px) {
+  .selectedEggPanelMain {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .selectedEggPreviewArea {
+    flex: 1;
+    height: 100%;
+    min-height: 100%;
+    max-height: none;
+  }
+}
+
+/* Incubation Shelf: purple outer border, cyan inset. */
+.incubationInsetPanel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-width: 0;
+  padding: 34px;
+  border: 2px solid var(--dp-panel-purple-border);
+  border-radius: 24px;
+  background: var(--dp-standard-panel-bg);
+  box-shadow: 0 0 2px var(--dp-panel-purple-glow);
+  color: var(--dp-panel-text);
+}
+
+.incubationInsetPanel::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-standard-panel-inset-gap);
+  z-index: 0;
+  border: var(--dp-standard-panel-inner-size) solid var(--dp-cyber-cyan);
+  border-radius: 14px;
+  background-image:
+    var(--dp-standard-panel-blue-grid), var(--dp-standard-panel-bg);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    auto;
+  background-position:
+    0 0,
+    0 0,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat;
+  pointer-events: none;
+}
+
+.incubationInsetPanel::after {
+  content: none;
+  display: none;
+}
+
+.incubationInsetPanel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.incubationInsetPanel .panelTitle {
+  color: var(--dp-title-gold);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+.incubationInsetPanel .panelSubtext {
+  color: var(--dp-panel-muted);
+}
+
+.incubationInsetPanel .itemsGrid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.incubationInsetPanel .itemSlot {
+  min-width: 0;
+  min-height: 72px;
+  border: 1px solid var(--dp-border-panel-soft);
+  background: rgba(3, 12, 28, 0.76);
+  color: var(--dp-panel-text);
+  box-shadow: inset 0 1px 0 var(--dp-white-06);
+}
+
+.incubationInsetPanel .itemSlotIndex,
+.incubationInsetPanel .itemSlotEmpty {
+  color: var(--dp-panel-muted);
+}
+
+/* Egg Rack: cyan outer border, purple inset. */
+.rackPanelSide {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-width: 0;
+  padding: 34px;
+  border: 2px solid var(--dp-cyber-cyan);
+  border-radius: 24px;
+  background: var(--dp-standard-panel-bg);
+  box-shadow: 0 0 2px var(--dp-panel-glow-cyan);
+  color: var(--dp-panel-text);
+}
+
+.rackPanelSide::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-standard-panel-inset-gap);
+  z-index: 0;
+  border: var(--dp-standard-panel-inner-size) solid
+    var(--dp-panel-purple-border);
+  border-radius: 14px;
+  background-image:
+    var(--dp-standard-panel-blue-grid), var(--dp-standard-panel-bg);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    auto;
+  background-position:
+    0 0,
+    0 0,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat;
+  pointer-events: none;
+}
+
+.rackPanelSide::after {
+  content: none;
+  display: none;
+}
+
+.rackPanelSide > * {
+  position: relative;
+  z-index: 1;
+}
+
+.rackPanelSide .panelTitle {
+  color: var(--dp-title-gold);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+.rackPanelSide .panelSubtext {
+  color: var(--dp-panel-muted);
+}
+
+.rackPanelSide .eggRackBody {
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.rackPanelSide .eggRackBody::before,
+.rackPanelSide .eggRackBody::after {
+  content: none;
+  display: none;
+}
+
+.rackPanelSide .eggGridCompact {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Remove the old pale-blue surfaces from Shelf and Rack only. */
+.incubationInsetPanel,
+.rackPanelSide,
+.rackPanelSide .eggRackBody {
+  background-color: var(--dp-standard-panel-bg);
+}
+
+/* Tablet and phones. */
+@media (max-width: 1100px) {
+  .incubationInsetPanel .itemsGrid,
+  .rackPanelSide .eggGridCompact {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .incubationInsetPanel,
+  .rackPanelSide {
+    padding: 30px;
+    border-radius: 20px;
+  }
+
+  .incubationInsetPanel::before,
+  .rackPanelSide::before {
+    inset: 10px;
+    border-width: 4px;
+  }
+
+  .incubationInsetPanel .itemsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rackPanelSide .eggGridCompact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 365px) {
+  .incubationInsetPanel,
+  .rackPanelSide {
+    padding: 28px;
+  }
+}
+
+/* =========================================================
+   SHELF / STORAGE BOTTOM ALIGNMENT + EGG RACK CARD SHAPE
+   UI only. Existing rack locks and hatch behavior untouched.
+   ========================================================= */
+
+@media (min-width: 1101px) {
+  .hatcheryWorkbenchLayout {
+    align-items: stretch;
+  }
+
+  .hatcheryLeftColumn {
+    height: 100%;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .shelfPanelBottom {
+    height: 100%;
+    align-self: stretch;
+  }
+
+  .incubationInsetPanel {
+    height: 100%;
+  }
+}
+
+/* Egg Rack cards: compact box shape instead of long rectangles. */
+
+.rackPanelSide .eggGridCompact {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.rackPanelSide .eggSlotCard {
+  aspect-ratio: 1 / 1.08;
+  min-height: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--dp-border-panel-soft);
+  border-radius: 14px;
+  background: rgba(3, 12, 28, 0.82);
+  box-shadow: inset 0 1px 0 var(--dp-white-06);
+}
+
+.rackPanelSide .eggSlot {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.rackPanelSide .eggSlotLeft {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rackPanelSide .eggIcon,
+.rackPanelSide .eggIconImg {
+  width: 76px;
+  height: 76px;
+}
+
+.rackPanelSide .eggIconImg {
+  object-fit: contain;
+}
+
+.rackPanelSide .eggSlotMain {
+  width: 100%;
+}
+
+.rackPanelSide .eggSlotTop {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.rackPanelSide .eggSlotTitle {
+  color: var(--dp-panel-text);
+  font-size: 0.82rem;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.rackPanelSide .eggSlotTimer {
+  color: var(--dp-panel-muted);
+  font-size: 0.7rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.rackPanelSide .rackHatchBtn {
+  width: 100%;
+  min-height: 38px;
+  margin-top: 0;
+  border: 2px solid var(--btn-gold-border);
+  border-radius: 16px;
+  color: var(--btn-gold-text);
+  background: var(--dp-gradient-yellow-button);
+  font-family: var(--font-body);
+  font-weight: 900;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 6px 12px rgba(203, 141, 18, 0.2);
+}
+
+.rackPanelSide .rackHatchBtn:hover:not(:disabled) {
+  background: var(--dp-gradient-yellow-button-hover);
+}
+
+.rackPanelSide .eggSlotCard.locked {
+  opacity: 0.56;
+}
+
+.rackPanelSide .eggSlotCard.locked .rackHatchBtn {
+  cursor: not-allowed;
+}
+
+@media (max-width: 1100px) {
+  .rackPanelSide .eggGridCompact {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .rackPanelSide .eggGridCompact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rackPanelSide .eggSlotCard {
+    aspect-ratio: 1 / 1.06;
+    padding: 10px;
+  }
+
+  .rackPanelSide .eggIcon,
+  .rackPanelSide .eggIconImg {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+/* =========================================================
+   FINAL HATCHERY SURGICAL FIXES
+   Egg Rack: image, name, countdown. No rack hatch button.
+   Selected Egg hatch button moved down 40px.
+   ========================================================= */
+
+.rackPanelSide .eggSlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  text-align: center;
+}
+
+.rackPanelSide .eggSlotLeft {
+  order: 1;
+}
+
+.rackPanelSide .eggSlotMain {
+  order: 2;
+  width: 100%;
+}
+
+.rackPanelSide .eggSlotTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.rackPanelSide .eggSlotTitle {
+  order: 1;
+  width: 100%;
+  text-align: center;
+}
+
+.rackPanelSide .eggSlotTimer {
+  order: 2;
+  width: 100%;
+  text-align: center;
+}
+
+.rackPanelSide .rackHatchBtn {
+  display: none;
+}
+
+.selectedPreviewHatchBtn {
+  margin-top: 44px;
+}
+
+/* =========================================================
+   FINAL SHELF + EGG RACK SIZING
+   Shape/spacing only. Panel borders and inset borders untouched.
+   ========================================================= */
+
+/* Five square Incubation Shelf slots with rounded corners. */
+.incubationInsetPanel .itemSlot {
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.incubationInsetPanel .itemSlotInner {
+  width: 100%;
+  height: 100%;
+  align-content: center;
+}
+
+/* Compact Egg Rack item rectangles. */
+.rackPanelSide .eggSlotCard {
+  aspect-ratio: auto;
+  min-height: 126px;
+  padding: 10px;
+  border-radius: 14px;
+  gap: 6px;
+}
+
+.rackPanelSide .eggSlot {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  gap: 6px;
+}
+
+.rackPanelSide .eggIcon,
+.rackPanelSide .eggIconImg {
+  width: 54px;
+  height: 54px;
+}
+
+.rackPanelSide .eggSlotTop {
+  gap: 3px;
+}
+
+.rackPanelSide .eggSlotTitle {
+  font-size: 0.78rem;
+}
+
+.rackPanelSide .eggSlotTimer {
+  font-size: 0.68rem;
+}
+
+@media (max-width: 700px) {
+  .incubationInsetPanel .itemSlot {
+    aspect-ratio: 1 / 1;
+  }
+
+  .rackPanelSide .eggSlotCard {
+    aspect-ratio: auto;
+    min-height: 118px;
+    padding: 10px;
+  }
+
+  .rackPanelSide .eggIcon,
+  .rackPanelSide .eggIconImg {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* =========================================================
+   FINAL TIGHT ITEM BOXES
+   Individual Shelf and Egg Rack boxes only.
+   Outer panel borders and inset borders remain untouched.
+   ========================================================= */
+
+.incubationInsetPanel .itemSlot {
+  aspect-ratio: auto;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  padding: 10px;
+  border: 3px solid var(--dp-border-gold);
+  border-radius: 14px;
+}
+
+.incubationInsetPanel .itemSlotInner {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  align-content: start;
+  gap: 4px;
+}
+
+.rackPanelSide .eggSlotCard {
+  aspect-ratio: auto;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  padding: 10px;
+  border: 3px solid var(--dp-border-gold);
+  border-radius: 14px;
+  gap: 6px;
+}
+
+.rackPanelSide .eggSlot {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  gap: 6px;
+}
+
+@media (max-width: 700px) {
+  .incubationInsetPanel .itemSlot,
+  .rackPanelSide .eggSlotCard {
+    aspect-ratio: auto;
+    min-height: 0;
+    height: auto;
+    padding: 10px;
+  }
+}
+
+/* =========================================================
+   FINAL EGG RACK WIDTH TIGHTENING
+   Individual Egg Rack cards only.
+   ========================================================= */
+
+.rackPanelSide .eggGridCompact {
+  grid-template-columns: repeat(5, max-content);
+  justify-content: start;
+}
+
+.rackPanelSide .eggSlotCard {
+  width: fit-content;
+  min-width: 96px;
+  max-width: 132px;
+  justify-self: start;
+  padding: 10px;
+}
+
+.rackPanelSide .eggSlot {
+  width: auto;
+  min-width: 0;
+}
+
+.rackPanelSide .eggSlotMain,
+.rackPanelSide .eggSlotTop,
+.rackPanelSide .eggSlotTitle,
+.rackPanelSide .eggSlotTimer {
+  width: auto;
+  max-width: 112px;
+}
+
+@media (max-width: 700px) {
+  .rackPanelSide .eggGridCompact {
+    grid-template-columns: repeat(2, max-content);
+    justify-content: start;
+  }
+
+  .rackPanelSide .eggSlotCard {
+    width: fit-content;
+    min-width: 96px;
+    max-width: 132px;
+  }
+}
+
+/* =========================================================
+   FINAL RACK WIDTH + STORAGE BOTTOM ALIGNMENT
+   Desktop layout only. Borders and inset borders untouched.
+   ========================================================= */
+
+@media (min-width: 1101px) {
+  .rackPanelSide {
+    width: fit-content;
+    max-width: 100%;
+    justify-self: start;
+  }
+
+  .hatcheryWorkbenchLayout .storagePanel {
+    height: 100%;
+    align-self: stretch;
+  }
+}
+
+/* =========================================================
+   FINAL DESKTOP RACK / STORAGE ALIGNMENT
+   Placement only. Borders, insets, cards, and content untouched.
+   ========================================================= */
+
+@media (min-width: 1101px) {
+  .hatcheryWorkbenchLayout {
+    grid-template-areas:
+      "team team"
+      "left storage"
+      "rack storage";
+    align-items: stretch;
+  }
+
+  .rackPanelSide {
+    margin-left: 0;
+    justify-self: center;
+    align-self: start;
+  }
+
+  .storedPetsInlineSection {
+    height: 100%;
+    align-self: stretch;
+  }
+}

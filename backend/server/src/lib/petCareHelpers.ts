@@ -41,15 +41,18 @@ export function normalizePetForClient<T extends Record<string, any>>(
   return {
     ...pet,
     hunger: safeWhole(pet.hunger, CARE_DEFAULT),
+    // canonical columns (schema post-20260507000029)
     clean,
-    cleanliness: clean,
     happy,
-    happiness: happy,
     comfort: safeWhole(pet.comfort, CARE_DEFAULT),
     rest: safeWhole(pet.rest, CARE_DEFAULT),
     energy: safeEnergy(pet.energy, ENERGY_DEFAULT),
     neglect_hours: Number(pet.neglect_hours ?? 0) || 0,
     ran_away: ranAway,
+    // ghost column compat shim — remove after confirming prod DB no longer has
+    // cleanliness / happiness / is_runaway columns (check via Supabase Table Editor)
+    cleanliness: clean,
+    happiness: happy,
     is_runaway: ranAway,
     last_care_update: lastCareDecayAt,
     last_care_decay_at: lastCareDecayAt,
