@@ -4,8 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import "./LoginMenus.css";
 import { supabase } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api/baseClient";
 import { useAuth } from "@/app/providers/useAuth";
-import { useEnterGame } from "@/app/entry/useEnterGame";
 
 type AuthView = "login" | "signup";
 type ForcedAuthView = AuthView | "none";
@@ -94,7 +94,6 @@ export function LoginMenus({
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn } = useAuth();
-  const { enterGame } = useEnterGame();
 
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<AuthView>("login");
@@ -229,10 +228,23 @@ export function LoginMenus({
         return;
       }
 
-      console.log("[auth] sign-in success, handing off to enterGame()");
+      const introState = await apiFetch<{
+        intro_seen?: boolean;
+      }>("/api/me/intro");
 
       closeModal();
-      await enterGame();
+
+      if (!introState.intro_seen) {
+        console.log("[auth] first sign-in, routing to create");
+        navigate("/create", { replace: true });
+        return;
+      }
+
+      console.log("[auth] returning sign-in, routing to profile");
+      navigate("/profile", { replace: true });
+
+      closeModal();
+      navigate("/profile", { replace: true });
     } catch (error) {
       console.error("[auth] sign-in failed:", error);
       setMessage({

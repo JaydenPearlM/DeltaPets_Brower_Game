@@ -162,29 +162,15 @@ export async function fetchTotalPoints(petId: string) {
   const passiveMana = Number(passiveEffects.mana ?? 0);
 
   // base(10) + iv(7) + passive trait => total points at level 1
+  // base(10) + iv(7) => 17 basic stat points at level 1.
+  // Passive traits are displayed separately as modifiers.
   const total = {
-    hp:
-      (base.hp ?? 0) + alloc.hp + (Number.isFinite(passiveHp) ? passiveHp : 0),
-    atk:
-      (base.atk ?? 0) +
-      alloc.atk +
-      (Number.isFinite(passiveAtk) ? passiveAtk : 0),
-    magi:
-      (base.magi ?? 0) +
-      alloc.magi +
-      (Number.isFinite(passiveMagi) ? passiveMagi : 0),
-    def:
-      (base.def ?? 0) +
-      alloc.def +
-      (Number.isFinite(passiveDef) ? passiveDef : 0),
-    spd:
-      (base.spd ?? 0) +
-      alloc.spd +
-      (Number.isFinite(passiveSpd) ? passiveSpd : 0),
-    mana:
-      (base.mana ?? 0) +
-      (alloc.mana ?? 0) +
-      (Number.isFinite(passiveMana) ? passiveMana : 0),
+    hp: (base.hp ?? 0) + alloc.hp,
+    atk: (base.atk ?? 0) + alloc.atk,
+    magi: (base.magi ?? 0) + alloc.magi,
+    def: (base.def ?? 0) + alloc.def,
+    spd: (base.spd ?? 0) + alloc.spd,
+    mana: (base.mana ?? 0) + (alloc.mana ?? 0),
   };
 
   const total_points =

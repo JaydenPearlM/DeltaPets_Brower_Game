@@ -10,7 +10,6 @@
   border-radius: 20px;
   background: var(--dp-popup-grid-base);
   box-shadow: var(--dp-popup-window-shadow);
-  animation: roamEncounterToastIn 220ms ease-out;
 }
 .roamEncounterToast__body {
   display: flex;

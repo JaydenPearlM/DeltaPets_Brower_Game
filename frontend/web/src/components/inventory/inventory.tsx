@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
-import carePackageImage from "@/Pets_Creation/assets/present/ChatGPT Image Jul 24, 2026, 12_57_06 PM.png";
+
 import "./inventory.css";
 
 // Backend-tracked items (GET /api/inventory). Separate from the local
@@ -354,7 +354,7 @@ export default function Inventory({ onClose }: InventoryProps) {
     crystals: 0,
   });
   const [openingCarePackage, setOpeningCarePackage] = useState(false);
-  const [carePackageClickReady, setCarePackageClickReady] = useState(false);
+
   const [showCarePackageNotice, setShowCarePackageNotice] = useState(false);
   const [carePackageMessage, setCarePackageMessage] = useState("");
 
@@ -443,9 +443,7 @@ export default function Inventory({ onClose }: InventoryProps) {
       setBackendItems((items) =>
         items.filter((item) => item.slug !== "closed-alpha-care-package"),
       );
-
       setShowCarePackageNotice(false);
-      setCarePackageClickReady(false);
 
       setCarePackageMessage(
         `Care Package opened! You received 50 Meat, 50 Vegetables, 50 Clean, 50 Mood, 50 Comfort, and 1,000 Dots. Balance: ${result.wallet.dots.toLocaleString()} Dots.`,
@@ -457,17 +455,6 @@ export default function Inventory({ onClose }: InventoryProps) {
     } finally {
       setOpeningCarePackage(false);
     }
-  }
-
-  function handleCarePackageClick() {
-    if (openingCarePackage) return;
-
-    if (!carePackageClickReady) {
-      setCarePackageClickReady(true);
-      return;
-    }
-
-    void openClosedAlphaCarePackage();
   }
 
   const sortedInventoryItems = useMemo(
@@ -533,9 +520,10 @@ export default function Inventory({ onClose }: InventoryProps) {
             <button
               type="button"
               className="dp-btn--close"
-              onClick={() => setShowCarePackageNotice(false)}
+              disabled={openingCarePackage}
+              onClick={() => void openClosedAlphaCarePackage()}
             >
-              Get Gift
+              {openingCarePackage ? "Opening..." : "Get Gift"}
             </button>
           </div>
         </div>
@@ -626,63 +614,6 @@ export default function Inventory({ onClose }: InventoryProps) {
           ),
         )}
       </div>
-
-      {sortedBackendItems.some(
-        (item) => item.slug === "closed-alpha-care-package",
-      ) ? (
-        <>
-          <p className="inventorySectionLabel inventorySectionLabel--rewards">
-            Rewards
-          </p>
-
-          <div
-            className="inventoryGrid inventoryGrid--rewards"
-            aria-label="Reward items"
-          >
-            {sortedBackendItems
-              .filter((item) => item.slug === "closed-alpha-care-package")
-              .map((item) => (
-                <article
-                  className="inventoryItemCard inventoryCarePackageCard"
-                  key={item.slug}
-                >
-                  <div className="inventoryCarePackageReward">
-                    <button
-                      type="button"
-                      className="inventoryCarePackageButton"
-                      disabled={openingCarePackage}
-                      onClick={handleCarePackageClick}
-                      aria-label="Closed Alpha Care Package"
-                    >
-                      <span className="inventoryCarePackageImageWrap">
-                        <img
-                          className="inventoryCarePackageImage"
-                          src={carePackageImage}
-                          alt="Closed Alpha Care Package present"
-                        />
-
-                        <span className="inventoryCarePackageQty">
-                          ×{item.qty}
-                        </span>
-                      </span>
-
-                      <span className="inventoryCarePackageHint" role="tooltip">
-                        <strong>Closed Alpha Care Package</strong>
-                        <span>Thank you!</span>
-                      </span>
-                    </button>
-
-                    {carePackageClickReady ? (
-                      <p className="inventoryCarePackageTapHint" role="status">
-                        Tap again to open.
-                      </p>
-                    ) : null}
-                  </div>
-                </article>
-              ))}
-          </div>
-        </>
-      ) : null}
 
       {(() => {
         const nonPackageItems = sortedBackendItems.filter(
