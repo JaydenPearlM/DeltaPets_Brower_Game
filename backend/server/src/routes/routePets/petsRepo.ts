@@ -271,10 +271,7 @@ async function ensureHatcheryInitialized(userId: string): Promise<void> {
 
   if (!initialized) {
     await initializeHatcheryForUser(userId);
-    return;
   }
-
-  await runEnsureHatcherySlots(userId);
 }
 
 export async function fetchHatcherySlots(userId: string) {
