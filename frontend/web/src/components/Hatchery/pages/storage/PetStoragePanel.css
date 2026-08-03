@@ -411,6 +411,23 @@
     padding: 35px;
   }
 
+  .hatcheryPage .storedPetsSectionHeader .panelTitle {
+    font-size: 1.35rem;
+  }
+
+  .storageMenu {
+    position: static;
+  }
+
+  .storageMenuPanel {
+    top: 78px;
+    right: 35px;
+    bottom: 35px;
+    left: 35px;
+    width: auto;
+    overflow-y: auto;
+  }
+
   .storagePetCard {
     grid-template-columns: 50px minmax(0, 1fr);
     grid-template-areas:
