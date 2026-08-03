@@ -182,6 +182,7 @@ function StoragePetCard(props: {
   onDragEnd: () => void;
   onMoveEggToIncubator?: (petId: string) => void;
   onMovePetToParty?: (petId: string) => void;
+  onSelectPet?: (petId: string) => void;
   targetSlot: number | null;
   isWorking: boolean;
   incubatorBusy: boolean;
@@ -193,6 +194,7 @@ function StoragePetCard(props: {
     onDragEnd,
     onMoveEggToIncubator,
     onMovePetToParty,
+    onSelectPet,
     targetSlot,
     isWorking,
     incubatorBusy,
@@ -221,6 +223,15 @@ function StoragePetCard(props: {
         onDragStart(event, pet);
       }}
       onDragEnd={onDragEnd}
+      onClick={(event) => {
+        if (
+          isEgg ||
+          (event.target instanceof Element && event.target.closest("button"))
+        ) {
+          return;
+        }
+        onSelectPet?.(pet.id);
+      }}
       title={
         isEgg
           ? "Eggs stay out of Main Team. Use the incubator button."
@@ -429,6 +440,50 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
     setSelectedPartySlot(targetSlot);
   }
 
+  async function handleTeamPetSelect(pet: StoragePet, slotIndex: number) {
+    if (!window.matchMedia("(max-width: 430px)").matches) return;
+
+    const choice = window.prompt(
+      `Move ${pet.name?.trim() || "this pet"}: enter 1, 2, 3, 4, or S for Storage.`,
+    );
+
+    if (!choice) return;
+
+    const normalizedChoice = choice.trim().toLowerCase();
+    if (normalizedChoice === "s" || normalizedChoice === "storage") {
+      await storePet(pet.id);
+      return;
+    }
+
+    const targetSlotIndex = Number(normalizedChoice);
+    if (targetSlotIndex < 1 || targetSlotIndex > PARTY_SLOT_COUNT) {
+      window.alert("Enter 1, 2, 3, 4, or S for Storage.");
+      return;
+    }
+
+    await assignPetToParty(pet.id, targetSlotIndex);
+    setSelectedPartySlot(targetSlotIndex);
+  }
+
+  async function handleStoredPetSelect(petId: string) {
+    if (!window.matchMedia("(max-width: 430px)").matches) return;
+
+    const choice = window.prompt(
+      "Choose a Kith Team slot: enter 1, 2, 3, or 4.",
+    );
+
+    if (!choice) return;
+
+    const targetSlotIndex = Number(choice.trim());
+    if (targetSlotIndex < 1 || targetSlotIndex > PARTY_SLOT_COUNT) {
+      window.alert("Enter a slot number from 1 to 4.");
+      return;
+    }
+
+    await assignPetToParty(petId, targetSlotIndex);
+    setSelectedPartySlot(targetSlotIndex);
+  }
+
   async function handleDropToTeam(
     event: React.DragEvent<HTMLElement>,
     slotIndex: number,
@@ -517,6 +572,9 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
           workingSlotIndex={workingSlotIndex}
           dragOverSlotIndex={dragOverSlotIndex}
           onSelectSlot={setSelectedPartySlot}
+          onSelectPet={(pet, slotIndex) =>
+            void handleTeamPetSelect(pet, slotIndex)
+          }
           onDragStartPet={handleTeamDragStart}
           onDragEndPet={clearDragState}
           onDragOverSlot={allowDrop}
@@ -646,6 +704,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                   onMovePetToParty={(petId) =>
                     void handleMoveStoredPetToTeam(petId)
                   }
+                  onSelectPet={(petId) => void handleStoredPetSelect(petId)}
                   targetSlot={targetSlot}
                   isWorking={workingPetId === pet.id}
                   incubatorBusy={Boolean(incubatingEgg)}

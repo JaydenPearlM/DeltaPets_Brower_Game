@@ -15,6 +15,7 @@ type MainTeamProps = {
   workingSlotIndex: number | null;
   dragOverSlotIndex: number | null;
   onSelectSlot: (slotIndex: number) => void;
+  onSelectPet?: (pet: StoragePet, slotIndex: number) => void;
   onDragStartPet: (
     event: DragEvent<HTMLDivElement>,
     pet: StoragePet,
@@ -210,6 +211,7 @@ export default function MainTeam(props: MainTeamProps) {
     onDragLeaveSlot,
     onDropOnSlot,
     teamName,
+    onSelectPet,
   } = props;
 
   const teamDisplayName = teamName?.trim() || "Kith Team";
@@ -312,7 +314,12 @@ export default function MainTeam(props: MainTeamProps) {
               <button
                 type="button"
                 className="mainTeamSlotButton"
-                onClick={() => onSelectSlot(slot.slotIndex)}
+                onClick={() => {
+                  onSelectSlot(slot.slotIndex);
+                  if (pet) {
+                    onSelectPet?.(pet, slot.slotIndex);
+                  }
+                }}
               >
                 <div
                   className="mainTeamPetArt"
