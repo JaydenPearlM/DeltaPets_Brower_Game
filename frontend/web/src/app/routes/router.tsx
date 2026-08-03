@@ -169,7 +169,7 @@ export const router = createBrowserRouter([
         path: "profile",
         element: withSuspense(
           <ProtectedRoute>
-            <ProfilePage pageName="ProfilePage" />
+            <ProfilePage />
           </ProtectedRoute>,
         ),
       },
