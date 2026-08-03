@@ -12,11 +12,12 @@ import emberEggPng from "@/Pets_Creation/assets/eggs/ember_egg.png";
 import groveEggPng from "@/Pets_Creation/assets/eggs/grove_egg.png";
 import zephyrEggPng from "@/Pets_Creation/assets/eggs/zephr_egg.png";
 import frostveilEggPng from "@/Pets_Creation/assets/eggs/frostviel_egg.png";
-import stormEggPng from "@/Pets_Creation/assets/eggs/storm.png";
-import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light.png";
+import stormEggPng from "@/Pets_Creation/assets/eggs/storm_egg.png";
+import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light_egg.png";
 import eclipseEggPng from "@/Pets_Creation/assets/eggs/eclipse_egg.png";
 import voidborneEggPng from "@/Pets_Creation/assets/eggs/Voidborne_egg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
+import DpPopupWindow from "@/pages/petsPage/components/DpPopupWindow";
 import {
   SHARED_SPECIES,
   ELEMENT_EGG_NAMES,
@@ -506,6 +507,9 @@ export default function HatcheryPage() {
   const [data, setData] = useState<HatcheryResponse | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [isHatching, setIsHatching] = useState(false);
+  const [mobileHatchMessage, setMobileHatchMessage] = useState<string | null>(
+    null,
+  );
 
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
@@ -742,6 +746,18 @@ export default function HatcheryPage() {
 
     await refreshAfterHatch();
     setStorageRefreshSignal((n) => n + 1);
+
+    if (
+      window.matchMedia("(max-width: 640px)").matches &&
+      hatchResult.storage_result
+    ) {
+      const petName = hatchResult.pet?.name ?? "Your new Kith";
+      setMobileHatchMessage(
+        hatchResult.storage_result === "party"
+          ? `${petName} joined your Kith Team.`
+          : `Your Kith Team is full. ${petName} was sent to Storage.`,
+      );
+    }
   }
 
   async function onHatchFromSlot(slot: HatchSlot) {
@@ -939,6 +955,23 @@ export default function HatcheryPage() {
           }}
         />
       </div>
+
+      <DpPopupWindow
+        open={mobileHatchMessage !== null}
+        onClose={() => setMobileHatchMessage(null)}
+        label="Egg hatch result"
+        size="compact"
+      >
+        <h2>Egg Hatched!</h2>
+        <p>{mobileHatchMessage}</p>
+        <button
+          type="button"
+          className="primaryBtn"
+          onClick={() => setMobileHatchMessage(null)}
+        >
+          Continue
+        </button>
+      </DpPopupWindow>
     </div>
   );
 }

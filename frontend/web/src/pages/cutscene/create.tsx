@@ -337,14 +337,14 @@ export default function CreatePage() {
         {
           top: "calc(50% - 212px)",
           transform:
-            "translateX(-50%) translate(-52px, 46px) perspective(900px) translateZ(-1150px) scale(0.035)",
+            "translateX(-50%) translate(0, 212px) perspective(900px) translateZ(-1150px) scale(0.035)",
           opacity: 0,
         },
         {
           offset: 0.2,
           top: "calc(50% - 212px)",
           transform:
-            "translateX(-50%) translate(-84px, 72px) perspective(900px) translateZ(-980px) scale(0.07)",
+            "translateX(-50%) translate(-44px, 148px) perspective(900px) translateZ(-980px) scale(0.07)",
           opacity: 0.18,
         },
         {

@@ -56,7 +56,14 @@ type PetRecord = {
     | null;
 };
 
-type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
+type MeterTone =
+  | "blue"
+  | "purple"
+  | "red"
+  | "green"
+  | "dark-green"
+  | "light-green"
+  | "gold";
 
 type StarterMerchantState = {
   show?: boolean;
@@ -875,16 +882,6 @@ export default function PetDetailsPanel({
                 <p>{petSpeech}</p>
               </div>
             ) : null}
-            <div className="petRepoEnergyPanel" aria-label="Energy level">
-              <span className="petRepoEnergyTitle">Energy</span>
-
-              <div className="petRepoEnergyTrack">
-                <div
-                  className="petRepoEnergyFill"
-                  style={{ width: `${clampedEnergy}%` }}
-                />
-              </div>
-            </div>
 
             <div className="petRepoVerticalInfo">
               <div className="petRepoStatStack">
@@ -929,8 +926,9 @@ export default function PetDetailsPanel({
             <MeterRow label="Hunger" value={hungerLevel} tone="blue" />
             <MeterRow label="Clean" value={cleanLevel} tone="purple" />
             <MeterRow label="Mood" value={moodLevel} tone="red" />
-            <MeterRow label="Rest" value={restLevel} tone="green" />
+            <MeterRow label="Rest" value={restLevel} tone="dark-green" />
             <MeterRow label="Comfort" value={comfortLevel} tone="gold" />
+            <MeterRow label="Energy" value={clampedEnergy} tone="light-green" />
           </div>
 
           <div className="petRepoActionGrid">

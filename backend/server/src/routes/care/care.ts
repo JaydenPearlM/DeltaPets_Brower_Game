@@ -40,6 +40,69 @@ type StarterMerchantState = {
   body: string;
   ctaLabel: string;
 };
+type PetLanguageProgress = {
+  rune_count: number;
+  highest_rune: number;
+  hatchling_fluent: boolean;
+  owned_rune_keys: string[];
+};
+
+async function getPetLanguageProgress(
+  userId: string,
+): Promise<PetLanguageProgress> {
+  const { data: ownedRows, error: ownedError } = await supabaseAdmin
+    .from("user_runes")
+    .select("rune_id")
+    .eq("user_id", userId);
+
+  if (ownedError) {
+    throw ownedError;
+  }
+
+  const runeIds = (ownedRows ?? [])
+    .map((row: any) => row?.rune_id)
+    .filter(
+      (value: unknown): value is string =>
+        typeof value === "string" && value.trim().length > 0,
+    );
+
+  if (!runeIds.length) {
+    return {
+      rune_count: 0,
+      highest_rune: 0,
+      hatchling_fluent: false,
+      owned_rune_keys: [],
+    };
+  }
+
+  const { data: runeRows, error: runeError } = await supabaseAdmin
+    .from("rune_defs")
+    .select("key,rune_number")
+    .in("id", runeIds)
+    .order("rune_number", { ascending: true });
+
+  if (runeError) {
+    throw runeError;
+  }
+
+  const runes = (runeRows ?? []).filter(
+    (row: any) =>
+      typeof row?.key === "string" && Number.isFinite(Number(row?.rune_number)),
+  );
+
+  const ownedRuneKeys = runes.map((row: any) => String(row.key));
+
+  return {
+    rune_count: runes.length,
+    highest_rune: runes.reduce(
+      (highest: number, row: any) =>
+        Math.max(highest, Number(row.rune_number ?? 0)),
+      0,
+    ),
+    hatchling_fluent: ownedRuneKeys.includes("rune_of_first_speech"),
+    owned_rune_keys: ownedRuneKeys,
+  };
+}
 
 async function getStarterMerchantState(
   userId: string,
@@ -242,7 +305,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
         (a: any, b: any) =>
           Number(a?.slot_index ?? 0) - Number(b?.slot_index ?? 0),
       )
-      .slice(0, 5);
+      .slice(0, 4);
 
     const teamPetIds = normalizedSlots
       .map((row: any) => row?.pet_id)

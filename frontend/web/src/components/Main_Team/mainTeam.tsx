@@ -204,6 +204,7 @@ export default function MainTeam(props: MainTeamProps) {
     workingSlotIndex,
     dragOverSlotIndex,
     onSelectSlot,
+    onSelectPet,
     onDragStartPet,
     onDragEndPet,
     onDragOverSlot,
@@ -211,7 +212,6 @@ export default function MainTeam(props: MainTeamProps) {
     onDragLeaveSlot,
     onDropOnSlot,
     teamName,
-    onSelectPet,
   } = props;
 
   const teamDisplayName = teamName?.trim() || "Kith Team";

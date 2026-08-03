@@ -1242,6 +1242,24 @@
   );
 }
 
+.petRepoMeterFill-dark-green {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent-green-2) 45%, var(--dp-black)) 0%,
+    color-mix(in srgb, var(--accent-green-neon) 55%, var(--dp-black)) 100%
+  );
+}
+
+.petRepoMeterFill-light-green {
+  background: linear-gradient(
+    90deg,
+    var(--accent-green-2) 0%,
+    var(--accent-green-neon) 100%
+  );
+  box-shadow: none;
+  filter: none;
+}
+
 .petRepoMeterFill-gold {
   background: linear-gradient(
     90deg,

@@ -23,20 +23,26 @@
    Every padding rule in this file is derived from these two
    numbers. 34px for standard/purple panels. 24px for popups.
 
-   BREAKPOINTS (5 only)
+   BREAKPOINTS
    --------------------------------------------------------
-     900px  -> tablet / narrow desktop edge
-     640px  -> landscape phone / small tablet
-     430px  -> all 4 phones (Pixel 10 at 412px is widest)
-     390px  -> S22 Ultra (384px), iPhone 8 (375px), S22 (360px)
-     360px  -> Samsung Galaxy S22 strict minimum guard
+     900px  -> tablets and narrow desktop windows
+     640px  -> small tablets and landscape phones
+     430px  -> standard smartphone layout
+     390px  -> compact smartphone adjustments
+     360px  -> narrow smartphone safety adjustments
 
-   TARGET DEVICES (CSS viewport widths)
+   TEST WIDTHS
    --------------------------------------------------------
-     Samsung Galaxy S22:       360px   <- design baseline
+     Samsung Galaxy S22:       360px
      Apple iPhone 8:           375px
      Samsung Galaxy S22 Ultra: 384px
+     Apple iPhone 13:          390px
      Google Pixel 10:          412px
+
+     Apple iPad Mini:          768px
+     Samsung Galaxy Tab:       800px
+     Apple iPad Air:           820px
+     Apple iPad Pro 11-inch:   834px
 
    DESIGN RULES
    --------------------------------------------------------
@@ -215,16 +221,49 @@
     max-width: 100%;
   }
 
-  .hatcheryWorkbenchLayout,
-  .hatcheryBottomRowInner {
+  .hatcheryWorkbenchLayout {
     grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "selected"
+      "team"
+      "stats"
+      "shelf"
+      "storage"
+      "rack" !important;
   }
 
-  .hatcheryLeftColumn {
-    margin-left: 0 !important;
+  .hatcheryLeftColumn,
+  .hatcheryBottomRow,
+  .hatcheryBottomRowInner {
+    display: contents !important;
   }
 
-  /* Hatchery egg: show name above egg image on mobile */
+  .selectedEggPanelMain {
+    grid-area: selected;
+  }
+
+  .mainPartyInlineSection {
+    grid-area: team;
+  }
+
+  .statsPanelBottom {
+    grid-area: stats;
+  }
+
+  .shelfPanelBottom {
+    grid-area: shelf;
+    margin-top: 0 !important;
+  }
+
+  .storedPetsInlineSection {
+    grid-area: storage;
+  }
+
+  .rackPanelSide {
+    grid-area: rack;
+  }
+
+  /* Hatchery egg: show image above egg details on mobile */
   .selectedTextAbove {
     display: block;
     text-align: center;
@@ -240,15 +279,15 @@
   }
 
   .eggBigImg {
+    order: 1;
+  }
+
+  .selectedText {
     order: 2;
   }
 
   .selectedSubBelow {
     order: 3;
-    color: #000000 !important;
-    font-weight: 700;
-    font-size: 0.95rem;
-    text-align: center;
   }
 
   /* Homepage spotlight panel */
@@ -457,7 +496,7 @@
   }
 
   .hp-heroInner {
-    padding: 24px 24px 28px !important;
+    padding: 34px !important;
   }
 
   /* Profile page */
@@ -535,21 +574,17 @@
 
   .dpc-text,
   .dpc-text.dpc-text--goodluck {
+    top: calc(50% + 172.5px) !important;
     width: calc(100% - 32px) !important;
     max-width: none !important;
     height: auto !important;
+    min-height: 116px !important;
     padding: 0 8px !important;
     box-sizing: border-box !important;
+    align-items: flex-start !important;
     font-size: 16px !important;
     line-height: 1.45 !important;
-  }
-
-  .dpc-text {
-    transform: translate(-50%, calc(-50% + 145px)) !important;
-  }
-
-  .dpc-text.dpc-text--goodluck {
-    transform: translate(-50%, calc(-50% + 165px)) !important;
+    transform: translateX(-50%) !important;
   }
 
   .dpc-controls {
@@ -708,9 +743,9 @@
 }
 
 /* =========================================================
-   SECTION 3 - ALL FOUR PHONES  (430px)
-   Pixel 10 at 412px is the widest target. Every phone gets
-   these rules. S22/iPhone8/Ultra get section 4 on top.
+   SECTION 3 - STANDARD SMARTPHONES  (430px)
+   Covers tested phone widths from 360px through 412px.
+   Smaller width sections add only the adjustments they need.
    ========================================================= */
 @media (max-width: 430px) {
   /* Global safety net */
@@ -1385,6 +1420,105 @@
     min-height: 80px !important;
   }
 
+  /* Hatchery mobile pet action menu */
+  .mobilePetActionBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(10px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
+    background: rgba(0, 0, 0, 0.72);
+  }
+
+  .mobilePetActionMenu {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    padding: 16px;
+    border: 2px solid var(--dp-panel-purple-border);
+    border-radius: 18px;
+    background: var(--dp-standard-panel-bg);
+    box-shadow: 0 0 18px var(--dp-panel-purple-glow);
+    color: var(--dp-panel-text);
+    box-sizing: border-box;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobilePetActionHeader {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .mobilePetActionHamburger {
+    color: var(--dp-title-gold);
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .mobilePetActionTitle {
+    color: var(--dp-title-gold);
+    font-weight: 900;
+  }
+
+  .mobilePetActionSubtext {
+    color: var(--dp-panel-muted);
+    font-size: 0.78rem;
+  }
+
+  .mobilePetActionClose {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--dp-border-panel-soft);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--dp-panel-text);
+    cursor: pointer;
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .mobilePetActionSlots {
+    display: grid;
+    gap: 8px;
+  }
+
+  .mobilePetActionButton {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .mobilePetActionButton span {
+    color: var(--dp-panel-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-align: right;
+  }
+
+  .mobilePetActionStorageButton {
+    margin-top: 8px;
+  }
+
+  .mobilePetActionError {
+    margin-top: 10px;
+    color: var(--dp-panel-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
   /* Hatchery action buttons: wrap to column */
   .hatcheryActionsRow,
   .hatcheryBottomActions {
@@ -1460,7 +1594,7 @@
   }
 
   .hp-heroInner {
-    padding: 20px 14px 18px !important;
+    padding: 34px !important;
   }
 
   .hp-heroTitle--logo {
@@ -1487,12 +1621,12 @@
       "content" !important;
     justify-items: center !important;
     text-align: center !important;
-    padding: 1rem 34px 1.25rem !important;
+    padding: 34px !important;
     transform: none !important;
   }
 
   .hp-spotlightPanel .hp-panelBody.hp-spotlightBody {
-    padding: 1rem 34px 30px !important;
+    padding: 34px !important;
   }
 
   .hp-spotlightTop,
@@ -1540,7 +1674,7 @@
   }
 
   .foodMerchantPanel {
-    padding: 18px 16px !important;
+    padding: 34px !important;
   }
 
   .foodMerchantTitle {
@@ -1567,15 +1701,15 @@
 }
 
 /* =========================================================
-   SECTION 4 - S22, IPHONE 8, S22 ULTRA  (390px)
-   All three phones (360, 375, 384) are under 390px.
-   These layer on top of section 3.
+   SECTION 4 - COMPACT SMARTPHONES  (390px)
+   Covers iPhone 13, S22 Ultra, iPhone 8, S22, and any other
+   viewport at or below 390px. Layers on top of section 3.
    ========================================================= */
 @media (max-width: 390px) {
   /* Hero card: tighten on smaller phones.
      Still 34px from inset border face. */
   .petRepoHeroCard {
-    padding: 34px 20px !important;
+    padding: 34px !important;
     gap: 8px 10px !important;
   }
 
@@ -1608,7 +1742,7 @@
 
   /* Profile panel: still 34px */
   .dp-profile-panel {
-    padding: 34px 20px !important;
+    padding: 34px !important;
   }
 
   /* Hatchery egg preview: tighten height */
@@ -1619,7 +1753,7 @@
 
   /* Food merchant */
   .foodMerchantPanel {
-    padding: 16px 14px !important;
+    padding: 34px !important;
   }
 
   /* Kithna map */
@@ -1640,8 +1774,9 @@
 }
 
 /* =========================================================
-   SECTION 5 - SAMSUNG GALAXY S22 ONLY  (360px)
-   Narrowest target. Only S22-specific rules go here.
+   SECTION 5 - NARROW SMARTPHONE SAFETY  (360px)
+   Applies to the S22 and any viewport at or below 360px.
+   Only rules required by narrow screens belong here.
    ========================================================= */
 @media (max-width: 360px) {
   html,
@@ -1682,7 +1817,7 @@
 
   /* Food merchant */
   .foodMerchantPanel {
-    padding: 14px 12px !important;
+    padding: 34px !important;
   }
 
   /* Kithna map */

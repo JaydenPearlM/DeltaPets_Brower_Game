@@ -464,3 +464,98 @@
   }
 }
 pnpm run build
+
+
+@media (max-width: 430px) {
+  .mobilePetActionBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.72);
+  }
+
+  .mobilePetActionMenu {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    padding: 16px;
+    border: 2px solid var(--dp-panel-purple-border);
+    border-radius: 18px;
+    background: var(--dp-standard-panel-bg);
+    box-shadow: 0 0 18px var(--dp-panel-purple-glow);
+    color: var(--dp-panel-text);
+  }
+
+  .mobilePetActionHeader {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .mobilePetActionHamburger {
+    color: var(--dp-title-gold);
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .mobilePetActionTitle {
+    color: var(--dp-title-gold);
+    font-weight: 900;
+  }
+
+  .mobilePetActionSubtext {
+    color: var(--dp-panel-muted);
+    font-size: 0.78rem;
+  }
+
+  .mobilePetActionClose {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--dp-border-panel-soft);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--dp-panel-text);
+    cursor: pointer;
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .mobilePetActionSlots {
+    display: grid;
+    gap: 8px;
+  }
+
+  .mobilePetActionButton {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .mobilePetActionButton span {
+    color: var(--dp-panel-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-align: right;
+  }
+
+  .mobilePetActionStorageButton {
+    margin-top: 8px;
+  }
+
+  .mobilePetActionError {
+    margin-top: 10px;
+    color: var(--dp-panel-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+}

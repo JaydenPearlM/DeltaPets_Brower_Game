@@ -15,8 +15,8 @@ import emberEggPng from "@/Pets_Creation/assets/eggs/ember_egg.png";
 import groveEggPng from "@/Pets_Creation/assets/eggs/grove_egg.png";
 import zephyrEggPng from "@/Pets_Creation/assets/eggs/zephr_egg.png";
 import frostveilEggPng from "@/Pets_Creation/assets/eggs/frostviel_egg.png";
-import stormEggPng from "@/Pets_Creation/assets/eggs/storm.png";
-import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light.png";
+import stormEggPng from "@/Pets_Creation/assets/eggs/storm_egg.png";
+import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light_egg.png";
 import eclipseEggPng from "@/Pets_Creation/assets/eggs/eclipse_egg.png";
 import voidborneEggPng from "@/Pets_Creation/assets/eggs/Voidborne_egg.png";
 import "./PetStoragePanel.css";
@@ -182,7 +182,7 @@ function StoragePetCard(props: {
   onDragEnd: () => void;
   onMoveEggToIncubator?: (petId: string) => void;
   onMovePetToParty?: (petId: string) => void;
-  onSelectPet?: (petId: string) => void;
+  onSelectPet?: (pet: StoragePet) => void;
   targetSlot: number | null;
   isWorking: boolean;
   incubatorBusy: boolean;
@@ -230,7 +230,7 @@ function StoragePetCard(props: {
         ) {
           return;
         }
-        onSelectPet?.(pet.id);
+        onSelectPet?.(pet);
       }}
       title={
         isEgg
@@ -335,6 +335,12 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
   const [elementFilter, setElementFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selectedPartySlot, setSelectedPartySlot] = useState<number | null>(1);
+  const [mobilePetAction, setMobilePetAction] = useState<{
+    pet: StoragePet;
+    source: "team" | "storage";
+    slotIndex?: number;
+  } | null>(null);
+  const [mobilePetActionError, setMobilePetActionError] = useState("");
 
   const [draggingPetId, setDraggingPetId] = useState<string | null>(null);
   const [dragOverSlotIndex, setDragOverSlotIndex] = useState<number | null>(
@@ -440,48 +446,47 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
     setSelectedPartySlot(targetSlot);
   }
 
-  async function handleTeamPetSelect(pet: StoragePet, slotIndex: number) {
+  function openMobilePetAction(
+    pet: StoragePet,
+    source: "team" | "storage",
+    slotIndex?: number,
+  ) {
     if (!window.matchMedia("(max-width: 430px)").matches) return;
-
-    const choice = window.prompt(
-      `Move ${pet.name?.trim() || "this pet"}: enter 1, 2, 3, 4, or S for Storage.`,
-    );
-
-    if (!choice) return;
-
-    const normalizedChoice = choice.trim().toLowerCase();
-    if (normalizedChoice === "s" || normalizedChoice === "storage") {
-      await storePet(pet.id);
-      return;
-    }
-
-    const targetSlotIndex = Number(normalizedChoice);
-    if (targetSlotIndex < 1 || targetSlotIndex > PARTY_SLOT_COUNT) {
-      window.alert("Enter 1, 2, 3, 4, or S for Storage.");
-      return;
-    }
-
-    await assignPetToParty(pet.id, targetSlotIndex);
-    setSelectedPartySlot(targetSlotIndex);
+    setMobilePetActionError("");
+    setMobilePetAction({ pet, source, slotIndex });
   }
 
-  async function handleStoredPetSelect(petId: string) {
-    if (!window.matchMedia("(max-width: 430px)").matches) return;
+  async function handleMobileMoveToSlot(slotIndex: number) {
+    if (!mobilePetAction) return;
 
-    const choice = window.prompt(
-      "Choose a Kith Team slot: enter 1, 2, 3, or 4.",
-    );
-
-    if (!choice) return;
-
-    const targetSlotIndex = Number(choice.trim());
-    if (targetSlotIndex < 1 || targetSlotIndex > PARTY_SLOT_COUNT) {
-      window.alert("Enter a slot number from 1 to 4.");
-      return;
+    try {
+      setMobilePetActionError("");
+      await assignPetToParty(mobilePetAction.pet.id, slotIndex);
+      setSelectedPartySlot(slotIndex);
+      setMobilePetAction(null);
+    } catch (moveError) {
+      setMobilePetActionError(
+        moveError instanceof Error
+          ? moveError.message
+          : "Failed to move pet to Kith Team.",
+      );
     }
+  }
 
-    await assignPetToParty(petId, targetSlotIndex);
-    setSelectedPartySlot(targetSlotIndex);
+  async function handleMobileMoveToStorage() {
+    if (!mobilePetAction || mobilePetAction.source !== "team") return;
+
+    try {
+      setMobilePetActionError("");
+      await storePet(mobilePetAction.pet.id);
+      setMobilePetAction(null);
+    } catch (moveError) {
+      setMobilePetActionError(
+        moveError instanceof Error
+          ? moveError.message
+          : "Failed to move pet to storage.",
+      );
+    }
   }
 
   async function handleDropToTeam(
@@ -573,7 +578,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
           dragOverSlotIndex={dragOverSlotIndex}
           onSelectSlot={setSelectedPartySlot}
           onSelectPet={(pet, slotIndex) =>
-            void handleTeamPetSelect(pet, slotIndex)
+            openMobilePetAction(pet, "team", slotIndex)
           }
           onDragStartPet={handleTeamDragStart}
           onDragEndPet={clearDragState}
@@ -704,7 +709,9 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                   onMovePetToParty={(petId) =>
                     void handleMoveStoredPetToTeam(petId)
                   }
-                  onSelectPet={(petId) => void handleStoredPetSelect(petId)}
+                  onSelectPet={(selectedPet) =>
+                    openMobilePetAction(selectedPet, "storage")
+                  }
                   targetSlot={targetSlot}
                   isWorking={workingPetId === pet.id}
                   incubatorBusy={Boolean(incubatingEgg)}
@@ -716,6 +723,88 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
 
         {error ? <div className="storageErrorText">Error: {error}</div> : null}
       </section>
+
+      {mobilePetAction ? (
+        <div
+          className="mobilePetActionBackdrop"
+          role="presentation"
+          onClick={() => setMobilePetAction(null)}
+        >
+          <section
+            className="mobilePetActionMenu"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Move ${mobilePetAction.pet.name?.trim() || "pet"}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mobilePetActionHeader">
+              <span className="mobilePetActionHamburger" aria-hidden="true">
+                ☰
+              </span>
+              <div>
+                <div className="mobilePetActionTitle">
+                  {mobilePetAction.pet.name?.trim() || "Unnamed Delta"}
+                </div>
+                <div className="mobilePetActionSubtext">
+                  Choose where this pet should go.
+                </div>
+              </div>
+              <button
+                type="button"
+                className="mobilePetActionClose"
+                aria-label="Close pet actions"
+                onClick={() => setMobilePetAction(null)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mobilePetActionSlots">
+              {Array.from({ length: PARTY_SLOT_COUNT }, (_, index) => {
+                const slotIndex = index + 1;
+                const slotPet = partySlots[index]?.pet ?? null;
+                const isCurrentSlot =
+                  mobilePetAction.source === "team" &&
+                  mobilePetAction.slotIndex === slotIndex;
+
+                return (
+                  <button
+                    key={slotIndex}
+                    type="button"
+                    className="btn btn-blue mobilePetActionButton"
+                    disabled={isCurrentSlot || workingPetId !== null}
+                    onClick={() => void handleMobileMoveToSlot(slotIndex)}
+                  >
+                    Slot {slotIndex}
+                    <span>
+                      {isCurrentSlot
+                        ? "Current slot"
+                        : slotPet
+                          ? `Swap with ${slotPet.name?.trim() || "pet"}`
+                          : "Empty"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {mobilePetAction.source === "team" ? (
+              <button
+                type="button"
+                className="btn btn-blue mobilePetActionButton mobilePetActionStorageButton"
+                disabled={workingPetId !== null}
+                onClick={() => void handleMobileMoveToStorage()}
+              >
+                Put in Storage
+              </button>
+            ) : null}
+
+            {mobilePetActionError ? (
+              <div className="mobilePetActionError">{mobilePetActionError}</div>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
     </aside>
   );
 }

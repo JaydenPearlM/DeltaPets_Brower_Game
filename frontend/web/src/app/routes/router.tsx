@@ -4,6 +4,7 @@ import App from "../App";
 import { useAuth } from "../providers/useAuth";
 import AuthCallback from "./AuthCallback";
 import { AlphaAccessGate } from "../../components/AlphaAccess_temp/AlphaAccessGate";
+
 const ParkPage = lazy(() => import("../../pages/park/park"));
 const KithnaMap = lazy(() => import("../../pages/Cities/Kithna/KithnaMap"));
 const Homepage = lazy(() => import("../../pages/Homepage/homepage"));
@@ -168,7 +169,7 @@ export const router = createBrowserRouter([
         path: "profile",
         element: withSuspense(
           <ProtectedRoute>
-            <ProfilePage />
+            <ProfilePage pageName="ProfilePage" />
           </ProtectedRoute>,
         ),
       },
