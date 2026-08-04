@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   formatLineLabel,
-  formatStageLabel,
   PARTY_SLOT_COUNT,
   type StoragePet,
   type StorageStageFilter,
@@ -69,6 +68,10 @@ const ELEMENT_EGG_IMAGES: Record<string, string> = {
   light: dawnshardEggPng,
   shadow: eclipseEggPng,
 };
+
+function formatStorageName(value: string) {
+  return value.replace(/\s+Egg$/i, "");
+}
 
 function resolveEggIdentity(
   egg?: { line?: string | null; species?: string | null } | null,
@@ -155,14 +158,6 @@ function StoragePetStatsTooltip(props: { pet: StoragePet }) {
 
   return (
     <div className="storagePetTooltip" role="tooltip">
-      <div className="storagePetTooltipTitle">
-        {pet.name?.trim() || "Unnamed Delta"}
-      </div>
-
-      <div className="storagePetTooltipMeta">
-        {formatStageLabel(pet.stage)} • {formatLineLabel(pet.line)}
-      </div>
-
       <div className="storagePetTooltipGrid">
         {STAT_ROWS.map((row) => (
           <div key={row.key} className="storagePetTooltipRow">
@@ -207,6 +202,8 @@ function StoragePetCard(props: {
   const draggable = !isEgg;
   const eggIdentity = isEgg ? resolveEggIdentity(pet) : null;
   const isStarterEgg = isEgg && eggIdentity?.label === "Prismatic Egg";
+  const isStarterPet =
+    !isEgg && STARTER_SPECIES_IDS.has(String(pet.species ?? "").trim());
 
   return (
     <article
@@ -238,31 +235,8 @@ function StoragePetCard(props: {
           : "Drag pet to team or move it back from team."
       }
     >
-      <div className="storagePetTop">
-        <div className="storagePetIdentity">
-          <div className="storagePetName">
-            {isEgg ? eggIdentity!.label : pet.name?.trim() || "Unnamed Delta"}
-          </div>
-          {!isEgg ? (
-            <div className="storagePetMeta">
-              {formatLineLabel(pet.line)} • Lv. {pet.level ?? 1}
-            </div>
-          ) : null}
-        </div>
-
-        <div className="storageBadgeStack">
-          <span className="storageStageBadge">
-            {isEgg ? formatLineLabel(pet.line) : formatStageLabel(pet.stage)}
-          </span>
-
-          {isStarterEgg ? (
-            <span className="storageRarityBadge epic">Epic</span>
-          ) : null}
-        </div>
-      </div>
-
       <div className="storagePetBody">
-        <div className="storagePetOrb">
+        <div className={["storagePetOrb", isEgg ? "isEgg" : "isPet"].join(" ")}>
           {isEgg ? (
             <img
               className="storageEggImage"
@@ -277,6 +251,12 @@ function StoragePetCard(props: {
               }
               alt={eggIdentity!.label}
             />
+          ) : pet.portrait_url ? (
+            <img
+              className="storagePetPortrait"
+              src={pet.portrait_url}
+              alt={pet.name?.trim() || "Stored pet"}
+            />
           ) : (
             <div className="storagePetOrbInner">
               {pet.name?.trim()?.charAt(0).toUpperCase() || "D"}
@@ -284,13 +264,16 @@ function StoragePetCard(props: {
           )}
         </div>
 
-        <div className="storagePetStats">
-          {STAT_ROWS.map((row) => (
-            <div key={row.key} className="storagePetStat">
-              <span>{row.label}</span>
-              <strong>{pet[row.key] ?? 0}</strong>
-            </div>
-          ))}
+        <div className="storagePetIdentity">
+          <div className="storagePetName">
+            {isEgg
+              ? formatStorageName(eggIdentity!.label)
+              : pet.name?.trim() || "Unnamed Delta"}
+          </div>
+
+          {isStarterEgg || isStarterPet ? (
+            <span className="storageRarityBadge epic">Epic</span>
+          ) : null}
         </div>
       </div>
 

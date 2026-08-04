@@ -489,6 +489,18 @@
   white-space: nowrap;
 }
 
+.mainTeamRarityBadge {
+  display: block;
+  width: fit-content;
+  margin: 4px auto 0;
+  padding: 2px 6px;
+  border: 1px solid var(--dp-panel-purple-border);
+  border-radius: var(--radius-pill);
+  background: rgba(177, 92, 255, 0.14);
+  color: var(--dp-panel-purple-border);
+  font-size: 0.52rem;
+}
+
 .mainTeamXpBar span {
   width: var(--main-team-xp, 0%);
   background: var(--dp-cyan, #38dfff);

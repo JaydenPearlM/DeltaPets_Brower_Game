@@ -168,6 +168,15 @@ function getPetImage(pet: PetStats | null) {
   return pet?.portrait_url || pet?.image_url || pet?.sprite_url || "";
 }
 
+function isStarterPet(pet: PetStats | null) {
+  const speciesId = String(pet?.species ?? "")
+    .trim()
+    .toLowerCase();
+  return SHARED_SPECIES.some(
+    (species) => species.id.toLowerCase() === speciesId,
+  );
+}
+
 function getToneClass(line?: string | null) {
   const value = String(line ?? "")
     .trim()
@@ -377,6 +386,9 @@ export default function MainTeam(props: MainTeamProps) {
 
                       <div className="mainTeamCenterStage">
                         {formatStage(source?.stage)}
+                        {isStarterPet(source) ? (
+                          <span className="mainTeamRarityBadge">Epic</span>
+                        ) : null}
                       </div>
 
                       <div className="mainTeamRightStats">
