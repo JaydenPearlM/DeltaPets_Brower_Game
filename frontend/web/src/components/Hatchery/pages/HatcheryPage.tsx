@@ -17,7 +17,7 @@ import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light_egg.png";
 import eclipseEggPng from "@/Pets_Creation/assets/eggs/eclipse_egg.png";
 import voidborneEggPng from "@/Pets_Creation/assets/eggs/Voidborne_egg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
-import DpPopupWindow from "@/pages/petsPage/components/DpPopupWindow";
+
 import {
   SHARED_SPECIES,
   ELEMENT_EGG_NAMES,
@@ -36,6 +36,8 @@ const MYSTERY_EGG = {
 
 // How often to poll when the tab is visible (ms)
 const POLL_INTERVAL_MS = 30_000;
+const CRACK_ANIM_MS = 1_800;
+const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -438,13 +440,13 @@ function EggSlotButton(props: {
           {eggIdentity ? (
             eggIdentity.elementKey ? (
               <img
-                className="eggIconImg"
+                className={`eggIconImg${cd.done ? " eggIconReady" : ""}`}
                 src={ELEMENT_EGG_IMAGES[eggIdentity.elementKey]}
                 alt={eggIdentity.label}
               />
             ) : (
               <img
-                className="eggIconImg"
+                className={`eggIconImg${cd.done ? " eggIconReady" : ""}`}
                 src={MYSTERY_EGG.sprite}
                 alt={eggIdentity.label}
               />
@@ -497,6 +499,95 @@ function ItemSlotButton(props: { slot: ShelfSlot }) {
   );
 }
 
+// ─── Star Particles ───────────────────────────────────────────────────────────
+
+function StarParticles() {
+  const stars = useMemo(() => {
+    return Array.from({ length: 14 }, (_, i) => {
+      const baseAngle = (i / 14) * 2 * Math.PI;
+      const jitter = (Math.random() - 0.5) * 0.5;
+      const angle = baseAngle + jitter;
+      const dist = 80 + Math.random() * 55;
+      const size = 10 + Math.random() * 10;
+      const delay = Math.random() * 0.45;
+      const duration = 1.4 + Math.random() * 0.9;
+      return {
+        id: i,
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        size,
+        delay,
+        duration,
+      };
+    });
+  }, []);
+
+  return (
+    <div className="hatchRevealStarField" aria-hidden="true">
+      {stars.map((s) => (
+        <span
+          key={s.id}
+          className="hatchRevealStar"
+          style={{
+            left: `calc(50% + ${s.x}px)`,
+            top: `calc(50% + ${s.y}px)`,
+            fontSize: `${s.size}px`,
+            animationDuration: `${s.duration}s`,
+            animationDelay: `${s.delay}s`,
+          }}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// ─── Hatch Reveal Overlay ─────────────────────────────────────────────────────
+
+function HatchRevealOverlay({
+  result,
+  eggRef: _eggRef,
+  onDismiss,
+}: {
+  result: HatchActionResponse;
+  eggRef: HatchEgg | null;
+  onDismiss: () => void;
+}) {
+  const petName = result.pet?.name ?? "Unknown Kith";
+  const destinationText =
+    result.storage_result === "party"
+      ? "Joined your Main Team!"
+      : "Sent to Storage";
+
+  return (
+    <div className="hatchRevealOverlay">
+      <div className="hatchRevealCard">
+        <div className="hatchRevealCreatureWrap">
+          <StarParticles />
+          <div className="hatchRevealCreature">
+            <span className="hatchRevealEye hatchRevealEyeLeft" />
+            <span className="hatchRevealEye hatchRevealEyeRight" />
+            <span className="hatchRevealSmile" />
+          </div>
+        </div>
+        <div className="hatchRevealCongrats">Congratulations!</div>
+        <div className="hatchRevealMessage">
+          You hatched <span className="hatchRevealPetName">{petName}</span>!
+        </div>
+        <div className="hatchRevealDestination">{destinationText}</div>
+        <button
+          type="button"
+          className="primaryBtn hatchRevealContinueBtn"
+          onClick={onDismiss}
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page component ───────────────────────────────────────────────────────────
 
 export default function HatcheryPage() {
@@ -507,9 +598,13 @@ export default function HatcheryPage() {
   const [data, setData] = useState<HatcheryResponse | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [isHatching, setIsHatching] = useState(false);
-  const [mobileHatchMessage, setMobileHatchMessage] = useState<string | null>(
+  const [hatchPhase, setHatchPhase] = useState<"cracking" | "reveal" | null>(
     null,
   );
+  const [hatchResult, setHatchResult] = useState<HatchActionResponse | null>(
+    null,
+  );
+  const [hatchingEgg, setHatchingEgg] = useState<HatchEgg | null>(null);
 
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
@@ -735,47 +830,41 @@ export default function HatcheryPage() {
     syncServerClock(next.server_now);
   }
 
-  async function completeHatchFlow(eggId: string) {
-    const hatchResult = await hatchEgg(eggId);
-    syncServerClock(hatchResult.server_now);
-
-    if (hatchResult.post_hatch_destination) {
-      navigate(hatchResult.post_hatch_destination, { replace: true });
+  async function dismissReveal() {
+    const dest = hatchResult?.post_hatch_destination;
+    setHatchPhase(null);
+    setHatchResult(null);
+    setHatchingEgg(null);
+    setIsHatching(false);
+    if (dest) {
+      navigate(dest, { replace: true });
       return;
     }
-
     await refreshAfterHatch();
     setStorageRefreshSignal((n) => n + 1);
-
-    if (
-      window.matchMedia("(max-width: 640px)").matches &&
-      hatchResult.storage_result
-    ) {
-      const petName = hatchResult.pet?.name ?? "Your new Kith";
-      setMobileHatchMessage(
-        hatchResult.storage_result === "party"
-          ? `${petName} joined your Kith Team.`
-          : `Your Kith Team is full. ${petName} was sent to Storage.`,
-      );
-    }
   }
 
   async function onHatchFromSlot(slot: HatchSlot) {
     if (!slot.egg || slot.locked || isHatching) return;
-
     const endsAtMs = Date.parse(slot.egg.hatch_ends_at);
     const nowMs = Date.parse(serverNowIso);
-
     if (!Number.isFinite(endsAtMs) || nowMs < endsAtMs) return;
-
     setSelectedSlot(slot.index);
     setIsHatching(true);
-
+    setHatchingEgg(slot.egg);
+    setHatchPhase("cracking");
     try {
-      await completeHatchFlow(slot.egg.id);
+      const [result] = await Promise.all([
+        hatchEgg(slot.egg.id),
+        sleep(CRACK_ANIM_MS),
+      ]);
+      syncServerClock(result.server_now);
+      setHatchResult(result);
+      setHatchPhase("reveal");
     } catch (e: unknown) {
       alert(getErrorMessage(e));
-    } finally {
+      setHatchPhase(null);
+      setHatchingEgg(null);
       setIsHatching(false);
     }
   }
@@ -802,18 +891,36 @@ export default function HatcheryPage() {
               {!selectedEgg ? (
                 <div className="selectedPreviewEmpty" />
               ) : (
-                <div className="selectedPreviewFilled">
+                <div
+                  className={`selectedPreviewFilled${hatchPhase === "cracking" ? " eggBursting" : ""}`}
+                >
                   <div className="selectedEggHalo" />
 
                   {selectedEggIdentity.elementKey ? (
                     <img
-                      className="eggBigImg"
+                      className={[
+                        "eggBigImg",
+                        selectedCd.done && hatchPhase === null
+                          ? "eggReady"
+                          : "",
+                        hatchPhase === "cracking" ? "eggCracking" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                       src={ELEMENT_EGG_IMAGES[selectedEggIdentity.elementKey]}
                       alt={selectedEggIdentity.label}
                     />
                   ) : (
                     <img
-                      className="eggBigImg"
+                      className={[
+                        "eggBigImg",
+                        selectedCd.done && hatchPhase === null
+                          ? "eggReady"
+                          : "",
+                        hatchPhase === "cracking" ? "eggCracking" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                       src={MYSTERY_EGG.sprite}
                       alt={selectedEggIdentity.label}
                     />
@@ -956,22 +1063,15 @@ export default function HatcheryPage() {
         />
       </div>
 
-      <DpPopupWindow
-        open={mobileHatchMessage !== null}
-        onClose={() => setMobileHatchMessage(null)}
-        label="Egg hatch result"
-        size="compact"
-      >
-        <h2>Egg Hatched!</h2>
-        <p>{mobileHatchMessage}</p>
-        <button
-          type="button"
-          className="primaryBtn"
-          onClick={() => setMobileHatchMessage(null)}
-        >
-          Continue
-        </button>
-      </DpPopupWindow>
+      {hatchPhase === "reveal" && hatchResult && (
+        <HatchRevealOverlay
+          result={hatchResult}
+          eggRef={hatchingEgg}
+          onDismiss={() => {
+            void dismissReveal();
+          }}
+        />
+      )}
     </div>
   );
 }
