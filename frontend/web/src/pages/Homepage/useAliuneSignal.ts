@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 type SignalCondition = "stable" | "unbalanced" | "unstable";
-type SignalCorruption = "low" | "high";
+type SignalCorruption = "none" | "low" | "rising" | "high" | "too high";
 
 type SignalRow = {
   id?: string;
@@ -33,9 +33,9 @@ const DEFAULT_STABLE_VIEW: SignalView = {
   conditionLabel: "Stable",
   regionLabel: "Kithna",
   townLabel: "Tutorial Island",
-  corruptionLabel: "Low",
+  corruptionLabel: "None",
   reportText:
-    "Kithna remains calm. No active instability is being reported at this time.",
+    "The signal remains synchronized with Aliune's core systems. No irregular egg patterns have been detected.",
   isAlert: false,
   bossAvailable: false,
 };
@@ -55,13 +55,19 @@ function formatCondition(value?: string | null): string {
 }
 
 function formatCorruption(value?: string | null): string {
-  if (!value) return "Low";
+  if (!value) return "None";
 
   const normalized = value.toLowerCase();
 
-  if (normalized === "high") return "High";
+  if (normalized === "too high" || normalized === "too_high") {
+    return "Too High";
+  }
 
-  return "Low";
+  if (normalized === "high") return "High";
+  if (normalized === "rising") return "Rising";
+  if (normalized === "low") return "Low";
+
+  return "None";
 }
 
 function getDelayUntilSignalExpiresMs(row: SignalRow | null): number {

@@ -10,7 +10,7 @@ worldRouter.get("/aliune-signal", async (_req, res) => {
   const { data, error } = await supabaseAdmin
     .from("aliune_signal_reports")
     .select(
-      "condition, region, corruption, report_text, starts_at, ends_at, created_at",
+      "condition, region, town, corruption, report_text, starts_at, ends_at, created_at",
     )
     .eq("enabled", true)
     .or(`starts_at.is.null,starts_at.lte.${now}`)
@@ -31,15 +31,22 @@ worldRouter.get("/aliune-signal", async (_req, res) => {
     return res.json({
       condition: "stable",
       region: "Kithna",
+      town: "Tutorial Island",
       corruption: "none",
-      reportText: "Kithna is calm. No major instabilities detected.",
+      report_text:
+        "The signal remains synchronized with Aliune's core systems. No irregular egg patterns have been detected.",
+      starts_at: null,
+      ends_at: null,
     });
   }
 
   return res.json({
     condition: data.condition,
     region: data.region,
+    town: data.town,
     corruption: data.corruption,
-    reportText: data.report_text,
+    report_text: data.report_text,
+    starts_at: data.starts_at,
+    ends_at: data.ends_at,
   });
 });

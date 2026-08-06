@@ -170,37 +170,36 @@ const BALANCED_EGG_STATS: SharedBaseStats = {
   mana: 1,
   base_total: 10,
 };
-
 export const KITHNA_RARITY_RULES: Record<
   KithnaRarity,
   {
     encounterWeight: number;
     hatchMinutes: number;
-    hatchStatPoints: number;
+    rarityBonusPoints: number;
   }
 > = {
   common: {
     encounterWeight: 40,
     hatchMinutes: 2,
-    hatchStatPoints: 7,
+    rarityBonusPoints: 1,
   },
 
   uncommon: {
     encounterWeight: 25,
     hatchMinutes: 5,
-    hatchStatPoints: 8,
+    rarityBonusPoints: 2,
   },
 
   rare: {
     encounterWeight: 12,
     hatchMinutes: 10,
-    hatchStatPoints: 9,
+    rarityBonusPoints: 3,
   },
 
   epic: {
     encounterWeight: 5,
     hatchMinutes: 30,
-    hatchStatPoints: 10,
+    rarityBonusPoints: 4,
   },
 };
 

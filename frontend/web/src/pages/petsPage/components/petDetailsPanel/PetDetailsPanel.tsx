@@ -21,6 +21,7 @@ type PetRecord = {
   level?: number | null;
   gender?: string | null;
   element?: string | null;
+  rarity?: string | null;
   line?: string | null;
   stage?: string | null;
   personality?: string | null;
@@ -189,12 +190,16 @@ function getDisplayedMutationTraits(
 function getPreviewUrl(pet: PetRecord) {
   return pet.portrait_url || pet.sprite_url || pet.image_url || null;
 }
-
 function getDisplayedElement(pet: PetRecord) {
   const value = String(pet.element || pet.line || "").toLowerCase();
   if (!value) return "Unknown";
   if (value === "null" || value === "null_element") return "Voidborne";
   return titleCase(value);
+}
+
+function getDisplayedRarity(pet: PetRecord) {
+  const value = String(pet.rarity ?? "").trim();
+  return value ? titleCase(value) : "Unknown";
 }
 
 function getDayNightLabel(value: unknown) {
@@ -912,6 +917,7 @@ export default function PetDetailsPanel({
                   label="Mutation Trait"
                   value={getDisplayedMutationTraits(pet)}
                 />
+                <InfoRow label="Rarity" value={getDisplayedRarity(pet)} />
               </div>
             </div>
           </section>

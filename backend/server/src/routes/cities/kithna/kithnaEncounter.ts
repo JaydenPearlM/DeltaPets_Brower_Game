@@ -168,7 +168,9 @@ kithnaRouter.post(
       }
 
       const species = pickRandomSpecies(pool);
-      const eggQuality = await rollNonStarterEggQuality();
+      const eggQuality = await rollNonStarterEggQuality(
+        species.rarity ?? "common",
+      );
 
       pendingRoamEncounterByUser.set(userId, {
         species,
@@ -223,14 +225,21 @@ kithnaRouter.post(
           user_id: userId,
           name: species.evolution.egg,
           species: species.id,
+          rarity: species.rarity,
           line: species.line,
           stage: "egg",
           energy: 100,
           hatch_ends_at: null,
-          pending_hatch_minutes: eggQuality.hatch_minutes,
+          pending_hatch_minutes:
+            species.rules.hatchMinutes?.min ?? eggQuality.hatch_minutes,
           is_active: false,
           location: "storage",
           hatch_time_alignment: timeOfDay,
+          growth_strong_stats: eggQuality.growth_strong_stats,
+          growth_weak_stat: eggQuality.growth_weak_stat,
+          passive_trait_id: eggQuality.passive_trait_id,
+          passive_trait_key: eggQuality.passive_trait_key,
+          mutation_capacity: eggQuality.mutation_capacity,
         })
         .select("*")
         .single();
