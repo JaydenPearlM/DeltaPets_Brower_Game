@@ -714,16 +714,13 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
           onClick={() => setMobilePetAction(null)}
         >
           <section
-            className="mobilePetActionMenu"
+            className="mobilePetActionMenu dp-blue-grid-panel"
             role="dialog"
             aria-modal="true"
             aria-label={`Move ${mobilePetAction.pet.name?.trim() || "pet"}`}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mobilePetActionHeader">
-              <span className="mobilePetActionHamburger" aria-hidden="true">
-                ☰
-              </span>
               <div>
                 <div className="mobilePetActionTitle">
                   {mobilePetAction.pet.name?.trim() || "Unnamed Delta"}
@@ -732,15 +729,18 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                   Choose where this pet should go.
                 </div>
               </div>
+            </div>
+
+            {mobilePetAction.source === "team" ? (
               <button
                 type="button"
-                className="mobilePetActionClose"
-                aria-label="Close pet actions"
-                onClick={() => setMobilePetAction(null)}
+                className="btn btn-gold mobilePetActionButton mobilePetActionStorageButton"
+                disabled={workingPetId !== null}
+                onClick={() => void handleMobileMoveToStorage()}
               >
-                ×
+                Put in Storage
               </button>
-            </div>
+            ) : null}
 
             <div className="mobilePetActionSlots">
               {Array.from({ length: PARTY_SLOT_COUNT }, (_, index) => {
@@ -754,7 +754,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                   <button
                     key={slotIndex}
                     type="button"
-                    className="btn btn-blue mobilePetActionButton"
+                    className="btn mobilePetActionButton mobilePetActionSlotButton"
                     disabled={isCurrentSlot || workingPetId !== null}
                     onClick={() => void handleMobileMoveToSlot(slotIndex)}
                   >
@@ -771,20 +771,17 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
               })}
             </div>
 
-            {mobilePetAction.source === "team" ? (
-              <button
-                type="button"
-                className="btn btn-blue mobilePetActionButton mobilePetActionStorageButton"
-                disabled={workingPetId !== null}
-                onClick={() => void handleMobileMoveToStorage()}
-              >
-                Put in Storage
-              </button>
-            ) : null}
-
             {mobilePetActionError ? (
               <div className="mobilePetActionError">{mobilePetActionError}</div>
             ) : null}
+
+            <button
+              type="button"
+              className="btn btn-pearl mobilePetActionPearlClose"
+              onClick={() => setMobilePetAction(null)}
+            >
+              Close
+            </button>
           </section>
         </div>
       ) : null}

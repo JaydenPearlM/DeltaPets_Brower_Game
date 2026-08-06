@@ -8,6 +8,7 @@ import { DeltaClock } from "../lib/timers/deltaClock";
 import { useDeltaTime } from "../lib/timers/useDeltaTime";
 import { useAuth } from "./providers/useAuth";
 import { useUI } from "./providers/UIProvider";
+import { apiFetch } from "../lib/api/baseClient";
 import { useRoamEncounter } from "../lib/kithna/useRoamEncounter";
 import { RoamEncounterToast } from "../components/RoamEncounterToast/RoamEncounterToast";
 import "./App.css";
@@ -51,6 +52,8 @@ export default function App() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [exploreHintOpen, setExploreHintOpen] = useState(false);
+  const [exploreLockedOpen, setExploreLockedOpen] = useState(false);
+  const [exploreUnlocked, setExploreUnlocked] = useState(false);
   const [expandedSections, setExpandedSections] = useState<
     Record<MenuSectionKey, boolean>
   >({
@@ -131,7 +134,7 @@ export default function App() {
   }, [conditionText, corruptionText]);
 
   useEffect(() => {
-    if (!menuOpen && !exploreHintOpen) return;
+    if (!menuOpen && !exploreHintOpen && !exploreLockedOpen) return;
 
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target as Node | null;
@@ -143,6 +146,7 @@ export default function App() {
       ) {
         setMenuOpen(false);
         setExploreHintOpen(false);
+        setExploreLockedOpen(false);
       }
     };
 
@@ -150,6 +154,7 @@ export default function App() {
       if (event.key === "Escape") {
         setMenuOpen(false);
         setExploreHintOpen(false);
+        setExploreLockedOpen(false);
         setExpandedSections(getCollapsedSections());
       }
     };
@@ -161,13 +166,49 @@ export default function App() {
       document.removeEventListener("mousedown", handlePointerDown);
       window.removeEventListener("keydown", handleEscape);
     };
-  }, [menuOpen, exploreHintOpen]);
+  }, [menuOpen, exploreHintOpen, exploreLockedOpen]);
 
   useEffect(() => {
     setMenuOpen(false);
     setExploreHintOpen(false);
+    setExploreLockedOpen(false);
     setExpandedSections(getCollapsedSections());
   }, [location.pathname]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (loading || !user) {
+      setExploreUnlocked(false);
+      return;
+    }
+
+    void (async () => {
+      try {
+        const response = await apiFetch<{
+          pet?: {
+            stage?: string | null;
+          } | null;
+        }>("/api/care/current");
+
+        const stage = String(response.pet?.stage ?? "")
+          .trim()
+          .toLowerCase();
+
+        if (!cancelled) {
+          setExploreUnlocked(Boolean(response.pet) && stage !== "egg");
+        }
+      } catch {
+        if (!cancelled) {
+          setExploreUnlocked(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, user, location.pathname]);
 
   function toggleSection(section: MenuSectionKey) {
     setExpandedSections((prev) => ({
@@ -179,6 +220,7 @@ export default function App() {
   function handleNavigate(to: string) {
     setMenuOpen(false);
     setExploreHintOpen(false);
+    setExploreLockedOpen(false);
     setExpandedSections(getCollapsedSections());
     navigate(to);
   }
@@ -188,12 +230,22 @@ export default function App() {
 
     if (!user) {
       setMenuOpen(false);
+      setExploreLockedOpen(false);
       setExpandedSections(getCollapsedSections());
       setExploreHintOpen((prev) => !prev);
       return;
     }
 
+    if (!exploreUnlocked) {
+      setMenuOpen(false);
+      setExploreHintOpen(false);
+      setExpandedSections(getCollapsedSections());
+      setExploreLockedOpen((prev) => !prev);
+      return;
+    }
+
     setExploreHintOpen(false);
+    setExploreLockedOpen(false);
     setExpandedSections(getCollapsedSections());
     setMenuOpen((prev) => !prev);
   }
@@ -273,9 +325,14 @@ export default function App() {
                   <div className="exploreWrapper" ref={exploreWrapperRef}>
                     <button
                       type="button"
-                      className="exploreButton dp-btn dp-btn-blue"
-                      aria-expanded={menuOpen || exploreHintOpen}
+                      className={`exploreButton dp-btn dp-btn-blue ${
+                        user && !exploreUnlocked ? "exploreButton--locked" : ""
+                      }`}
+                      aria-expanded={
+                        menuOpen || exploreHintOpen || exploreLockedOpen
+                      }
                       aria-haspopup="dialog"
+                      aria-disabled={Boolean(user) && !exploreUnlocked}
                       onClick={handleExploreClick}
                     >
                       EXPLORE ☰
@@ -300,7 +357,26 @@ export default function App() {
                       </div>
                     )}
 
-                    {menuOpen && user && (
+                    {exploreLockedOpen && user && !exploreUnlocked && (
+                      <div
+                        className="exploreThoughtBubble exploreThoughtBubble--locked"
+                        role="dialog"
+                        aria-modal="false"
+                        aria-label="Explore locked notice"
+                      >
+                        <div
+                          className="exploreThoughtBubbleTail"
+                          aria-hidden="true"
+                        />
+                        <p className="exploreThoughtBubbleText">
+                          "You see a leaf gently blow past you... you should
+                          probably close that window, theres a chill in the
+                          air."
+                        </p>
+                      </div>
+                    )}
+
+                    {menuOpen && user && exploreUnlocked && (
                       <div
                         className="hamburgerMenuModal"
                         role="dialog"

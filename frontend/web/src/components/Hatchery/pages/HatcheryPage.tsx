@@ -695,7 +695,7 @@ export default function HatcheryPage() {
 
   const slots: HatchSlot[] = useMemo(() => {
     if (data?.slots && data.slots.length > 0) {
-      return data.slots.map((slot) => {
+      const serverSlots = data.slots.map((slot) => {
         const pet = slot.pet;
         const hatchEndsAt = slot.hatch?.hatch_ends_at ?? null;
 
@@ -716,6 +716,17 @@ export default function HatcheryPage() {
               : undefined,
         };
       });
+
+      const futureLockedSlots: HatchSlot[] = Array.from(
+        { length: 5 },
+        (_, idx) => ({
+          index: 11 + idx,
+          locked: true,
+          egg: undefined,
+        }),
+      );
+
+      return [...serverSlots, ...futureLockedSlots];
     }
 
     const pet = data?.pet;
@@ -742,7 +753,7 @@ export default function HatcheryPage() {
 
   const shelfSlots: ShelfSlot[] = useMemo(() => {
     if (data?.shelf_slots && data.shelf_slots.length > 0) {
-      return data.shelf_slots.slice(0, 5).map((slot) => ({
+      return data.shelf_slots.slice(0, 6).map((slot) => ({
         id: slot.id,
         index: slot.slot_index,
         locked: !slot.unlocked,
@@ -750,7 +761,7 @@ export default function HatcheryPage() {
       }));
     }
 
-    return Array.from({ length: 5 }, (_, idx) => ({
+    return Array.from({ length: 6 }, (_, idx) => ({
       id: `fallback-shelf-${idx + 1}`,
       index: idx + 1,
       locked: idx !== 0,

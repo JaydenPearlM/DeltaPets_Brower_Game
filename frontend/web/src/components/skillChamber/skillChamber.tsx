@@ -217,14 +217,29 @@ function getPetElementKey(pet?: Record<string, any> | null) {
     .replace(/\s+/g, "_");
 }
 
+const GUARD_STYLE: React.CSSProperties = {
+  background: "linear-gradient(180deg, #fff880 0%, #ffd84c 48%, #efb218 100%)",
+  color: "#3c2a00",
+};
+
+const MEND_STYLE: React.CSSProperties = {
+  background: "linear-gradient(180deg, #b7ffc9 0%, #4ee979 48%, #20994d 100%)",
+  color: "#073b18",
+};
+
 function getCommandButtonStyle(
   skillId: SkillId,
   pet?: Record<string, any> | null,
-): SkillCommandStyle | undefined {
-  if (skillId !== "basic-strike") return undefined;
+): React.CSSProperties | undefined {
+  if (skillId === "guard") return GUARD_STYLE;
+  if (skillId === "mend") return MEND_STYLE;
 
   const elementKey = getPetElementKey(pet);
-  return ELEMENT_COMMAND_COLORS[elementKey] ?? ELEMENT_COMMAND_COLORS.air;
+  const vars = ELEMENT_COMMAND_COLORS[elementKey] ?? ELEMENT_COMMAND_COLORS.air;
+  return {
+    background: vars["--skill-command-bg"],
+    color: vars["--skill-command-text"],
+  };
 }
 
 function getPetName(pet?: Record<string, any> | null) {
