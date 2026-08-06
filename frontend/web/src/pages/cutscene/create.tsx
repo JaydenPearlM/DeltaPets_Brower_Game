@@ -34,7 +34,6 @@ const TIMING = {
   glitch2HoldMs: 3000,
 
   loreTypeMsPerChar: 52,
-  loreDeleteMsPerChar: 30,
 
   gridFadeInMs: 1300,
 
@@ -56,8 +55,8 @@ const TIMING = {
 ========================================================= */
 const GLITCH_1 = `...Wait... Who... are you?`;
 const GLITCH_2 = `You should not be here. This is confidential to the real world! But... the signal...`;
-const LORE_1 = `This signal is buried beneath corrupted data..... What's happening? There's something coming through.`;
-const WIRE_LINE = `That... that is impossible. A Prismatic Egg...? The signal chose you. Take care of it.`;
+const LORE_1 = `This signal is buried beneath corrupted data..... What's this!? There's something coming through!`;
+const WIRE_LINE = `That... that is impossible. A Prismatic Egg...? ...`;
 
 /* =========================================================
    LOOK
@@ -125,19 +124,6 @@ const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeInCubic = (t: number) => t * t * t;
 const easeInOutCubic = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-async function deleteText(
-  current: string,
-  set: TextSetter,
-  msPerChar: number,
-  alive: AliveCheck,
-) {
-  for (let i = current.length; i >= 0; i--) {
-    if (!alive()) return;
-    set(current.slice(0, i));
-    await sleep(msPerChar);
-  }
-}
 
 function glitchReveal(
   target: string,
@@ -1044,13 +1030,7 @@ export default function CreatePage() {
       setGlitching(false);
       await sleep(2800);
       if (!alive()) return;
-      await deleteText(
-        LORE_1,
-        setCenterText,
-        TIMING.loreDeleteMsPerChar,
-        alive,
-      );
-      if (!alive()) return;
+      setCenterText("");
       await sleep(400);
       if (!alive()) return;
 
@@ -1117,12 +1097,7 @@ export default function CreatePage() {
       setGlitching(false);
       await sleep(2400);
       if (!alive()) return;
-      await deleteText(
-        `"${WIRE_LINE}"`,
-        setCenterText,
-        TIMING.loreDeleteMsPerChar,
-        alive,
-      );
+      setCenterText("");
       if (!alive()) return;
 
       setPhase("shock");
@@ -1166,12 +1141,7 @@ export default function CreatePage() {
       setGlitching(false);
       await sleep(1800);
       if (!alive()) return;
-      await deleteText(
-        TAKE_CARE,
-        setCenterText,
-        TIMING.loreDeleteMsPerChar,
-        alive,
-      );
+      setCenterText("");
       if (!alive()) return;
       await sleep(350);
       if (!alive()) return;
@@ -1190,6 +1160,23 @@ export default function CreatePage() {
 
       setPhase("fadeOut");
       await sleep(TIMING.fadeOutMs);
+      if (!alive()) return;
+
+      const signalFade = labelRef.current?.animate(
+        [{ opacity: 1 }, { opacity: 0 }],
+        {
+          duration: 700,
+          easing: "ease",
+          fill: "forwards",
+        },
+      );
+
+      if (signalFade) {
+        await new Promise<void>((resolve) => {
+          signalFade.onfinish = () => resolve();
+          signalFade.oncancel = () => resolve();
+        });
+      }
       if (!alive()) return;
 
       await apiFetch("/api/pets/ensure-egg", {
@@ -1211,8 +1198,7 @@ export default function CreatePage() {
     };
   }, [playerName, replayKey]);
 
-  const blackOn =
-    phase === "fadeInBlack" || phase === "fadeOut" || phase === "done";
+  const blackOn = phase === "fadeInBlack" || phase === "done";
   const centerFadesOut = phase === "fadeOut" || phase === "done";
   const typingPhase =
     phase === "lore" || phase === "wireHold" || phase === "goodluck";
@@ -1222,7 +1208,10 @@ export default function CreatePage() {
   return (
     <div ref={rootRef} className="dpc-root">
       <style>{css}</style>
-      <canvas ref={canvasRef} className="dpc-canvas" />
+      <canvas
+        ref={canvasRef}
+        className={`dpc-canvas ${centerFadesOut ? "fade-out" : ""}`}
+      />
       <div className={`dpc-black ${blackOn ? "on" : "off"}`} />
       <div ref={crackRef} className="dpc-impact-crack" aria-hidden="true">
         <span />
@@ -1267,6 +1256,10 @@ const css = `
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 .dpc-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+.dpc-canvas.fade-out{
+  opacity:0;
+  transition:opacity ${TIMING.fadeOutMs}ms ease;
+}
 
 .dpc-black{ position:absolute; inset:0; background:#000; pointer-events:none;
   transition:opacity 900ms ease; }

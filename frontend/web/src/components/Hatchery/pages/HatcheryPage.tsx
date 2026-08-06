@@ -145,6 +145,13 @@ type HatchActionResponse = {
   post_hatch_destination?: string | null;
   storage_result?: "party" | "storage" | null;
   is_mystery_starter_hatch?: boolean;
+  egg_lost?: boolean;
+  corruption_event?: {
+    outcome?: string | null;
+    condition?: string | null;
+    corruption?: string | null;
+    message?: string | null;
+  } | null;
 };
 
 type HatchEgg = {
@@ -441,7 +448,9 @@ function EggSlotButton(props: {
             eggIdentity.elementKey ? (
               <img
                 className={`eggIconImg${cd.done ? " eggIconReady" : ""}`}
-                src={ELEMENT_EGG_IMAGES[eggIdentity.elementKey]}
+                src={
+                  ELEMENT_EGG_IMAGES[eggIdentity.elementKey ?? "null_element"]
+                }
                 alt={eggIdentity.label}
               />
             ) : (
@@ -547,35 +556,71 @@ function StarParticles() {
 
 function HatchRevealOverlay({
   result,
-  eggRef: _eggRef,
+  eggRef,
   onDismiss,
 }: {
   result: HatchActionResponse;
   eggRef: HatchEgg | null;
   onDismiss: () => void;
 }) {
+  const eggWasLost = result.egg_lost === true;
   const petName = result.pet?.name ?? "Unknown Kith";
   const destinationText =
     result.storage_result === "party"
       ? "Joined your Main Team!"
       : "Sent to Storage";
+  const eggIdentity = eggRef ? resolveEggIdentity(eggRef) : null;
 
   return (
     <div className="hatchRevealOverlay">
-      <div className="hatchRevealCard">
-        <div className="hatchRevealCreatureWrap">
+      <div
+        className={`hatchRevealCard ${
+          eggWasLost ? "hatchRevealCardCorrupted" : ""
+        }`}
+      >
+        <div
+          className={`hatchRevealCreatureWrap ${
+            eggWasLost ? "hatchRevealCreatureWrapCorrupted" : ""
+          }`}
+        >
           <StarParticles />
-          <div className="hatchRevealCreature">
-            <span className="hatchRevealEye hatchRevealEyeLeft" />
-            <span className="hatchRevealEye hatchRevealEyeRight" />
-            <span className="hatchRevealSmile" />
-          </div>
+
+          {eggWasLost && eggIdentity ? (
+            <img
+              className="hatchRevealCorruptedEgg"
+              src={ELEMENT_EGG_IMAGES[eggIdentity.elementKey ?? "null_element"]}
+              alt={eggIdentity.label}
+            />
+          ) : (
+            <div className="hatchRevealCreature">
+              <span className="hatchRevealEye hatchRevealEyeLeft" />
+              <span className="hatchRevealEye hatchRevealEyeRight" />
+              <span className="hatchRevealSmile" />
+            </div>
+          )}
         </div>
-        <div className="hatchRevealCongrats">Congratulations!</div>
+
+        <div className="hatchRevealCongrats">
+          {eggWasLost ? "Aliune Signal Interference" : "Congratulations!"}
+        </div>
+
         <div className="hatchRevealMessage">
-          You hatched <span className="hatchRevealPetName">{petName}</span>!
+          {eggWasLost ? (
+            (result.corruption_event?.message ??
+            "The signal surrounding the egg became unstable. Its form dissolved before the Kith could emerge.")
+          ) : (
+            <>
+              You hatched <span className="hatchRevealPetName">{petName}</span>!
+            </>
+          )}
         </div>
-        <div className="hatchRevealDestination">{destinationText}</div>
+
+        {eggWasLost ? (
+          <div className="hatchRevealDestination">The egg has been lost.</div>
+        ) : (
+          <div className="hatchRevealDestination">{destinationText}</div>
+        )}
+
         <button
           type="button"
           className="primaryBtn hatchRevealContinueBtn"
@@ -587,7 +632,6 @@ function HatchRevealOverlay({
     </div>
   );
 }
-
 // ─── Page component ───────────────────────────────────────────────────────────
 
 export default function HatcheryPage() {
@@ -695,7 +739,7 @@ export default function HatcheryPage() {
 
   const slots: HatchSlot[] = useMemo(() => {
     if (data?.slots && data.slots.length > 0) {
-      return data.slots.map((slot) => {
+      const serverSlots = data.slots.map((slot) => {
         const pet = slot.pet;
         const hatchEndsAt = slot.hatch?.hatch_ends_at ?? null;
 
@@ -716,6 +760,17 @@ export default function HatcheryPage() {
               : undefined,
         };
       });
+
+      const futureLockedSlots: HatchSlot[] = Array.from(
+        { length: 5 },
+        (_, idx) => ({
+          index: 11 + idx,
+          locked: true,
+          egg: undefined,
+        }),
+      );
+
+      return [...serverSlots, ...futureLockedSlots];
     }
 
     const pet = data?.pet;
@@ -742,7 +797,7 @@ export default function HatcheryPage() {
 
   const shelfSlots: ShelfSlot[] = useMemo(() => {
     if (data?.shelf_slots && data.shelf_slots.length > 0) {
-      return data.shelf_slots.slice(0, 5).map((slot) => ({
+      return data.shelf_slots.slice(0, 6).map((slot) => ({
         id: slot.id,
         index: slot.slot_index,
         locked: !slot.unlocked,
@@ -750,7 +805,7 @@ export default function HatcheryPage() {
       }));
     }
 
-    return Array.from({ length: 5 }, (_, idx) => ({
+    return Array.from({ length: 6 }, (_, idx) => ({
       id: `fallback-shelf-${idx + 1}`,
       index: idx + 1,
       locked: idx !== 0,

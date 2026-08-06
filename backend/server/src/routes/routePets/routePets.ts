@@ -41,6 +41,7 @@ import {
   findNonStarterSpeciesByEggName,
   findNonStarterSpeciesById,
 } from "../../shared/pets/species/all-species";
+import { KITHNA_RARITY_RULES } from "../../shared/pets/species/kithna-species";
 import { getWorldTimeOfDay } from "../../lib/deltaTime";
 
 import {
@@ -135,10 +136,10 @@ type AliuneHatchSignal = {
 };
 
 const HATCH_CORRUPTION_ROLL_MAX = 1000;
-const LOW_CORRUPTION_EGG_LOSS_CHANCE = 100; // 10%
-const RISING_CORRUPTION_EGG_LOSS_CHANCE = 250; // 25%, tune later
-const HIGH_CORRUPTION_EGG_LOSS_CHANCE = 650; // 65%, tune later
-const TOO_HIGH_CORRUPTION_EGG_LOSS_CHANCE = 900; // 90%, tune later
+const LOW_CORRUPTION_EGG_LOSS_CHANCE = 20; // 2%
+const RISING_CORRUPTION_EGG_LOSS_CHANCE = 50; // 5%
+const HIGH_CORRUPTION_EGG_LOSS_CHANCE = 120; // 12%
+const TOO_HIGH_CORRUPTION_EGG_LOSS_CHANCE = 250; // 25%
 
 function isMysteryEggProtected(egg: EggRow): boolean {
   const eggName = String(egg.name ?? "").toLowerCase();
@@ -495,6 +496,7 @@ petsRouter.post(
         user_id: userId,
         name: "Prismatic Egg",
         species: starter.speciesId,
+        rarity: "epic",
         line: resolvedLine,
         stage: "egg",
         energy: 100,
@@ -1199,7 +1201,7 @@ petsRouter.post(
             condition: aliuneSignal.condition,
             corruption: aliuneSignal.corruption,
             message:
-              "Aliune Signal interference corrupted the egg. The shell fractured and the egg was lost.",
+              "Aliune Signal interference corrupted the egg. The egg was lost.",
           },
         });
       }
@@ -1219,6 +1221,12 @@ petsRouter.post(
       const hatchSpeciesId = starter?.speciesId ?? kithnaSpecies?.id ?? null;
       const hatchLine =
         typedEgg.line ?? starter?.line ?? kithnaSpecies?.line ?? null;
+      const rarityBonusPoints = kithnaSpecies?.rarity
+        ? KITHNA_RARITY_RULES[kithnaSpecies.rarity].rarityBonusPoints
+        : starter
+          ? KITHNA_RARITY_RULES.epic.rarityBonusPoints
+          : 0;
+      const hatchAllocationPoints = HATCH_ALLOCATION_POINTS + rarityBonusPoints;
 
       if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId || !hatchLine) {
         logger.error("[hatch] no hatch species matched egg", {
@@ -1232,13 +1240,13 @@ petsRouter.post(
 
       await insertBaseStats(egg.id, hatchBaseStats);
 
-      const iv = rollIV(HATCH_ALLOCATION_POINTS);
+      const iv = rollIV(hatchAllocationPoints);
 
-      if (sumStats(iv) !== HATCH_ALLOCATION_POINTS) {
+      if (sumStats(iv) !== hatchAllocationPoints) {
         logger.error("[hatch] invalid hatch allocation total", {
           eggId: egg.id,
           iv,
-          expected: HATCH_ALLOCATION_POINTS,
+          expected: hatchAllocationPoints,
         });
 
         return res.status(500).json({ error: "Invalid hatch stat roll" });
@@ -1456,7 +1464,7 @@ petsRouter.post(
       return res.json({
         server_now: nowIso,
         pet: hatchedPetForClient,
-        awarded_points: HATCH_ALLOCATION_POINTS,
+        awarded_points: hatchAllocationPoints,
         iv,
         points,
         gender,

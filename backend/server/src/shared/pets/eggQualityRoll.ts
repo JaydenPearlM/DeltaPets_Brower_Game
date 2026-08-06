@@ -1,6 +1,7 @@
 import { randomInt as cryptoRandomInt } from "node:crypto";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { rollGrowthTraits, type GrowthStatKey } from "../../pets/growthTraits";
+import type { KithnaRarity } from "./species/kithna-species";
 
 // --- Alpha testing override -------------------------------------------------
 // Tutorial/testing eggs hatch on a flat timer so testing stays fast and
@@ -51,8 +52,10 @@ async function rollEggPassiveTrait(): Promise<PassiveTraitRoll | null> {
   return data[cryptoRandomInt(0, data.length)] as PassiveTraitRoll;
 }
 
-export async function rollNonStarterEggQuality(): Promise<EggQualityRoll> {
-  const { strongStats, weakStat } = rollGrowthTraits();
+export async function rollNonStarterEggQuality(
+  rarity: KithnaRarity,
+): Promise<EggQualityRoll> {
+  const { strongStats, weakStat } = rollGrowthTraits(rarity);
   const passiveTrait = await rollEggPassiveTrait();
 
   let hatchMinutes = NON_STARTER_EGG_MIN_HATCH_MINUTES;

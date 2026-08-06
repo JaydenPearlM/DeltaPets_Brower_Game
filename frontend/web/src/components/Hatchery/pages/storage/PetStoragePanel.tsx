@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  formatLineLabel,
   PARTY_SLOT_COUNT,
   type StoragePet,
-  type StorageStageFilter,
   usePetStorage,
 } from "./usePetStorage";
 import MainTeam from "../../../Main_Team/mainTeam";
@@ -31,16 +29,6 @@ type DragPayload = {
   fromSlotIndex?: number | null;
   isEgg: boolean;
 };
-
-const FILTERS: Array<{ key: StorageStageFilter; label: string }> = [
-  { key: "all", label: "All" },
-  { key: "egg", label: "Egg" },
-  { key: "hatchling", label: "Hatchling" },
-  { key: "lowform", label: "Lowform" },
-  { key: "highform", label: "Highform" },
-  { key: "legion", label: "Legion" },
-  { key: "mythical_legendary", label: "Mythical Legendary" },
-];
 
 const STAT_ROWS = [
   { key: "hp", label: "HP" },
@@ -188,9 +176,7 @@ function StoragePetCard(props: {
     onDragStart,
     onDragEnd,
     onMoveEggToIncubator,
-    onMovePetToParty,
     onSelectPet,
-    targetSlot,
     isWorking,
     incubatorBusy,
   } = props;
@@ -293,15 +279,11 @@ function StoragePetCard(props: {
 
             <button
               type="button"
-              className="btn btn-blue storageActionBtn"
-              disabled={!targetSlot || isWorking}
-              onClick={() => onMovePetToParty?.(pet.id)}
+              className="btn btn-pearl storageActionBtn storageActionBtn--options"
+              disabled={isWorking}
+              onClick={() => onSelectPet?.(pet)}
             >
-              {isWorking
-                ? "Moving..."
-                : targetSlot
-                  ? `Move to Slot ${targetSlot}`
-                  : "Main Team Full"}
+              {isWorking ? "Moving..." : "Options"}
             </button>
           </>
         )}
@@ -314,8 +296,6 @@ function StoragePetCard(props: {
 
 export function PetStoragePanel(props: PetStoragePanelProps) {
   const { userId, refreshSignal, onStorageChanged } = props;
-  const [filter, setFilter] = useState<StorageStageFilter>("all");
-  const [elementFilter, setElementFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selectedPartySlot, setSelectedPartySlot] = useState<number | null>(1);
   const [mobilePetAction, setMobilePetAction] = useState<{
@@ -354,22 +334,9 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
 
   const filteredPets = useMemo(() => {
     const q = search.trim().toLowerCase();
+    if (!q) return pets;
 
     return pets.filter((pet) => {
-      const stageMatch =
-        filter === "all" || normalizeStage(pet.stage) === filter;
-
-      if (!stageMatch) return false;
-
-      const elementMatch =
-        elementFilter === "all" ||
-        String(pet.line ?? "")
-          .trim()
-          .toLowerCase() === elementFilter;
-
-      if (!elementMatch) return false;
-      if (!q) return true;
-
       const haystack = [
         pet.name ?? "",
         pet.stage ?? "",
@@ -381,7 +348,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
 
       return haystack.includes(q);
     });
-  }, [elementFilter, filter, normalizeStage, pets, search]);
+  }, [pets, search]);
 
   const partyCount = partySlots.filter((slot) => slot.petId).length;
   const targetSlot = firstEmptyPartySlot ?? selectedPartySlot;
@@ -595,49 +562,6 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
               Pets and eggs currently held in storage.
             </div>
           </div>
-
-          <details className="storageMenu">
-            <summary aria-label="Open storage filters">☰</summary>
-            <div className="storageMenuPanel">
-              <label className="storageMenuLabel" htmlFor="storage-type-filter">
-                Type or stage
-              </label>
-              <select
-                id="storage-type-filter"
-                className="storageMenuSelect"
-                value={filter}
-                onChange={(event) =>
-                  setFilter(event.target.value as StorageStageFilter)
-                }
-              >
-                {FILTERS.map((item) => (
-                  <option key={item.key} value={item.key}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-
-              <label
-                className="storageMenuLabel"
-                htmlFor="storage-element-filter"
-              >
-                Element
-              </label>
-              <select
-                id="storage-element-filter"
-                className="storageMenuSelect"
-                value={elementFilter}
-                onChange={(event) => setElementFilter(event.target.value)}
-              >
-                <option value="all">All elements</option>
-                {Array.from(ELEMENT_LINE_KEYS).map((element) => (
-                  <option key={element} value={element}>
-                    {formatLineLabel(element)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </details>
         </div>
 
         <div className="storageSearchWrap">
@@ -673,9 +597,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
               <div className="storageEmptyTitle">
                 Nothing matches that filter.
               </div>
-              <div className="storageEmptyText">
-                Try a different search or stage filter.
-              </div>
+              <div className="storageEmptyText">Try a different search.</div>
             </div>
           ) : (
             <div className="storagePetGrid">
@@ -714,16 +636,13 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
           onClick={() => setMobilePetAction(null)}
         >
           <section
-            className="mobilePetActionMenu"
+            className="mobilePetActionMenu dp-blue-grid-panel"
             role="dialog"
             aria-modal="true"
             aria-label={`Move ${mobilePetAction.pet.name?.trim() || "pet"}`}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mobilePetActionHeader">
-              <span className="mobilePetActionHamburger" aria-hidden="true">
-                ☰
-              </span>
               <div>
                 <div className="mobilePetActionTitle">
                   {mobilePetAction.pet.name?.trim() || "Unnamed Delta"}
@@ -732,15 +651,18 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                   Choose where this pet should go.
                 </div>
               </div>
+            </div>
+
+            {mobilePetAction.source === "team" ? (
               <button
                 type="button"
-                className="mobilePetActionClose"
-                aria-label="Close pet actions"
-                onClick={() => setMobilePetAction(null)}
+                className="btn btn-gold mobilePetActionButton mobilePetActionStorageButton"
+                disabled={workingPetId !== null}
+                onClick={() => void handleMobileMoveToStorage()}
               >
-                ×
+                Put in Storage
               </button>
-            </div>
+            ) : null}
 
             <div className="mobilePetActionSlots">
               {Array.from({ length: PARTY_SLOT_COUNT }, (_, index) => {
@@ -754,7 +676,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                   <button
                     key={slotIndex}
                     type="button"
-                    className="btn btn-blue mobilePetActionButton"
+                    className="btn mobilePetActionButton mobilePetActionSlotButton"
                     disabled={isCurrentSlot || workingPetId !== null}
                     onClick={() => void handleMobileMoveToSlot(slotIndex)}
                   >
@@ -771,20 +693,17 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
               })}
             </div>
 
-            {mobilePetAction.source === "team" ? (
-              <button
-                type="button"
-                className="btn btn-blue mobilePetActionButton mobilePetActionStorageButton"
-                disabled={workingPetId !== null}
-                onClick={() => void handleMobileMoveToStorage()}
-              >
-                Put in Storage
-              </button>
-            ) : null}
-
             {mobilePetActionError ? (
               <div className="mobilePetActionError">{mobilePetActionError}</div>
             ) : null}
+
+            <button
+              type="button"
+              className="btn btn-pearl mobilePetActionPearlClose"
+              onClick={() => setMobilePetAction(null)}
+            >
+              Close
+            </button>
           </section>
         </div>
       ) : null}

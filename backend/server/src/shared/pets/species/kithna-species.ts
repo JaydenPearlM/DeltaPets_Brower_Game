@@ -28,10 +28,23 @@ export type KithnaEggVisual = {
   glowColor: string;
 };
 
+export type KithnaRarity = "common" | "uncommon" | "rare" | "epic";
+export type KithnaEncounterTime = "day" | "night";
+
+export type KithnaTraitRarity = "common" | "uncommon" | "rare" | "epic";
+
+export type KithnaRarityFactors = {
+  eggRarity: KithnaRarity;
+  passiveRarity: KithnaTraitRarity | null;
+  mutationRarity: KithnaTraitRarity | null;
+  bondLevel: number;
+};
 export type KithnaNonStarterSpecies = PetSpeciesIdentity & {
   source: "kithna";
   region: "kithna";
   tutorialLocked: boolean;
+  rarity: KithnaRarity | null;
+  encounterTime: KithnaEncounterTime | null;
   eggVisual: KithnaEggVisual;
   canRollAliuneCorruption: boolean;
   corruptedImage: null;
@@ -41,14 +54,16 @@ export type KithnaNonStarterSpecies = PetSpeciesIdentity & {
 export type KithnaPetTemplate = {
   id: string;
   line: SharedElementLine;
+  rarity?: KithnaRarity;
+  encounterTime?: KithnaEncounterTime;
   hatchling: string;
-  lowform: string;
-  highform: string;
+  lowform?: string;
+  highform?: string;
 
   /**
-   * Legion is required for every species.
+   * Legion is required once the evolution line is finalized.
    */
-  legion: string;
+  legion?: string;
 
   /**
    * Mythical Legendary may not exist yet.
@@ -155,6 +170,38 @@ const BALANCED_EGG_STATS: SharedBaseStats = {
   mana: 1,
   base_total: 10,
 };
+export const KITHNA_RARITY_RULES: Record<
+  KithnaRarity,
+  {
+    encounterWeight: number;
+    hatchMinutes: number;
+    rarityBonusPoints: number;
+  }
+> = {
+  common: {
+    encounterWeight: 40,
+    hatchMinutes: 2,
+    rarityBonusPoints: 1,
+  },
+
+  uncommon: {
+    encounterWeight: 25,
+    hatchMinutes: 5,
+    rarityBonusPoints: 2,
+  },
+
+  rare: {
+    encounterWeight: 12,
+    hatchMinutes: 10,
+    rarityBonusPoints: 3,
+  },
+
+  epic: {
+    encounterWeight: 5,
+    hatchMinutes: 30,
+    rarityBonusPoints: 4,
+  },
+};
 
 const STANDARD_KITHNA_RULES: PetSpeciesRules = {
   canBreed: true,
@@ -194,13 +241,34 @@ export function createKithnaNonStarterSpecies(
     ? VOIDBORNE_RULES
     : STANDARD_KITHNA_RULES;
 
-  const rules = mergeRules(baseRules, template.rules);
+  const rarityRules = template.rarity
+    ? KITHNA_RARITY_RULES[template.rarity]
+    : null;
+
+  const rules = mergeRules(baseRules, {
+    ...template.rules,
+
+    encounterWeight:
+      rarityRules?.encounterWeight ??
+      template.rules?.encounterWeight ??
+      baseRules.encounterWeight,
+
+    ...(rarityRules
+      ? {
+          hatchMinutes: {
+            min: rarityRules.hatchMinutes,
+            max: rarityRules.hatchMinutes,
+          },
+        }
+      : {}),
+  });
+
   const evolution: SpeciesEvolution = {
     egg: eggVisual.eggName,
     hatchling: template.hatchling,
-    lowform: template.lowform,
-    highform: template.highform,
-    legion: template.legion,
+    lowform: template.lowform ?? template.hatchling,
+    highform: template.highform ?? template.hatchling,
+    legion: template.legion ?? template.hatchling,
     mythical_legendary:
       rules.maxStage === "legion"
         ? null
@@ -213,6 +281,9 @@ export function createKithnaNonStarterSpecies(
     source: "kithna",
     region: "kithna",
     tutorialLocked: true,
+
+    rarity: template.rarity ?? null,
+    encounterTime: template.encounterTime ?? null,
 
     line: template.line,
     evolution,
@@ -230,77 +301,61 @@ export function createKithnaNonStarterSpecies(
 }
 
 /**
- * Wild Kithna roster.
+ * Active wild Kithna roster.
  *
- * Every species can appear during either world-time phase.
- * Day Pigeon / Night Owl belongs to the individual pet, not the species.
+ * Retired Closed Alpha species are archived separately in:
+ * backend/Retired/species.ts
+ *
  * Do not add starters here.
- * Existing IDs are preserved because saved pets may already reference them.
  */
 export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
   createKithnaNonStarterSpecies({
-    id: "kithna_day_pet_01",
-    line: "water",
-
-    hatchling: "Ripplin",
-    lowform: "Ripplume",
-    highform: "Tidelume",
-    legion: "Tidalyn",
-    mythical_legendary: null,
-  }),
-
-  createKithnaNonStarterSpecies({
-    id: "kithna_day_pet_02",
-    line: "earth",
-
-    hatchling: "Peblin",
-    lowform: "Peblorn",
-    highform: "Boulderin",
-    legion: "Terralith",
-    mythical_legendary: null,
-  }),
-
-  createKithnaNonStarterSpecies({
-    id: "kithna_day_pet_03",
-    line: "light",
-
-    hatchling: "Glimmet",
-    lowform: "Glimmeryn",
-    highform: "Lumeryn",
-    legion: "Lumaris",
-    mythical_legendary: null,
-  }),
-
-  createKithnaNonStarterSpecies({
-    id: "kithna_night_pet_01",
-    line: "ice",
-
-    hatchling: "Frilo",
-    lowform: "Frilyn",
-    highform: "Glacilyn",
-    legion: "Glaciaris",
-    mythical_legendary: null,
-  }),
-
-  createKithnaNonStarterSpecies({
-    id: "kithna_night_pet_02",
+    id: "kithna_clodian",
     line: "storm",
+    rarity: "uncommon",
+    encounterTime: "day",
 
-    hatchling: "Fulgus",
-    lowform: "Fulgorn",
-    highform: "Fulgarin",
-    legion: "Fulgurex",
+    hatchling: "Clodian",
     mythical_legendary: null,
   }),
 
   createKithnaNonStarterSpecies({
-    id: "kithna_night_pet_03",
-    line: "shadow",
+    id: "kithna_pebelin",
+    line: "earth",
+    rarity: "common",
+    encounterTime: "day",
 
-    hatchling: "Murklin",
-    lowform: "Murkrin",
-    highform: "Duskarin",
-    legion: "Duskavus",
+    hatchling: "Pebelin",
+    mythical_legendary: null,
+  }),
+
+  createKithnaNonStarterSpecies({
+    id: "kithna_magmado",
+    line: "fire",
+    rarity: "rare",
+    encounterTime: "night",
+
+    hatchling: "Magmado",
+    mythical_legendary: null,
+  }),
+
+  createKithnaNonStarterSpecies({
+    id: "kithna_shade",
+    line: "shadow",
+    rarity: "common",
+    encounterTime: "night",
+
+    hatchling: "Shade",
+    mythical_legendary: null,
+  }),
+
+  createKithnaNonStarterSpecies({
+    id: "kithna_glimmer",
+    line: "light",
+    rarity: "epic",
+    encounterTime: "night",
+
+    hatchling: "Glimmer",
     mythical_legendary: null,
   }),
 
@@ -340,8 +395,6 @@ export function getKithnaNonStarterSpecies(): KithnaNonStarterSpecies[] {
 
 /**
  * Returns every Kithna species that is enabled for encounters.
- *
- * The current world phase does not filter the species roster.
  */
 export function getKithnaEncounterSpecies(): KithnaNonStarterSpecies[] {
   return KITHNA_NON_STARTER_SPECIES.filter(
@@ -350,15 +403,14 @@ export function getKithnaEncounterSpecies(): KithnaNonStarterSpecies[] {
 }
 
 /**
- * Temporary compatibility alias.
- *
- * Older encounter code may still pass the current world time here.
- * World time no longer filters which Kithna species can appear.
+ * Returns Kithna species assigned to the current Delta time.
  */
 export function getKithnaEggsForTime(
-  _worldTime?: "day" | "night",
+  worldTime: "day" | "night",
 ): KithnaNonStarterSpecies[] {
-  return getKithnaEncounterSpecies();
+  return getKithnaEncounterSpecies().filter(
+    (species) => species.encounterTime === worldTime,
+  );
 }
 
 export function findKithnaNonStarterByEggName(

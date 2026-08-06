@@ -24,12 +24,14 @@ function PasswordField({
   label,
   value,
   onChange,
+  name,
   autoComplete,
   placeholder = "",
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  name: string;
   autoComplete: string;
   placeholder?: string;
 }) {
@@ -43,6 +45,7 @@ function PasswordField({
         <input
           className="dp-input dp-input--withIcon"
           type={showPassword ? "text" : "password"}
+          name={name}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete={autoComplete}
@@ -431,6 +434,8 @@ export function LoginMenus({
                         <label className="dp-label">Username or Email</label>
                         <input
                           className="dp-input"
+                          type="text"
+                          name="username"
                           value={email}
                           onChange={(event) => setEmail(event.target.value)}
                           autoComplete="username"
@@ -443,6 +448,7 @@ export function LoginMenus({
                         label="Password"
                         value={loginPassword}
                         onChange={setLoginPassword}
+                        name="current-password"
                         autoComplete="current-password"
                         placeholder="Enter your password"
                       />
@@ -492,7 +498,7 @@ export function LoginMenus({
                           value={name}
                           onChange={(event) => setName(event.target.value)}
                           autoComplete="name"
-                          placeholder="First and Last Legal"
+                          placeholder="Legal first name:"
                           required
                         />
                       </div>
@@ -514,9 +520,11 @@ export function LoginMenus({
                         <label className="dp-label">Email</label>
                         <input
                           className="dp-input"
+                          type="email"
+                          name="username"
                           value={email}
                           onChange={(event) => setEmail(event.target.value)}
-                          autoComplete="email"
+                          autoComplete="username"
                           inputMode="email"
                           placeholder="you@example.com"
                           required
@@ -527,6 +535,7 @@ export function LoginMenus({
                         label="Password"
                         value={signupPassword}
                         onChange={setSignupPassword}
+                        name="new-password"
                         autoComplete="new-password"
                         placeholder="At least 8 characters"
                       />
@@ -535,6 +544,7 @@ export function LoginMenus({
                         label="Confirm Password"
                         value={confirmPassword}
                         onChange={setConfirmPassword}
+                        name="confirm-password"
                         autoComplete="new-password"
                         placeholder="Repeat password"
                       />
