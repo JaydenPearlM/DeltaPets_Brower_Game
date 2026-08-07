@@ -421,6 +421,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
             elementKey:
               rawElement === "neutral" ? "null_element" : rawElement || null,
             level: Number(source.level ?? 1),
+            rarity: source.rarity ?? null,
             isActive: Boolean(source.is_active),
             previewUrl:
               source.portrait_url ||

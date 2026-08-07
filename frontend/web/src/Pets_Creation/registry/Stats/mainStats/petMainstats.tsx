@@ -52,7 +52,7 @@ const ELEMENT_ORDER: (keyof TrainingElements)[] = [
 
 function prettyGender(g?: string) {
   if (!g) return "Unknown";
-  if (g === "null_gender") return "Neutral";
+  if (g === "null_gender") return "Void";
   return g.charAt(0).toUpperCase() + g.slice(1);
 }
 

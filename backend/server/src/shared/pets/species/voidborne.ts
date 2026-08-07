@@ -9,20 +9,25 @@
 export const VOIDBORNE_ELEMENT_KEY = "null_element" as const;
 export const VOIDBORNE_DISPLAY_NAME = "Voidborne" as const;
 export const VOIDBORNE_EGG_NAME = "Bronzeheart Egg" as const;
+export const VOIDBORNE_ENCOUNTER_CHANCE_PERMILLE = 1 as const;
+export const VOIDBORNE_HATCH_BONUS_POINTS = 5 as const;
+export const VOIDBORNE_STRONG_STAT_COUNT = 3 as const;
+export const VOIDBORNE_WEAK_STAT_CHANCE = 0.1 as const;
+export const VOIDBORNE_CAN_LEARN_SILVER_SKILLS = true as const;
 
 /**
  * Shared Voidborne gameplay rules.
  *
  * Voidborne is an element, not a species.
- * Pets retain their normal identity, gender, care systems, and species.
+ * Pets retain their normal identity, care systems, and species.
  */
 export const VOIDBORNE_RULES = {
-  canBreed: true,
+  canBreed: false,
   breedingPartnerLine: VOIDBORNE_ELEMENT_KEY,
-  hasGender: true,
+  hasGender: false,
   maxStage: "mythical_legendary" as const,
   xpMultiplier: 0.7,
-  encounterWeight: 100,
+  encounterWeight: 0,
   catchFailureChancePercent: 3,
   hatchMinutes: {
     min: 1,

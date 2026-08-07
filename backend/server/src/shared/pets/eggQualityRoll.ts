@@ -54,8 +54,11 @@ async function rollEggPassiveTrait(): Promise<PassiveTraitRoll | null> {
 
 export async function rollNonStarterEggQuality(
   rarity: KithnaRarity,
+  isVoidborne = false,
 ): Promise<EggQualityRoll> {
-  const { strongStats, weakStat } = rollGrowthTraits(rarity);
+  const { strongStats, weakStat } = rollGrowthTraits(
+    isVoidborne ? "voidborne" : rarity,
+  );
   const passiveTrait = await rollEggPassiveTrait();
 
   let hatchMinutes = NON_STARTER_EGG_MIN_HATCH_MINUTES;

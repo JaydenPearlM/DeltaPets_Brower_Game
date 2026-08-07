@@ -16,6 +16,10 @@ import {
   type KithnaNonStarterSpecies,
 } from "../../../shared/pets/species/kithna-species";
 import { rollNonStarterEggQuality } from "../../../shared/pets/eggQualityRoll";
+import {
+  isVoidborneLine,
+  VOIDBORNE_ENCOUNTER_CHANCE_PERMILLE,
+} from "../../../shared/pets/species/voidborne";
 
 export const kithnaRouter = Router();
 
@@ -75,7 +79,31 @@ const pendingRoamEncounterByUser = new Map<string, PendingKithnaEncounter>();
 function pickRandomSpecies(
   pool: KithnaNonStarterSpecies[],
 ): KithnaNonStarterSpecies {
-  return pool[cryptoRandomInt(pool.length)];
+  const voidborneSpecies = pool.find((species) =>
+    isVoidborneLine(species.line),
+  );
+
+  if (
+    voidborneSpecies &&
+    cryptoRandomInt(1000) < VOIDBORNE_ENCOUNTER_CHANCE_PERMILLE
+  ) {
+    return voidborneSpecies;
+  }
+
+  const standardPool = pool.filter((species) => !isVoidborneLine(species.line));
+
+  const totalWeight = standardPool.reduce(
+    (sum, species) => sum + species.rules.encounterWeight,
+    0,
+  );
+  let roll = cryptoRandomInt(totalWeight);
+
+  for (const species of standardPool) {
+    roll -= species.rules.encounterWeight;
+    if (roll < 0) return species;
+  }
+
+  return standardPool[standardPool.length - 1];
 }
 
 async function grantXpToActivePet(userId: string, amount: number) {
@@ -170,6 +198,7 @@ kithnaRouter.post(
       const species = pickRandomSpecies(pool);
       const eggQuality = await rollNonStarterEggQuality(
         species.rarity ?? "common",
+        isVoidborneLine(species.line),
       );
 
       pendingRoamEncounterByUser.set(userId, {

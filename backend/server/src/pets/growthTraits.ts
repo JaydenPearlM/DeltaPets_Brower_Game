@@ -19,7 +19,7 @@ function shuffleArray<T>(items: T[]): T[] {
 }
 
 export function rollGrowthTraits(
-  rarity?: "common" | "uncommon" | "rare" | "epic",
+  rarity?: "common" | "uncommon" | "rare" | "epic" | "voidborne",
 ): {
   strongStats: GrowthStatKey[];
   weakStat: GrowthStatKey | null;
@@ -41,6 +41,9 @@ export function rollGrowthTraits(
   } else if (rarity === "epic") {
     strongCount = 2;
     hasWeak = patternRoll < 0.25;
+  } else if (rarity === "voidborne") {
+    strongCount = 3;
+    hasWeak = patternRoll < 0.1;
   } else if (patternRoll < 0.2) {
     strongCount = 2;
     hasWeak = true;

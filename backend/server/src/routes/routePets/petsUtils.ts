@@ -38,7 +38,7 @@ export function titleCase(value: string | null | undefined): string {
   }
 
   if (normalized === "null_gender") {
-    return "Neutral";
+    return "Void";
   }
 
   return String(value)

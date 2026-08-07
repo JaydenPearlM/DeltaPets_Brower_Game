@@ -17,6 +17,7 @@ export type StoragePet = {
   name: string | null;
   nickname?: string | null;
   species?: string | null;
+  rarity?: string | null;
   energy?: number | null;
   bond?: number | null;
   stage: string | null;

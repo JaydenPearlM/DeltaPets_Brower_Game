@@ -42,6 +42,10 @@ import {
   findNonStarterSpeciesById,
 } from "../../shared/pets/species/all-species";
 import { KITHNA_RARITY_RULES } from "../../shared/pets/species/kithna-species";
+import {
+  isVoidborneLine,
+  VOIDBORNE_HATCH_BONUS_POINTS,
+} from "../../shared/pets/species/voidborne";
 import { getWorldTimeOfDay } from "../../lib/deltaTime";
 
 import {
@@ -1221,11 +1225,13 @@ petsRouter.post(
       const hatchSpeciesId = starter?.speciesId ?? kithnaSpecies?.id ?? null;
       const hatchLine =
         typedEgg.line ?? starter?.line ?? kithnaSpecies?.line ?? null;
-      const rarityBonusPoints = kithnaSpecies?.rarity
-        ? KITHNA_RARITY_RULES[kithnaSpecies.rarity].rarityBonusPoints
-        : starter
-          ? KITHNA_RARITY_RULES.epic.rarityBonusPoints
-          : 0;
+      const rarityBonusPoints = isVoidborneLine(hatchLine)
+        ? VOIDBORNE_HATCH_BONUS_POINTS
+        : kithnaSpecies?.rarity
+          ? KITHNA_RARITY_RULES[kithnaSpecies.rarity].rarityBonusPoints
+          : starter
+            ? KITHNA_RARITY_RULES.epic.rarityBonusPoints
+            : 0;
       const hatchAllocationPoints = HATCH_ALLOCATION_POINTS + rarityBonusPoints;
 
       if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId || !hatchLine) {

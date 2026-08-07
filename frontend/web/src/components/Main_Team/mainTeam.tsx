@@ -34,6 +34,7 @@ type PetStats = StoragePet & {
   species?: string | null;
   stage?: string | null;
   level?: number | null;
+  rarity?: string | null;
   bond?: number | null;
   hp?: number | null;
   current_hp?: number | null;
@@ -166,15 +167,6 @@ function getXpNumbers(pet: PetStats | null) {
 
 function getPetImage(pet: PetStats | null) {
   return pet?.portrait_url || pet?.image_url || pet?.sprite_url || "";
-}
-
-function isStarterPet(pet: PetStats | null) {
-  const speciesId = String(pet?.species ?? "")
-    .trim()
-    .toLowerCase();
-  return SHARED_SPECIES.some(
-    (species) => species.id.toLowerCase() === speciesId,
-  );
 }
 
 function getToneClass(line?: string | null) {
@@ -386,8 +378,13 @@ export default function MainTeam(props: MainTeamProps) {
 
                       <div className="mainTeamCenterStage">
                         {formatStage(source?.stage)}
-                        {isStarterPet(source) ? (
-                          <span className="mainTeamRarityBadge">Epic</span>
+                        {source?.rarity ? (
+                          <span
+                            className="mainTeamRarityBadge"
+                            data-rarity={source.rarity.toLowerCase()}
+                          >
+                            {source.rarity}
+                          </span>
                         ) : null}
                       </div>
 

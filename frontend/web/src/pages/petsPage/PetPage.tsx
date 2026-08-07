@@ -62,6 +62,7 @@ type TeamCardPet = {
   elementKey?: string | null;
   line?: string | null;
   level?: number | null;
+  rarity?: string | null;
   energy?: number | null;
   bond?: number | null;
   isActive?: boolean | null;
@@ -623,6 +624,7 @@ export default function PetPage() {
             stage: teamPet.stage ?? "hatchling",
             line: teamPet.elementKey ?? teamPet.line ?? teamPet.element ?? null,
             level: teamPet.level ?? 1,
+            rarity: teamPet.rarity ?? null,
             location: "active",
             is_active: teamPet.isActive ?? false,
             created_at: null,

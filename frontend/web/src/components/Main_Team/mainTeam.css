@@ -494,11 +494,26 @@
   width: fit-content;
   margin: 4px auto 0;
   padding: 2px 6px;
-  border: 1px solid var(--dp-panel-purple-border);
+  border: 1px solid currentColor;
   border-radius: var(--radius-pill);
-  background: rgba(177, 92, 255, 0.14);
-  color: var(--dp-panel-purple-border);
+  background: transparent;
   font-size: 0.52rem;
+}
+
+.mainTeamRarityBadge[data-rarity="common"] {
+  color: var(--accent-green-neon);
+}
+
+.mainTeamRarityBadge[data-rarity="uncommon"] {
+  color: var(--accent-green-2);
+}
+
+.mainTeamRarityBadge[data-rarity="rare"] {
+  color: var(--dp-cyber-blue);
+}
+
+.mainTeamRarityBadge[data-rarity="epic"] {
+  color: var(--dp-panel-purple-border);
 }
 
 .mainTeamXpBar span {

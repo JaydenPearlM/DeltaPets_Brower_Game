@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./ProfilePage.css";
 import "../Homepage/homepage.css";
 import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
 import { useHomepageBanner } from "../Homepage/useHomepageBanner";
-import MainTeam from "@/components/Main_Team/mainTeam";
+import { supabase } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api/baseClient";
 
 type ProfilePageProps = {
   pageName?: string;
@@ -43,16 +44,74 @@ function getElementClass(value?: string | null) {
 }
 
 export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
-  const [selectedPartySlot, setSelectedPartySlot] = useState<number | null>(
-    null,
-  );
   const [talentTreesOpen, setTalentTreesOpen] = useState(false);
+  const [dots, setDots] = useState<number | null>(null);
+  const [kithDiscovered, setKithDiscovered] = useState<number | null>(null);
 
   const { user } = useAuth();
   const { banner } = useHomepageBanner();
-  const { allPets, partySlots, loading } = usePetStorage({
+  const { allPets, loading } = usePetStorage({
     userId: user?.id,
   });
+
+  useEffect(() => {
+    if (!user?.id) {
+      setDots(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    void apiFetch<{
+      wallet?: {
+        dots?: number;
+      };
+    }>("/api/inventory")
+      .then((result) => {
+        if (!cancelled) {
+          setDots(
+            typeof result?.wallet?.dots === "number"
+              ? result.wallet.dots
+              : null,
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setDots(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setKithDiscovered(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    void supabase
+      .from("user_kith_discoveries")
+      .select("species_key")
+      .eq("user_id", user.id)
+      .then(({ data, error }) => {
+        if (cancelled) return;
+
+        if (error) {
+          setKithDiscovered(null);
+          return;
+        }
+
+        setKithDiscovered(data?.length ?? 0);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const bannerItems =
     banner?.enabled && Array.isArray(banner.items)
@@ -105,8 +164,16 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       <div className="dp-profile-layout">
         <section className="dp-profile-trainer-panel dp-profile-star-panel">
           <div className="dp-profile-viewport" aria-label="Trainer viewport">
-            <span>Trainer Viewport</span>
-            <small>Character customization coming later</small>
+            <div className={`dp-profile-trainer-avatar ${starterElementClass}`}>
+              <span aria-hidden="true">♙</span>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-gold dp-profile-customize-button"
+            >
+              Customize
+            </button>
           </div>
 
           <div className="dp-profile-info">
@@ -136,6 +203,11 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
               <div>
                 <dt>Title</dt>
                 <dd>None Equipped</dd>
+              </div>
+
+              <div>
+                <dt>Dots</dt>
+                <dd>{dots === null ? "--" : dots.toLocaleString()}</dd>
               </div>
             </dl>
           </div>
@@ -230,26 +302,16 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
         <section className="dp-profile-team-section">
           <div className="dp-profile-kith-owned">
-            <span>Kith Owned</span>
-            <strong>{loading ? "--" : allPets.length}</strong>
-          </div>
+            <div>
+              <span>Kith Owned</span>
+              <strong>{loading ? "--" : allPets.length}</strong>
+            </div>
 
-          <MainTeam
-            partySlots={partySlots}
-            enableDragAndDrop={false}
-            selectedPartySlot={selectedPartySlot}
-            workingPetId={null}
-            workingSlotIndex={null}
-            dragOverSlotIndex={null}
-            onSelectSlot={setSelectedPartySlot}
-            onDragStartPet={() => undefined}
-            onDragEndPet={() => undefined}
-            onDragOverSlot={(event) => event.preventDefault()}
-            onDragEnterSlot={() => undefined}
-            onDragLeaveSlot={() => undefined}
-            onDropOnSlot={(event) => event.preventDefault()}
-            teamName="Kith Team"
-          />
+            <div>
+              <span>Kith Discovered</span>
+              <strong>{kithDiscovered === null ? "--" : kithDiscovered}</strong>
+            </div>
+          </div>
         </section>
 
         <section className="dp-profile-panel dp-profile-ribbons-panel">

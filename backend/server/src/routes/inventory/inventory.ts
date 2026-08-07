@@ -23,17 +23,14 @@ export const inventoryRouter = Router();
 // Returns the current user's backend-tracked inventory: every
 // item_defs row they hold a qty > 0 of.
 // ============================================================
-inventoryRouter.get(
-  "/",
-  requireUser,
-  async (req: AuthedRequest, res: Response) => {
-    try {
-      const userId = req.user!.id;
+inventoryRouter.get("/", async (req: AuthedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
 
-      const { data, error } = await supabaseAdmin
-        .from("inventory")
-        .select(
-          `
+    const { data, error } = await supabaseAdmin
+      .from("inventory")
+      .select(
+        `
           qty,
           updated_at,
           item_defs (
@@ -47,35 +44,48 @@ inventoryRouter.get(
             effects
           )
         `,
-        )
-        .eq("user_id", userId)
-        .gt("qty", 0);
+      )
+      .eq("user_id", userId)
+      .gt("qty", 0);
 
-      if (error) throw error;
+    if (error) throw error;
 
-      const items = (data ?? [])
-        .filter((row: any) => row.item_defs)
-        .map((row: any) => ({
-          slug: row.item_defs.slug,
-          name: row.item_defs.name,
-          type: row.item_defs.type,
-          description: row.item_defs.description,
-          rarity: row.item_defs.rarity,
-          stackLimit: row.item_defs.stack_limit,
-          effects: row.item_defs.effects,
-          qty: row.qty,
-          updatedAt: row.updated_at,
-        }));
+    const items = (data ?? [])
+      .filter((row: any) => row.item_defs)
+      .map((row: any) => ({
+        slug: row.item_defs.slug,
+        name: row.item_defs.name,
+        type: row.item_defs.type,
+        description: row.item_defs.description,
+        rarity: row.item_defs.rarity,
+        stackLimit: row.item_defs.stack_limit,
+        effects: row.item_defs.effects,
+        qty: row.qty,
+        updatedAt: row.updated_at,
+      }));
 
-      return res.json({ items });
-    } catch (err: any) {
-      logger.error("[inventory] failed to load inventory", err);
-      return res
-        .status(500)
-        .json({ error: err?.message ?? "Failed to load inventory." });
-    }
-  },
-);
+    const { data: wallet, error: walletError } = await supabaseAdmin
+      .from("wallets")
+      .select("dots, crystals")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (walletError) throw walletError;
+
+    return res.json({
+      items,
+      wallet: {
+        dots: wallet?.dots ?? 0,
+        crystals: wallet?.crystals ?? 0,
+      },
+    });
+  } catch (err: any) {
+    logger.error("[inventory] failed to load inventory", err);
+    return res
+      .status(500)
+      .json({ error: err?.message ?? "Failed to load inventory." });
+  }
+});
 
 inventoryRouter.post(
   "/open-closed-alpha-care-package",

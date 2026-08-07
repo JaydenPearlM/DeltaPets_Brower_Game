@@ -424,7 +424,7 @@
   }
 
   .petRepoCareActionMessageSlot {
-    margin-top: 8px !important;
+    margin-top: 18px !important;
   }
 
   .petRepoInlineMessage {
@@ -747,16 +747,17 @@
      full board is reachable. The board keeps its natural height (820px
      for feral) and the skillTreeModal wrapper scrolls. */
   .skillTreeModal {
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
+    overflow: auto !important;
     max-height: calc(100dvh - 32px) !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   .talentTreeBoard,
   .talentTreeBoard--feral {
     overflow: visible !important;
     height: auto !important;
-    min-height: 0 !important;
+    min-height: 820px !important;
     min-width: 440px !important;
   }
 
@@ -1231,25 +1232,69 @@
   /* Skill tree modal: fit phone width.
      Popup: purple outer / cyan inset = 24px padding. */
   .skillTreeModal {
-    width: min(98vw, 420px) !important;
-    max-height: calc(100dvh - 24px) !important;
-    padding: 24px !important;
+    width: calc(100vw - 52px) !important;
+    max-width: calc(100vw - 52px) !important;
+    height: 48dvh !important;
+    max-height: calc(100dvh - 40px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 30px !important;
+    box-sizing: border-box !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    transform: translateX(-12px) !important;
+  }
+  .skillTreeModal::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
   }
 
+  .skillTreeModal .talentTreeBoard,
+  .skillTreeModal .talentTreeBoard--feral,
+  .skillTreeModal .talentTreeBoard--aegis,
+  .skillTreeModal .talentTreeBoard--majo,
+  .skillTreeModal .talentTreeBoard--hybrid {
+    width: 125% !important;
+    min-width: 125% !important;
+    transform: translateX(-0px) scale(0.8) !important;
+    transform-origin: top left !important;
+    margin-bottom: -160px !important;
+    overflow: visible !important;
+  }
+
+  .skillTreeModal .talentNode {
+    overflow: visible !important;
+  }
+
+  .skillTreeModal .talentNode,
+  .skillTreeModal .talentTreeBoard--feral .talentNode,
+  .skillTreeModal .talentTreeBoard--aegis .talentNode,
+  .skillTreeModal .talentTreeBoard--majo .talentNode,
+  .skillTreeModal .talentTreeBoard--hybrid .talentNode {
+    width: 88px !important;
+    min-width: 88px !important;
+  }
+
+  .skillTreeModal .talentNodeName,
+  .skillTreeModal .talentNodeLabel {
+    width: 82px !important;
+    max-width: 82px !important;
+    font-size: 0.56rem !important;
+  }
   .talentNode {
     min-width: 0 !important;
     overflow: hidden !important;
   }
 
-  .talentNodeName,
-  .talentNodeLabel {
-    font-size: 0.6rem !important;
-    white-space: normal !important;
-    overflow-wrap: break-word !important;
-    word-break: break-word !important;
-    line-height: 1.2 !important;
+  .skillTreeModal .talentNodeName,
+  .skillTreeModal .talentNodeLabel {
+    width: 72px !important;
+    max-width: 72px !important;
+    font-size: 0.52rem !important;
+    line-height: 1.25 !important;
   }
 
   .talentNodeCost {
@@ -1263,39 +1308,46 @@
   }
 
   /* Talent node details panel: popup = 24px padding */
-  .talentNodeDetails {
+  .skillTreeModal .talentNodeDetails {
     height: auto !important;
-    min-height: 0 !important;
+    min-height: 220px !important;
     overflow: visible !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 10px !important;
-    padding: 24px !important;
-    padding-bottom: 12px !important;
+    gap: 14px !important;
+    padding: 20px !important;
+    padding-bottom: 20px !important;
   }
 
-  .talentNodeInfoRow {
+  .skillTreeModal .talentNodeInfoRow {
     position: static !important;
     left: auto !important;
     right: auto !important;
     top: auto !important;
     width: 100% !important;
+    display: grid !important;
     grid-template-columns: 1fr !important;
-    grid-template-rows: none !important;
-    row-gap: 10px !important;
+    grid-template-rows: auto !important;
+    column-gap: 0 !important;
+    row-gap: 8px !important;
     font-size: 0.78rem !important;
   }
 
-  .talentInfoValue {
-    font-size: 0.78rem !important;
-    overflow-wrap: break-word !important;
-  }
-
-  .talentInfoValue:nth-child(2) {
+  .skillTreeModal .talentInfoLabel,
+  .skillTreeModal .talentInfoValue {
+    grid-column: 1 !important;
+    position: static !important;
+    width: 100% !important;
     max-width: 100% !important;
   }
 
-  .talentNodeTradeoff {
+  .skillTreeModal .talentInfoValue {
+    font-size: 0.78rem !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+  }
+
+  .skillTreeModal .talentNodeTradeoff {
     position: static !important;
     width: 100% !important;
     height: auto !important;
@@ -1303,7 +1355,7 @@
     white-space: normal !important;
   }
 
-  .talentDetailsButtons {
+  .skillTreeModal .talentDetailsButtons {
     position: static !important;
     right: auto !important;
     top: auto !important;
@@ -1386,8 +1438,7 @@
   }
 
   /* Armory popup: purple outer / cyan inset = 24px padding */
-  .dpPopupWindow.armoryClosetWindow,
-  .dpPopupWindow {
+  .dpPopupWindow.armoryClosetWindow {
     width: min(96vw, 420px) !important;
     max-height: min(88vh, 700px) !important;
     overflow: hidden !important;
