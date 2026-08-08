@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./ProfilePage.css";
 import "../Homepage/homepage.css";
 import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
 import { useHomepageBanner } from "../Homepage/useHomepageBanner";
-import MainTeam from "@/components/Main_Team/mainTeam";
+import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
+import { getRewardsStatus } from "@/components/rewards/claimRewards";
 
 type ProfilePageProps = {
   pageName?: string;
@@ -43,14 +44,13 @@ function getElementClass(value?: string | null) {
 }
 
 export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
-  const [selectedPartySlot, setSelectedPartySlot] = useState<number | null>(
-    null,
-  );
   const [talentTreesOpen, setTalentTreesOpen] = useState(false);
+  const [weeklyRewardsOpen, setWeeklyRewardsOpen] = useState(false);
+  const [rewardReady, setRewardReady] = useState(false);
 
   const { user } = useAuth();
   const { banner } = useHomepageBanner();
-  const { allPets, partySlots, loading } = usePetStorage({
+  const { allPets, loading } = usePetStorage({
     userId: user?.id,
   });
 
@@ -71,6 +71,17 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const starterElement = user?.user_metadata?.starter_element ?? null;
   const starterElementClass = getElementClass(starterElement);
   const activeElementClass = getElementClass(activePet?.line);
+
+  useEffect(() => {
+    if (!user) {
+      setRewardReady(false);
+      return;
+    }
+
+    void getRewardsStatus()
+      .then((status) => setRewardReady(status.canClaim))
+      .catch(() => setRewardReady(false));
+  }, [user]);
 
   return (
     <div className="dp-profile-page">
@@ -111,6 +122,16 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
           <div className="dp-profile-info">
             <h1 className={starterElementClass}>{displayName}</h1>
+
+            <button
+              type="button"
+              className={`btn btn-gold dp-profile-rewards-button${
+                rewardReady ? " is-ready" : ""
+              }`}
+              onClick={() => setWeeklyRewardsOpen(true)}
+            >
+              Weekly Rewards
+            </button>
 
             <dl className="dp-profile-details">
               <div>
@@ -233,23 +254,6 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
             <span>Kith Owned</span>
             <strong>{loading ? "--" : allPets.length}</strong>
           </div>
-
-          <MainTeam
-            partySlots={partySlots}
-            enableDragAndDrop={false}
-            selectedPartySlot={selectedPartySlot}
-            workingPetId={null}
-            workingSlotIndex={null}
-            dragOverSlotIndex={null}
-            onSelectSlot={setSelectedPartySlot}
-            onDragStartPet={() => undefined}
-            onDragEndPet={() => undefined}
-            onDragOverSlot={(event) => event.preventDefault()}
-            onDragEnterSlot={() => undefined}
-            onDragLeaveSlot={() => undefined}
-            onDropOnSlot={(event) => event.preventDefault()}
-            teamName="Kith Team"
-          />
         </section>
 
         <section className="dp-profile-panel dp-profile-ribbons-panel">
@@ -291,6 +295,42 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
           </div>
         </section>
       </div>
+
+      {weeklyRewardsOpen ? (
+        <div
+          className="dp-profile-popup-backdrop"
+          role="presentation"
+          onMouseDown={() => setWeeklyRewardsOpen(false)}
+        >
+          <section
+            className="dp-profile-rewards-popup"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Weekly Rewards"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="dp-profile-popup-header">
+              <h2>Weekly Rewards</h2>
+
+              <button
+                type="button"
+                className="dp-close-button"
+                onClick={() => {
+                  setWeeklyRewardsOpen(false);
+
+                  void getRewardsStatus()
+                    .then((status) => setRewardReady(status.canClaim))
+                    .catch(() => setRewardReady(false));
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <WeeklyRewardsBar />
+          </section>
+        </div>
+      ) : null}
 
       {talentTreesOpen ? (
         <div

@@ -71,7 +71,7 @@ const WEEK1: readonly Week1Reward[] = [
   { kind: "item", slug: "potion_small", qty: 3, label: "Potions x3" }, // Thu
   { kind: "xp", amount: 50, label: "Extra EXP +50" }, // Fri
   { kind: "dots", amount: 500, label: "500 Dots" }, // Sat
-  { kind: "ribbon", label: "Alpha Tester Ribbon" }, // Sun
+  { kind: "dots", amount: 1000, label: "1,000 Dots" }, // Sun
 ] as const;
 
 /** Post-Week-1 random pool. Rolled after the rare egg-chance check misses. */
