@@ -2362,4 +2362,23 @@
   .wr-bar {
     grid-template-columns: 1fr;
   }
+
+  .dp-profile-rewards-button {
+    width: 100% !important;
+    margin: 0 0 18px !important;
+  }
+
+  .dp-profile-rewards-popup {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100vh - 20px) !important;
+    padding: 18px 12px 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  .dp-profile-rewards-popup .wr-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
 }

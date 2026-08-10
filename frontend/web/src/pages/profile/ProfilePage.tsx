@@ -7,6 +7,8 @@ import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage
 import { useHomepageBanner } from "../Homepage/useHomepageBanner";
 import { supabase } from "@/lib/supabase/client";
 import { apiFetch } from "@/lib/api/baseClient";
+import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
+import { getRewardsStatus } from "@/components/rewards/claimRewards";
 
 type ProfilePageProps = {
   pageName?: string;
@@ -47,6 +49,8 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [talentTreesOpen, setTalentTreesOpen] = useState(false);
   const [dots, setDots] = useState<number | null>(null);
   const [kithDiscovered, setKithDiscovered] = useState<number | null>(null);
+  const [weeklyRewardsOpen, setWeeklyRewardsOpen] = useState(false);
+  const [rewardReady, setRewardReady] = useState(false);
 
   const { user } = useAuth();
   const { banner } = useHomepageBanner();
@@ -131,6 +135,17 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const starterElementClass = getElementClass(starterElement);
   const activeElementClass = getElementClass(activePet?.line);
 
+  useEffect(() => {
+    if (!user) {
+      setRewardReady(false);
+      return;
+    }
+
+    void getRewardsStatus()
+      .then((status) => setRewardReady(status.canClaim))
+      .catch(() => setRewardReady(false));
+  }, [user]);
+
   return (
     <div className="dp-profile-page">
       {banner?.enabled && bannerItems.length > 0 ? (
@@ -178,6 +193,16 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
           <div className="dp-profile-info">
             <h1 className={starterElementClass}>{displayName}</h1>
+
+            <button
+              type="button"
+              className={`btn btn-gold dp-profile-rewards-button${
+                rewardReady ? " is-ready" : ""
+              }`}
+              onClick={() => setWeeklyRewardsOpen(true)}
+            >
+              Weekly Rewards
+            </button>
 
             <dl className="dp-profile-details">
               <div>
@@ -353,6 +378,42 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
           </div>
         </section>
       </div>
+
+      {weeklyRewardsOpen ? (
+        <div
+          className="dp-profile-popup-backdrop"
+          role="presentation"
+          onMouseDown={() => setWeeklyRewardsOpen(false)}
+        >
+          <section
+            className="dp-profile-rewards-popup"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Weekly Rewards"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="dp-profile-popup-header">
+              <h2>Weekly Rewards</h2>
+
+              <button
+                type="button"
+                className="dp-close-button"
+                onClick={() => {
+                  setWeeklyRewardsOpen(false);
+
+                  void getRewardsStatus()
+                    .then((status) => setRewardReady(status.canClaim))
+                    .catch(() => setRewardReady(false));
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <WeeklyRewardsBar />
+          </section>
+        </div>
+      ) : null}
 
       {talentTreesOpen ? (
         <div

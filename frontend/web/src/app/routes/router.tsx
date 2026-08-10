@@ -39,6 +39,7 @@ const FoodMerchantPage = lazy(
 const MerchantClosedPage = lazy(
   () => import("../../pages/Cities/Kithna/Merchants/MerchantClosedPage"),
 );
+
 function PageLoader() {
   return <div style={{ padding: 16 }}>Loading...</div>;
 }
@@ -68,6 +69,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export const router = createBrowserRouter([
   {
+    path: "authcallback",
+    element: <AuthCallback />,
+  },
+  {
     path: "/",
     element: (
       <AlphaAccessGate>
@@ -80,8 +85,6 @@ export const router = createBrowserRouter([
 
       { path: "signup", element: withSuspense(<Homepage />) },
       { path: "signin", element: withSuspense(<Homepage />) },
-
-      { path: "authcallback", element: <AuthCallback /> },
 
       {
         path: "create",

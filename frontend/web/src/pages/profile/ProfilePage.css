@@ -151,6 +151,26 @@
   color: var(--dp-title-gold);
 }
 
+.dp-profile-rewards-button {
+  margin-bottom: 18px;
+}
+
+.dp-profile-rewards-button.is-ready {
+  animation: dp-profile-reward-ready 1.6s ease-in-out infinite;
+}
+
+@keyframes dp-profile-reward-ready {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: var(--dp-button-gold-shadow);
+  }
+
+  50% {
+    opacity: 0.65;
+    box-shadow: none;
+  }
+}
 .dp-profile-element-fire {
   color: var(--element-fire) !important;
 }
@@ -615,6 +635,17 @@
   background: rgba(4, 8, 20, 0.78);
   display: grid;
   place-items: center;
+}
+
+.dp-profile-rewards-popup {
+  width: min(960px, 100%);
+  max-height: calc(100vh - 20px);
+  padding: 24px;
+  overflow: auto;
+  border-radius: var(--radius-lg);
+  background: var(--dp-standard-panel-bg);
+  border: 2px solid var(--dp-standard-panel-border);
+  box-sizing: border-box;
 }
 
 .dp-profile-talent-popup {

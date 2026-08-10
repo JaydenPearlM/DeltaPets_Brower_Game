@@ -190,8 +190,8 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
 
 /**
  * GET /api/me/intro
- * Returns whether the user has already seen the intro cutscene
- * and whether they currently have a hatchery egg.
+ * Returns whether the user has already seen the intro cutscene,
+ * whether they currently have a hatchery egg, and whether they have hatched a pet.
  */
 meRouter.get(
   "/me/intro",
@@ -205,21 +205,31 @@ meRouter.get(
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const [{ data: profile, error: pErr }, { data: eggs, error: eErr }] =
-        await Promise.all([
-          supabaseAdmin
-            .from("profiles")
-            .select("intro_seen")
-            .eq("user_id", userId)
-            .maybeSingle(),
+      const [
+        { data: profile, error: pErr },
+        { data: eggs, error: eErr },
+        { data: hatchedPets, error: petErr },
+      ] = await Promise.all([
+        supabaseAdmin
+          .from("profiles")
+          .select("intro_seen")
+          .eq("user_id", userId)
+          .maybeSingle(),
 
-          supabaseAdmin
-            .from("pets")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("stage", "egg")
-            .limit(1),
-        ]);
+        supabaseAdmin
+          .from("pets")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("stage", "egg")
+          .limit(1),
+
+        supabaseAdmin
+          .from("pets")
+          .select("id")
+          .eq("user_id", userId)
+          .neq("stage", "egg")
+          .limit(1),
+      ]);
 
       if (pErr) {
         logger.error("[GET /api/me/intro] profile query failed:", pErr);
@@ -231,13 +241,21 @@ meRouter.get(
         return res.status(500).json({ error: eErr.message });
       }
 
+      if (petErr) {
+        logger.error("[GET /api/me/intro] hatched pet query failed:", petErr);
+        return res.status(500).json({ error: petErr.message });
+      }
+
       const intro_seen =
         (profile as { intro_seen?: boolean } | null)?.intro_seen ?? false;
       const has_hatchery_egg = Array.isArray(eggs) && eggs.length > 0;
+      const has_hatched_pet =
+        Array.isArray(hatchedPets) && hatchedPets.length > 0;
 
       return res.json({
         intro_seen,
         has_hatchery_egg,
+        has_hatched_pet,
       });
     } catch (e: unknown) {
       logger.error("[GET /api/me/intro] crash:", e);
