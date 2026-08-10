@@ -29,6 +29,7 @@ export function createApp() {
     helmet({
       contentSecurityPolicy: {
         directives: {
+          "script-src": ["'self'", "https://static.cloudflareinsights.com"],
           "connect-src": [
             "'self'",
             env.SUPABASE_URL,
