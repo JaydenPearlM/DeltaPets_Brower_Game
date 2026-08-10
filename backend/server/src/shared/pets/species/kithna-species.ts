@@ -181,25 +181,25 @@ export const KITHNA_RARITY_RULES: Record<
   common: {
     encounterWeight: 40,
     hatchMinutes: 2,
-    rarityBonusPoints: 1,
+    rarityBonusPoints: 0,
   },
 
   uncommon: {
     encounterWeight: 25,
     hatchMinutes: 5,
-    rarityBonusPoints: 2,
+    rarityBonusPoints: 1,
   },
 
   rare: {
     encounterWeight: 12,
     hatchMinutes: 10,
-    rarityBonusPoints: 3,
+    rarityBonusPoints: 2,
   },
 
   epic: {
     encounterWeight: 5,
     hatchMinutes: 30,
-    rarityBonusPoints: 4,
+    rarityBonusPoints: 3,
   },
 };
 

@@ -186,17 +186,11 @@ export default function App() {
     void (async () => {
       try {
         const response = await apiFetch<{
-          pet?: {
-            stage?: string | null;
-          } | null;
-        }>("/api/care/current");
-
-        const stage = String(response.pet?.stage ?? "")
-          .trim()
-          .toLowerCase();
+          has_hatched_pet?: boolean;
+        }>("/api/me/intro");
 
         if (!cancelled) {
-          setExploreUnlocked(Boolean(response.pet) && stage !== "egg");
+          setExploreUnlocked(Boolean(response.has_hatched_pet));
         }
       } catch {
         if (!cancelled) {

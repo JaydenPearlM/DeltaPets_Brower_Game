@@ -53,9 +53,9 @@ function clearStoredSupabaseSession(): void {
     return;
   }
 
-  for (const key of Object.keys(window.localStorage)) {
+  for (const key of Object.keys(window.sessionStorage)) {
     if (key.startsWith("sb-") && key.endsWith("-auth-token")) {
-      window.localStorage.removeItem(key);
+      window.sessionStorage.removeItem(key);
     }
   }
 }
@@ -195,7 +195,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim().toLowerCase(),
           password,
-          options: captchaToken ? { captchaToken } : undefined,
+          options: {
+            emailRedirectTo: `${window.location.origin}/authcallback`,
+            ...(captchaToken ? { captchaToken } : {}),
+          },
         });
 
         if (error) {
