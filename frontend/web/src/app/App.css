@@ -10,15 +10,21 @@
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding-left: 32px;
-  padding-right: 32px;
+  padding-left: 40px;
+  padding-right: 40px;
   box-sizing: border-box;
 }
-
+.appContent {
+  padding-left: 40px;
+  padding-right: 40px;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
 /* ===== HEADER BASE ===== */
 
 .appHeader {
-  position: relative;
+  position: sticky;
+  top: 0;
   width: 100%;
   z-index: 9999;
   overflow: visable;
@@ -29,7 +35,7 @@
       transparent 42%
     ),
     linear-gradient(180deg, #073a78 0%, #062b5c 48%, #041936 100%);
-  border-bottom: 3px solid var(--dp-panel-border);
+
   box-shadow:
     inset 0 0 0 2px var(--dp-panel-purple-border),
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
@@ -324,8 +330,6 @@
   padding: 0;
   border: 0;
   background: transparent;
-  /* see the matching note on .headerRight further down this file */
-  transform: translateX(115.5px);
   cursor: pointer;
   text-decoration: none;
   z-index: 3;
@@ -375,14 +379,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  /* NOTE: this 31px nudge and the 115.5px nudge on .logoBlock below were
-     hand-tuned at one screen width. They are constant pixel offsets, not
-     tied to the grid track width, so they do not adapt if appShell's
-     centering math changes (e.g. once window width crosses the 1440px
-     max-width and margin: auto starts adding side margins). If the header
-     ever looks shifted compared to another screenshot at a different
-     window width or zoom level, this is the first place to check. */
-  transform: translateX(31px);
+
   z-index: 3;
   text-align: center;
 }
@@ -886,5 +883,16 @@
   .hamburgerMenuItem {
     min-height: 44px;
     font-size: 0.92rem;
+  }
+}
+@media (max-width: 430px) {
+  .appShell {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .appContent {
+    padding-left: 0;
+    padding-right: 0;
   }
 }
