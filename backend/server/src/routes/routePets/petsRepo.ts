@@ -2,7 +2,7 @@
 
 import { logger } from "../../lib/logger";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
-import { STARTER_ANY_STAGE_NAMES } from "./starters";
+import { STARTER_NAMES } from "./starters";
 
 // ---------------------------------------------------------------------------
 // Pet queries
@@ -15,6 +15,7 @@ export async function fetchActivePet(userId: string) {
       .select("*")
       .eq("user_id", userId)
       .eq("is_active", true)
+      .eq("ran_away", false)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -28,6 +29,7 @@ export async function fetchActivePet(userId: string) {
       .from("pets")
       .select("*")
       .eq("user_id", userId)
+      .eq("ran_away", false)
       .neq("stage", "egg")
       .order("hatched_at", { ascending: false })
       .order("created_at", { ascending: false })
@@ -45,6 +47,7 @@ export async function fetchHatcheryEgg(userId: string) {
     .select("*")
     .eq("user_id", userId)
     .eq("stage", "egg")
+    .eq("location", "hatchery")
     .not("hatch_ends_at", "is", null)
     .order("created_at", { ascending: true })
     .limit(1)
@@ -53,6 +56,23 @@ export async function fetchHatcheryEgg(userId: string) {
   if (error) throw error;
 
   return { pet: data ?? null, used: "hatch_ends_at" as const };
+}
+
+export async function releaseHatcherySlotsForPets(
+  userId: string,
+  petIds: string[],
+): Promise<void> {
+  const uniquePetIds = Array.from(new Set(petIds.filter(Boolean)));
+
+  if (uniquePetIds.length === 0) return;
+
+  const { error } = await supabaseAdmin
+    .from("hatchery_slots")
+    .update({ pet_id: null })
+    .eq("user_id", userId)
+    .in("pet_id", uniquePetIds);
+
+  if (error) throw error;
 }
 
 /**
@@ -64,7 +84,7 @@ export async function fetchStarterPetAnyStage(userId: string) {
     .from("pets")
     .select("*")
     .eq("user_id", userId)
-    .in("name", STARTER_ANY_STAGE_NAMES)
+    .in("name", STARTER_NAMES)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -156,20 +176,27 @@ async function runEnsureHatcherySlots(userId: string): Promise<void> {
   }
 
   // Wire first egg into slot 1 if it isn't already
+  // Re-fetch slot 1 after upsert so we always have the current state
+  const { data: slot1Row, error: slot1Error } = await supabaseAdmin
+    .from("hatchery_slots")
+    .select("id, slot_index, pet_id")
+    .eq("user_id", userId)
+    .eq("slot_index", 1)
+    .maybeSingle();
+
+  if (slot1Error) throw slot1Error;
+
+  // Wire first egg into slot 1 if it isn't already there
   const { pet: firstEgg } = await fetchHatcheryEgg(userId);
 
-  if (firstEgg) {
-    const slot1 = existing.find((row: any) => Number(row.slot_index) === 1);
+  if (firstEgg && !slot1Row?.pet_id) {
+    const { error: updateError } = await supabaseAdmin
+      .from("hatchery_slots")
+      .update({ pet_id: firstEgg.id, unlocked: true })
+      .eq("user_id", userId)
+      .eq("slot_index", 1);
 
-    if (!slot1?.pet_id) {
-      const { error: updateError } = await supabaseAdmin
-        .from("hatchery_slots")
-        .update({ pet_id: firstEgg.id, unlocked: true })
-        .eq("user_id", userId)
-        .eq("slot_index", 1);
-
-      if (updateError) throw updateError;
-    }
+    if (updateError) throw updateError;
   }
 }
 
@@ -227,7 +254,7 @@ async function initializeHatcheryForUser(userId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Public fetch functions — what routes call
+// Public fetch functions: what routes call
 // ---------------------------------------------------------------------------
 
 /**
@@ -244,10 +271,7 @@ async function ensureHatcheryInitialized(userId: string): Promise<void> {
 
   if (!initialized) {
     await initializeHatcheryForUser(userId);
-    return;
   }
-
-  await runEnsureHatcherySlots(userId);
 }
 
 export async function fetchHatcherySlots(userId: string) {
@@ -285,10 +309,46 @@ async function fetchHatcherySlotsOnly(userId: string) {
     }
   }
 
+  const invalidPetIds = Array.from(
+    new Set(
+      slots
+        .map((slot: any) => slot.pet_id)
+        .filter((petId: any): petId is string => {
+          if (!petId) return false;
+
+          const pet = petsById.get(petId);
+
+          return (
+            !pet ||
+            pet.user_id !== userId ||
+            pet.stage !== "egg" ||
+            pet.location !== "hatchery"
+          );
+        }),
+    ),
+  );
+
+  if (invalidPetIds.length > 0) {
+    try {
+      await releaseHatcherySlotsForPets(userId, invalidPetIds);
+    } catch (error) {
+      logger.error(
+        "[petsRepo] Failed to release invalid hatchery slots:",
+        error,
+      );
+    }
+  }
+
+  const invalidPetIdSet = new Set(invalidPetIds);
+
   return {
     slots: slots.map((slot: any) => ({
       ...slot,
-      pet: slot.pet_id ? (petsById.get(slot.pet_id) ?? null) : null,
+      pet_id: invalidPetIdSet.has(slot.pet_id) ? null : slot.pet_id,
+      pet:
+        slot.pet_id && !invalidPetIdSet.has(slot.pet_id)
+          ? (petsById.get(slot.pet_id) ?? null)
+          : null,
     })),
   };
 }
@@ -307,7 +367,7 @@ export async function fetchHatcherySlotGroups(userId: string) {
  * Fetches all hatchery shelf slots.
  *
  * The ensure step for shelf slots is handled inside fetchHatcherySlots via
- * initializeHatcheryForUser — both tables are set up in one pass. This
+ * initializeHatcheryForUser: both tables are set up in one pass. This
  * function is now a clean read-only fetch with no ensure overhead at all.
  *
  * routePets.ts calls fetchHatcherySlots and fetchHatcheryShelfSlots in

@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../app/providers/useAuth";
 
 export function LogoutButton() {
   const { signOut } = useAuth();
-  const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
 
   return (
@@ -17,9 +15,7 @@ export function LogoutButton() {
         const { error } = await signOut();
         setBusy(false);
 
-        if (!error) {
-          navigate("/", { replace: true });
-        } else {
+        if (error) {
           console.error("Logout failed:", error);
         }
       }}

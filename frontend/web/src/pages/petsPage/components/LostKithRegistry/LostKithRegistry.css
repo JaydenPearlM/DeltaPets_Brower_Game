@@ -1,0 +1,84 @@
+.lostKithRegistryWindow {
+  max-width: 560px;
+}
+
+.lostKithRegistryHeader h2 {
+  margin: 0 0 4px;
+  color: var(--dp-gold, #f4d36b);
+}
+
+.lostKithRegistryHeader p {
+  margin: 0 0 16px;
+  color: var(--dp-text, #f8f4df);
+  opacity: 0.85;
+  font-size: 14px;
+}
+
+.lostKithRegistryError {
+  color: #f28b82;
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.lostKithRegistryEmpty {
+  color: var(--dp-text, #f8f4df);
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.lostKithRegistryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lostKithRegistryEntry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--dp-panel-border-blue, rgba(103, 232, 249, 0.4));
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: rgba(18, 22, 38, 0.6);
+}
+
+.lostKithRegistryEntryInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lostKithRegistryMeta {
+  font-size: 12px;
+  color: var(--dp-text, #f8f4df);
+  opacity: 0.75;
+}
+
+.lostKithRegistryActions {
+  display: flex;
+  gap: 8px;
+}
+
+.lostKithRegistryActions button {
+  border: 1px solid var(--dp-cyan, #67e8f9);
+  background: rgba(103, 232, 249, 0.12);
+  color: var(--dp-text, #f8f4df);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.lostKithRegistryActions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.lostKithRegistryCrystalButton {
+  border-color: #c084fc !important;
+  background: rgba(192, 132, 252, 0.14) !important;
+}

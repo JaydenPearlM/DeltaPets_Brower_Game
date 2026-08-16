@@ -1,33 +1,62 @@
 /* =========================================================
    DELTAPETS - MOBILE LAYER
    =========================================================
-   How this works:
-   This is NOT a separate "mobile page" or JS device check.
-   It is a CSS layer that activates automatically based on
-   real viewport width, using @media queries. That is the
-   correct way to do this in a browser game, it reacts live
-   to screen size (phones, small tablets, resized windows,
-   rotation) instead of guessing from user-agent strings,
-   which break constantly and lag behind new devices.
+   Single source of truth for all phone and tablet overrides.
+   Imported last in main.tsx after global.css so it wins the
+   cascade. Uses !important where a component CSS file re-
+   declares the same property outside a media query and Vite
+   loads that chunk after this file.
 
-   Import this file LAST, after global.css, so it wins the
-   cascade without needing !important everywhere:
+   INSET BORDER CLEARANCE RULE (applied consistently everywhere)
+   --------------------------------------------------------
+   Standard panel  (cyan outer / purple inset):
+     inset: 18px + border: 6px = border face at 24px from edge
+     content must be 10px from border face = 34px from edge
 
-     // main.tsx
-     import "./global.css";
-     import "./mobile.css";   // add this line
+   Purple panel    (purple outer / cyan inset):
+     same tokens, same math = 34px from edge
 
-   Breakpoints used sitewide (kept consistent with the ones
-   already in App.css so nothing double-fires):
-     900px  -> tablet / narrow desktop
-     640px  -> phone landscape / small tablet
-     420px  -> phone portrait
+   Popup window    (purple outer / cyan inset):
+     inset: 10px + border: 4px = border face at 14px from edge
+     content must be 10px from border face = 24px from edge
+
+   Every padding rule in this file is derived from these two
+   numbers. 34px for standard/purple panels. 24px for popups.
+
+   BREAKPOINTS
+   --------------------------------------------------------
+     900px  -> tablets and narrow desktop windows
+     640px  -> small tablets and landscape phones
+     430px  -> standard smartphone layout
+     390px  -> compact smartphone adjustments
+     360px  -> narrow smartphone safety adjustments
+
+   TEST WIDTHS
+   --------------------------------------------------------
+     Samsung Galaxy S22:       360px
+     Apple iPhone 8:           375px
+     Samsung Galaxy S22 Ultra: 384px
+     Apple iPhone 13:          390px
+     Google Pixel 10:          412px
+
+     Apple iPad Mini:          768px
+     Samsung Galaxy Tab:       800px
+     Apple iPad Air:           820px
+     Apple iPad Pro 11-inch:   834px
+
+   DESIGN RULES
+   --------------------------------------------------------
+   Titles:   var(--font-heading) / Space Mono, var(--dp-title-gold),
+             uppercase, letter-spacing 0.1em
+   Panels stack single column. Borders and insets always visible.
+   No horizontal scroll on any target device.
    ========================================================= */
 
-/* ---------------------------------------------------------
-   1. BASE SAFETY NET (applies to every page)
-   --------------------------------------------------------- */
+/* =========================================================
+   SECTION 1 - TABLET / NARROW DESKTOP  (900px)
+   ========================================================= */
 @media (max-width: 900px) {
+  /* Base safety */
   html,
   body {
     overflow-x: hidden;
@@ -38,6 +67,21 @@
     min-height: 100vh;
   }
 
+  img,
+  canvas,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  button,
+  .dp-btn,
+  .exploreButton,
+  a[role="button"] {
+    min-height: 44px;
+  }
+
+  /* App shell */
   .appShell {
     padding-left: 16px;
     padding-right: 16px;
@@ -48,68 +92,487 @@
     padding-right: 0;
   }
 
-  /* keep any decorative canvas/art from forcing horizontal scroll */
-  img,
-  canvas,
-  svg {
-    max-width: 100%;
-    height: auto;
+  .appHeader {
+    isolation: isolate !important;
+    z-index: 9999 !important;
   }
 
-  /* touch targets: anything acting as a button gets a real tap size */
-  button,
-  .dp-btn,
-  .exploreButton,
-  a[role="button"] {
-    min-height: 44px;
+  .aliuneSignal {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px 12px !important;
+    padding: 10px 12px !important;
+    overflow: visible !important;
+  }
+
+  .signalTitle {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  .signalRow {
+    min-width: 0 !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+  }
+
+  .signalRow:last-child {
+    grid-column: 1 / -1 !important;
+  }
+
+  .hp-root > .hp-banner {
+    margin-top: 20px !important;
+  }
+
+  .exploreWrapper {
+    position: relative !important;
+    z-index: 200 !important;
+  }
+
+  .hamburgerMenuModal {
+    z-index: 9000 !important;
+  }
+
+  .exploreThoughtBubble {
+    z-index: 9000 !important;
+    width: min(360px, calc(100vw - 24px));
+  }
+
+  /* Delta clock */
+  .deltaClock {
+    padding-bottom: 14px !important;
+  }
+
+  /* Pet page: stage left-offset bleed fix.
+     PetPage.css sets --petRepo-left-offset:145px at the root
+     of a block with no media query guard. This zeroes it first;
+     the 430px block re-applies with !important to win the Vite
+     chunk race. */
+  .petRepoStage {
+    --petRepo-left-offset: 0px;
+    padding-left: 0;
+    width: 100%;
+  }
+
+  /* Pet page hero card: two columns side by side */
+  .petRepoHeroCard {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 12px !important;
+    padding: 34px !important;
+    align-items: start !important;
+  }
+
+  .petRepoHeroStatus {
+    width: auto !important;
+    max-width: 160px !important;
+    min-height: 80px !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
+  .petRepoHeroTextShifted {
+    transform: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .petRepoTitle {
+    font-size: clamp(1.4rem, 5vw, 2.2rem) !important;
+    line-height: 1.1 !important;
+    margin-bottom: 6px !important;
+    text-align: left !important;
+  }
+
+  .petRepoSubtitle {
+    font-size: 0.82rem !important;
+    line-height: 1.5 !important;
+    text-align: left !important;
+  }
+
+  .lostKithRegistryOpenButton {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Pet page: hp-mainShell desktop bleed fix */
+  .hp-mainShell {
+    width: 100% !important;
+    margin-right: 0 !important;
+  }
+
+  .petRepoPage .hp-banner {
+    width: 100% !important;
+    margin: 0 0 16px 0 !important;
+  }
+
+  /* Pet page team panel */
+  .petRepoFarmButtonWrap {
+    width: 100%;
+    margin-right: 0;
+    justify-content: center;
+  }
+
+  .mainTeamTitleShell {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  /* Main team: 2-column card grid */
+  .mainTeamGrid {
+    grid-template-columns: repeat(2, minmax(140px, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  /* Hatchery: collapse to single column */
+  .hatcheryPage {
+    width: 100%;
+    min-height: 0;
+  }
+
+  .hatcheryPage .panelHeader,
+  .hatcheryTopActions {
+    flex-wrap: wrap;
+  }
+
+  .hatcheryLeftColumn,
+  .storagePanel,
+  .rackPanelSide,
+  .selectedEggPanel,
+  .selectedEggStatsInset,
+  .incubationInsetPanel {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .hatcheryWorkbenchLayout {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "selected"
+      "team"
+      "stats"
+      "shelf"
+      "storage"
+      "rack" !important;
+  }
+
+  .hatcheryLeftColumn,
+  .hatcheryBottomRow,
+  .hatcheryBottomRowInner {
+    display: contents !important;
+  }
+
+  .selectedEggPanelMain {
+    grid-area: selected;
+  }
+
+  .mainPartyInlineSection {
+    grid-area: team;
+  }
+
+  .statsPanelBottom {
+    grid-area: stats;
+  }
+
+  .shelfPanelBottom {
+    grid-area: shelf;
+    margin-top: 0 !important;
+  }
+
+  .storedPetsInlineSection {
+    grid-area: storage;
+  }
+
+  .rackPanelSide {
+    grid-area: rack;
+  }
+
+  /* Hatchery egg: show image above egg details on mobile */
+  .selectedTextAbove {
+    display: block;
+    text-align: center;
+    width: 100%;
+    order: 1;
+  }
+
+  .selectedPreviewFilled {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .eggBigImg {
+    order: 1;
+  }
+
+  .selectedText {
+    order: 2;
+  }
+
+  .selectedSubBelow {
+    order: 3;
+  }
+
+  /* Homepage spotlight panel */
+  .hp-spotlightPanel {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .hp-spotlightPanel .hp-panelHeader {
+    padding-left: 0 !important;
+  }
+
+  .hp-spotlightPanel .hp-panelTitle {
+    transform: none !important;
   }
 }
 
+/* selectedTextAbove is hidden on desktop */
+.selectedTextAbove {
+  display: none;
+}
+
+/* =========================================================
+   SECTION 2 - LANDSCAPE PHONE / SMALL TABLET  (640px)
+   ========================================================= */
 @media (max-width: 640px) {
   .appShell {
     padding-left: 12px;
     padding-right: 12px;
   }
-}
 
-/* ---------------------------------------------------------
-   2. MAIN TEAM PANEL (Homepage / dashboard team strip)
-   Current: fixed 4-column grid, min 165px each (~660px min).
-   That is wider than most phones, so it was overflowing
-   or forcing a squeeze. Step it down instead.
-   --------------------------------------------------------- */
-@media (max-width: 900px) {
-  .mainTeamGrid {
-    grid-template-columns: repeat(2, minmax(140px, 1fr)) !important;
+  .appContent {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Pet page: care room scene orb arch fix.
+     PetDetailsPanel.css sets overflow:visible on walls inside its
+     640px block. That breaks the arch clip (border-radius requires
+     overflow:hidden to clip children). Restore it here. */
+  .petRepoSceneOrb {
+    overflow: hidden !important;
+    height: 420px !important;
+  }
+
+  .petRepoSceneWallLeft,
+  .petRepoSceneWallRight {
+    height: 100% !important;
+  }
+
+  .petRepoSceneInner {
+    inset: 0 !important;
+  }
+
+  .petRepoScenePet {
+    bottom: 60px !important;
+    width: min(68%, 220px) !important;
+    height: min(65%, 220px) !important;
+  }
+
+  .petRepoScenePlatformWrap {
+    height: 120px !important;
+  }
+
+  /* Care card: 34px padding (10px from purple inset border face) */
+  .petRepoCareCard {
+    padding: 34px !important;
+  }
+
+  /* Care status panel: 34px padding */
+  .petRepoCareStatusPanel {
+    padding: 34px !important;
+  }
+
+  .petRepoEnergyPanel {
+    left: 34px !important;
+    right: 34px !important;
+    bottom: 38px !important;
+    width: auto !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  .petRepoEnergyTitle {
+    font-size: 1.1rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .petRepoEnergyTrack {
+    height: 10px !important;
+  }
+
+  .petRepoFarmButtonWrap {
+    width: 100% !important;
+    justify-content: center !important;
+    margin-top: 12px !important;
+  }
+
+  .petRepoCareActionMessageSlot {
+    margin-top: 18px !important;
+  }
+
+  .petRepoInlineMessage {
+    max-width: 100% !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* Hatchery team rack: 34px padding (10px from purple inset border).
+     Width forced because HatcheryPage.css has 9 competing layout definitions
+     and an earlier one wins without !important here. */
+  .rackPanelSide {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 34px !important;
+    box-sizing: border-box !important;
+  }
+
+  .partyTeamGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .selectedEggPreviewArea {
+    height: min(420px, 105vw);
+    min-height: 0;
+    max-height: 420px;
+  }
+
+  .selectedPreviewFilled .eggBigImg,
+  .selectedPreviewFilled .eggElementPlaceholderBig,
+  .selectedPreviewFilled .selectedName,
+  .selectedPreviewFilled .selectedEggRarity,
+  .selectedPreviewFilled .selectedSub {
+    position: relative !important;
+    top: 5px !important;
+  }
+
+  .selectedPreviewFilled .selectedPreviewHatchBtn {
+    position: relative !important;
+    top: -25px !important;
+  }
+  .storagePetTooltip {
+    width: min(220px, calc(100vw - 48px));
+  }
+
+  /* Skills chamber: 3-slot grid */
+  .skillChamber,
+  .skillChamberPanel,
+  .skillChamberInner {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .skillSlotGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .skillSlotCard {
+    width: min(96px, calc((100vw - 80px) / 3)) !important;
+    height: min(96px, calc((100vw - 80px) / 3)) !important;
+    padding: 10px !important;
+  }
+
+  .skillSlotCard h4 {
+    font-size: 0.76rem !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  .skillSlotCard span {
+    font-size: 0.52rem !important;
+  }
+
+  .skillInventoryPanel {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-top: 14px !important;
+  }
+
+  /* Progress card: hide redundant eyebrow */
+  .kithProgressCard__eyebrow {
+    display: none !important;
+  }
+
+  /* Progress card: 34px padding (10px from cyan inset border face) */
+  .kithProgressCard {
+    padding-inline: 34px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Progress panel title: gold, Space Mono */
+  .kithProgressCard__panelTitle {
+    font-family: var(--font-heading) !important;
+    color: var(--dp-title-gold) !important;
+    font-size: clamp(1.3rem, 5vw, 1.8rem) !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    text-shadow: 0 0 12px rgba(255, 217, 77, 0.28) !important;
+  }
+
+  .kithProgressCard__petName {
+    font-family: var(--font-accent) !important;
+    font-size: clamp(1rem, 4vw, 1.3rem) !important;
+  }
+
+  /* Homepage: feature row stacks, lower grid single column */
+  .hp-heroFeatureRow {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .hp-heroFeatureCopy {
+    padding: 0 12px 12px !important;
+  }
+
+  .hp-bannerContent {
+    padding: 8px 20px !important;
+  }
+
+  .hp-lowerGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hp-heroInner {
+    padding: 34px !important;
+  }
+
+  /* Profile page */
+  .dp-profile-page {
+    padding: 16px !important;
     gap: 12px !important;
   }
-}
 
-@media (max-width: 420px) {
-  .mainTeamGrid {
-    grid-template-columns: 1fr !important;
+  .dp-profile-avatar {
+    width: 48px !important;
+    height: 48px !important;
   }
 
-  .mainTeamHeader {
-    grid-template-columns: 1fr !important;
-    row-gap: 8px !important;
-    justify-items: center !important;
-    text-align: center !important;
+  /* Profile panel: 34px padding (10px from inset border face) */
+  .dp-profile-panel {
+    padding: 34px !important;
   }
 
-  .mainTeamTitle {
-    grid-template-columns: 1fr !important;
-    text-align: center !important;
-  }
-}
-
-/* ---------------------------------------------------------
-   3. KITHNA MAP (percentage-positioned world map)
-   Already uses %-based positioning, which scales, but the
-   frame itself needs to give up its desktop max-width and
-   the building labels need to stay legible at small sizes.
-   --------------------------------------------------------- */
-@media (max-width: 640px) {
+  /* Kithna map */
   .kithnaMapFrame {
     max-width: 100% !important;
     padding-left: 8px !important;
@@ -123,101 +586,832 @@
   .kithnaBuildingIcon {
     width: 26px !important;
   }
+
+  /* Debug overlay */
+  .debugOverlayPanel {
+    left: 12px !important;
+    right: 12px !important;
+    top: 12px !important;
+    width: auto !important;
+    height: min(460px, calc(100vh - 88px)) !important;
+    min-width: 0 !important;
+    resize: none;
+    font-size: 14px;
+  }
+
+  .achievement-panel {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .roamEncounterToast {
+    width: min(360px, calc(100vw - 24px));
+    min-width: 0;
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  .wr-header {
+    align-items: flex-start;
+  }
+
+  .wr-title {
+    font-size: 1.25rem;
+    line-height: 1.05;
+  }
+
+  .wr-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    flex-wrap: nowrap;
+  }
+
+  .wr-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  /* Rewards bar */
+  .wr-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dp-profile-rewards-popup {
+    width: calc(100% - 16px) !important;
+    max-width: none !important;
+    max-height: calc(100vh - 16px) !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  .dp-profile-rewards-popup .wr-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  .dp-profile-rewards-popup .wr-title {
+    font-size: 1.25rem;
+    line-height: 1.05;
+  }
+
+  .dp-profile-rewards-popup .wr-slot {
+    min-width: 0;
+    min-height: 94px;
+    padding: 12px 10px 10px;
+  }
+
+  .dp-profile-rewards-popup .wr-reward {
+    font-size: 11px;
+  }
+
+  .dp-profile-rewards-popup .wr-day,
+  .dp-profile-rewards-popup .wr-state {
+    font-size: 10px;
+  }
+
+  .dp-profile-rewards-popup .dp-close-button,
+  .dp-profile-rewards-popup .wr-claimBtn {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  .wr-slot {
+    min-width: 0;
+    min-height: 96px;
+    padding: 12px 10px 10px;
+  }
+
+  /* Alpha cutscene text */
+  .dpc-syslabel {
+    width: calc(100% - 32px) !important;
+    text-align: center !important;
+  }
+
+  .dpc-text,
+  .dpc-text.dpc-text--goodluck {
+    top: calc(50% + 234px) !important;
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 116px !important;
+    padding: 0 8px !important;
+    box-sizing: border-box !important;
+    align-items: flex-start !important;
+    font-size: 16px !important;
+    line-height: 1.45 !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .dpc-controls {
+    bottom: 10px !important;
+    width: calc(100% - 24px) !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+
+  /* Alpha systems table: stack rows */
+  .alpha-panel,
+  .alpha-header,
+  .alpha-body,
+  .alpha-table,
+  .alpha-patchView,
+  .alpha-patchTable {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .alpha-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .alpha-title {
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .alpha-button {
+    width: 100%;
+  }
+
+  .alpha-tableHeader,
+  .alpha-patchTableHeader {
+    display: none;
+  }
+
+  .alpha-row,
+  .alpha-patchTableRow {
+    grid-template-columns: 1fr;
+  }
+
+  .alpha-row > span,
+  .alpha-patchTableCell {
+    min-width: 0;
+    min-height: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .alpha-row > span:not(:last-child),
+  .alpha-patchTableCell:not(:last-child) {
+    border-right: none;
+    border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
+  }
+
+  .alpha-row > span::before,
+  .alpha-patchTableCell::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--dp-panel-muted);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .alpha-row > span:nth-child(1)::before {
+    content: "System";
+  }
+  .alpha-row > span:nth-child(2)::before {
+    content: "Description";
+  }
+  .alpha-row > span:nth-child(3)::before {
+    content: "Date";
+  }
+  .alpha-patchTableCell:nth-child(1)::before {
+    content: "New";
+  }
+  .alpha-patchTableCell:nth-child(2)::before {
+    content: "Updated";
+  }
+  .alpha-patchTableCell:nth-child(3)::before {
+    content: "Fixed";
+  }
+  .alpha-patchTableCell:nth-child(4)::before {
+    content: "Notes";
+  }
+
+  .alpha-date {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  /* Genesis Path tab hidden (not enough horizontal room) */
+  .talentTreeGenesisTab {
+    display: none !important;
+  }
+
+  /* Skill tree board: make the modal itself scroll vertically so the
+     full board is reachable. The board keeps its natural height (820px
+     for feral) and the skillTreeModal wrapper scrolls. */
+  .skillTreeModal {
+    overflow: auto !important;
+    max-height: calc(100dvh - 32px) !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .talentTreeBoard,
+  .talentTreeBoard--feral {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 820px !important;
+    min-width: 440px !important;
+  }
+
+  .talentTreeLegend {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .talentTreeLegend button {
+    flex: 1 1 auto !important;
+    min-width: 80px !important;
+    font-size: 0.72rem !important;
+    padding: 6px 8px !important;
+  }
+
+  /* Armory: hide decorative accent */
+  .petArmoryHeaderAccent {
+    display: none !important;
+  }
+
+  /* Armory closet popup: scroll inside cyan inset border.
+     Popup: 24px padding (10px from cyan inset border face) */
+  .armoryClosetGrid {
+    max-height: min(360px, 45vh) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  .armoryClosetWindow {
+    width: min(calc(100vw - 24px), 480px) !important;
+  }
+
+  .armoryClosetToolbar {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Inventory popup: 24px padding (10px from cyan inset border face) */
+  .dpPopupWindow.dpPopupWindow--compact {
+    max-height: min(640px, calc(100vh - 40px)) !important;
+    overflow: hidden !important;
+  }
+
+  .dpPopupWindowContent.inventoryModal {
+    max-height: min(580px, calc(100vh - 80px)) !important;
+    overflow-y: auto !important;
+    padding: 24px !important;
+  }
 }
 
-/* ---------------------------------------------------------
-   4. PROFILE PAGE
-   Already a single flex column, just needs tighter spacing
-   and a smaller avatar so it doesn't feel oversized on phones.
-   --------------------------------------------------------- */
-@media (max-width: 640px) {
-  .dp-profile-page {
-    padding: 16px !important;
-    gap: 12px !important;
+/* =========================================================
+   SECTION 3 - STANDARD SMARTPHONES  (430px)
+   Covers tested phone widths from 360px through 412px.
+   Smaller width sections add only the adjustments they need.
+   ========================================================= */
+@media (max-width: 430px) {
+  /* Global inset border thickness: every standard panel (cyan outer /
+     purple inset) and popup (purple outer / cyan inset) reads its inset
+     border thickness from these two shared tokens declared in
+     global.css :root. Overriding them here drops every inset border
+     sitewide from 6px/4px to ~3px on phones, without touching each
+     panel individually. Panels below that already hardcode their own
+     border-width (bypassing the variable) are updated to match. */
+  :root {
+    --dp-standard-panel-inner-size: 3px;
+    --dp-popup-inner-border-width: 3px;
   }
 
-  .dp-profile-avatar {
-    width: 48px !important;
-    height: 48px !important;
+  /* Global safety net */
+  * {
+    min-width: 0;
   }
 
-  .dp-profile-panel {
-    padding: 12px !important;
+  img,
+  canvas,
+  svg,
+  video {
+    max-width: 100% !important;
   }
-}
 
-/* ---------------------------------------------------------
-   5. STATS CHAMBER
-   The two-column stat grid is already fluid (minmax(0,1fr)),
-   so it survives narrow screens on its own. Only the text
-   sizing needs to come down so rows do not wrap awkwardly.
-   --------------------------------------------------------- */
-@media (max-width: 420px) {
-  .statsChamber .petRepoInfoRow {
-    font-size: 0.85rem !important;
+  html {
+    overflow-x: hidden !important;
   }
-}
 
-/* ---------------------------------------------------------
-   6. GENERIC TWO-COLUMN / ROW LAYOUTS + HATCHERY WORKBENCH
-   A lot of panels across Hatchery, PetPage, and Skills reuse
-   the "left column + right column" pattern via flex/grid on
-   a handful of shared class names. hatcheryWorkbenchLayout is
-   a fixed 500px + 300px + 320px 3-column grid (~1070px min)
-   that neither this file nor Hatchery's own 8 media queries
-   ever collapsed. Force a stack past 900px.
-   --------------------------------------------------------- */
-@media (max-width: 900px) {
-  .hatcheryWorkbenchLayout,
-  .hatcheryBottomRowInner {
+  body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    position: relative !important;
+  }
+
+  .appShell {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  /* Pet page: full bleed */
+  .petRepoPage {
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* PetPage.css sets --petRepo-left-offset:145px with no media
+     guard. Vite loads it after mobile.css so !important is needed. */
+  .petRepoStage {
+    --petRepo-left-offset: 0px !important;
+    padding-left: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* petRepoBottomGrid right column has minmax(420px, 0.82fr).
+     That minimum guarantees overflow on every phone. */
+  .petRepoBottomGrid {
     grid-template-columns: 1fr !important;
   }
 
-  /* this 149px offset is a desktop-only spacing hack, kills mobile layout */
-  .hatcheryLeftColumn {
-    margin-left: 0 !important;
+  /* All panel grids: single column */
+  .petRepoMainGrid,
+  .petRepoBottomGrid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
   }
-}
 
-/* ---------------------------------------------------------
-   7. TALENT TREE DETAILS PANEL (Skills Chamber)
-   The "locked" bottom panel (talentNodeInfoRow, talentDetailsButtons,
-   talentSaveRow, talentTreeSaveStatus, talentNodeTradeoff,
-   talentDetailsClose) is absolute-positioned pixel math built
-   for a wide desktop card (up to 430px wide, positioned by
-   right-edge offsets). None of it was covered by the file's
-   own 760px media query, so on a phone it overflows the talent
-   tree modal instead of resizing. This does not change the
-   locked desktop behavior above 480px, it only adds a mobile
-   fallback that stacks the same pieces in normal document flow.
-   --------------------------------------------------------- */
-@media (max-width: 480px) {
-  .talentNodeDetails {
-    height: auto !important;
+  .petRepoDataTwoCol {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Standard panels: 34px padding (10px from inset border face).
+     inset:18px + border:6px = border face at 24px from edge.
+     10px gap needed = 34px total from edge. */
+  .petRepoPanel--infoShell,
+  .petRepoTeamPanel,
+  .petRepoPanel,
+  .petRepoStateCard {
+    padding: 34px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Hero card: 2-column grid.
+     [Current Focus box] | [Delta Care Chamber title]
+     Subtitle spans full width below. Button full width below that.
+     Panel is standard (cyan outer / purple inset): 34px padding. */
+  .petRepoHeroCard {
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    grid-template-rows: auto auto auto !important;
+    align-items: center !important;
+    gap: 8px 12px !important;
+    padding: 34px !important;
+    min-height: 130px !important;
+  }
+
+  /* Hero card inset border tightened on phone */
+  .petRepoHeroCard::before {
+    inset: 5px !important;
+    border-width: 3px !important;
+  }
+
+  .petRepoHeroCard::after,
+  .petRepoHeroCard.dp-blue-grid-panel::after {
+    inset: 9px !important;
+  }
+
+  /* Status box: row 1 col 1 */
+  .petRepoHeroStatus {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    align-self: center !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 130px !important;
     min-height: 0 !important;
+    padding: 10px 12px !important;
+    gap: 4px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .petRepoStatusLabel {
+    font-size: 0.62rem !important;
+  }
+
+  .petRepoHeroStatus strong {
+    font-size: 1rem !important;
+  }
+
+  /* Title block: row 1 col 2 */
+  .petRepoHeroTextShifted {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    text-align: left !important;
+    align-self: center !important;
+  }
+
+  /* Panel title: gold, Space Mono, uppercase */
+  .petRepoTitle {
+    font-family: var(--font-heading) !important;
+    font-size: 1.05rem !important;
+    line-height: 1.15 !important;
+    margin: 0 0 4px !important;
+    color: var(--dp-title-gold) !important;
+    text-align: left !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  /* Subtitle: row 2, spans full width */
+  .petRepoSubtitle {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    font-size: 0.63rem !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    opacity: 0.82 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Lost Kith button: row 3, full width */
+  .lostKithRegistryOpenButton {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
+
+  /* Care card: standard panel (cyan outer / purple inset).
+     inset:18px + border:6px + 10px gap = 34px padding. */
+  .petRepoCareCard::after {
+    inset: 5px !important;
+    border-width: 3px !important;
+  }
+
+  .petRepoCareCard {
+    padding: 34px !important;
+    gap: 14px !important;
+  }
+
+  /* Details top panel title: gold, Space Mono */
+  .petRepoDetailsTopPanel {
+    padding: 12px 14px !important;
+    margin-top: -10px !important;
+  }
+
+  .petRepoDetailsTopPanelTitle {
+    font-family: var(--font-heading) !important;
+    font-size: 1.2rem !important;
+    color: var(--dp-title-gold) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .petRepoDeltaDetailsTitle {
+    font-size: 2rem !important;
+  }
+
+  /* Scene orb */
+  .petRepoSceneOrb {
+    width: min(100%, 320px) !important;
+    height: 400px !important;
+    border-width: 2px !important;
+    box-shadow: none !important;
+    margin: 0 auto !important;
+  }
+
+  .petRepoSceneInner {
+    inset: 0 !important;
+    z-index: 2 !important;
+  }
+
+  .petRepoScenePet {
+    bottom: 60px !important;
+    width: min(68%, 200px) !important;
+    height: min(64%, 200px) !important;
+  }
+
+  .petRepoScenePlatformWrap {
+    height: 100px !important;
+  }
+
+  .petRepoStatStack {
+    padding: 10px !important;
+  }
+
+  /* Energy panel: static flow inside care status */
+  .petRepoEnergyPanel {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    margin-top: 8px !important;
+    margin-bottom: 5px !important;
+    padding: 0 4px !important;
+    pointer-events: auto !important;
+    z-index: auto !important;
+  }
+
+  .petRepoEnergyTitle {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.08em !important;
+    -webkit-text-stroke: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .petRepoEnergyTrack {
+    height: 10px !important;
+  }
+
+  /* Care status panel: standard panel, 34px padding */
+  .petRepoCareStatusPanel {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 34px !important;
+    padding-bottom: 12px !important;
+    margin-top: 5px !important;
+  }
+
+  .petRepoBars {
+    padding: 0 !important;
+  }
+
+  /* Action buttons: 2 columns */
+  .petRepoActionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* Talk bubble: static flow */
+  .petRepoTalkBubble {
+    position: static !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: min(100%, 300px) !important;
+    margin: 8px auto 0 !important;
+    padding: 8px 14px !important;
+    font-size: 0.72rem !important;
+    box-sizing: border-box !important;
+    z-index: auto !important;
+  }
+
+  .petRepoTalkBubble::before {
+    content: none !important;
+  }
+
+  /* Farm button: below the orb */
+  .petRepoFarmButtonWrap {
+    position: relative !important;
+    z-index: 10 !important;
+    margin-top: 12px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .petRepoFarmButton {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Passive trait: expand into a card */
+  .petRepoInfoRow--passive-trait,
+  .petRepoInfoRow[data-label="Passive Trait"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--dp-border-panel-soft) !important;
+    background: rgba(10, 20, 42, 0.6) !important;
+  }
+
+  .petRepoInfoRow--passive-trait .petRepoInfoLabel,
+  .petRepoInfoRow[data-label="Passive Trait"] .petRepoInfoLabel {
+    font-size: 0.6rem !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    color: var(--dp-cyber-cyan) !important;
+    margin-bottom: 2px !important;
+  }
+
+  .petRepoInfoRow--passive-trait .petRepoInfoValue,
+  .petRepoInfoRow[data-label="Passive Trait"] .petRepoInfoValue {
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    color: var(--dp-text-primary) !important;
+  }
+
+  /* dp-standard-panel inset tightening: applies to every panel
+     sharing the class (Stats Chamber, Skills Panel, etc.)
+     inset:5px + border:4px = border face at 9px.
+     Content padding already covers the 10px clearance via
+     the parent panel's 34px padding. */
+  .petRepoPage .dp-standard-panel::before,
+  .petRepoPage .dp-standard-panel-purple::before {
+    inset: 5px !important;
+    border-width: 3px !important;
+  }
+
+  /* Kith Team panel: purple outer / cyan inset = 34px padding */
+  .petRepoTeamPanel {
+    padding: 34px !important;
+    box-sizing: border-box !important;
+  }
+
+  .petRepoTeamGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .petRepoTeamOrb {
+    width: 180px !important;
+    height: 180px !important;
+  }
+
+  .petRepoTeamPreview--circle {
+    width: 118px !important;
+    height: 118px !important;
+  }
+
+  .petRepoBondPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .petRepoBondTitle {
+    text-align: center;
+    transform: none;
+  }
+
+  /* Main team panel: purple outer / cyan inset = 34px padding */
+  .mainTeamPanel {
+    padding: 34px !important;
+  }
+
+  .mainTeamPanel::before {
+    inset: 5px !important;
+    border-width: 3px !important;
+  }
+
+  .mainTeamGrid {
+    padding: 5px !important;
+    gap: 10px !important;
+  }
+
+  .mainTeamTitleShell {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .mainTeamTitle {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .mainTeamTitle span:first-child,
+  .mainTeamTitle span:last-child {
+    transform: none;
+  }
+
+  /* Skill tree modal: fit phone width.
+     Popup: purple outer / cyan inset = 24px padding. */
+  .skillTreeModal {
+    width: calc(100vw - 52px) !important;
+    max-width: calc(100vw - 52px) !important;
+    height: 48dvh !important;
+    max-height: calc(100dvh - 40px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 30px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    transform: translateX(-12px) !important;
+  }
+  .skillTreeModal::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .skillTreeModal .talentTreeBoard,
+  .skillTreeModal .talentTreeBoard--feral,
+  .skillTreeModal .talentTreeBoard--aegis,
+  .skillTreeModal .talentTreeBoard--majo,
+  .skillTreeModal .talentTreeBoard--hybrid {
+    width: 125% !important;
+    min-width: 125% !important;
+    transform: translateX(-0px) scale(0.8) !important;
+    transform-origin: top left !important;
+    margin-bottom: -160px !important;
+    overflow: visible !important;
+  }
+
+  .skillTreeModal .talentNode {
+    overflow: visible !important;
+  }
+
+  .skillTreeModal .talentNode,
+  .skillTreeModal .talentTreeBoard--feral .talentNode,
+  .skillTreeModal .talentTreeBoard--aegis .talentNode,
+  .skillTreeModal .talentTreeBoard--majo .talentNode,
+  .skillTreeModal .talentTreeBoard--hybrid .talentNode {
+    width: 88px !important;
+    min-width: 88px !important;
+  }
+
+  .skillTreeModal .talentNodeName,
+  .skillTreeModal .talentNodeLabel {
+    width: 82px !important;
+    max-width: 82px !important;
+    font-size: 0.56rem !important;
+  }
+  .talentNode {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .skillTreeModal .talentNodeName,
+  .skillTreeModal .talentNodeLabel {
+    width: 72px !important;
+    max-width: 72px !important;
+    font-size: 0.52rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .talentNodeCost {
+    font-size: 0.58rem !important;
+  }
+
+  .talentNodeIcon {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.7rem !important;
+  }
+
+  /* Talent node details panel: popup = 24px padding */
+  .skillTreeModal .talentNodeDetails {
+    height: auto !important;
+    min-height: 220px !important;
     overflow: visible !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 10px !important;
-    padding-bottom: 12px !important;
+    gap: 14px !important;
+    padding: 20px !important;
+    padding-bottom: 20px !important;
   }
 
-  .talentNodeInfoRow {
+  .skillTreeModal .talentNodeInfoRow {
     position: static !important;
     left: auto !important;
     right: auto !important;
     top: auto !important;
     width: 100% !important;
+    display: grid !important;
     grid-template-columns: 1fr !important;
-    grid-template-rows: none !important;
-    row-gap: 10px !important;
+    grid-template-rows: auto !important;
+    column-gap: 0 !important;
+    row-gap: 8px !important;
+    font-size: 0.78rem !important;
   }
 
-  .talentInfoValue:nth-child(2) {
+  .skillTreeModal .talentInfoLabel,
+  .skillTreeModal .talentInfoValue {
+    grid-column: 1 !important;
+    position: static !important;
+    width: 100% !important;
     max-width: 100% !important;
   }
 
-  .talentNodeTradeoff {
+  .skillTreeModal .talentInfoValue {
+    font-size: 0.78rem !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+  }
+
+  .skillTreeModal .talentNodeTradeoff {
     position: static !important;
     width: 100% !important;
     height: auto !important;
@@ -225,7 +1419,7 @@
     white-space: normal !important;
   }
 
-  .talentDetailsButtons {
+  .skillTreeModal .talentDetailsButtons {
     position: static !important;
     right: auto !important;
     top: auto !important;
@@ -259,59 +1453,752 @@
     top: auto !important;
     width: 100% !important;
   }
-}
 
-/* ---------------------------------------------------------
-   8. PET TALK BUBBLE + ENERGY PANEL (Pet detail scene)
-   Both are fixed at 390px wide and centered with a hardcoded
-   translateX(-196px), which only works if the element is
-   exactly 390px. On a 384px-wide screen (Galaxy S22 Ultra and
-   similar) that math pushes the bubble off-screen on one side.
-   Swap to a real center transform and cap the width to the
-   viewport so it centers correctly at any size.
-   --------------------------------------------------------- */
-@media (max-width: 480px) {
-  .petRepoTalkBubble {
-    width: min(390px, calc(100vw - 32px)) !important;
-    transform: translateX(-50%) !important;
-    padding: 8px 18px !important;
-    font-size: 0.72rem !important;
+  /* Armory: title gold Space Mono, header row layout */
+  .petArmoryHeaderAccent {
+    display: none !important;
   }
 
-  .petRepoEnergyPanel {
-    width: min(390px, calc(100vw - 32px)) !important;
-    transform: translateX(-50%) !important;
-  }
-}
-
-/* ---------------------------------------------------------
-   9. HOMEPAGE SPOTLIGHT PANEL (the featured pet card)
-   .hp-spotlightPanel is deliberately set wider than its own
-   column on purpose, width: calc(100% + 100px) plus a 56px
-   left shift, to create a desktop bleed/shadow effect. None
-   of the file's four existing media queries ever reset this,
-   so on a phone the whole card renders 100px too wide and
-   shifted right, which is why stat text runs off the right
-   edge of the screen instead of wrapping. The internal grid
-   reflow at 980px was already correct, it just never had a
-   correctly sized box to reflow inside of.
-   --------------------------------------------------------- */
-@media (max-width: 980px) {
-  .hp-spotlightPanel {
-    width: 100% !important;
-    margin-left: 0 !important;
+  .petArmoryHeader {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
   }
 
-  .hp-spotlightPanel .hp-panelHeader {
-    padding-left: 0 !important;
-  }
-
-  .hp-spotlightPanel .hp-panelTitle {
+  .petArmoryTitle {
+    font-family: var(--font-heading) !important;
+    font-size: 1.2rem !important;
+    color: var(--dp-title-gold) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
     transform: none !important;
   }
-}
 
-@media (max-width: 480px) {
+  /* Armory: force Space Mono on all gear/weapon labels.
+     Desktop uses --dp-font-display (New Rocker). Mobile uses --font-heading (Space Mono).
+     Covers: slot item names, stats, closet title, closet toolbar label, closet h4s. */
+  .petArmorySlotText h3,
+  .armoryClosetTitle,
+  .armoryClosetToolbar label,
+  .armoryClosetSlotText h4 {
+    font-family: var(--font-heading) !important;
+  }
+
+  .petArmoryClosetButton {
+    position: static !important;
+    top: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .armoryPage,
+  .armoryContainer,
+  .armoryPanel {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Armory popup: purple outer / cyan inset = 24px padding */
+  .dpPopupWindow.armoryClosetWindow {
+    width: min(96vw, 420px) !important;
+    max-height: min(88vh, 700px) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .dpPopupWindowContent {
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+    padding: 24px !important;
+  }
+
+  .armoryClosetModal {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+    overflow: hidden !important;
+  }
+
+  .armoryClosetGrid {
+    grid-template-columns: 1fr !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--dp-border-panel) transparent !important;
+    padding-right: 6px !important;
+  }
+
+  .armoryClosetSlot {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    min-height: 60px !important;
+  }
+
+  .armoryClosetSlotStat {
+    display: none !important;
+  }
+
+  /* Skills chamber title: gold, Space Mono */
+  .skillsPanelHeader {
+    margin-bottom: 8px !important;
+  }
+
+  .skillsHeaderTopRow {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .skillsTitle {
+    font-family: var(--font-heading) !important;
+    font-size: 1.4rem !important;
+    color: var(--dp-title-gold) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    white-space: nowrap !important;
+  }
+
+  .skillChamberControlsRow {
+    margin-bottom: 8px !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .skillCenterActionRow {
+    justify-content: flex-end !important;
+    flex-shrink: 0 !important;
+  }
+
+  .skillChamberCommandGrid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .skillChamberCommand {
+    flex: 1 1 calc(33% - 6px) !important;
+    min-width: 0 !important;
+    font-size: 0.7rem !important;
+  }
+
+  /* Skills inventory: scroll inside panel border.
+     Standard panel: 34px padding. */
+  .skillsPanel {
+    max-height: min(88vh, 700px) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .skillInventoryGrid {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--dp-border-panel) transparent !important;
+    padding-right: 4px !important;
+  }
+
+  .skillInventoryCard {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .skillSlotGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .skillSlotCard {
+    width: 100% !important;
+    min-height: 80px !important;
+  }
+
+  /* Hatchery mobile pet action menu.
+     Panel chrome (border, background, box-shadow, text color) now comes
+     from the shared .dpPopupWindow class in global.css (purple outer /
+     cyan inset, matches every other popup). Only sizing/layout stays here. */
+  .mobilePetActionBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(10px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
+    background: rgba(0, 0, 0, 0.72);
+  }
+
+  .mobilePetActionMenu {
+    width: 100%;
+    max-width: 420px;
+    max-height: calc(100dvh - 20px);
+    box-sizing: border-box;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Popup: inset 10px + border 4px = border face at 14px from edge.
+     10px clearance needed = 24px total padding. */
+  .mobilePetActionContent {
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    padding: 24px;
+    box-sizing: border-box;
+  }
+
+  .mobilePetActionHeader {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .mobilePetActionHamburger {
+    color: var(--dp-title-gold);
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .mobilePetActionTitle {
+    color: var(--dp-title-gold);
+    font-weight: 900;
+  }
+
+  .mobilePetActionSubtext {
+    color: var(--dp-panel-muted);
+    font-size: 0.78rem;
+  }
+
+  .mobilePetActionClose {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--dp-border-panel-soft);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--dp-panel-text);
+    cursor: pointer;
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .mobilePetActionSlots {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .mobilePetActionButton {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .mobilePetActionButton span {
+    color: var(--dp-panel-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-align: right;
+  }
+
+  .mobilePetActionStorageButton {
+    margin: 0;
+  }
+
+  .mobilePetActionError {
+    margin-top: 10px;
+    color: var(--dp-panel-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  .hatchRevealOverlay {
+    background: rgba(3, 20, 38, 0.68) !important;
+    backdrop-filter: blur(4px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    overflow-y: auto !important;
+    padding: 24px 10px env(safe-area-inset-bottom, 16px) !important;
+    /* .appHeader is z-index: 9999 (App.css) and sits in normal document
+       flow. The overlay's original z-index of 1000 (HatcheryPage.css)
+       loses that stacking fight, so the header/banner paints through on
+       top of the overlay and appears to "move" as the overlay scrolls
+       underneath it. Must clear 9999. */
+    z-index: 100000 !important;
+  }
+
+  .hatchRevealCard {
+    position: relative !important;
+    isolation: isolate !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 480px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    padding: 34px 24px 30px !important;
+    z-index: 1 !important;
+    border: 3px solid var(--dp-standard-panel-border) !important;
+    border-radius: 20px !important;
+    background: var(--dp-standard-panel-bg) !important;
+    box-shadow:
+      0 0 24px var(--dp-panel-glow),
+      0 0 46px var(--dp-panel-purple-glow) !important;
+  }
+
+  /* Inset purple border, offset from the outer cyan border by
+     --dp-standard-panel-inset-gap (18px), same as every other standard
+     panel. The grid texture and color splashes live inside this inset
+     layer only, never touching the outer cyan border. */
+  .hatchRevealCard::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 10px !important;
+    z-index: 0 !important;
+    border: var(--dp-standard-panel-inner-size) solid
+      var(--dp-standard-panel-inner-border) !important;
+    border-radius: 14px !important;
+    /* var(--dp-standard-panel-blue-grid) is itself 2 layers (horizontal
+       line grid + vertical line grid), not 1. Every list below must
+       carry exactly 6 entries to stay aligned:
+       1-2: real crosshatch grid (blue-grid, 2 layers) - matches every
+            other standard panel in the game
+       3-5: the three color splashes
+       6:   base panel background */
+    background-image:
+      var(--dp-standard-panel-blue-grid),
+      radial-gradient(
+        circle at 50% 12%,
+        rgba(243, 214, 63, 0.2),
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 12% 82%,
+        var(--dp-standard-panel-splash-purple),
+        transparent 42%
+      ),
+      radial-gradient(
+        circle at 88% 78%,
+        var(--dp-cyber-cyan-soft),
+        transparent 42%
+      ),
+      var(--dp-standard-panel-bg) !important;
+    background-size:
+      var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+      var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+      auto,
+      auto,
+      auto,
+      auto !important;
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      0 0 !important;
+    background-repeat:
+      repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat !important;
+    background-clip: padding-box !important;
+    background-origin: padding-box !important;
+    pointer-events: none !important;
+  }
+
+  .hatchRevealCard > * {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  .hatchRevealCongrats {
+    color: var(--dp-cyber-cyan) !important;
+    text-shadow: 0 0 12px var(--dp-panel-glow) !important;
+  }
+
+  .hatchRevealDestination {
+    color: var(--dp-panel-text) !important;
+  }
+
+  /* Continue button: .primaryBtn has no CSS rule anywhere in the
+     codebase, so this button was rendering as a bare native browser
+     button (square corners, no gradient). Apply the full pearl close
+     button treatment (same values as .dp-btn--close in global.css)
+     so it actually matches, not just its colors. */
+  .hatchRevealContinueBtn {
+    appearance: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    min-height: 40px !important;
+    padding: 11px 16px 10px !important;
+    border-radius: 18px !important;
+    font-family: var(--font-body) !important;
+    font-size: 0.82rem !important;
+    font-weight: 900 !important;
+    line-height: 0 !important;
+    letter-spacing: 0.02em !important;
+    cursor: pointer !important;
+    color: var(--btn-pearl-text) !important;
+    background: linear-gradient(
+      180deg,
+      var(--btn-pearl-1) 0%,
+      var(--btn-pearl-2) 52%,
+      var(--btn-pearl-3) 100%
+    ) !important;
+    border: 2px solid var(--btn-pearl-border) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 0 14px rgba(255, 255, 255, 0.25) !important;
+  }
+
+  .hatchRevealContinueBtn:hover {
+    background: linear-gradient(
+      180deg,
+      var(--btn-pearl-1) 0%,
+      var(--btn-pearl-2-hover) 52%,
+      var(--btn-pearl-3-hover) 100%
+    ) !important;
+  }
+
+  /* Hatchery action buttons: wrap to column */
+
+  /* Hatchery action buttons: wrap to column */
+  .hatcheryActionsRow,
+  .hatcheryBottomActions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .hatchBtn,
+  .hatcheryAction,
+  .hatchSlotHatchButton {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .incubationSlot {
+    padding: 10px !important;
+  }
+
+  .incubationSlotLabel {
+    font-size: 0.62rem !important;
+  }
+
+  .compactStatsGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .incubationInsetPanel .itemsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  /* Egg rack: 2 columns keeps the 10 incubation slots compact.
+     1fr was stacking all 10 as individual full-width rows. */
+  /* Egg rack: 3 columns displays 15 slots as three groups of five. */
+  .eggGridCompact,
+  .rackPanelSide .eggGridCompact {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    justify-content: stretch !important;
+  }
+
+  /* HatcheryPage.css sets .rackPanelSide .eggSlotCard to a hardcoded
+     min-width: 96px with no media guard. On S22 (360px) and iPhone 8
+     (375px), 3 columns at that floor overflow the rack's 34px padding
+     and get clipped by the global overflow-x:hidden safety rule,
+     visually collapsing back to 2 columns. Let the card fill its
+     track instead of enforcing a fixed minimum. */
+  .rackPanelSide .eggSlotCard {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    justify-self: stretch !important;
+    box-sizing: border-box !important;
+  }
+
+  .hatcheryTopActions > * {
+    width: 100%;
+  }
+
+  /* Storage: PetStoragePanel.css sets max-height:none on this element,
+     which cancels the vh-based cap HatcheryPage.css tries to apply
+     elsewhere. With no max-height, the container just grows to fit
+     every pet instead of scrolling internally. Restore a real cap so
+     storage with more than 4 pets actually scrolls on phones. */
+  .storageGridScroll {
+    max-height: 55vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--dp-border-panel) transparent !important;
+  }
+
+  /* Storage grid: center the whole grid of cards within the panel
+     instead of left-aligning (PetStoragePanel.css uses
+     justify-content: start, which reads as left-biased once there
+     are only 2 columns worth of room on phones). */
+  .hatcheryPage .storagePetGrid {
+    justify-content: center !important;
+  }
+
+  /* Storage cards (eggs and pets): drag-and-drop is a desktop-only
+     interaction, so hide the "Drag to team" hint on mobile - the card
+     and the Options button both open the same tap-to-move popup. */
+  .dragHandleHint {
+    display: none !important;
+  }
+
+  /* Search input: no appearance reset anywhere in PetStoragePanel.css,
+     so some mobile browsers (Samsung Internet, certain Android
+     WebViews) render their own native pill-shaped focus/validation
+     decoration on top of the custom border, producing a double-outline
+     oval artifact. Force a clean rounded rectangle. */
+  .storageSearchWrap {
+    margin-top: -4px !important;
+  }
+
+  .storageSearchInput {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+  }
+
+  .storageSearchInput:focus {
+    box-shadow: none !important;
+  }
+
+  /* Pet card action button: match the egg card's single clean pearl
+     button instead of the yellow "Move to Slot X" button. Uses the
+     same global pearl treatment as .dp-btn--close (Skill Popup,
+     Inventory, Armory Closet, mobile pet action Close). Needs
+     !important to beat .hatcheryPage .storageActionBtn's yellow
+     gradient, which is more specific than the plain .btn-pearl class. */
+  .hatcheryPage .storageActionBtn--options {
+    min-height: 34px !important;
+    padding: 7px 14px !important;
+    border-radius: 14px !important;
+    color: var(--btn-pearl-text) !important;
+    background: linear-gradient(
+      180deg,
+      var(--btn-pearl-1) 0%,
+      var(--btn-pearl-2) 52%,
+      var(--btn-pearl-3) 100%
+    ) !important;
+    border: 2px solid var(--btn-pearl-border) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 0 14px rgba(255, 255, 255, 0.25) !important;
+  }
+
+  .hatcheryPage .storageActionBtn--options:hover:not(:disabled) {
+    background: linear-gradient(
+      180deg,
+      var(--btn-pearl-1) 0%,
+      var(--btn-pearl-2-hover) 52%,
+      var(--btn-pearl-3-hover) 100%
+    ) !important;
+  }
+
+  /* Egg viewer (non-popup, Hatchery "Incubator Core Activated" panel):
+     HatcheryPage.css draws the purple inset ring as
+     box-shadow: 0 0 0 4px ... inset with no offset, so it sits flush
+     against the outer cyan border with no gap. It also explicitly
+     disables ::before/::after (content: none). Re-enable ::before here
+     as a real inset layer, same pattern as the hatch reveal card. */
+  .selectedEggPreviewArea {
+    box-shadow:
+      inset 0 0 24px rgba(0, 0, 0, 0.26),
+      0 10px 24px rgba(31, 52, 86, 0.18) !important;
+  }
+
+  .selectedEggPreviewArea::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 10px !important;
+    z-index: 0 !important;
+    border: var(--dp-standard-panel-inner-size) solid
+      var(--dp-standard-panel-inner-border) !important;
+    border-radius: 14px !important;
+    pointer-events: none !important;
+  }
+
+  .selectedEggPreviewArea > * {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  /* Kithna map */
+  .kithnaMapFrame {
+    padding: 8px !important;
+    border-radius: 14px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-height: 300px !important;
+  }
+
+  .kithnaMapTarget {
+    width: 22% !important;
+    height: 18% !important;
+  }
+
+  .kithnaBuildingLabel {
+    font-size: 0.68rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 56px !important;
+  }
+
+  .kithnaBuildingIcon {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 13px !important;
+  }
+
+  /* Homepage */
+  .hp-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .hp-bannerContent {
+    min-height: 44px !important;
+    padding: 6px 10px !important;
+    gap: 8px !important;
+  }
+
+  .hp-bannerTickerTrack {
+    gap: 36px !important;
+  }
+
+  .hp-bannerTickerItem {
+    font-size: 0.78rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .hp-bannerLink {
+    min-height: 32px !important;
+    padding: 0 10px !important;
+    font-size: 0.68rem !important;
+  }
+
+  .hp-heroCard {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .hp-heroInner {
+    padding: 34px !important;
+    gap: 14px !important;
+  }
+
+  .hp-heroBrandRow {
+    row-gap: 0 !important;
+  }
+
+  .hp-heroTitle--logo {
+    font-size: clamp(2.2rem, 9vw, 3rem) !important;
+    line-height: 1 !important;
+  }
+
+  .hp-heroTagline {
+    margin-top: 2px !important;
+    font-size: 0.82rem !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+  }
+
+  .hp-heroCrest {
+    margin-left: 0 !important;
+    font-size: clamp(4rem, 16vw, 5.25rem) !important;
+    line-height: 0.9 !important;
+  }
+
+  .hp-heroSubtitle {
+    margin-top: 2px !important;
+    font-size: 0.88rem !important;
+    line-height: 1.45 !important;
+    text-align: center !important;
+  }
+
+  .hp-primaryBtn {
+    width: 100% !important;
+    min-height: 48px !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 10px 14px !important;
+    font-size: 0.86rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .hp-heroFeatureRow {
+    width: 100% !important;
+    margin: 20px 0 0 !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .hp-heroFeatureCopy {
+    padding: 0 12px 12px !important;
+  }
+
+  .hp-heroFeatureLabel {
+    padding: 8px 12px 6px !important;
+    font-size: 0.7rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .hp-heroFeatureTitle {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 15px 12px 6px !important;
+    font-size: 0.98rem !important;
+    line-height: 1.3 !important;
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+    background: none !important;
+  }
+
+  .hp-heroFeatureText {
+    padding: 10px 12px 12px !important;
+    font-size: 0.8rem !important;
+    line-height: 1.45 !important;
+    overflow-wrap: anywhere !important;
+  }
+  /* Homepage spotlight: stack on phone.
+     Panel is purple outer / cyan inset = 34px padding. */
   .hp-spotlightBody {
     grid-template-columns: 1fr !important;
     grid-template-areas:
@@ -320,14 +2207,12 @@
       "content" !important;
     justify-items: center !important;
     text-align: center !important;
-    /* the locked blue-grid inner border sits 18px inset from the
-       panel edge and is 6px thick, so content needs at least 24px
-       of clearance to clear it, not touch or cross it. Left/right
-       bumped to 26px, this is the fix for the description text
-       overflowing into the inset border. Nothing about the border
-       itself, .dp-standard-panel-purple, is touched. */
-    padding: 1rem 26px 1.25rem !important;
+    padding: 34px !important;
     transform: none !important;
+  }
+
+  .hp-spotlightPanel .hp-panelBody.hp-spotlightBody {
+    padding: 34px !important;
   }
 
   .hp-spotlightTop,
@@ -336,15 +2221,10 @@
     text-align: left !important;
   }
 
-  .hp-spotlightPanel .hp-panelBody.hp-spotlightBody {
-    padding: 1rem 28px 30px !important;
-  }
-
   .hp-spotlightPanel .hp-spotlightContent {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    margin-top: 1px !important;
   }
 
   .hp-spotlightText {
@@ -356,57 +2236,255 @@
     font-size: 0.94rem !important;
     line-height: 1.5 !important;
   }
-}
 
-/* ---------------------------------------------------------
-   11. DELTA CLOCK (header time/phase box)
-   The phase label (NIGHT, DAY, DUSK, etc) was sitting right up
-   against the inner decorative border on mobile. This file had
-   no mobile coverage for the clock at all before this. Just
-   adding a bit of bottom breathing room, nothing else touched.
-   --------------------------------------------------------- */
-@media (max-width: 900px) {
-  .deltaClock {
-    padding-bottom: 14px !important;
+  /* Profile page: standard panel = 34px padding */
+  .dp-profile-page {
+    padding: 14px 0 !important;
+    gap: 10px !important;
   }
-}
 
-/* ---------------------------------------------------------
-   13. PETS PAGE ROOT OFFSET (the whole page was pushed right)
-   .petRepoStage sets a 145px left offset for a desktop "Care
-   Room redesign" layout. That rule sits outside any media
-   query near the bottom of PetPage.css, after the file's own
-   mobile breakpoints that reset it to 0, so it silently wins
-   and re-applies the 150px push at every screen width,
-   including phones. This is the confirmed cause of the large
-   blank strip on the left of the entire pets page on mobile,
-   with every panel squeezed into the remaining width and
-   clipping on the right edge as a result. Nothing about the
-   desktop "Care Room" offset is touched, this only fires
-   under 920px, matching the breakpoint already used elsewhere
-   in that file for this exact class.
-   --------------------------------------------------------- */
-@media (max-width: 920px) {
-  .petRepoStage {
-    padding-left: 0 !important;
+  .dp-profile-panel {
+    padding: 34px !important;
+    border-radius: 10px !important;
+  }
+
+  .dp-profile-avatar {
+    width: 52px !important;
+    height: 52px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Food merchant */
+  .foodMerchantPage {
+    padding: 20px 0 48px !important;
+  }
+
+  .foodMerchantPanel {
+    padding: 34px !important;
+  }
+
+  .foodMerchantTitle {
+    font-size: 17px !important;
+  }
+
+  /* Battle arena and dungeons placeholder pages */
+  .dp-arena-page,
+  .dp-dungeons-page {
+    padding: 16px 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .dp-arena-panel,
+  .dp-dungeons-list {
     width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .dp-profile-page .dp-profile-popup-backdrop {
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    padding: 12px !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+  /* Rewards bar */
+  /* Rewards bar */
+  .dp-profile-rewards-popup .wr-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .dp-profile-rewards-popup {
+    width: calc(100% - 12px) !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 12px) !important;
+    padding: 8px !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .dp-profile-rewards-popup .wr-wrap {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
   }
 }
 
-/* ---------------------------------------------------------
-   14. GALAXY S22 ULTRA HARD TARGET (384 x 824 CSS viewport, DPR 3.75)
-   Everything above already covers this width through the 420 and
-   480 tiers. This block is a final safety net: nothing in the
-   game should ever force a horizontal scrollbar under 400px.
-   --------------------------------------------------------- */
-@media (max-width: 400px) {
-  html,
-  body {
-    overflow-x: hidden;
+/* =========================================================
+   SECTION 4 - COMPACT SMARTPHONES  (390px)
+   Covers iPhone 13, S22 Ultra, iPhone 8, S22, and any other
+   viewport at or below 390px. Layers on top of section 3.
+   ========================================================= */
+@media (max-width: 390px) {
+  /* Hero card: tighten on smaller phones.
+     Still 34px from inset border face. */
+  .petRepoHeroCard {
+    padding: 34px !important;
+    gap: 8px 10px !important;
   }
 
+  .petRepoHeroStatus {
+    max-width: 118px !important;
+    padding: 8px 10px !important;
+  }
+
+  .petRepoTitle {
+    font-size: 0.98rem !important;
+  }
+
+  /* Main team: 2 columns (S22 gets 1 column from section 5) */
+  .mainTeamGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* Stats Chamber: tighter info rows */
+  .statsChamber .petRepoInfoRow {
+    font-size: 0.85rem !important;
+    padding: 0 8px !important;
+    gap: 6px !important;
+  }
+
+  .statsChamber .petRepoStatMod {
+    font-size: 0.7rem !important;
+    padding: 1px 4px !important;
+  }
+
+  /* Profile panel: still 34px */
+  .dp-profile-panel {
+    padding: 34px !important;
+  }
+
+  /* Hatchery egg preview: tighten height */
+  .selectedEggPreviewArea {
+    height: min(360px, 94vw) !important;
+    max-height: 360px !important;
+  }
+
+  /* Food merchant */
+  .foodMerchantPanel {
+    padding: 34px !important;
+  }
+
+  /* Kithna map */
+  .kithnaMapFrame {
+    padding: 6px !important;
+  }
+
+  .kithnaBuildingLabel {
+    font-size: 0.62rem !important;
+    max-width: 48px !important;
+  }
+
+  /* App shell */
   .appShell {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+/* =========================================================
+   SECTION 5 - NARROW SMARTPHONE SAFETY  (360px)
+   Applies to the S22 and any viewport at or below 360px.
+   Only rules required by narrow screens belong here.
+   ========================================================= */
+@media (max-width: 360px) {
+  html,
+  body,
+  #root {
+    overflow-x: hidden !important;
+  }
+
+  .petRepoStage,
+  .petRepoPage,
+  .appShell,
+  .appContent {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Hero card: S22 minimum.
+     Reduce padding but keep 10px from inset border face.
+     inset tightened to 4px + border 3px = face at 7px.
+     10px clearance = 17px min from edge. Use 18px. */
+  .petRepoHeroCard {
+    padding: 18px !important;
+  }
+
+  .petRepoTitle {
+    font-size: 0.92rem !important;
+  }
+
+  /* Care card: same S22 reduction */
+  .petRepoCareCard {
+    padding-inline: 18px !important;
+  }
+
+  /* Team: 1 column on S22 */
+  .mainTeamGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Food merchant */
+  .foodMerchantPanel {
+    padding: 34px !important;
+  }
+
+  /* Kithna map */
+  .kithnaMapFrame {
+    padding: 4px !important;
+  }
+
+  .kithnaBuildingLabel {
+    font-size: 0.58rem !important;
+    max-width: 40px !important;
+  }
+
+  /* Hatchery egg preview */
+  .selectedEggPreviewArea {
+    height: min(320px, 88vw) !important;
+    max-height: 320px !important;
+  }
+
+  /* Weekly rewards: 1 column */
+  .dp-profile-rewards-popup .wr-reward {
+    font-size: 11px;
+  }
+
+  .dp-profile-rewards-popup .wr-day,
+  .dp-profile-rewards-popup .wr-state {
+    font-size: 10px;
+  }
+
+  .dp-profile-rewards-popup .dp-close-button,
+  .dp-profile-rewards-popup .wr-claimBtn {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  .wr-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dp-profile-rewards-button {
+    width: 100% !important;
+    min-height: 44px !important;
+    margin: 0 0 18px !important;
+  }
+
+  .dp-profile-rewards-popup {
+    width: calc(100% - 16px) !important;
+    max-width: none !important;
+    max-height: calc(100vh - 16px) !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  .dp-profile-rewards-popup .wr-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
   }
 }

@@ -8,6 +8,7 @@ const DEV = import.meta.env.DEV;
 type IntroStateResponse = {
   intro_seen?: boolean;
   has_hatchery_egg?: boolean;
+  has_hatched_pet?: boolean;
 };
 
 function debugLog(...args: unknown[]) {
@@ -27,8 +28,8 @@ function sleep(ms: number) {
  *
  * - not logged in            -> /
  * - intro cutscene NOT seen  -> /create
- * - intro seen + has egg     -> /hatchery
- * - intro seen + no egg      -> /pet
+ * - intro seen + no hatched pet + egg -> /hatchery
+ * - hatched pet exists                -> /profile
  *
  * Backend is authoritative to avoid RLS issues.
  */
@@ -63,9 +64,11 @@ export function useEnterGame() {
 
       const introSeen = Boolean(payload.intro_seen);
       const hasEgg = Boolean(payload.has_hatchery_egg);
+      const hasHatchedPet = Boolean(payload.has_hatched_pet);
 
       debugLog("[enterGame] introSeen:", introSeen);
       debugLog("[enterGame] hasEgg:", hasEgg);
+      debugLog("[enterGame] hasHatchedPet:", hasHatchedPet);
 
       if (!introSeen) {
         debugLog("[enterGame] routing -> /create");
@@ -73,14 +76,24 @@ export function useEnterGame() {
         return;
       }
 
-      if (hasEgg) {
-        debugLog("[enterGame] routing -> /hatchery");
+      if (!hasHatchedPet && hasEgg) {
+        debugLog(
+          "[enterGame] intro egg still incubating, routing -> /hatchery",
+        );
         navigate("/hatchery", { replace: true });
         return;
       }
 
-      debugLog("[enterGame] routing -> /pet");
-      navigate("/pet", { replace: true });
+      if (!hasHatchedPet) {
+        debugLog(
+          "[enterGame] intro incomplete with no pet, routing -> /create",
+        );
+        navigate("/create", { replace: true });
+        return;
+      }
+
+      debugLog("[enterGame] returning player, routing -> /profile");
+      navigate("/profile", { replace: true });
     } catch (err) {
       console.error("[enterGame] failed:", err);
       navigate("/", { replace: true });

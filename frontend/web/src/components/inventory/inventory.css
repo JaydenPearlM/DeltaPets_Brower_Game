@@ -1,0 +1,772 @@
+.inventoryModal {
+  color: var(--dp-popup-text, var(--dp-panel-text));
+}
+
+.inventoryHaikuButton {
+  display: inline-grid;
+  justify-items: center;
+  gap: 6px;
+  width: 118px;
+  border: 2px solid var(--dp-panel-purple-border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: var(--dp-surface-glass);
+  color: var(--dp-title-gold);
+  font-family: var(--dp-font-display);
+  font-size: 0.9rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.inventoryHaikuIcon {
+  display: block;
+  width: 44px;
+  height: 44px;
+}
+
+.inventoryPanel {
+  display: grid;
+  gap: 18px;
+}
+
+.inventoryHeader {
+  display: grid;
+  gap: 8px;
+}
+
+.inventoryHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.inventoryItemType,
+.inventoryItemMeta {
+  margin: 0;
+  color: var(--dp-cyber-cyan, #4deaff);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.inventoryHeader h2 {
+  margin: 0;
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  font-size: clamp(1.7rem, 4vw, 2.45rem);
+  line-height: 1;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
+.inventoryFilterWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.inventoryFilterToggle {
+  appearance: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--dp-cyber-cyan, #4deaff);
+  background: rgba(3, 12, 28, 0.66);
+  color: var(--dp-cyber-cyan, #4deaff);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.inventoryFilterMenu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 5;
+  display: grid;
+  gap: 4px;
+  min-width: 140px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 2px solid var(--dp-cyber-cyan, #4deaff);
+  background: rgba(3, 12, 28, 0.94);
+  box-shadow: 0 0 18px rgba(77, 234, 255, 0.18);
+}
+
+.inventoryFilterOption {
+  appearance: none;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.inventoryFilterOption--active {
+  background: rgba(77, 234, 255, 0.16);
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+}
+
+.inventoryIntro {
+  max-width: 46rem;
+  margin: 0;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.inventorySectionLabel {
+  margin: 18px 0 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dp-white-70, rgba(255, 255, 255, 0.7));
+}
+
+.inventoryGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.inventoryGrid--slots {
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  grid-auto-rows: 96px;
+}
+
+.inventoryGrid--slots .inventoryItemCard {
+  min-height: 0;
+  gap: 4px;
+  padding: 8px;
+  justify-content: center;
+}
+
+.inventoryGrid--slots .inventoryItemCardHeader {
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.inventoryGrid--slots .inventoryItemCard h3 {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
+.inventoryGrid--slots .inventoryItemType,
+.inventoryGrid--slots .inventoryItemDescription,
+.inventoryGrid--slots .inventoryItemMeta {
+  display: none;
+}
+
+.inventoryGrid--slots .inventoryItemQty {
+  min-width: 34px;
+  padding: 3px 7px;
+  font-size: 0.72rem;
+}
+
+.inventorySlotEmpty {
+  border: 2px dashed rgba(77, 234, 255, 0.28);
+  border-radius: 16px;
+  background: rgba(3, 12, 28, 0.35);
+}
+
+.inventoryItemCard,
+.inventoryEmpty {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--dp-cyber-cyan, #4deaff);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(255, 217, 77, 0.16),
+      transparent 34%
+    ),
+    rgba(3, 12, 28, 0.66);
+  box-shadow:
+    inset 0 0 0 1px rgba(199, 125, 255, 0.32),
+    0 0 18px rgba(77, 234, 255, 0.12);
+}
+
+.inventoryItemCard {
+  display: grid;
+  gap: 10px;
+  min-height: 144px;
+  padding: 14px;
+}
+
+.inventoryItemCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.inventoryItemCard h3 {
+  margin: 4px 0 0;
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  font-size: 1.04rem;
+  line-height: 1.15;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
+.inventoryItemQty {
+  flex: 0 0 auto;
+  min-width: 44px;
+  border: 1px solid var(--dp-border-gold, rgba(255, 217, 77, 0.78));
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: rgba(255, 217, 77, 0.12);
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  font-weight: 950;
+  text-align: center;
+}
+
+.inventoryItemDescription,
+.inventoryEmpty p {
+  margin: 0;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.inventoryItemMeta {
+  align-self: end;
+  color: var(--dp-panel-muted, #a8c8df);
+  letter-spacing: 0.08em;
+}
+
+.inventoryEmpty {
+  display: grid;
+  gap: 8px;
+  padding: 22px;
+  text-align: center;
+}
+
+.inventoryEmptyTitle {
+  color: var(--dp-title-gold, var(--dp-brand-yellow)) !important;
+  font-size: 1.2rem;
+  font-weight: 950;
+}
+
+.inventoryFooter {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0px;
+  padding-left: 6px;
+  transform: translateY(-1px);
+}
+
+.inventoryFooterClose {
+  min-width: 96px;
+  transform: translateX(-3px);
+}
+
+.inventoryCarePackageCard {
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.inventoryCarePackageReward {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.inventoryCarePackageButton {
+  position: relative;
+  display: block;
+  width: auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.inventoryCarePackageButton:disabled {
+  cursor: default;
+}
+
+.inventoryCarePackageImageWrap {
+  position: relative;
+  display: block;
+  width: 92px;
+  height: 92px;
+}
+
+.inventoryCarePackageImage {
+  display: block;
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  mix-blend-mode: screen;
+}
+
+.inventoryCarePackageQty {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  font-size: 0.76rem;
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(3, 12, 28, 0.95);
+}
+
+.inventoryCarePackageHint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  z-index: 20;
+  display: grid;
+  gap: 4px;
+  width: max-content;
+  max-width: 220px;
+  padding: 10px 12px;
+  border: 2px solid var(--dp-cyber-cyan, #4deaff);
+  border-radius: 14px;
+  background: var(--dp-panel-blue, #08375f);
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  transform: translateX(-50%) translateY(4px);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.inventoryCarePackageHint::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--dp-cyber-cyan, #4deaff);
+  border-bottom: 2px solid var(--dp-cyber-cyan, #4deaff);
+  background: var(--dp-panel-blue, #08375f);
+  transform: translate(-50%, -5px) rotate(45deg);
+}
+
+.inventoryCarePackageHint strong,
+.inventoryCarePackageHint span {
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+}
+
+.inventoryCarePackageButton:hover .inventoryCarePackageHint,
+.inventoryCarePackageButton:focus-visible .inventoryCarePackageHint {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.inventoryCarePackageNotice {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(3, 12, 28, 0.78);
+}
+
+.inventoryCarePackageNoticeCard {
+  display: grid;
+  gap: 16px;
+  width: min(420px, 100%);
+  border: 2px solid var(--dp-cyber-cyan, #4deaff);
+  border-radius: 16px;
+  padding: 20px;
+  background: rgba(3, 12, 28, 0.96);
+  text-align: center;
+}
+
+.inventoryCarePackageNoticeCard p,
+.inventoryCarePackageMessage {
+  margin: 0;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.inventoryCarePackageMessage {
+  text-align: center;
+}
+
+.inventoryHaikuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 12, 28, 0.72);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.inventoryHaikuPopup {
+  width: min(920px, calc(100vw - 48px));
+  max-height: min(760px, calc(100dvh - 48px));
+  padding: 26px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.inventoryHaikuHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.inventoryHaikuHeaderIcon {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+}
+
+.inventoryHaikuHeader h2,
+.inventoryHaikuReader h2 {
+  margin: 0;
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  font-family: var(--dp-font-display);
+  line-height: 1;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
+.inventoryHaikuHeader h2 {
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+}
+
+.inventoryHaikuDescription {
+  margin: 8px 0 0;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.inventoryHaikuGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  max-height: min(560px, calc(100dvh - 245px));
+  padding: 2px 8px 2px 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.inventoryHaikuSlot {
+  appearance: none;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
+  min-height: 104px;
+  border: 1px solid rgba(77, 234, 255, 0.38);
+  border-radius: 12px;
+  padding: 10px 6px;
+  background: rgba(3, 12, 28, 0.58);
+  color: var(--dp-panel-muted, #a8c8df);
+  font: inherit;
+}
+
+.inventoryHaikuSlot:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.inventoryHaikuSlot--collected {
+  border: 2px solid var(--dp-cyber-cyan, #4deaff);
+  background: rgba(3, 12, 28, 0.78);
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  cursor: pointer;
+  opacity: 1;
+}
+
+.inventoryHaikuSlot--collected:hover,
+.inventoryHaikuSlot--collected:focus-visible {
+  border-color: var(--dp-panel-purple-border);
+  outline: none;
+}
+
+.inventoryHaikuSlotIcon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  display: block;
+}
+.inventoryHaikuSlotNumber {
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.inventoryHaikuSlotState {
+  color: var(--dp-panel-muted, #a8c8df);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.inventoryHaikuFooter {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 18px;
+}
+
+.inventoryHaikuReader {
+  display: grid;
+  justify-items: start;
+  width: min(620px, 100%);
+  margin: 0 auto;
+}
+
+.inventoryHaikuReaderIcon {
+  width: 70px;
+  height: 70px;
+  margin-bottom: 10px;
+}
+
+.inventoryHaikuReader h2 {
+  font-size: clamp(1.75rem, 4vw, 2.4rem);
+}
+
+.inventoryHaikuText {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  margin: 24px 0;
+  padding: 24px;
+  border: 1px solid rgba(77, 234, 255, 0.34);
+  border-radius: 14px;
+  background: rgba(3, 12, 28, 0.54);
+  box-sizing: border-box;
+}
+
+.inventoryHaikuText p {
+  margin: 0;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.inventoryHaikuReaderBack {
+  margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  .inventoryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .inventoryCarePackageReward {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .inventoryCarePackageButton {
+    margin-inline: auto;
+  }
+
+  .inventoryGrid--slots {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    grid-auto-rows: 60px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .inventoryItemCardHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .inventoryGrid--slots .inventoryItemCardHeader {
+    align-items: center;
+  }
+
+  .inventoryItemQty {
+    width: fit-content;
+  }
+
+  .inventoryIntro {
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .inventorySectionLabel {
+    margin: 10px 0 6px;
+  }
+
+  .inventoryCarePackageNotice {
+    position: fixed;
+    inset: 12px;
+    z-index: 1000;
+    padding: 12px;
+    overflow-y: auto;
+  }
+
+  .inventoryCarePackageNoticeCard {
+    width: min(420px, 100%);
+    max-height: calc(100dvh - 48px);
+    padding: 16px;
+    gap: 12px;
+    overflow-y: auto;
+  }
+
+  .inventoryHaikuButton {
+    width: 104px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+  }
+
+  .inventoryHaikuIcon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .inventoryHaikuBackdrop {
+    padding: 10px;
+  }
+
+  .inventoryHaikuPopup {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    padding: 16px;
+  }
+
+  .inventoryHaikuHeader {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .inventoryHaikuHeaderIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .inventoryHaikuHeader h2 {
+    font-size: 1.45rem;
+  }
+
+  .inventoryHaikuDescription {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .inventoryHaikuGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    max-height: calc(100dvh - 205px);
+    padding-right: 5px;
+  }
+
+  .inventoryHaikuSlot {
+    min-height: 78px;
+    padding: 8px 5px;
+  }
+
+  .inventoryHaikuSlotIcon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .inventoryHaikuSlotNumber {
+    font-size: 0.82rem;
+  }
+
+  .inventoryHaikuSlotState {
+    font-size: 0.62rem;
+  }
+
+  .inventoryHaikuFooter {
+    margin-top: 12px;
+  }
+
+  .inventoryHaikuReader {
+    width: 100%;
+  }
+
+  .inventoryHaikuReaderIcon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .inventoryHaikuReader h2 {
+    font-size: 1.55rem;
+  }
+
+  .inventoryHaikuText {
+    gap: 8px;
+    margin: 18px 0;
+    padding: 16px;
+  }
+
+  .inventoryHaikuText p {
+    font-size: 0.92rem;
+  }
+}
+
+/* =========================================================
+   Care Package - visible tap hint for mobile (S22 has no hover)
+   ========================================================= */
+.inventoryCarePackageTapHint {
+  margin: 8px 0 0;
+  color: var(--dp-cyber-cyan, #4deaff);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-align: left;
+}
+
+/* Rewards promoted above items grid: no extra top margin needed */
+.inventorySectionLabel--rewards {
+  margin-top: 0;
+}
+
+.inventoryHaikuPopup > h2 {
+  margin-left: 10px;
+}
+
+.inventoryHaikuPopup > .inventoryHaikuDescription {
+  margin-left: 15px;
+}
+
+.inventoryHaikuSlot {
+  border: 1px solid var(--dp-panel-border-cyan-bright);
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      var(--dp-panel-glow-cyan),
+      transparent 42%
+    ),
+    rgba(18, 48, 76, 0.94);
+  box-shadow: none;
+}
+
+.inventoryHaikuSlot--collected {
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      var(--dp-panel-glow-cyan),
+      transparent 42%
+    ),
+    rgba(28, 74, 104, 0.96);
+}

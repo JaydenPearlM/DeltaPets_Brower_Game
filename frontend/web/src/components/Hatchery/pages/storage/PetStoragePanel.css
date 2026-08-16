@@ -1,86 +1,599 @@
-.storagePetCardWithTooltip {
+/* Storage-only Hatchery styling. */
+
+.hatcheryPage .storedPetsInlineSection {
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  padding: 39px 39px 34px;
+  border: 2px solid var(--dp-panel-purple-border);
+  border-radius: 24px;
+  background: var(--dp-standard-panel-bg);
+  box-shadow: 0 0 2px var(--dp-panel-purple-glow);
+  color: var(--dp-panel-text);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hatcheryPage .storedPetsInlineSection::before {
+  content: "";
+  position: absolute;
+  inset: var(--dp-standard-panel-inset-gap);
+  z-index: 0;
+  border: var(--dp-standard-panel-inner-size) solid var(--dp-cyber-cyan);
+  border-radius: 14px;
+  background-image:
+    var(--dp-standard-panel-blue-grid),
+    radial-gradient(
+      circle at 100% 100%,
+      var(--dp-standard-panel-cyan-inset-splash-gold) 0%,
+      var(--dp-standard-panel-cyan-inset-splash-gold) 18%,
+      var(--dp-standard-panel-cyan-inset-splash-orange) 46%,
+      transparent 76%
+    ),
+    var(--dp-standard-panel-bg);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    520px 520px,
+    auto;
+  background-position:
+    0 0,
+    0 0,
+    100% 100%,
+    0 0;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  background-clip: padding-box;
+  background-origin: padding-box;
+  pointer-events: none;
+}
+
+.hatcheryPage .storedPetsInlineSection::after {
+  content: none;
+  display: none;
+}
+
+.hatcheryPage .storedPetsInlineSection > * {
+  position: relative;
+  z-index: 1;
+}
+
+.storageSectionTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.storageSectionCopy {
+  min-width: 0;
+}
+
+.hatcheryPage .storedPetsSectionHeader .panelTitle {
+  color: var(--dp-title-gold);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+.storageMenu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.storageMenu > summary {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--btn-gold-border);
+  border-radius: 14px;
+  background: var(--dp-gradient-yellow-button);
+  color: var(--btn-gold-text);
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 900;
+  line-height: 1;
+  list-style: none;
+}
+
+.storageMenu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.storageMenu[open] > summary {
+  background: var(--dp-gradient-yellow-button-hover);
+}
+
+.storageMenuPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  width: min(260px, 78vw);
+  padding: 14px;
+  border: 2px solid var(--dp-panel-purple-border);
+  border-radius: 16px;
+  background: var(--dp-standard-panel-bg);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.36);
+}
+
+.storageMenuLabel {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--dp-panel-muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.storageMenuSelect {
+  width: 100%;
+  min-height: 40px;
+  margin-bottom: 12px;
+  padding: 0 10px;
+  border: 1px solid var(--dp-border-panel-soft);
+  border-radius: 10px;
+  background: rgba(3, 12, 28, 0.92);
+  color: var(--dp-panel-text);
+}
+
+.storageSearchWrap {
+  display: flex;
+}
+
+.storageSearchInput {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  border: 1px solid var(--dp-border-panel-soft);
+  border-radius: 12px;
+  background: rgba(3, 12, 28, 0.82);
+  color: var(--dp-panel-text);
+  padding: 0 14px;
+  outline: none;
+}
+
+.storageSearchInput::placeholder {
+  color: var(--dp-panel-muted);
+}
+
+.storageSearchInput:focus {
+  border-color: var(--dp-cyber-cyan);
+}
+
+.storageIncubatorNotice {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--dp-panel-muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.storageIncubatorNotice strong {
+  color: var(--dp-title-gold);
+}
+
+.storageGridScroll {
+  flex: 1;
+  min-height: 300px;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hatcheryPage .storagePetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 155px);
+  gap: 12px;
+  justify-content: start;
+}
+
+.hatcheryPage .storagePetCard {
+  position: relative;
+  width: 155px;
+  min-width: 155px;
+  max-width: 155px;
+  min-height: 176px;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 3px solid var(--dp-cyber-cyan);
+  border-radius: 14px;
+  background: rgb(3, 12, 28);
+  box-shadow: inset 0 1px 0 var(--dp-white-06);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "body"
+    "action";
+  gap: 10px;
+  justify-items: center;
+  align-items: start;
+  justify-self: start;
   overflow: visible;
 }
 
-.storagePetTooltip {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 14px);
-  transform: translateX(-50%) translateY(8px);
-  width: 220px;
-  padding: 12px 12px 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: linear-gradient(
-    180deg,
-    rgba(24, 28, 38, 0.98),
-    rgba(14, 17, 24, 0.98)
-  );
-  box-shadow:
-    0 16px 32px rgba(0, 0, 0, 0.42),
-    0 0 0 1px rgba(255, 214, 102, 0.12);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 40;
-  transition:
-    opacity 140ms ease,
-    transform 140ms ease;
+.hatcheryPage .storagePetCard:hover {
+  border-color: var(--dp-cyber-cyan);
 }
 
-.storagePetTooltip::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  transform: translateX(-50%);
-  border-width: 8px 8px 0 8px;
-  border-style: solid;
-  border-color: rgba(18, 22, 30, 0.98) transparent transparent transparent;
+.hatcheryPage .storagePetTop {
+  grid-area: identity;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
 }
 
-.storagePetCardWithTooltip:hover .storagePetTooltip,
-.storagePetCardWithTooltip:focus-within .storagePetTooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+.hatcheryPage .storagePetIdentity {
+  grid-area: identity;
+  min-width: 0;
+  width: 100%;
+  text-align: center;
 }
 
-.storagePetTooltipTitle {
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.1;
-  margin-bottom: 4px;
+.hatcheryPage .storagePetName {
+  color: var(--dp-title-gold);
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1.15;
 }
 
-.storagePetTooltipMeta {
-  font-size: 11px;
-  opacity: 0.78;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.storagePetMeta {
+  margin-top: 3px;
+  color: var(--dp-panel-muted);
+  font-size: 0.76rem;
 }
 
-.storagePetTooltipGrid {
-  display: grid;
-  grid-template-columns: 1fr;
+.hatcheryPage .storageBadgeStack {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 6px;
 }
 
-.storagePetTooltipRow {
-  display: flex;
+.hatcheryPage .storageStageBadge,
+.hatcheryPage .storageRarityBadge {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 12px;
+  justify-content: center;
+  min-height: 22px;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.storagePetTooltipRow strong {
-  font-size: 12px;
+.hatcheryPage .storageStageBadge {
+  display: none;
+  border: 1px solid var(--dp-border-panel-soft);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--dp-panel-muted);
+}
+
+.hatcheryPage .storageRarityBadge.epic {
+  border: 1px solid var(--dp-panel-purple-border);
+  background: rgba(177, 92, 255, 0.14);
+  color: var(--dp-panel-purple-border);
+}
+
+.hatcheryPage .storagePetBody {
+  grid-area: body;
+  min-width: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "orb"
+    "identity";
+  gap: 7px;
+  justify-items: center;
+}
+
+.hatcheryPage .storagePetOrb {
+  grid-area: orb;
+  width: 82px;
+  height: 82px;
+  border: 1px solid var(--dp-cyber-cyan);
+  border-radius: 14px;
+  background: rgba(3, 12, 28, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hatcheryPage .storageEggImage {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.storagePetOrbInner {
+  color: var(--dp-panel-text);
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.hatcheryPage .storagePetStats {
+  display: none;
+}
+
+.storagePetStat {
+  min-width: 0;
+  padding: 5px 6px;
+  border: 1px solid var(--dp-border-panel-soft);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  text-align: center;
+}
+
+.storagePetStat span {
+  display: block;
+  color: var(--dp-panel-muted);
+  font-size: 0.58rem;
   font-weight: 800;
 }
 
-.storagePetTooltipRow.total {
-  margin-top: 4px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.storagePetStat strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--dp-panel-text);
+  font-size: 0.72rem;
+}
+
+.hatcheryPage .storageActionRow {
+  grid-area: action;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hatcheryPage .storageActionBtn {
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 2px solid var(--btn-gold-border);
+  border-radius: 14px;
+  background: var(--dp-gradient-yellow-button);
+  color: var(--btn-gold-text);
+  font-weight: 900;
+  font-size: 0.76rem;
+}
+
+.hatcheryPage .storageActionBtn:hover:not(:disabled) {
+  background: var(--dp-gradient-yellow-button-hover);
+}
+
+.hatcheryPage .storageActionBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dragHandleHint {
+  color: var(--dp-panel-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.storageEmptyState {
+  flex: 1;
+  min-height: 220px;
+  height: 100%;
+  padding: 20px;
+  border: 0;
+  border-radius: 14px;
+  background: rgb(3, 12, 28);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.storageEmptyTitle {
+  color: var(--dp-title-gold);
+  font-weight: 900;
+}
+
+.storageEmptyText,
+.storageErrorText {
+  margin-top: 6px;
+  color: var(--dp-panel-muted);
+  font-size: 0.8rem;
+}
+
+.storageBottomFilters,
+.storageTopSummary,
+.storageLocationBadge,
+.storagePetTooltip,
+.storagePetLore {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .hatcheryPage .storedPetsInlineSection {
+    padding: 35px;
+  }
+
+  .hatcheryPage .storedPetsSectionHeader .panelTitle {
+    font-size: 1.35rem;
+  }
+
+  .storageMenu {
+    position: static;
+  }
+
+  .storageMenuPanel {
+    top: 78px;
+    right: 35px;
+    bottom: 35px;
+    left: 35px;
+    width: auto;
+    overflow-y: auto;
+  }
+
+  .hatcheryPage .storagePetCard {
+    position: relative;
+    width: 155px;
+    min-width: 155px;
+    max-width: 155px;
+    min-height: 176px;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 3px solid var(--dp-cyber-cyan);
+    border-radius: 14px;
+    background: rgb(3, 12, 28);
+    box-shadow: inset 0 1px 0 var(--dp-white-06);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "body"
+      "identity"
+      "action";
+    gap: 10px;
+    justify-items: center;
+    align-items: center;
+    justify-self: center;
+    overflow: visible;
+  }
+  .storageBadgeStack,
+  .hatcheryPage .storageActionRow {
+    justify-content: center;
+  }
+
+  .hatcheryPage .storagePetOrb {
+    width: 82px;
+    height: 82px;
+  }
+
+  .hatcheryPage .storagePetStats {
+    display: none;
+  }
+}
+
+@media (max-width: 430px) {
+  .hatcheryPage .storedPetsInlineSection {
+    padding: 30px;
+    border-radius: 20px;
+  }
+
+  .hatcheryPage .storedPetsInlineSection::before {
+    inset: 10px;
+    border-width: 4px;
+  }
+}
+@media (max-width: 430px) {
+  .mobilePetActionBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.72);
+  }
+
+  .mobilePetActionMenu {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    padding: 24px;
+    border: 3px solid var(--dp-cyber-cyan);
+    border-radius: 18px;
+    background: var(--dp-standard-panel-bg);
+    box-shadow:
+      inset 0 0 0 5px var(--dp-standard-panel-bg),
+      inset 0 0 0 8px var(--dp-panel-purple-border),
+      0 0 18px var(--dp-panel-purple-glow);
+    color: var(--dp-panel-text);
+  }
+
+  .mobilePetActionHeader {
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  .mobilePetActionTitle {
+    color: var(--dp-title-gold);
+    font-size: 1.2rem;
+    font-weight: 900;
+  }
+
+  .mobilePetActionSubtext {
+    color: var(--dp-panel-muted);
+    font-size: 0.78rem;
+  }
+
+  .mobilePetActionSlots {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .mobilePetActionButton {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    text-align: left;
+  }
+
+  .mobilePetActionSlotButton {
+    border: 2px solid var(--dp-skill-purple) !important;
+    background: linear-gradient(
+      180deg,
+      var(--dp-skill-purple-soft) 0%,
+      var(--dp-surface-deep-blue) 100%
+    ) !important;
+    color: var(--dp-panel-text) !important;
+    box-shadow:
+      inset 0 0 10px var(--dp-skill-purple-soft),
+      0 0 10px var(--dp-panel-glow-purple) !important;
+  }
+
+  .mobilePetActionSlotButton:disabled {
+    opacity: 0.58;
+  }
+
+  .mobilePetActionButton span {
+    color: var(--dp-panel-text);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-align: right;
+  }
+
+  .mobilePetActionStorageButton {
+    margin: 0;
+  }
+
+  .mobilePetActionPearlClose {
+    min-width: 96px;
+    margin-top: 14px;
+  }
+
+  .mobilePetActionError {
+    margin-top: 10px;
+    color: var(--dp-panel-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
 }

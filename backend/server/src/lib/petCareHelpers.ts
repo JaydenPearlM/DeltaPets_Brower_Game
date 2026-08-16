@@ -32,26 +32,22 @@ function safeEnergy(value: unknown, fallback = ENERGY_DEFAULT) {
 export function normalizePetForClient<T extends Record<string, any>>(
   pet: T,
 ): T {
-  const clean = safeWhole(pet.clean ?? pet.cleanliness, CARE_DEFAULT);
-  const happy = safeWhole(pet.happy ?? pet.happiness, CARE_DEFAULT);
-  const ranAway = Boolean(pet.ran_away ?? pet.is_runaway);
+  const clean = safeWhole(pet.clean, CARE_DEFAULT);
+  const happy = safeWhole(pet.happy, CARE_DEFAULT);
+  const ranAway = Boolean(pet.ran_away);
   const lastCareDecayAt =
-    pet.last_care_decay_at ?? pet.last_care_update ?? new Date().toISOString();
+    pet.last_care_decay_at ?? new Date().toISOString();
 
   return {
     ...pet,
     hunger: safeWhole(pet.hunger, CARE_DEFAULT),
     clean,
-    cleanliness: clean,
     happy,
-    happiness: happy,
     comfort: safeWhole(pet.comfort, CARE_DEFAULT),
     rest: safeWhole(pet.rest, CARE_DEFAULT),
     energy: safeEnergy(pet.energy, ENERGY_DEFAULT),
     neglect_hours: Number(pet.neglect_hours ?? 0) || 0,
     ran_away: ranAway,
-    is_runaway: ranAway,
-    last_care_update: lastCareDecayAt,
     last_care_decay_at: lastCareDecayAt,
   };
 }
@@ -84,6 +80,26 @@ export async function updatePetCareStats(
     .eq("id", petId);
 
   if (error) throw error;
+
+  // A runaway pet needs to actually vacate the party, not just get flagged.
+  // party_slots has no ran_away awareness of its own, so without this the
+  // pet keeps occupying its slot forever: it still shows up in the team
+  // list, and the slot can never be reassigned to a recovered or new pet.
+  if (updates.ran_away) {
+    const { error: runawayPetError } = await supabaseAdmin
+      .from("pets")
+      .update({ is_active: false, location: "storage" })
+      .eq("id", petId);
+
+    if (runawayPetError) throw runawayPetError;
+
+    const { error: slotError } = await supabaseAdmin
+      .from("party_slots")
+      .delete()
+      .eq("pet_id", petId);
+
+    if (slotError) throw slotError;
+  }
 }
 
 /**

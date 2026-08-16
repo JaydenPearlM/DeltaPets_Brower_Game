@@ -4,10 +4,14 @@ import App from "../App";
 import { useAuth } from "../providers/useAuth";
 import AuthCallback from "./AuthCallback";
 import { AlphaAccessGate } from "../../components/AlphaAccess_temp/AlphaAccessGate";
+
 const ParkPage = lazy(() => import("../../pages/park/park"));
 const KithnaMap = lazy(() => import("../../pages/Cities/Kithna/KithnaMap"));
 const Homepage = lazy(() => import("../../pages/Homepage/homepage"));
 const CreatePage = lazy(() => import("../../pages/cutscene/create"));
+const RescueEggReveal = lazy(
+  () => import("../../pages/cutscene/rescueEggReveal"),
+);
 const PetPage = lazy(() => import("../../pages/petsPage/PetPage"));
 const FarmPage = lazy(() => import("../../pages/farm/petFarmFood"));
 const HatcheryPage = lazy(
@@ -27,6 +31,13 @@ const ComingSoonPage = lazy(() =>
   import("../../pages/Soon/ComingSoonPage").then((module) => ({
     default: module.ComingSoonPage,
   })),
+);
+
+const FoodMerchantPage = lazy(
+  () => import("../../pages/Cities/Kithna/merchant/kithna_Food_Shop"),
+);
+const MerchantClosedPage = lazy(
+  () => import("../../pages/Cities/Kithna/Merchants/MerchantClosedPage"),
 );
 
 function PageLoader() {
@@ -58,6 +69,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export const router = createBrowserRouter([
   {
+    path: "authcallback",
+    element: <AuthCallback />,
+  },
+  {
     path: "/",
     element: (
       <AlphaAccessGate>
@@ -71,13 +86,19 @@ export const router = createBrowserRouter([
       { path: "signup", element: withSuspense(<Homepage />) },
       { path: "signin", element: withSuspense(<Homepage />) },
 
-      { path: "authcallback", element: <AuthCallback /> },
-
       {
         path: "create",
         element: withSuspense(
           <ProtectedRoute>
             <CreatePage />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "rescue-reveal",
+        element: withSuspense(
+          <ProtectedRoute>
+            <RescueEggReveal />
           </ProtectedRoute>,
         ),
       },
@@ -165,10 +186,34 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "cities/kath",
+        path: "kithna/food",
         element: withSuspense(
           <ProtectedRoute>
-            <ComingSoonPage pageName="Kath" />
+            <FoodMerchantPage />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "kithna/health",
+        element: withSuspense(
+          <ProtectedRoute>
+            <MerchantClosedPage merchantName="Health Merchant" />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "kithna/armor",
+        element: withSuspense(
+          <ProtectedRoute>
+            <MerchantClosedPage merchantName="Armor Merchant" />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "kithna/weapons",
+        element: withSuspense(
+          <ProtectedRoute>
+            <MerchantClosedPage merchantName="Weapon Merchant" />
           </ProtectedRoute>,
         ),
       },

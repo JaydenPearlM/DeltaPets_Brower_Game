@@ -8,6 +8,82 @@ import { logger } from "../lib/logger";
 
 export const meRouter = Router();
 
+type WalletView = {
+  dots: number;
+};
+
+function normalizeDots(value: unknown) {
+  return Math.max(0, Math.floor(Number(value ?? 0)));
+}
+
+function normalizeWallet(row: { dots?: unknown } | null): WalletView {
+  return {
+    dots: normalizeDots(row?.dots),
+  };
+}
+
+async function getOrCreateWallet(userId: string): Promise<WalletView> {
+  const { data, error } = await supabaseAdmin
+    .from("wallets")
+    .select("dots")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (data) {
+    return normalizeWallet(data);
+  }
+
+  const { data: createdWallet, error: createError } = await supabaseAdmin
+    .from("wallets")
+    .insert({
+      user_id: userId,
+      dots: 5000,
+      crystals: 0,
+    })
+    .select("dots")
+    .maybeSingle();
+
+  if (createError) {
+    throw createError;
+  }
+
+  return normalizeWallet(createdWallet);
+}
+
+async function spendDotsFromWallet(userId: string, dots: number) {
+  const wallet = await getOrCreateWallet(userId);
+
+  if (wallet.dots < dots) {
+    return {
+      ok: false,
+      wallet,
+    };
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("wallets")
+    .update({
+      dots: wallet.dots - dots,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId)
+    .select("dots")
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    ok: true,
+    wallet: normalizeWallet(data),
+  };
+}
+
 /**
  * GET /api/me
  * Returns authed user + profile row + most recent pet (if any).
@@ -114,8 +190,8 @@ meRouter.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
 
 /**
  * GET /api/me/intro
- * Returns whether the user has already seen the intro cutscene
- * and whether they currently have a hatchery egg.
+ * Returns whether the user has already seen the intro cutscene,
+ * whether they currently have a hatchery egg, and whether they have hatched a pet.
  */
 meRouter.get(
   "/me/intro",
@@ -129,21 +205,31 @@ meRouter.get(
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const [{ data: profile, error: pErr }, { data: eggs, error: eErr }] =
-        await Promise.all([
-          supabaseAdmin
-            .from("profiles")
-            .select("intro_seen")
-            .eq("user_id", userId)
-            .maybeSingle(),
+      const [
+        { data: profile, error: pErr },
+        { data: eggs, error: eErr },
+        { data: hatchedPets, error: petErr },
+      ] = await Promise.all([
+        supabaseAdmin
+          .from("profiles")
+          .select("intro_seen")
+          .eq("user_id", userId)
+          .maybeSingle(),
 
-          supabaseAdmin
-            .from("pets")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("stage", "egg")
-            .limit(1),
-        ]);
+        supabaseAdmin
+          .from("pets")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("stage", "egg")
+          .limit(1),
+
+        supabaseAdmin
+          .from("pets")
+          .select("id")
+          .eq("user_id", userId)
+          .neq("stage", "egg")
+          .limit(1),
+      ]);
 
       if (pErr) {
         logger.error("[GET /api/me/intro] profile query failed:", pErr);
@@ -155,13 +241,21 @@ meRouter.get(
         return res.status(500).json({ error: eErr.message });
       }
 
+      if (petErr) {
+        logger.error("[GET /api/me/intro] hatched pet query failed:", petErr);
+        return res.status(500).json({ error: petErr.message });
+      }
+
       const intro_seen =
         (profile as { intro_seen?: boolean } | null)?.intro_seen ?? false;
       const has_hatchery_egg = Array.isArray(eggs) && eggs.length > 0;
+      const has_hatched_pet =
+        Array.isArray(hatchedPets) && hatchedPets.length > 0;
 
       return res.json({
         intro_seen,
         has_hatchery_egg,
+        has_hatched_pet,
       });
     } catch (e: unknown) {
       logger.error("[GET /api/me/intro] crash:", e);
@@ -210,6 +304,81 @@ meRouter.post(
       logger.error("[POST /api/me/intro/seen] crash:", e);
       return res.status(500).json({
         error: "Server error",
+      });
+    }
+  },
+);
+
+/**
+ * GET /api/me/wallet
+ * Returns the user's Dots wallet.
+ */
+meRouter.get(
+  "/me/wallet",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        logger.error("[GET /api/me/wallet] missing req.user");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const wallet = await getOrCreateWallet(userId);
+
+      return res.json({
+        wallet,
+      });
+    } catch (e: unknown) {
+      logger.error("[GET /api/me/wallet] crash:", e);
+      return res.status(500).json({
+        error: "Failed to load wallet.",
+      });
+    }
+  },
+);
+
+/**
+ * POST /api/me/wallet/spend-dots
+ * Spends Dots for merchant purchases.
+ */
+meRouter.post(
+  "/me/wallet/spend-dots",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        logger.error("[POST /api/me/wallet/spend-dots] missing req.user");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const dots = normalizeDots(req.body?.dots);
+
+      if (dots <= 0) {
+        return res.status(400).json({
+          error: "Dots amount must be positive.",
+        });
+      }
+
+      const result = await spendDotsFromWallet(userId, dots);
+
+      if (!result.ok) {
+        return res.status(400).json({
+          error: "Not enough Dots.",
+          wallet: result.wallet,
+        });
+      }
+
+      return res.json({
+        wallet: result.wallet,
+      });
+    } catch (e: unknown) {
+      logger.error("[POST /api/me/wallet/spend-dots] crash:", e);
+      return res.status(500).json({
+        error: "Failed to spend Dots.",
       });
     }
   },

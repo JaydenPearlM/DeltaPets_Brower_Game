@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/lib/api/baseClient";
 import { supabase } from "@/lib/supabase/client";
 
 export type StorageStageFilter =
@@ -16,6 +17,7 @@ export type StoragePet = {
   name: string | null;
   nickname?: string | null;
   species?: string | null;
+  rarity?: string | null;
   energy?: number | null;
   bond?: number | null;
   stage: string | null;
@@ -23,6 +25,8 @@ export type StoragePet = {
   level: number | null;
   location: string | null;
   is_active: boolean | null;
+  runaway_at?: string | null;
+  ran_away?: boolean | null;
   created_at: string | null;
   hatched_at: string | null;
   hatch_ends_at?: string | null;
@@ -37,7 +41,16 @@ export type StoragePet = {
   spd?: number | null;
   mana?: number | null;
   personality_key?: string | null;
+  passive_trait_id?: string | null;
+  passive_trait_key?: string | null;
+  passive_trait_name?: string | null;
+  passive_trait_rarity?: string | null;
+  passive_trait_description?: string | null;
+  passive_trait_effect_summary?: string | null;
+  passive_trait_effects?: Record<string, unknown> | null;
+  passive_trait_stat_key?: string | null;
   base_total?: number | null;
+  pending_hatch_minutes?: number | null;
 };
 
 type PartySlotRow = {
@@ -56,12 +69,18 @@ export type PartySlotView = {
 
 type UsePetStorageOptions = {
   userId?: string;
+  refreshSignal?: number;
+  onMutated?: () => void;
 };
-
 export const PARTY_SLOT_COUNT = 4;
 const STORAGE_TOTAL_CAP = 50;
 const STORAGE_EGG_CAP = 20;
 const STORAGE_PET_CAP = 30;
+// Matches NON_STARTER_EGG_MIN_HATCH_MINUTES in eggQualityRoll.ts on the
+// backend. Only used as a fallback if an egg somehow has no
+// pending_hatch_minutes recorded (e.g. an older egg from before this
+// column existed).
+const FALLBACK_HATCH_MINUTES = 3;
 
 function normalizeStageInternal(stage?: string | null): StorageStageFilter {
   const raw = String(stage ?? "")
@@ -90,8 +109,20 @@ function isEggStage(stage?: string | null) {
   return normalizeStageInternal(stage) === "egg";
 }
 
+function isRunawayPet(pet?: StoragePet | null) {
+  if (!pet) return false;
+  return Boolean(pet.runaway_at ?? pet.ran_away);
+}
+
 function isUsableActivePet(pet?: StoragePet | null) {
   if (!pet) return false;
+  if (isRunawayPet(pet)) return false;
+  return !isEggStage(pet.stage);
+}
+
+function isPartyEligible(pet?: StoragePet | null) {
+  if (!pet) return false;
+  if (isRunawayPet(pet)) return false;
   return !isEggStage(pet.stage);
 }
 
@@ -134,7 +165,7 @@ export function formatLineLabel(line?: string | null) {
 }
 
 export function usePetStorage(options: UsePetStorageOptions) {
-  const { userId } = options;
+  const { userId, onMutated } = options;
 
   const [pets, setPets] = useState<StoragePet[]>([]);
   const [partyRows, setPartyRows] = useState<PartySlotRow[]>([]);
@@ -178,9 +209,12 @@ export function usePetStorage(options: UsePetStorageOptions) {
     level,
     location,
     is_active,
+    ran_away,
+    runaway_at,
     created_at,
     hatched_at,
-    hatch_ends_at
+    hatch_ends_at,
+    pending_hatch_minutes
   `,
         )
         .eq("user_id", userId)
@@ -220,6 +254,8 @@ export function usePetStorage(options: UsePetStorageOptions) {
           level: pet.level,
           location: pet.location,
           is_active: pet.is_active,
+          runaway_at: pet.runaway_at ?? null,
+          ran_away: pet.ran_away ?? null,
           created_at: pet.created_at,
           hatched_at: pet.hatched_at,
           hatch_ends_at: pet.hatch_ends_at,
@@ -231,6 +267,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
           mana: pet.mana ?? null,
           personality_key: pet.personality_key ?? null,
           base_total: null,
+          pending_hatch_minutes: pet.pending_hatch_minutes ?? null,
         };
       },
     );
@@ -266,12 +303,13 @@ export function usePetStorage(options: UsePetStorageOptions) {
     return Array.from({ length: PARTY_SLOT_COUNT }, (_, idx) => {
       const slotIndex = idx + 1;
       const row = rowsByIndex.get(slotIndex) ?? null;
-      const pet = row ? (petsById.get(row.pet_id) ?? null) : null;
+      const rawPet = row ? (petsById.get(row.pet_id) ?? null) : null;
+      const pet = isPartyEligible(rawPet) ? rawPet : null;
 
       return {
         slotIndex,
-        entryId: row?.id ?? null,
-        petId: row?.pet_id ?? null,
+        entryId: pet ? (row?.id ?? null) : null,
+        petId: pet ? (row?.pet_id ?? null) : null,
         pet,
       };
     });
@@ -285,8 +323,10 @@ export function usePetStorage(options: UsePetStorageOptions) {
   const storedPets = useMemo(() => {
     return pets
       .filter((pet) => {
+        if (isRunawayPet(pet)) return false;
         if (pet.location === "storage") return true;
         if (pet.location === "active" && !partyPetIds.has(pet.id)) return true;
+        if (pet.location === "party" && !partyPetIds.has(pet.id)) return true;
         return false;
       })
       .sort(sortPetsNewestFirst);
@@ -295,6 +335,16 @@ export function usePetStorage(options: UsePetStorageOptions) {
   const incubatingEggs = useMemo(() => {
     return pets
       .filter((pet) => pet.location === "hatchery")
+      .filter((pet) => isEggStage(pet.stage))
+      .sort(sortPetsNewestFirst);
+  }, [pets]);
+
+  // Eggs found while roaming Kithna land here first (location: "inventory")
+  // instead of being auto-placed into the hatchery. The player chooses to
+  // send each one to Storage or start incubating it.
+  const inventoryEggs = useMemo(() => {
+    return pets
+      .filter((pet) => pet.location === "inventory")
       .filter((pet) => isEggStage(pet.stage))
       .sort(sortPetsNewestFirst);
   }, [pets]);
@@ -432,6 +482,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
     try {
       await fn();
       await loadAll();
+      onMutated?.();
     } catch (err: any) {
       setError(err?.message ?? "Storage update failed.");
     } finally {
@@ -454,6 +505,18 @@ export function usePetStorage(options: UsePetStorageOptions) {
         if (!pet) throw new Error("Pet not found.");
         if (isEggStage(pet.stage)) {
           throw new Error("Eggs cannot join the Main Team.");
+        }
+        if (isRunawayPet(pet)) {
+          throw new Error("Runaway pets cannot join the Main Team.");
+        }
+
+        // A solo pet always lives in slot 1. If this pet is already on the
+        // team and it's the only one there, ignore whatever slot it was
+        // dropped on and keep it pinned to slot 1.
+        const isOnlySoloPet =
+          partyRows.length === 1 && partyRows[0].pet_id === petId;
+        if (isOnlySoloPet) {
+          slotIndex = 1;
         }
 
         const currentSlotForPet =
@@ -700,21 +763,177 @@ export function usePetStorage(options: UsePetStorageOptions) {
         );
 
         if (existingIncubatingEgg) {
-          throw new Error(
-            "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
-          );
+          throw new Error("Only one egg can be in the incubator at a time.");
         }
+
+        const { data: openSlot, error: openSlotError } = await supabase
+          .from("hatchery_slots")
+          .select("id, slot_index")
+          .eq("user_id", userId)
+          .eq("unlocked", true)
+          .is("pet_id", null)
+          .order("slot_index", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (openSlotError) throw openSlotError;
+
+        if (!openSlot) {
+          throw new Error("No open hatchery slot is available right now.");
+        }
+
+        const hatchMinutes =
+          pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
+        const hatchEndsAt = new Date(
+          Date.now() + hatchMinutes * 60 * 1000,
+        ).toISOString();
 
         const { error } = await supabase
           .from("pets")
           .update({
             location: "hatchery",
             is_active: false,
+            hatch_ends_at: hatchEndsAt,
+            pending_hatch_minutes: null,
           })
           .eq("user_id", userId)
           .eq("id", petId);
 
         if (error) throw error;
+
+        const { error: slotError } = await supabase
+          .from("hatchery_slots")
+          .update({ pet_id: petId })
+          .eq("id", openSlot.id)
+          .eq("user_id", userId);
+
+        if (slotError) {
+          await supabase
+            .from("pets")
+            .update({
+              location: "storage",
+              hatch_ends_at: null,
+              pending_hatch_minutes: hatchMinutes,
+            })
+            .eq("user_id", userId)
+            .eq("id", petId);
+
+          throw slotError;
+        }
+      });
+    },
+    [pets, userId],
+  );
+  // Kithna roam eggs land in "inventory" first. These two moves take an
+  // egg from there to Storage (a holding spot, no timer started) or
+  // straight into an open Hatchery slot (timer starts now).
+  const moveEggFromInventoryToStorage = useCallback(
+    async (petId: string) => {
+      await runMutation({ petId }, async () => {
+        if (!userId) throw new Error("Missing user.");
+
+        const pet = pets.find((entry) => entry.id === petId) ?? null;
+        if (!pet) throw new Error("Pet not found.");
+        if (pet.location !== "inventory" || !isEggStage(pet.stage)) {
+          throw new Error("That egg is not in your inventory right now.");
+        }
+
+        assertCanStorePet(pet);
+
+        const { error } = await supabase
+          .from("pets")
+          .update({
+            location: "storage",
+            is_active: false,
+          })
+          .eq("user_id", userId)
+          .eq("id", petId);
+
+        if (error) throw error;
+      });
+    },
+    [pets, storageCounts, userId],
+  );
+
+  const moveEggFromInventoryToHatchery = useCallback(
+    async (petId: string) => {
+      await runMutation({ petId }, async () => {
+        if (!userId) throw new Error("Missing user.");
+
+        const pet = pets.find((entry) => entry.id === petId) ?? null;
+        if (!pet) throw new Error("Pet not found.");
+        if (pet.location !== "inventory" || !isEggStage(pet.stage)) {
+          throw new Error("That egg is not in your inventory right now.");
+        }
+
+        const existingIncubatingEgg = pets.find(
+          (entry) =>
+            entry.location === "hatchery" &&
+            isEggStage(entry.stage) &&
+            entry.id !== petId,
+        );
+
+        if (existingIncubatingEgg) {
+          throw new Error(
+            "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
+          );
+        }
+
+        const { data: openSlot, error: openSlotError } = await supabase
+          .from("hatchery_slots")
+          .select("id, slot_index")
+          .eq("user_id", userId)
+          .eq("unlocked", true)
+          .is("pet_id", null)
+          .order("slot_index", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (openSlotError) throw openSlotError;
+
+        if (!openSlot) {
+          throw new Error("No open hatchery slot is available right now.");
+        }
+
+        const hatchMinutes =
+          pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
+        const hatchEndsAt = new Date(
+          Date.now() + hatchMinutes * 60 * 1000,
+        ).toISOString();
+
+        const { error } = await supabase
+          .from("pets")
+          .update({
+            location: "hatchery",
+            is_active: false,
+            hatch_ends_at: hatchEndsAt,
+            pending_hatch_minutes: null,
+          })
+          .eq("user_id", userId)
+          .eq("id", petId);
+
+        if (error) throw error;
+
+        const { error: slotError } = await supabase
+          .from("hatchery_slots")
+          .update({ pet_id: petId })
+          .eq("id", openSlot.id)
+          .eq("user_id", userId);
+
+        if (slotError) {
+          // Roll back so we don't leave an orphaned egg with a timer
+          // running but no slot, better to fail the whole move.
+          await supabase
+            .from("pets")
+            .update({
+              location: "inventory",
+              hatch_ends_at: null,
+              pending_hatch_minutes: hatchMinutes,
+            })
+            .eq("user_id", userId)
+            .eq("id", petId);
+          throw slotError;
+        }
       });
     },
     [pets, userId],
@@ -735,16 +954,10 @@ export function usePetStorage(options: UsePetStorageOptions) {
 
         assertCanStorePet(pet);
 
-        const { error } = await supabase
-          .from("pets")
-          .update({
-            location: "storage",
-            is_active: false,
-          })
-          .eq("user_id", userId)
-          .eq("id", petId);
-
-        if (error) throw error;
+        await apiFetch("/api/pets/hatchery/move-to-storage", {
+          method: "POST",
+          json: { petId },
+        });
       });
     },
     [pets, storageCounts, userId],
@@ -820,6 +1033,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
     workingSlotIndex,
     storageCounts,
     incubatingEggs,
+    inventoryEggs,
     reload: loadAll,
     assignPetToParty,
     returnPartyPetToStorage,
@@ -827,6 +1041,8 @@ export function usePetStorage(options: UsePetStorageOptions) {
     setActivePet,
     moveEggToIncubator,
     moveEggToStorage,
+    moveEggFromInventoryToStorage,
+    moveEggFromInventoryToHatchery,
     normalizeStage: normalizeStageInternal,
     caps: {
       total: STORAGE_TOTAL_CAP,

@@ -20,7 +20,7 @@ const COL_BY_KEY: Record<CooldownKey, string> = {
 };
 
 export const DEFAULT_COOLDOWN_MS: Record<CooldownKey, number> = {
-  feed: 60_000,
+  feed: 0,
   clean: 90_000,
   play: 120_000,
   bond: 75_000,
@@ -55,6 +55,8 @@ export function cooldownsFromPetRow(pet: any, nowMs: number): CooldownsPayload {
 }
 
 export function assertCooldownReady(pet: any, key: CooldownKey, nowMs: number) {
+  if (key === "feed") return;
+
   const col = COL_BY_KEY[key];
   const endsIso = toIso(pet?.[col]);
   if (!endsIso) return;

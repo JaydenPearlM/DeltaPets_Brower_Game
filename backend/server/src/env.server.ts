@@ -26,7 +26,10 @@ function optional(name: string, fallback?: string): string | undefined {
 }
 
 export const env = {
-  NODE_ENV: optional("NODE_ENV", "development")!,
+  // Defaults to "production" so the server fails closed if NODE_ENV is
+  // missing from the environment. A missing env var should never silently
+  // enable /api/debug or other dev-only behavior in a live deploy.
+  NODE_ENV: optional("NODE_ENV", "production")!,
   PORT: Number(optional("PORT", "4000")),
 
   // ---------------------------------------------------------------------------

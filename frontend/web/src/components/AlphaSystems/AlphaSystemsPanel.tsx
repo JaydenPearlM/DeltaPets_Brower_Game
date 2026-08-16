@@ -25,7 +25,7 @@ function toBulletItems(value?: string | null): string[] {
 export function AlphaSystemsPanel({ className = "" }: Props) {
   const { items, loading: systemsLoading } = useAlphaSystems();
   const { patch, loading: patchLoading } = usePatchNotes();
-  const [view, setView] = useState<"systems" | "patches">("systems");
+  const [view, setView] = useState<"systems" | "patches">("patches");
 
   return (
     <section className={`alpha-panel dp-standard-panel-purple ${className}`}>
@@ -39,7 +39,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
           onClick={() => setView(view === "systems" ? "patches" : "systems")}
           type="button"
         >
-          {view === "systems" ? "View Patches" : "Back to Systems"}
+          {view === "systems" ? "View Patch Notes" : "View Alpha Current"}
         </button>
       </div>
 

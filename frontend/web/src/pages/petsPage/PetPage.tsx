@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
+import { useDeltaTime } from "@/lib/timers/useDeltaTime";
 import {
   clampPercent,
   normalizeElement,
@@ -10,10 +11,11 @@ import {
   titleCase,
 } from "@/lib/petUtils";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
+import LostKithRegistry from "@/pages/petsPage/components/LostKithRegistry/LostKithRegistry";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
 import StatsChamber from "@/components/StatsChamber/StatsChamber";
-import MainTeam from "@/components/Main_Team/mainTeam";
+import MainTeam from "@/components/MainTeam/mainTeam";
 import type {
   PartySlotView,
   StoragePet,
@@ -22,40 +24,21 @@ import "./PetPage.css";
 import SkillTree from "@/components/Skills/skilltree";
 import DpPopupWindow from "./components/DpPopupWindow";
 import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
+import {
+  type CareInventoryCategory,
+  addCareItem,
+  consumeCareItem,
+  ensureStarterCareInventory,
+  getCareInventoryCounts,
+  getInventoryChangeEventName,
+} from "@/components/inventory/inventory";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
-type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
-
-const TEMP_DISABLED_CARE_INVENTORY_COUNTS: Record<
-  CareInventoryCategory,
-  number
-> = {
-  food: 999,
-  soap: 999,
-  toy: 999,
-  bed: 999,
-};
-
-function ensureStarterCareInventory() {
-  // Inventory is temporarily disabled.
-}
-
-function getInventoryChangeEventName() {
-  return "deltapets:inventory-disabled";
-}
-
-function consumeCareItem(_category: CareInventoryCategory, _amount: number) {
-  return true;
-}
-
-function addCareItem(_category: CareInventoryCategory, _amount: number) {
-  // Inventory is temporarily disabled.
-}
 
 type PetRecord = Record<string, any>;
 
 function getCareCooldownRemainingMs(pet: PetRecord | null, action: CareAction) {
-  if (action === "pet") return 0;
+  if (action === "feed" || action === "pet") return 0;
 
   const cooldownColumnByAction: Record<Exclude<CareAction, "pet">, string> = {
     feed: "cd_feed_ends_at",
@@ -79,6 +62,7 @@ type TeamCardPet = {
   elementKey?: string | null;
   line?: string | null;
   level?: number | null;
+  rarity?: string | null;
   energy?: number | null;
   bond?: number | null;
   isActive?: boolean | null;
@@ -94,6 +78,14 @@ type TeamCardPet = {
   spd?: number | null;
   personality?: string | null;
   personality_key?: string | null;
+  passive_trait_id?: string | null;
+  passive_trait_key?: string | null;
+  passive_trait_name?: string | null;
+  passive_trait_rarity?: string | null;
+  passive_trait_description?: string | null;
+  passive_trait_effect_summary?: string | null;
+  passive_trait_effects?: Record<string, unknown> | null;
+  passive_trait_stat_key?: string | null;
 };
 
 type StarterMerchantState = {
@@ -140,7 +132,7 @@ function getElementThemeKey(
   const raw =
     typeof petOrElement === "string"
       ? petOrElement
-      : petOrElement?.element || petOrElement?.line || "null";
+      : petOrElement?.element || petOrElement?.line || null;
 
   const normalized = normalizeElement(raw);
 
@@ -154,7 +146,7 @@ function getElementValue(elements: PetElementsRow | null, key: string) {
   if (!elements) return 0;
 
   if (key === "null") {
-    return safeNum((elements as any).null_element ?? (elements as any).null);
+    return safeNum(elements.null_element);
   }
 
   return safeNum((elements as any)[key]);
@@ -197,9 +189,9 @@ function getPetPageDescription(pet: PetRecord | null) {
   }
 
   const normalizedElement = normalizeElement(pet.element || pet.line);
-  const element = titleCase(
-    normalizedElement === "null" ? "Voidborne" : normalizedElement,
-  );
+  const element = normalizedElement
+    ? titleCase(normalizedElement === "null" ? "Voidborne" : normalizedElement)
+    : "Unknown";
   const stage = titleCase(pet.stage || "unknown stage");
   const trait = titleCase(
     pet.personality_name ||
@@ -256,7 +248,7 @@ function getPetGrowthTraits(pet: PetRecord | null, stats: PetStatsRow | null) {
 export default function PetPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-
+  const { phase } = useDeltaTime();
   const [pet, setPet] = useState<PetRecord | null>(null);
   const [stats, setStats] = useState<PetStatsRow | null>(null);
   const [elements, setElements] = useState<PetElementsRow | null>(null);
@@ -269,15 +261,18 @@ export default function PetPage() {
   const [personalityName, setPersonalityName] = useState<string | null>(null);
   const [starterMerchant, setStarterMerchant] =
     useState<StarterMerchantState | null>(null);
+  const [showLostRegistry, setShowLostRegistry] = useState(false);
+  const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
+  const [rescueEggError, setRescueEggError] = useState<string | null>(null);
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [showNicknameEditor, setShowNicknameEditor] = useState(false);
-  const [careInventoryCounts, setCareInventoryCounts] = useState(
-    TEMP_DISABLED_CARE_INVENTORY_COUNTS,
+  const [careInventoryCounts, setCareInventoryCounts] = useState(() =>
+    getCareInventoryCounts(),
   );
 
   const syncCareInventoryCounts = useCallback(() => {
-    setCareInventoryCounts(TEMP_DISABLED_CARE_INVENTORY_COUNTS);
+    setCareInventoryCounts(getCareInventoryCounts());
   }, []);
 
   const hasLoadedOnceRef = useRef(false);
@@ -408,6 +403,7 @@ export default function PetPage() {
         feed: "food",
         clean: "soap",
         play: "toy",
+        pet: "bed",
       };
 
       const inventoryCategory = inventoryCategoryByAction[action] ?? null;
@@ -421,7 +417,9 @@ export default function PetPage() {
               ? "food"
               : inventoryCategory === "soap"
                 ? "soap"
-                : "toy";
+                : inventoryCategory === "toy"
+                  ? "toy"
+                  : "pillow";
 
           setActionMsg(`You need ${missingLabel} in your inventory first.`);
           syncCareInventoryCounts();
@@ -544,6 +542,26 @@ export default function PetPage() {
     }
   }, [loadPetPage, nicknameDraft, pet?.id, pet?.nickname, user?.id]);
 
+  const claimRescueEgg = useCallback(async () => {
+    if (claimingRescueEgg) return;
+
+    setClaimingRescueEgg(true);
+    setRescueEggError(null);
+
+    try {
+      await apiFetch("/api/pets/rescue-egg", { method: "POST" });
+      navigate("/rescue-reveal");
+    } catch (error) {
+      setRescueEggError(
+        error instanceof Error
+          ? error.message
+          : "Could not claim the rescue egg. Try again.",
+      );
+    } finally {
+      setClaimingRescueEgg(false);
+    }
+  }, [claimingRescueEgg, navigate]);
+
   const hunger = clampPercent(pet?.hunger);
   const clean = clampPercent(pet?.clean);
   const happy = clampPercent(pet?.happy);
@@ -563,10 +581,7 @@ export default function PetPage() {
     }),
     [stats],
   );
-
   const activeElementKey = normalizeElement(pet?.element || pet?.line);
-  const petElementTheme = getElementThemeKey(pet);
-
   const elementRows = useMemo(
     () =>
       ELEMENT_ORDER.map((key) => ({
@@ -583,7 +598,6 @@ export default function PetPage() {
     () => getPetGrowthTraits(pet, stats),
     [pet, stats],
   );
-
   const kithTeamSlots = useMemo<PartySlotView[]>(() => {
     const teamBySlot = new Map<number, TeamCardPet>();
 
@@ -597,7 +611,7 @@ export default function PetPage() {
 
     return Array.from({ length: 4 }, (_, index) => {
       const slotIndex = index + 1;
-      const teamPet = teamBySlot.get(slotIndex) ?? team[index] ?? null;
+      const teamPet = teamBySlot.get(slotIndex) ?? null;
       const storagePet: StoragePet | null = teamPet
         ? {
             id: teamPet.id,
@@ -610,6 +624,7 @@ export default function PetPage() {
             stage: teamPet.stage ?? "hatchling",
             line: teamPet.elementKey ?? teamPet.line ?? teamPet.element ?? null,
             level: teamPet.level ?? 1,
+            rarity: teamPet.rarity ?? null,
             location: "active",
             is_active: teamPet.isActive ?? false,
             created_at: null,
@@ -625,6 +640,16 @@ export default function PetPage() {
             spd: teamPet.spd ?? null,
             personality_key:
               teamPet.personality_key ?? teamPet.personality ?? null,
+            passive_trait_id: teamPet.passive_trait_id ?? null,
+            passive_trait_key: teamPet.passive_trait_key ?? null,
+            passive_trait_name: teamPet.passive_trait_name ?? null,
+            passive_trait_rarity: teamPet.passive_trait_rarity ?? null,
+            passive_trait_description:
+              teamPet.passive_trait_description ?? null,
+            passive_trait_effect_summary:
+              teamPet.passive_trait_effect_summary ?? null,
+            passive_trait_effects: teamPet.passive_trait_effects ?? null,
+            passive_trait_stat_key: teamPet.passive_trait_stat_key ?? null,
           }
         : null;
 
@@ -640,8 +665,25 @@ export default function PetPage() {
   const selectedKithTeamSlot =
     kithTeamSlots.find((slot) => slot.pet?.is_active)?.slotIndex ?? null;
 
+  const [viewingSlotIndex, setViewingSlotIndex] = useState<number | null>(null);
+
+  const effectiveSlotIndex = viewingSlotIndex ?? selectedKithTeamSlot;
+
+  const viewedPet =
+    kithTeamSlots.find((slot) => slot.slotIndex === effectiveSlotIndex)?.pet ??
+    null;
+
+  const viewedPetLabel =
+    viewedPet?.nickname?.trim() ||
+    viewedPet?.name?.trim() ||
+    viewedPet?.species?.trim() ||
+    null;
+
+  const petElementTheme = getElementThemeKey(viewedPet ?? pet);
+
   const selectKithTeamSlot = useCallback(
     (slotIndex: number) => {
+      setViewingSlotIndex(slotIndex);
       const selectedSlot = kithTeamSlots.find(
         (slot) => slot.slotIndex === slotIndex,
       );
@@ -686,12 +728,19 @@ export default function PetPage() {
             </div>
 
             <div className="petRepoRunawayModalActions">
-              <a
+              <button
+                type="button"
                 className="petRepoRunawayModalPrimary"
-                href={starterMerchant?.href || "/cities/kithna"}
+                disabled={claimingRescueEgg}
+                onClick={claimRescueEgg}
               >
-                {starterMerchant?.ctaLabel || "Visit the Kithna Merchant"}
-              </a>
+                {claimingRescueEgg
+                  ? "Summoning egg..."
+                  : starterMerchant?.ctaLabel || "Accept the Egg"}
+              </button>
+              {rescueEggError ? (
+                <p className="petRepoRunawayModalError">{rescueEggError}</p>
+              ) : null}
             </div>
           </div>
         </div>,
@@ -717,7 +766,7 @@ export default function PetPage() {
 
   if (authLoading || (!hasLoadedOnceRef.current && loadingPage)) {
     return (
-      <div className="petRepoPage">
+      <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
         {runawayEmergencyModal}
         <div className="petRepoStateCard">Loading Delta Room…</div>
       </div>
@@ -725,11 +774,15 @@ export default function PetPage() {
   }
 
   if (isRunawayLock) {
-    return <div className="petRepoPage">{runawayEmergencyModal}</div>;
+    return (
+      <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
+        {runawayEmergencyModal}
+      </div>
+    );
   }
 
   return (
-    <div className="petRepoPage">
+    <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
       {loadErr ? (
         <div className="petRepoStateCard petRepoStateCardError">
           <h2>Pet page load error</h2>
@@ -762,7 +815,24 @@ export default function PetPage() {
                 real condition.
               </p>
             </div>
+
+            <button
+              type="button"
+              className="lostKithRegistryOpenButton"
+              onClick={() => setShowLostRegistry(true)}
+            >
+              Lost Kith Registry
+            </button>
           </header>
+
+          <LostKithRegistry
+            open={showLostRegistry}
+            onClose={() => setShowLostRegistry(false)}
+            onRecovered={() => {
+              setShowLostRegistry(false);
+              void loadPetPage(false);
+            }}
+          />
 
           <PetDetailsPanel
             pet={pet}
@@ -809,7 +879,8 @@ export default function PetPage() {
 
           <section className="petRepoBottomGrid">
             <StatsChamber
-              pet={pet}
+              pet={viewedPet?.id === pet?.id ? pet : (viewedPet ?? pet)}
+              petLabel={viewedPetLabel}
               totalStats={totalStats}
               elementRows={elementRows}
               petElementTheme={petElementTheme}
@@ -817,23 +888,27 @@ export default function PetPage() {
               onOpenSkillTree={() => setShowSkillTree(true)}
             />
 
-            <SkillsChamber pet={pet} stats={totalStats} />
-
-            <KithProgressCard
-              name={getPetLabel(pet)}
-              level={safeNum(pet.level, 1)}
-              xp={safeNum(pet.experience ?? pet.xp, 0)}
-              xpToNext={safeNum(
-                pet.experience_to_next_level ??
-                  pet.xp_to_next_level ??
-                  pet.next_level_xp,
-                100,
-              )}
-              wins={safeNum(pet.wins, 0)}
-              losses={safeNum(pet.losses, 0)}
-              hatchCount={safeNum(pet.hatch_count, 0)}
-              corruptedEggsHatched={safeNum(pet.corrupted_eggs_hatched, 0)}
-            />
+            <div className="petRepoBottomGrid">
+              <SkillsChamber pet={pet} stats={totalStats} />
+              <KithProgressCard
+                name={getPetLabel(pet)}
+                level={safeNum(pet.level, 1)}
+                xp={safeNum(pet.experience ?? pet.xp, 0)}
+                xpToNext={safeNum(
+                  pet.experience_to_next_level ??
+                    pet.xp_to_next_level ??
+                    pet.next_level_xp,
+                  100,
+                )}
+                wins={safeNum(pet.wins, 0)}
+                losses={safeNum(pet.losses, 0)}
+                hatchCount={safeNum(pet.hatch_count, 0)}
+                corruptedEggsHatched={safeNum(pet.corrupted_eggs_hatched, 0)}
+                hatchedAt={pet.hatched_at ?? null}
+                favoriteCareAction={null}
+                elementRows={elementRows}
+              />
+            </div>
           </section>
 
           {showSkillTree ? (

@@ -4,6 +4,9 @@ import { safeNum, titleCase } from "@/lib/petUtils";
 import DpPopupWindow from "../DpPopupWindow";
 import "./PetDetailsPanel.css";
 import { getPetDialogue } from "./petDialogue";
+import { useDeltaTime } from "@/lib/timers/useDeltaTime";
+import { isPetAsleep } from "@/lib/petSleepSchedule";
+import PetSleepZs from "./PetSleepZs";
 import {
   getSelfAwareBubbleText,
   rememberSelfAwareVisit,
@@ -18,6 +21,7 @@ type PetRecord = {
   level?: number | null;
   gender?: string | null;
   element?: string | null;
+  rarity?: string | null;
   line?: string | null;
   stage?: string | null;
   personality?: string | null;
@@ -53,7 +57,14 @@ type PetRecord = {
     | null;
 };
 
-type MeterTone = "blue" | "purple" | "red" | "green" | "gold";
+type MeterTone =
+  | "blue"
+  | "purple"
+  | "red"
+  | "green"
+  | "dark-green"
+  | "light-green"
+  | "gold";
 
 type StarterMerchantState = {
   show?: boolean;
@@ -179,12 +190,16 @@ function getDisplayedMutationTraits(
 function getPreviewUrl(pet: PetRecord) {
   return pet.portrait_url || pet.sprite_url || pet.image_url || null;
 }
-
 function getDisplayedElement(pet: PetRecord) {
   const value = String(pet.element || pet.line || "").toLowerCase();
-  if (!value || value === "null" || value === "null_element")
-    return "Voidborne";
+  if (!value) return "Unknown";
+  if (value === "null" || value === "null_element") return "Voidborne";
   return titleCase(value);
+}
+
+function getDisplayedRarity(pet: PetRecord) {
+  const value = String(pet.rarity ?? "").trim();
+  return value ? titleCase(value) : "Unknown";
 }
 
 function getDayNightLabel(value: unknown) {
@@ -495,7 +510,7 @@ export default function PetDetailsPanel({
   runCareAction,
 }: PetDetailsPanelProps) {
   const previewUrl = getPreviewUrl(pet);
-  const elementKey = String(pet.element || pet.line || "null")
+  const elementKey = String(pet.element || pet.line || "neutral")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "_");
@@ -524,6 +539,8 @@ export default function PetDetailsPanel({
   );
 
   const stablePreference = getStablePreference(pet);
+  const { timeOfDay } = useDeltaTime();
+  const isPetSleeping = isPetAsleep(stablePreference, timeOfDay);
   const [petSpeech, setPetSpeech] = useState("");
   const [showPetSpeech, setShowPetSpeech] = useState(false);
 
@@ -840,6 +857,7 @@ export default function PetDetailsPanel({
                 </div>
 
                 <div className="petRepoScenePet">
+                  {isPetSleeping ? <PetSleepZs /> : null}
                   {previewUrl ? (
                     <img
                       className="petRepoScenePetImage"
@@ -864,27 +882,11 @@ export default function PetDetailsPanel({
                 </div>
               </div>
             </div>
-
             {showPetSpeech && petSpeech ? (
               <div className="petRepoTalkBubble" aria-live="polite">
                 <p>{petSpeech}</p>
               </div>
             ) : null}
-            <div className="petRepoFarmButtonWrap">
-              <Link to="/farm" className="btn btn-gold">
-                Farm
-              </Link>
-            </div>
-            <div className="petRepoEnergyPanel" aria-label="Energy level">
-              <span className="petRepoEnergyTitle">Energy</span>
-
-              <div className="petRepoEnergyTrack">
-                <div
-                  className="petRepoEnergyFill"
-                  style={{ width: `${clampedEnergy}%` }}
-                />
-              </div>
-            </div>
 
             <div className="petRepoVerticalInfo">
               <div className="petRepoStatStack">
@@ -915,6 +917,7 @@ export default function PetDetailsPanel({
                   label="Mutation Trait"
                   value={getDisplayedMutationTraits(pet)}
                 />
+                <InfoRow label="Rarity" value={getDisplayedRarity(pet)} />
               </div>
             </div>
           </section>
@@ -929,8 +932,9 @@ export default function PetDetailsPanel({
             <MeterRow label="Hunger" value={hungerLevel} tone="blue" />
             <MeterRow label="Clean" value={cleanLevel} tone="purple" />
             <MeterRow label="Mood" value={moodLevel} tone="red" />
-            <MeterRow label="Rest" value={restLevel} tone="green" />
+            <MeterRow label="Rest" value={restLevel} tone="dark-green" />
             <MeterRow label="Comfort" value={comfortLevel} tone="gold" />
+            <MeterRow label="Energy" value={clampedEnergy} tone="light-green" />
           </div>
 
           <div className="petRepoActionGrid">
@@ -965,10 +969,16 @@ export default function PetDetailsPanel({
               type="button"
               className="petRepoAction petRepoActionYellow"
               onClick={() => void runCareAction("pet")}
-              disabled={busy || nicknameSaving}
+              disabled={busy || nicknameSaving || safeInventory.bed <= 0}
             >
-              Pet
+              Comfort {safeInventory.bed > 0 ? `· ${safeInventory.bed}` : ""}
             </button>
+          </div>
+
+          <div className="petRepoFarmButtonWrap">
+            <Link to="/farm" className="btn btn-gold">
+              Farm
+            </Link>
           </div>
 
           <div className="petRepoCareActionMessageSlot" aria-live="polite">

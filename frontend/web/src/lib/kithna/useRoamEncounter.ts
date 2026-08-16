@@ -32,7 +32,10 @@ export function useRoamEncounter(enabled: boolean) {
   const lastPathRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      lastPathRef.current = null;
+      return;
+    }
 
     // Only fire on an actual path change, not on query/hash-only changes
     // or the initial mount duplicating a call react-router already made.

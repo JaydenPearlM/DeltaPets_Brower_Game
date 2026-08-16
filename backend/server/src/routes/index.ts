@@ -5,7 +5,7 @@ import { Router } from "express";
 import { meRouter } from "./me";
 
 import { petsRouter } from "./routePets/routePets";
-import { petActionsRouter } from "./petActions";
+import { petActionsRouter } from "./care/petActions";
 import { rewardsRouter } from "./rewards/rewards";
 
 import { dailyCareRouter } from "./care/dailyCare";
@@ -13,6 +13,8 @@ import { careRouter } from "./care/care";
 
 import { battleRouter } from "./battle";
 import { kithnaRouter } from "./cities/kithna/kithnaEncounter";
+import { inventoryRouter } from "./inventory/inventory";
+import { kithnaMerchantsRouter } from "./merchants/kithnaMerchants";
 
 const apiRouter = Router();
 
@@ -43,15 +45,26 @@ apiRouter.use("/kithna", kithnaRouter);
 apiRouter.use("/care", careRouter);
 
 /* ===============================
-   DAILY CARE / STREAK SYSTEM
+   Daily Care System
+=============================== */
+apiRouter.use("/daily-care", dailyCareRouter);
+
+/* ===============================
+   Merchant Stores
 =============================== */
 
-apiRouter.use("/daily/care", dailyCareRouter);
+apiRouter.use("/merchants/kithna", kithnaMerchantsRouter);
 
 /* ===============================
    REWARDS SYSTEM
 =============================== */
 
 apiRouter.use("/rewards", rewardsRouter);
+
+/* ===============================
+   INVENTORY (backend item_defs / inventory tables)
+=============================== */
+
+apiRouter.use("/inventory", inventoryRouter);
 
 export { apiRouter };

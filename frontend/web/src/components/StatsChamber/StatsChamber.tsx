@@ -26,6 +26,7 @@ type ElementRow = {
 
 type StatsChamberProps = {
   pet: PetRecord;
+  petLabel?: string | null;
   totalStats: Record<StatKey, number>;
   elementRows: ElementRow[];
   petElementTheme: string;
@@ -46,6 +47,7 @@ function SectionPill({ title }: { title: string }) {
 
 export default function StatsChamber({
   pet,
+  petLabel,
   totalStats,
   elementRows,
   petElementTheme,
@@ -57,6 +59,16 @@ export default function StatsChamber({
       <h2 className="statsChamberTitle dp-standard-panel-title">
         Stats Chamber
       </h2>
+      {petLabel ? (
+        <p
+          className="statsChamberPetLabel"
+          data-element={
+            elementRows.find((row) => row.active)?.key ?? petElementTheme
+          }
+        >
+          {petLabel}
+        </p>
+      ) : null}
 
       <div className="petRepoDataTwoCol">
         <section className="petRepoInfoSection petRepoInfoSection--stats statsChamberSubPanel">
@@ -75,10 +87,34 @@ export default function StatsChamber({
                 rowClassNames.push("is-weak-stat");
               }
 
+              const traitEffects =
+                pet.passive_trait_effects &&
+                typeof pet.passive_trait_effects === "object" &&
+                !Array.isArray(pet.passive_trait_effects)
+                  ? (pet.passive_trait_effects as Record<string, unknown>)
+                  : {};
+              const mod = Number(traitEffects[statKey] ?? 0);
+              const showMod = Number.isFinite(mod) && mod !== 0;
+
               return (
                 <div key={statKey} className={rowClassNames.join(" ")}>
                   <span>{STAT_LABELS[statKey]}</span>
-                  <span>{String(value)}</span>
+
+                  <span className="petRepoStatValueGroup">
+                    {showMod ? (
+                      <span
+                        className={
+                          mod > 0
+                            ? "petRepoStatMod petRepoStatMod--pos"
+                            : "petRepoStatMod petRepoStatMod--neg"
+                        }
+                      >
+                        {mod > 0 ? `+${mod}` : String(mod)}
+                      </span>
+                    ) : null}
+
+                    {String(value)}
+                  </span>
                 </div>
               );
             })}

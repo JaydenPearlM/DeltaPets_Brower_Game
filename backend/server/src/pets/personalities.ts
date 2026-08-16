@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "../lib/supabaseAdmin";
+import { logger } from "../lib/logger";
 
 export type PersonalityRow = {
   id: string;
@@ -11,13 +12,18 @@ export async function getAllPersonalities(): Promise<PersonalityRow[]> {
     .select("id, key")
     .order("key", { ascending: true });
 
-  if (error) throw new Error(`Failed to load personalities: ${error.message}`);
-  if (!data || data.length === 0) throw new Error("No personalities found");
+  if (error) {
+    logger.error("[personalities] failed to load personalities", {
+      error: error.message,
+    });
+    return [];
+  }
 
-  return data;
+  return data ?? [];
 }
 
-export async function rollPersonality(): Promise<PersonalityRow> {
+export async function rollPersonality(): Promise<PersonalityRow | null> {
   const all = await getAllPersonalities();
+  if (all.length === 0) return null;
   return all[Math.floor(Math.random() * all.length)];
 }

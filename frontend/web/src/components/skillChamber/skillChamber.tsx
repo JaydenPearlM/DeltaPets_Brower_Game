@@ -142,12 +142,13 @@ const ELEMENT_COMMAND_COLORS: Record<
     "--skill-command-text": "#17445a",
     "--skill-command-value": "#17445a",
   },
+
   storm: {
     "--skill-command-bg":
-      "linear-gradient(180deg, #c9bbff 0%, #7e61ff 52%, #3a248f 100%)",
-    "--skill-command-border": "#d3c9ff",
-    "--skill-command-text": "#ffffff",
-    "--skill-command-value": "#ffffff",
+      "linear-gradient(180deg, #fffce0 0%, #f5ef36 52%, #b8a900 100%)",
+    "--skill-command-border": "#fff9b0",
+    "--skill-command-text": "#3a3300",
+    "--skill-command-value": "#3a3300",
   },
   light: {
     "--skill-command-bg":
@@ -217,14 +218,29 @@ function getPetElementKey(pet?: Record<string, any> | null) {
     .replace(/\s+/g, "_");
 }
 
+const GUARD_STYLE: React.CSSProperties = {
+  background: "linear-gradient(180deg, #fff880 0%, #ffd84c 48%, #efb218 100%)",
+  color: "#3c2a00",
+};
+
+const MEND_STYLE: React.CSSProperties = {
+  background: "linear-gradient(180deg, #b7ffc9 0%, #4ee979 48%, #20994d 100%)",
+  color: "#073b18",
+};
+
 function getCommandButtonStyle(
   skillId: SkillId,
   pet?: Record<string, any> | null,
-): SkillCommandStyle | undefined {
-  if (skillId !== "basic-strike") return undefined;
+): React.CSSProperties | undefined {
+  if (skillId === "guard") return GUARD_STYLE;
+  if (skillId === "mend") return MEND_STYLE;
 
   const elementKey = getPetElementKey(pet);
-  return ELEMENT_COMMAND_COLORS[elementKey] ?? ELEMENT_COMMAND_COLORS.air;
+  const vars = ELEMENT_COMMAND_COLORS[elementKey] ?? ELEMENT_COMMAND_COLORS.air;
+  return {
+    background: vars["--skill-command-bg"],
+    color: vars["--skill-command-text"],
+  };
 }
 
 function getPetName(pet?: Record<string, any> | null) {
@@ -600,25 +616,50 @@ export default function SkillChamber({
 
                 {selectedSkill.unlocked ? (
                   <>
-                    <div className="skillFormulaRow">
-                      <span>Level</span>
-                      <strong>{petLevel}</strong>
-                    </div>
-
-                    {selectedSkill.statLabel ? (
-                      <div className="skillFormulaRow">
-                        <span>{selectedSkill.statLabel}</span>
-                        <strong>
-                          {selectedSkill.statLabel} +{" "}
-                          {selectedSkill.statValue ?? 0}
-                        </strong>
+                    {selectedSkill.isStarterCommand ? (
+                      <div className="skillFormulaTrio">
+                        <div className="skillFormulaTrioRow">
+                          <span>Attack</span>
+                          <strong>
+                            +{selectedSkill.id === "basic-strike" ? 2 : 0}
+                          </strong>
+                        </div>
+                        <div className="skillFormulaTrioRow">
+                          <span>Defense</span>
+                          <strong>
+                            +{selectedSkill.id === "guard" ? 2 : 0}
+                          </strong>
+                        </div>
+                        <div className="skillFormulaTrioRow">
+                          <span>Mend / Heal</span>
+                          <strong>
+                            +{selectedSkill.id === "mend" ? 2 : 0}
+                          </strong>
+                        </div>
                       </div>
-                    ) : null}
+                    ) : (
+                      <>
+                        <div className="skillFormulaRow">
+                          <span>Level</span>
+                          <strong>{petLevel}</strong>
+                        </div>
 
-                    <div className="skillFormulaRow skillFormulaRow--power">
-                      <span>Power</span>
-                      <strong>{selectedSkill.value ?? "—"}</strong>
-                    </div>
+                        {selectedSkill.statLabel ? (
+                          <div className="skillFormulaRow">
+                            <span>{selectedSkill.statLabel}</span>
+                            <strong>
+                              {selectedSkill.statLabel} +{" "}
+                              {selectedSkill.statValue ?? 0}
+                            </strong>
+                          </div>
+                        ) : null}
+
+                        <div className="skillFormulaRow skillFormulaRow--power">
+                          <span>Power</span>
+                          <strong>{selectedSkill.value ?? "—"}</strong>
+                        </div>
+                      </>
+                    )}
                   </>
                 ) : (
                   <div className="skillFormulaRow skillFormulaRow--power">

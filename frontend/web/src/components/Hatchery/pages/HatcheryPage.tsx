@@ -1,27 +1,43 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
-
 import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";
 import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
-
-import goldEggPng from "@/Pets_Creation/assets/eggs/goldEgg.png";
+import { useDeltaTime } from "@/lib/timers/useDeltaTime";
+import prismaticEggPng from "@/kith/assets/eggs/prismatic_egg.png";
+import tideEggPng from "@/kith/assets/eggs/tide_egg.png";
+import emberEggPng from "@/kith/assets/eggs/ember_egg.png";
+import groveEggPng from "@/kith/assets/eggs/grove_egg.png";
+import zephyrEggPng from "@/kith/assets/eggs/zephr_egg.png";
+import frostveilEggPng from "@/kith/assets/eggs/frostviel_egg.png";
+import stormEggPng from "@/kith/assets/eggs/storm_egg.png";
+import dawnshardEggPng from "@/kith/assets/eggs/light_egg.png";
+import eclipseEggPng from "@/kith/assets/eggs/eclipse_egg.png";
+import voidborneEggPng from "@/kith/assets/eggs/Voidborne_egg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
-import { SHARED_SPECIES } from "@shared/pets/species";
+
+import {
+  SHARED_SPECIES,
+  ELEMENT_EGG_NAMES,
+  VOIDBORNE_EGG_NAME,
+} from "@shared/pets/species";
+import type { SharedElementLine } from "@shared/pets/species";
 import "./HatcheryPage.css";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const MYSTERY_EGG = {
   id: "mystery_egg",
-  name: "Mystery Egg",
-  sprite: goldEggPng,
+  name: "Prismatic Egg",
+  sprite: prismaticEggPng,
 };
 
 // How often to poll when the tab is visible (ms)
 const POLL_INTERVAL_MS = 30_000;
+const CRACK_ANIM_MS = 1_800;
+const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,6 +75,7 @@ const STAT_ROWS = [
 ] as const;
 
 type EggStatKey = (typeof STAT_ROWS)[number]["key"];
+type ElementalLineKey = SharedElementLine;
 
 type HatcherySlotResponse = {
   id: string;
@@ -185,6 +202,64 @@ const STAT_STYLE_WORDS: Record<EggStatKey, string> = {
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
+const ELEMENT_LINE_KEYS = new Set<string>([
+  ...Object.keys(ELEMENT_EGG_NAMES),
+  "null_element",
+]);
+
+const ELEMENT_EGG_IMAGES: Record<ElementalLineKey, string> = {
+  null_element: voidborneEggPng,
+  water: tideEggPng,
+  fire: emberEggPng,
+  earth: groveEggPng,
+  air: zephyrEggPng,
+  ice: frostveilEggPng,
+  storm: stormEggPng,
+  light: dawnshardEggPng,
+  shadow: eclipseEggPng,
+};
+
+const STARTER_SPECIES_IDS = new Set<string>(
+  SHARED_SPECIES.map((species) => species.id),
+);
+
+// Eggs with a resolved element line show their real name and an
+// Eggs with a resolved element line show their real name and an
+// element-tinted placeholder. Eggs without a resolved line (true unknowns)
+// fall back to the generic Prismatic Egg look.
+function resolveEggIdentity(
+  egg?: {
+    name?: string | null;
+    line?: string | null;
+    species?: string | null;
+  } | null,
+): {
+  label: string;
+  elementKey: ElementalLineKey | null;
+} {
+  if (
+    STARTER_SPECIES_IDS.has(String(egg?.species ?? "").trim()) ||
+    egg?.name?.trim().toLowerCase() === MYSTERY_EGG.name.toLowerCase()
+  ) {
+    return { label: MYSTERY_EGG.name, elementKey: null };
+  }
+
+  const line = String(egg?.line ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (ELEMENT_LINE_KEYS.has(line)) {
+    const key = line as ElementalLineKey;
+    return {
+      label:
+        key === "null_element" ? VOIDBORNE_EGG_NAME : ELEMENT_EGG_NAMES[key],
+      elementKey: key,
+    };
+  }
+
+  return { label: MYSTERY_EGG.name, elementKey: null };
+}
+
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
@@ -308,8 +383,11 @@ async function fetchHatchery(): Promise<HatcheryResponse> {
   return apiFetch<HatcheryResponse>("/api/pets/hatchery");
 }
 
-async function hatchEgg(): Promise<HatchActionResponse> {
-  return apiFetch<HatchActionResponse>("/api/pets/hatch", { method: "POST" });
+async function hatchEgg(eggId: string): Promise<HatchActionResponse> {
+  return apiFetch<HatchActionResponse>("/api/pets/hatch", {
+    method: "POST",
+    json: { eggId },
+  });
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -338,6 +416,7 @@ function EggSlotButton(props: {
       : "EMPTY";
 
   const canHatch = Boolean(slot.egg && cd.done && !slot.locked && !isHatching);
+  const eggIdentity = slot.egg ? resolveEggIdentity(slot.egg) : null;
 
   return (
     <div
@@ -346,7 +425,6 @@ function EggSlotButton(props: {
         isSelected ? "selected" : "",
         slot.locked ? "locked" : "",
         slot.egg ? "hasEgg" : "",
-        slot.egg?.line ? `eggElement-${slot.egg.line}` : "",
       ].join(" ")}
     >
       <button
@@ -356,15 +434,23 @@ function EggSlotButton(props: {
           if (!slot.locked) onSelect();
         }}
         disabled={slot.locked}
-        title={slot.egg ? slot.egg.name : `Egg ${slot.index}`}
+        title={eggIdentity ? eggIdentity.label : `Egg ${slot.index}`}
       >
         <div className="eggSlotLeft">
-          {slot.egg ? (
-            <img
-              className="eggIconImg"
-              src={MYSTERY_EGG.sprite}
-              alt={MYSTERY_EGG.name}
-            />
+          {eggIdentity ? (
+            eggIdentity.elementKey ? (
+              <img
+                className={`eggIconImg${cd.done ? " eggIconReady" : ""}`}
+                src={ELEMENT_EGG_IMAGES[eggIdentity.elementKey]}
+                alt={eggIdentity.label}
+              />
+            ) : (
+              <img
+                className={`eggIconImg${cd.done ? " eggIconReady" : ""}`}
+                src={MYSTERY_EGG.sprite}
+                alt={eggIdentity.label}
+              />
+            )
           ) : (
             <div className="eggIcon" />
           )}
@@ -372,7 +458,9 @@ function EggSlotButton(props: {
 
         <div className="eggSlotMain">
           <div className="eggSlotTop">
-            <div className="eggSlotTitle">Egg {slot.index}</div>
+            <div className="eggSlotTitle">
+              {eggIdentity ? eggIdentity.label : `Egg ${slot.index}`}
+            </div>
             <div className="eggSlotTimer">{timerLabel}</div>
           </div>
         </div>
@@ -411,18 +499,117 @@ function ItemSlotButton(props: { slot: ShelfSlot }) {
   );
 }
 
+// ─── Star Particles ───────────────────────────────────────────────────────────
+
+function StarParticles() {
+  const stars = useMemo(() => {
+    return Array.from({ length: 14 }, (_, i) => {
+      const baseAngle = (i / 14) * 2 * Math.PI;
+      const jitter = (Math.random() - 0.5) * 0.5;
+      const angle = baseAngle + jitter;
+      const dist = 80 + Math.random() * 55;
+      const size = 10 + Math.random() * 10;
+      const delay = Math.random() * 0.45;
+      const duration = 1.4 + Math.random() * 0.9;
+      return {
+        id: i,
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        size,
+        delay,
+        duration,
+      };
+    });
+  }, []);
+
+  return (
+    <div className="hatchRevealStarField" aria-hidden="true">
+      {stars.map((s) => (
+        <span
+          key={s.id}
+          className="hatchRevealStar"
+          style={{
+            left: `calc(50% + ${s.x}px)`,
+            top: `calc(50% + ${s.y}px)`,
+            fontSize: `${s.size}px`,
+            animationDuration: `${s.duration}s`,
+            animationDelay: `${s.delay}s`,
+          }}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// ─── Hatch Reveal Overlay ─────────────────────────────────────────────────────
+
+function HatchRevealOverlay({
+  result,
+  eggRef: _eggRef,
+  onDismiss,
+}: {
+  result: HatchActionResponse;
+  eggRef: HatchEgg | null;
+  onDismiss: () => void;
+}) {
+  const petName = result.pet?.name ?? "Unknown Kith";
+  const destinationText =
+    result.storage_result === "party"
+      ? "Joined your Main Team!"
+      : "Sent to Storage";
+
+  return (
+    <div className="hatchRevealOverlay">
+      <div className="hatchRevealCard">
+        <div className="hatchRevealCreatureWrap">
+          <StarParticles />
+          <div className="hatchRevealCreature">
+            <span className="hatchRevealEye hatchRevealEyeLeft" />
+            <span className="hatchRevealEye hatchRevealEyeRight" />
+            <span className="hatchRevealSmile" />
+          </div>
+        </div>
+        <div className="hatchRevealCongrats">Congratulations!</div>
+        <div className="hatchRevealMessage">
+          You hatched <span className="hatchRevealPetName">{petName}</span>!
+        </div>
+        <div className="hatchRevealDestination">{destinationText}</div>
+        <button
+          type="button"
+          className="primaryBtn hatchRevealContinueBtn"
+          onClick={onDismiss}
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page component ───────────────────────────────────────────────────────────
 
 export default function HatcheryPage() {
+  const { phase } = useDeltaTime();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [data, setData] = useState<HatcheryResponse | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [isHatching, setIsHatching] = useState(false);
+  const [hatchPhase, setHatchPhase] = useState<"cracking" | "reveal" | null>(
+    null,
+  );
+  const [hatchResult, setHatchResult] = useState<HatchActionResponse | null>(
+    null,
+  );
+  const [hatchingEgg, setHatchingEgg] = useState<HatchEgg | null>(null);
 
   const [serverNowBaseMs, setServerNowBaseMs] = useState<number | null>(null);
   const [fetchedAtLocalMs, setFetchedAtLocalMs] = useState<number | null>(null);
+  const [storageRefreshSignal, setStorageRefreshSignal] = useState(0);
+  const loadRef = useRef<() => Promise<void>>(async () => {});
   const localNowMs = useNow(1000);
 
   const serverNowIso = useMemo(() => {
@@ -475,6 +662,8 @@ export default function HatcheryPage() {
         setLoadErr(getErrorMessage(e));
       }
     }
+
+    loadRef.current = load;
 
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
@@ -553,7 +742,7 @@ export default function HatcheryPage() {
 
   const shelfSlots: ShelfSlot[] = useMemo(() => {
     if (data?.shelf_slots && data.shelf_slots.length > 0) {
-      return data.shelf_slots.map((slot) => ({
+      return data.shelf_slots.slice(0, 5).map((slot) => ({
         id: slot.id,
         index: slot.slot_index,
         locked: !slot.unlocked,
@@ -561,7 +750,7 @@ export default function HatcheryPage() {
       }));
     }
 
-    return Array.from({ length: 10 }, (_, idx) => ({
+    return Array.from({ length: 5 }, (_, idx) => ({
       id: `fallback-shelf-${idx + 1}`,
       index: idx + 1,
       locked: idx !== 0,
@@ -603,6 +792,14 @@ export default function HatcheryPage() {
       : `Hatches in ${formatDuration(selectedCd.remainingMs ?? 0)}`
     : "";
 
+  const canHatchSelected = Boolean(
+    selectedEgg &&
+    selectedCd.done &&
+    selected &&
+    !selected.locked &&
+    !isHatching,
+  );
+
   const displayedStats = useMemo(() => {
     if (!selectedEgg) return EMPTY_STATS;
 
@@ -619,6 +816,13 @@ export default function HatcheryPage() {
     return getEggGrowthTraits(selectedEgg);
   }, [selectedEgg]);
 
+  const selectedEggIdentity = useMemo(() => {
+    return resolveEggIdentity(selectedEgg);
+  }, [selectedEgg]);
+
+  const selectedEggRarity =
+    selectedEggIdentity.label === MYSTERY_EGG.name ? "Epic" : null;
+
   async function refreshAfterHatch() {
     const next = await fetchHatchery();
     setData(next);
@@ -626,34 +830,41 @@ export default function HatcheryPage() {
     syncServerClock(next.server_now);
   }
 
-  async function completeHatchFlow() {
-    const hatchResult = await hatchEgg();
-    syncServerClock(hatchResult.server_now);
-
-    if (hatchResult.post_hatch_destination) {
-      navigate(hatchResult.post_hatch_destination, { replace: true });
+  async function dismissReveal() {
+    const dest = hatchResult?.post_hatch_destination;
+    setHatchPhase(null);
+    setHatchResult(null);
+    setHatchingEgg(null);
+    setIsHatching(false);
+    if (dest) {
+      navigate(dest, { replace: true });
       return;
     }
-
     await refreshAfterHatch();
+    setStorageRefreshSignal((n) => n + 1);
   }
 
   async function onHatchFromSlot(slot: HatchSlot) {
     if (!slot.egg || slot.locked || isHatching) return;
-
     const endsAtMs = Date.parse(slot.egg.hatch_ends_at);
     const nowMs = Date.parse(serverNowIso);
-
     if (!Number.isFinite(endsAtMs) || nowMs < endsAtMs) return;
-
     setSelectedSlot(slot.index);
     setIsHatching(true);
-
+    setHatchingEgg(slot.egg);
+    setHatchPhase("cracking");
     try {
-      await completeHatchFlow();
+      const [result] = await Promise.all([
+        hatchEgg(slot.egg.id),
+        sleep(CRACK_ANIM_MS),
+      ]);
+      syncServerClock(result.server_now);
+      setHatchResult(result);
+      setHatchPhase("reveal");
     } catch (e: unknown) {
       alert(getErrorMessage(e));
-    } finally {
+      setHatchPhase(null);
+      setHatchingEgg(null);
       setIsHatching(false);
     }
   }
@@ -661,7 +872,7 @@ export default function HatcheryPage() {
   if (authLoading) return null;
 
   return (
-    <div className="hatcheryPage">
+    <div className="hatcheryPage" data-phase={phase}>
       <div className="hatcheryWorkbenchLayout">
         <div className="hatcheryLeftColumn">
           <section className="selectedEggPanel selectedEggPanelMain">
@@ -680,24 +891,75 @@ export default function HatcheryPage() {
               {!selectedEgg ? (
                 <div className="selectedPreviewEmpty" />
               ) : (
-                <div className="selectedPreviewFilled">
+                <div
+                  className={`selectedPreviewFilled${hatchPhase === "cracking" ? " eggBursting" : ""}`}
+                >
                   <div className="selectedEggHalo" />
 
-                  <img
-                    className="eggBigImg"
-                    src={MYSTERY_EGG.sprite}
-                    alt={MYSTERY_EGG.name}
-                  />
+                  {selectedEggIdentity.elementKey ? (
+                    <img
+                      className={[
+                        "eggBigImg",
+                        selectedCd.done && hatchPhase === null
+                          ? "eggReady"
+                          : "",
+                        hatchPhase === "cracking" ? "eggCracking" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      src={ELEMENT_EGG_IMAGES[selectedEggIdentity.elementKey]}
+                      alt={selectedEggIdentity.label}
+                    />
+                  ) : (
+                    <img
+                      className={[
+                        "eggBigImg",
+                        selectedCd.done && hatchPhase === null
+                          ? "eggReady"
+                          : "",
+                        hatchPhase === "cracking" ? "eggCracking" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      src={MYSTERY_EGG.sprite}
+                      alt={selectedEggIdentity.label}
+                    />
+                  )}
 
                   <div className="selectedText">
-                    <div className="selectedPreviewEyebrow">Incubator Live</div>
+                    <div className="selectedPreviewEyebrow">
+                      Incubator Core Activated.
+                    </div>
+
+                    <div className="selectedName">
+                      {selectedEggIdentity.label}
+                    </div>
+
+                    {selectedEggRarity ? (
+                      <div className="selectedEggRarity">
+                        {selectedEggRarity}
+                      </div>
+                    ) : null}
+
                     <div className="selectedSub">{countdownText}</div>
+
+                    <button
+                      type="button"
+                      className="primaryBtn selectedPreviewHatchBtn"
+                      disabled={!canHatchSelected}
+                      onClick={() => {
+                        if (selected) {
+                          void onHatchFromSlot(selected);
+                        }
+                      }}
+                    >
+                      {isHatching ? "Hatching..." : "Hatch Egg"}
+                    </button>
                   </div>
                 </div>
               )}
             </div>
           </section>
-
           <div className="hatcheryBottomRow">
             <div className="hatcheryBottomRowInner">
               <section className="selectedEggStatsInset statsPanelBottom">
@@ -736,11 +998,6 @@ export default function HatcheryPage() {
                       </div>
                     );
                   })}
-
-                  <div className="statRow statRowTotal">
-                    <div className="statLabel">TOTAL</div>
-                    <div className="statValue">{displayedStats.base_total}</div>
-                  </div>
                 </div>
 
                 <div className="eggTraitFlavorText">
@@ -797,8 +1054,24 @@ export default function HatcheryPage() {
           </div>
         </section>
 
-        <PetStoragePanel userId={user?.id} />
+        <PetStoragePanel
+          userId={user?.id}
+          refreshSignal={storageRefreshSignal}
+          onStorageChanged={() => {
+            void loadRef.current();
+          }}
+        />
       </div>
+
+      {hatchPhase === "reveal" && hatchResult && (
+        <HatchRevealOverlay
+          result={hatchResult}
+          eggRef={hatchingEgg}
+          onDismiss={() => {
+            void dismissReveal();
+          }}
+        />
+      )}
     </div>
   );
 }

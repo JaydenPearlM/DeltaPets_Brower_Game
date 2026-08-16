@@ -1,4 +1,4 @@
-import { STARTER_DISPLAY_NAMES } from "@/Pets_Creation/registry/starterDisplayNames";
+import { STARTER_DISPLAY_NAMES } from "@/kith/registry/starterDisplayNames";
 
 type CareStatus = {
   hunger?: number | null;

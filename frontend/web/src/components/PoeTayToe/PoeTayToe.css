@@ -1,0 +1,143 @@
+.poeTayToe {
+  position: absolute;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.poeTayToe span {
+  display: block;
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+  transition: transform 120ms ease;
+}
+
+.poeTayToe:hover span,
+.poeTayToe:focus-visible span {
+  transform: rotate(-8deg) scale(1.08);
+}
+
+.poeTayToe:focus-visible {
+  outline: 3px solid var(--dp-cyber-cyan);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.poeTayToe--hatchery-back {
+  left: 55%;
+  top: 11%;
+}
+
+.poeTayToe--profile {
+  right: 14px;
+  bottom: 12px;
+}
+
+.poeTayToe--pet {
+  right: 72px;
+  bottom: 10px;
+}
+
+.poeTayToeHost {
+  position: relative;
+}
+
+.poeTayToe--food-merchant {
+  right: 12px;
+  bottom: 12px;
+}
+
+.poeTayToeBackdrop {
+  z-index: 1200;
+}
+
+.poeTayToePopup {
+  width: min(92vw, 460px);
+  max-height: 88vh;
+  padding: 22px;
+  text-align: center;
+}
+
+.poeTayToePopup h2,
+.poeTayToePopup h3,
+.poeTayToePopup p {
+  margin-top: 0;
+}
+
+.poeTayToePopup h2 {
+  margin-bottom: 8px;
+}
+
+.poeTayToePopup h3 {
+  margin: 20px 0 12px;
+  font-size: 1rem;
+}
+
+.poeTayToeFoundIcon {
+  margin-bottom: 8px;
+  font-size: 58px;
+  line-height: 1;
+}
+
+.poeTayToeFlavor {
+  opacity: 0.76;
+}
+
+.poeTayToeReward {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0;
+}
+
+.poeTayToeChoices {
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.poeTayToeChoices label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--dp-border-panel-soft);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.poeTayToeChoices input {
+  margin: 0;
+}
+
+.poeTayToeError {
+  margin: 12px 0 0;
+  color: var(--dp-brand-red);
+  font-weight: 700;
+}
+
+.poeTayToeHideButton {
+  margin-top: 18px;
+  min-height: 44px;
+}
+
+.poeTayToeHideButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 700px) {
+  .poeTayToe span {
+    font-size: 24px;
+  }
+
+  .poeTayToePopup {
+    padding: 18px;
+  }
+}

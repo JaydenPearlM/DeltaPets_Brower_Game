@@ -40,7 +40,7 @@ function getDisplayName(
 }
 
 function normalizeElement(value: string | null | undefined) {
-  if (!value) return "null";
+  if (!value) return "";
   const normalized = value.trim().toLowerCase().replace(/\s+/g, "_");
   return normalized === "null_element" ? "null" : normalized;
 }

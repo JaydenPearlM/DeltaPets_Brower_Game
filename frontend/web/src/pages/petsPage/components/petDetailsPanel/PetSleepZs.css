@@ -1,0 +1,48 @@
+.petSleepZs {
+  position: absolute;
+  top: 6%;
+  right: 8%;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.petSleepZ {
+  position: absolute;
+  right: 0;
+  color: var(--dp-cyber-cyan);
+  font-weight: 700;
+  text-shadow: 0 0 8px var(--dp-panel-glow, rgba(77, 234, 255, 0.6));
+  opacity: 0;
+  animation: petSleepZFloat 2.4s ease-in infinite;
+}
+
+.petSleepZ-1 {
+  font-size: 14px;
+  animation-delay: 0s;
+}
+
+.petSleepZ-2 {
+  font-size: 18px;
+  right: -8px;
+  animation-delay: 0.6s;
+}
+
+.petSleepZ-3 {
+  font-size: 22px;
+  right: -18px;
+  animation-delay: 1.2s;
+}
+
+@keyframes petSleepZFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-26px) scale(1.05);
+  }
+}

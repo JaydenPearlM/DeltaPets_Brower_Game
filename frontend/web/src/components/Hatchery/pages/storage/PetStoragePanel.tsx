@@ -1,17 +1,26 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  formatLineLabel,
-  formatStageLabel,
   PARTY_SLOT_COUNT,
   type StoragePet,
-  type StorageStageFilter,
   usePetStorage,
 } from "./usePetStorage";
-import MainTeam from "../../../Main_Team/mainTeam";
+import MainTeam from "../../../MainTeam/mainTeam";
+import { ELEMENT_EGG_NAMES, SHARED_SPECIES } from "@shared/pets/species";
+import prismaticEggPng from "@/kith/assets/eggs/prismatic_egg.png";
+import tideEggPng from "@/kith/assets/eggs/tide_egg.png";
+import emberEggPng from "@/kith/assets/eggs/ember_egg.png";
+import groveEggPng from "@/kith/assets/eggs/grove_egg.png";
+import zephyrEggPng from "@/kith/assets/eggs/zephr_egg.png";
+import frostveilEggPng from "@/kith/assets/eggs/frostviel_egg.png";
+import stormEggPng from "@/kith/assets/eggs/storm_egg.png";
+import dawnshardEggPng from "@/kith/assets/eggs/light_egg.png";
+import eclipseEggPng from "@/kith/assets/eggs/eclipse_egg.png";
+import voidborneEggPng from "@/kith/assets/eggs/Voidborne_egg.png";
 import "./PetStoragePanel.css";
-
 type PetStoragePanelProps = {
   userId?: string;
+  refreshSignal?: number;
+  onStorageChanged?: () => void;
 };
 
 type DragPayload = {
@@ -21,16 +30,6 @@ type DragPayload = {
   isEgg: boolean;
 };
 
-const FILTERS: Array<{ key: StorageStageFilter; label: string }> = [
-  { key: "all", label: "All" },
-  { key: "egg", label: "Egg" },
-  { key: "hatchling", label: "Hatchling" },
-  { key: "lowform", label: "Lowform" },
-  { key: "highform", label: "Highform" },
-  { key: "legion", label: "Legion" },
-  { key: "mythical_legendary", label: "Mythical Legendary" },
-];
-
 const STAT_ROWS = [
   { key: "hp", label: "HP" },
   { key: "atk", label: "ATK" },
@@ -39,6 +38,52 @@ const STAT_ROWS = [
   { key: "spd", label: "SPD" },
   { key: "mana", label: "MANA" },
 ] as const;
+
+const ELEMENT_LINE_KEYS = new Set<string>(Object.keys(ELEMENT_EGG_NAMES));
+const STARTER_SPECIES_IDS = new Set<string>(
+  SHARED_SPECIES.map((species) => species.id),
+);
+
+const ELEMENT_EGG_IMAGES: Record<string, string> = {
+  null: voidborneEggPng,
+  null_element: voidborneEggPng,
+  water: tideEggPng,
+  fire: emberEggPng,
+  earth: groveEggPng,
+  air: zephyrEggPng,
+  ice: frostveilEggPng,
+  storm: stormEggPng,
+  light: dawnshardEggPng,
+  shadow: eclipseEggPng,
+};
+
+function formatStorageName(value: string) {
+  return value.replace(/\s+Egg$/i, "");
+}
+
+function resolveEggIdentity(
+  egg?: { line?: string | null; species?: string | null } | null,
+): {
+  label: string;
+  toneClass: string;
+} {
+  if (STARTER_SPECIES_IDS.has(String(egg?.species ?? "").trim())) {
+    return { label: "Prismatic Egg", toneClass: "tone-default" };
+  }
+
+  const value = String(egg?.line ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (ELEMENT_LINE_KEYS.has(value)) {
+    return {
+      label: ELEMENT_EGG_NAMES[value as keyof typeof ELEMENT_EGG_NAMES],
+      toneClass: getToneClass(value),
+    };
+  }
+
+  return { label: "Prismatic Egg", toneClass: "tone-default" };
+}
 
 function getToneClass(line?: string | null) {
   const value = String(line ?? "")
@@ -101,14 +146,6 @@ function StoragePetStatsTooltip(props: { pet: StoragePet }) {
 
   return (
     <div className="storagePetTooltip" role="tooltip">
-      <div className="storagePetTooltipTitle">
-        {pet.name?.trim() || "Unnamed Delta"}
-      </div>
-
-      <div className="storagePetTooltipMeta">
-        {formatStageLabel(pet.stage)} • {formatLineLabel(pet.line)}
-      </div>
-
       <div className="storagePetTooltipGrid">
         {STAT_ROWS.map((row) => (
           <div key={row.key} className="storagePetTooltipRow">
@@ -116,11 +153,6 @@ function StoragePetStatsTooltip(props: { pet: StoragePet }) {
             <strong>{pet[row.key] ?? 0}</strong>
           </div>
         ))}
-
-        <div className="storagePetTooltipRow total">
-          <span>TOTAL</span>
-          <strong>{pet.base_total ?? 0}</strong>
-        </div>
       </div>
     </div>
   );
@@ -132,6 +164,10 @@ function StoragePetCard(props: {
   onDragStart: (event: React.DragEvent<HTMLElement>, pet: StoragePet) => void;
   onDragEnd: () => void;
   onMoveEggToIncubator?: (petId: string) => void;
+  onMovePetToParty?: (petId: string) => void;
+  onSelectPet?: (pet: StoragePet) => void;
+  targetSlot: number | null;
+  isWorking: boolean;
   incubatorBusy: boolean;
 }) {
   const {
@@ -140,6 +176,8 @@ function StoragePetCard(props: {
     onDragStart,
     onDragEnd,
     onMoveEggToIncubator,
+    onSelectPet,
+    isWorking,
     incubatorBusy,
   } = props;
 
@@ -148,13 +186,17 @@ function StoragePetCard(props: {
       .trim()
       .toLowerCase() === "egg";
   const draggable = !isEgg;
+  const eggIdentity = isEgg ? resolveEggIdentity(pet) : null;
+  const isStarterEgg = isEgg && eggIdentity?.label === "Prismatic Egg";
+  const isStarterPet =
+    !isEgg && STARTER_SPECIES_IDS.has(String(pet.species ?? "").trim());
 
   return (
     <article
       className={[
         "storagePetCard",
         "storagePetCardWithTooltip",
-        getToneClass(pet.line),
+        isEgg ? eggIdentity!.toneClass : getToneClass(pet.line),
         pet.is_active ? "isActivePet" : "",
         isDragging ? "isDragging" : "",
       ].join(" ")}
@@ -164,44 +206,60 @@ function StoragePetCard(props: {
         onDragStart(event, pet);
       }}
       onDragEnd={onDragEnd}
+      onClick={(event) => {
+        if (
+          isEgg ||
+          (event.target instanceof Element && event.target.closest("button"))
+        ) {
+          return;
+        }
+        onSelectPet?.(pet);
+      }}
       title={
         isEgg
           ? "Eggs stay out of Main Team. Use the incubator button."
           : "Drag pet to team or move it back from team."
       }
     >
-      <div className="storagePetTop">
+      <div className="storagePetBody">
+        <div className={["storagePetOrb", isEgg ? "isEgg" : "isPet"].join(" ")}>
+          {isEgg ? (
+            <img
+              className="storageEggImage"
+              src={
+                isStarterEgg
+                  ? prismaticEggPng
+                  : (ELEMENT_EGG_IMAGES[
+                      String(pet.line ?? "")
+                        .trim()
+                        .toLowerCase()
+                    ] ?? prismaticEggPng)
+              }
+              alt={eggIdentity!.label}
+            />
+          ) : pet.portrait_url ? (
+            <img
+              className="storagePetPortrait"
+              src={pet.portrait_url}
+              alt={pet.name?.trim() || "Stored pet"}
+            />
+          ) : (
+            <div className="storagePetOrbInner">
+              {pet.name?.trim()?.charAt(0).toUpperCase() || "D"}
+            </div>
+          )}
+        </div>
+
         <div className="storagePetIdentity">
           <div className="storagePetName">
-            {pet.name?.trim() || "Unnamed Delta"}
+            {isEgg
+              ? formatStorageName(eggIdentity!.label)
+              : pet.name?.trim() || "Unnamed Delta"}
           </div>
-          <div className="storagePetMeta">
-            {formatLineLabel(pet.line)} • Lv. {pet.level ?? 1}
-          </div>
-        </div>
 
-        <div className="storageBadgeStack">
-          <span className="storageStageBadge">
-            {formatStageLabel(pet.stage)}
-          </span>
-
-          <span className="storageLocationBadge stored">Stored</span>
-        </div>
-      </div>
-
-      <div className="storagePetBody">
-        <div className="storagePetOrb">
-          <div className="storagePetOrbInner">
-            {isEgg ? "🥚" : pet.name?.trim()?.charAt(0).toUpperCase() || "D"}
-          </div>
-        </div>
-
-        <div className="storagePetLore">
-          {isEgg
-            ? incubatorBusy
-              ? "An egg is already incubating. Current wiring still supports one incubating egg."
-              : "This egg can be moved from storage into the incubator."
-            : "Hover to inspect stats. Drag this pet into any Main Team slot."}
+          {isStarterEgg || isStarterPet ? (
+            <span className="storageRarityBadge epic">Epic</span>
+          ) : null}
         </div>
       </div>
 
@@ -213,10 +271,21 @@ function StoragePetCard(props: {
             disabled={incubatorBusy}
             onClick={() => onMoveEggToIncubator?.(pet.id)}
           >
-            {incubatorBusy ? "Incubator Busy" : "Move to Incubator"}
+            {incubatorBusy ? "Incubator Busy" : "Incubate"}
           </button>
         ) : (
-          <div className="dragHandleHint">Drag to team</div>
+          <>
+            <div className="dragHandleHint">Drag to team</div>
+
+            <button
+              type="button"
+              className="btn btn-pearl storageActionBtn storageActionBtn--options"
+              disabled={isWorking}
+              onClick={() => onSelectPet?.(pet)}
+            >
+              {isWorking ? "Moving..." : "Options"}
+            </button>
+          </>
         )}
       </div>
 
@@ -226,11 +295,15 @@ function StoragePetCard(props: {
 }
 
 export function PetStoragePanel(props: PetStoragePanelProps) {
-  const { userId } = props;
-
-  const [filter, setFilter] = useState<StorageStageFilter>("all");
+  const { userId, refreshSignal, onStorageChanged } = props;
   const [search, setSearch] = useState("");
   const [selectedPartySlot, setSelectedPartySlot] = useState<number | null>(1);
+  const [mobilePetAction, setMobilePetAction] = useState<{
+    pet: StoragePet;
+    source: "team" | "storage";
+    slotIndex?: number;
+  } | null>(null);
+  const [mobilePetActionError, setMobilePetActionError] = useState("");
 
   const [draggingPetId, setDraggingPetId] = useState<string | null>(null);
   const [dragOverSlotIndex, setDragOverSlotIndex] = useState<number | null>(
@@ -242,30 +315,28 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
     pets,
     partySlots,
     firstEmptyPartySlot,
-    counts,
     loading,
     error,
     workingPetId,
     workingSlotIndex,
-    storageCounts,
     incubatingEggs,
     assignPetToParty,
     storePet,
     moveEggToIncubator,
     normalizeStage,
-    caps,
-  } = usePetStorage({ userId });
+    reload,
+  } = usePetStorage({ userId, onMutated: onStorageChanged });
+
+  useEffect(() => {
+    if (!refreshSignal) return;
+    void reload();
+  }, [refreshSignal, reload]);
 
   const filteredPets = useMemo(() => {
     const q = search.trim().toLowerCase();
+    if (!q) return pets;
 
     return pets.filter((pet) => {
-      const stageMatch =
-        filter === "all" || normalizeStage(pet.stage) === filter;
-
-      if (!stageMatch) return false;
-      if (!q) return true;
-
       const haystack = [
         pet.name ?? "",
         pet.stage ?? "",
@@ -277,10 +348,10 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
 
       return haystack.includes(q);
     });
-  }, [filter, normalizeStage, pets, search]);
+  }, [pets, search]);
 
   const partyCount = partySlots.filter((slot) => slot.petId).length;
-  const targetSlot = selectedPartySlot ?? firstEmptyPartySlot;
+  const targetSlot = firstEmptyPartySlot ?? selectedPartySlot;
   const incubatingEgg = incubatingEggs[0] ?? null;
 
   function clearDragState() {
@@ -316,6 +387,56 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
       fromSlotIndex: slotIndex,
       isEgg: normalizeStage(pet.stage) === "egg",
     });
+  }
+
+  async function handleMoveStoredPetToTeam(petId: string) {
+    if (!targetSlot) return;
+
+    await assignPetToParty(petId, targetSlot);
+    setSelectedPartySlot(targetSlot);
+  }
+
+  function openMobilePetAction(
+    pet: StoragePet,
+    source: "team" | "storage",
+    slotIndex?: number,
+  ) {
+    if (!window.matchMedia("(max-width: 430px)").matches) return;
+    setMobilePetActionError("");
+    setMobilePetAction({ pet, source, slotIndex });
+  }
+
+  async function handleMobileMoveToSlot(slotIndex: number) {
+    if (!mobilePetAction) return;
+
+    try {
+      setMobilePetActionError("");
+      await assignPetToParty(mobilePetAction.pet.id, slotIndex);
+      setSelectedPartySlot(slotIndex);
+      setMobilePetAction(null);
+    } catch (moveError) {
+      setMobilePetActionError(
+        moveError instanceof Error
+          ? moveError.message
+          : "Failed to move pet to Kith Team.",
+      );
+    }
+  }
+
+  async function handleMobileMoveToStorage() {
+    if (!mobilePetAction || mobilePetAction.source !== "team") return;
+
+    try {
+      setMobilePetActionError("");
+      await storePet(mobilePetAction.pet.id);
+      setMobilePetAction(null);
+    } catch (moveError) {
+      setMobilePetActionError(
+        moveError instanceof Error
+          ? moveError.message
+          : "Failed to move pet to storage.",
+      );
+    }
   }
 
   async function handleDropToTeam(
@@ -406,6 +527,9 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
           workingSlotIndex={workingSlotIndex}
           dragOverSlotIndex={dragOverSlotIndex}
           onSelectSlot={setSelectedPartySlot}
+          onSelectPet={(pet, slotIndex) =>
+            openMobilePetAction(pet, "team", slotIndex)
+          }
           onDragStartPet={handleTeamDragStart}
           onDragEndPet={clearDragState}
           onDragOverSlot={allowDrop}
@@ -431,41 +555,11 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
         onDragLeave={() => setIsStorageDragOver(false)}
         onDrop={handleDropToStorage}
       >
-        <div className="storedPetsSectionHeader">
-          <div className="panelTitle panelTitleSmall">Storage</div>
-          <div className="panelSubtext">
-            {storageCounts.total}/{caps.total} total stored.{" "}
-            {storageCounts.eggs}/{caps.eggs} egg spaces. {storageCounts.pets}/
-            {caps.pets} pet spaces.
-          </div>
-        </div>
-
-        <div className="storageTopSummary">
-          <div className="storageHeroCard">
-            <div className="storageHeroLabel">Stored Total</div>
-            <div className="storageHeroValue">
-              {storageCounts.total}/{caps.total}
-            </div>
-          </div>
-
-          <div className="storageHeroCard">
-            <div className="storageHeroLabel">Stored Eggs</div>
-            <div className="storageHeroValue">
-              {storageCounts.eggs}/{caps.eggs}
-            </div>
-          </div>
-
-          <div className="storageHeroCard">
-            <div className="storageHeroLabel">Stored Pets</div>
-            <div className="storageHeroValue">
-              {storageCounts.pets}/{caps.pets}
-            </div>
-          </div>
-
-          <div className="storageHeroCard">
-            <div className="storageHeroLabel">Incubator</div>
-            <div className="storageHeroValue">
-              {incubatingEgg ? "1/1" : "0/1"}
+        <div className="storageSectionTop">
+          <div className="storedPetsSectionHeader storageSectionCopy">
+            <div className="panelTitle panelTitleSmall">Storage</div>
+            <div className="panelSubtext">
+              Pets and eggs currently held in storage.
             </div>
           </div>
         </div>
@@ -476,22 +570,19 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
             className="storageSearchInput"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search stored pets, eggs, stages, or elements..."
+            placeholder="Search pets or eggs..."
           />
         </div>
 
-        {incubatingEgg ? (
-          <div className="storageIncubatorNotice">
-            Incubating now:{" "}
-            <strong>{incubatingEgg.name?.trim() || "Mystery Egg"}</strong>
-            {" • "}
-            {formatStageLabel(incubatingEgg.stage)}
-          </div>
-        ) : (
-          <div className="storageIncubatorNotice">
-            No egg is in the incubator right now.
-          </div>
-        )}
+        <div className="storageIncubatorNotice">
+          Incubating now:{" "}
+          <strong>
+            {incubatingEgg
+              ? incubatingEgg.name?.trim() ||
+                resolveEggIdentity(incubatingEgg).label
+              : "None"}
+          </strong>
+        </div>
 
         <div className="storageGridScroll">
           {loading ? (
@@ -506,9 +597,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
               <div className="storageEmptyTitle">
                 Nothing matches that filter.
               </div>
-              <div className="storageEmptyText">
-                Try a different search or stage filter.
-              </div>
+              <div className="storageEmptyText">Try a different search.</div>
             </div>
           ) : (
             <div className="storagePetGrid">
@@ -522,6 +611,14 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                   onMoveEggToIncubator={(petId) =>
                     void moveEggToIncubator(petId)
                   }
+                  onMovePetToParty={(petId) =>
+                    void handleMoveStoredPetToTeam(petId)
+                  }
+                  onSelectPet={(selectedPet) =>
+                    openMobilePetAction(selectedPet, "storage")
+                  }
+                  targetSlot={targetSlot}
+                  isWorking={workingPetId === pet.id}
                   incubatorBusy={Boolean(incubatingEgg)}
                 />
               ))}
@@ -529,25 +626,87 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
           )}
         </div>
 
-        <div className="storageBottomFilters">
-          {FILTERS.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={[
-                "storageFilterChip",
-                filter === item.key ? "active" : "",
-              ].join(" ")}
-              onClick={() => setFilter(item.key)}
-            >
-              <span>{item.label}</span>
-              <strong>{counts[item.key]}</strong>
-            </button>
-          ))}
-        </div>
-
         {error ? <div className="storageErrorText">Error: {error}</div> : null}
       </section>
+
+      {mobilePetAction ? (
+        <div
+          className="mobilePetActionBackdrop"
+          role="presentation"
+          onClick={() => setMobilePetAction(null)}
+        >
+          <section
+            className="mobilePetActionMenu dp-blue-grid-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Move ${mobilePetAction.pet.name?.trim() || "pet"}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mobilePetActionHeader">
+              <div>
+                <div className="mobilePetActionTitle">
+                  {mobilePetAction.pet.name?.trim() || "Unnamed Delta"}
+                </div>
+                <div className="mobilePetActionSubtext">
+                  Choose where this pet should go.
+                </div>
+              </div>
+            </div>
+
+            {mobilePetAction.source === "team" ? (
+              <button
+                type="button"
+                className="btn btn-gold mobilePetActionButton mobilePetActionStorageButton"
+                disabled={workingPetId !== null}
+                onClick={() => void handleMobileMoveToStorage()}
+              >
+                Put in Storage
+              </button>
+            ) : null}
+
+            <div className="mobilePetActionSlots">
+              {Array.from({ length: PARTY_SLOT_COUNT }, (_, index) => {
+                const slotIndex = index + 1;
+                const slotPet = partySlots[index]?.pet ?? null;
+                const isCurrentSlot =
+                  mobilePetAction.source === "team" &&
+                  mobilePetAction.slotIndex === slotIndex;
+
+                return (
+                  <button
+                    key={slotIndex}
+                    type="button"
+                    className="btn mobilePetActionButton mobilePetActionSlotButton"
+                    disabled={isCurrentSlot || workingPetId !== null}
+                    onClick={() => void handleMobileMoveToSlot(slotIndex)}
+                  >
+                    Slot {slotIndex}
+                    <span>
+                      {isCurrentSlot
+                        ? "Current slot"
+                        : slotPet
+                          ? `Swap with ${slotPet.name?.trim() || "pet"}`
+                          : "Empty"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {mobilePetActionError ? (
+              <div className="mobilePetActionError">{mobilePetActionError}</div>
+            ) : null}
+
+            <button
+              type="button"
+              className="btn btn-pearl mobilePetActionPearlClose"
+              onClick={() => setMobilePetAction(null)}
+            >
+              Close
+            </button>
+          </section>
+        </div>
+      ) : null}
     </aside>
   );
 }

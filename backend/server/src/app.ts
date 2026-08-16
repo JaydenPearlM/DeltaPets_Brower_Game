@@ -3,7 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 import helmet from "helmet";
 import { healthRouter } from "./routes/health";
-import { authRouter, publicAuthRouter, requireUser } from "./middleware/auth";
+import {
+  authRouter,
+  publicAuthRouter,
+  requireUser,
+} from "./middleware/auth";
 import {
   apiLimiter,
   apiSpeedLimiter,
@@ -25,6 +29,7 @@ export function createApp() {
     helmet({
       contentSecurityPolicy: {
         directives: {
+          "script-src": ["'self'", "https://static.cloudflareinsights.com"],
           "connect-src": [
             "'self'",
             env.SUPABASE_URL,

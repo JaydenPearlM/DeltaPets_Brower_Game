@@ -18,7 +18,9 @@ function shuffleArray<T>(items: T[]): T[] {
   return copy;
 }
 
-export function rollGrowthTraits(): {
+export function rollGrowthTraits(
+  rarity?: "common" | "uncommon" | "rare" | "epic" | "voidborne",
+): {
   strongStats: GrowthStatKey[];
   weakStat: GrowthStatKey | null;
 } {
@@ -27,7 +29,22 @@ export function rollGrowthTraits(): {
   let strongCount = 0;
   let hasWeak = false;
 
-  if (patternRoll < 0.2) {
+  if (rarity === "common") {
+    strongCount = 1;
+    hasWeak = patternRoll < 0.7;
+  } else if (rarity === "uncommon") {
+    strongCount = patternRoll < 0.5 ? 2 : 1;
+    hasWeak = patternRoll < 0.55;
+  } else if (rarity === "rare") {
+    strongCount = 2;
+    hasWeak = patternRoll < 0.4;
+  } else if (rarity === "epic") {
+    strongCount = 2;
+    hasWeak = patternRoll < 0.25;
+  } else if (rarity === "voidborne") {
+    strongCount = 3;
+    hasWeak = patternRoll < 0.1;
+  } else if (patternRoll < 0.2) {
     strongCount = 2;
     hasWeak = true;
   } else if (patternRoll < 0.45) {
@@ -66,7 +83,7 @@ export function sanitizeGrowthStrongStats(value: unknown): GrowthStatKey[] {
     .filter((e): e is GrowthStatKey =>
       GROWTH_STAT_KEYS.includes(e as GrowthStatKey),
     )
-    .slice(0, 2);
+    .slice(0);
 }
 
 export function sanitizeGrowthWeakStat(value: unknown): GrowthStatKey | null {

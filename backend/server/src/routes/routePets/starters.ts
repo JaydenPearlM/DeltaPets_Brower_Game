@@ -6,7 +6,7 @@ import {
   findStarterByName as findSharedStarterByName,
   getStarterSpeciesFromSelection,
   type SharedElementLine,
-} from "../../shared/pets/species";
+} from "../../shared/pets/species/starter-species";
 
 export type StarterDefinition = {
   speciesId: string;
@@ -109,6 +109,8 @@ export function findStarterByName(name: string): StarterDefinition | undefined {
   return STARTERS.find((starter) => starter.speciesId === shared.speciesId);
 }
 
+// Validates that any incoming string is a known elemental line, including
+// null_element (Voidborne). Used for input normalization — accepts all 9 lines.
 function isSharedElementLine(value: string): value is SharedElementLine {
   return [
     "null_element",
@@ -123,6 +125,9 @@ function isSharedElementLine(value: string): value is SharedElementLine {
   ].includes(value);
 }
 
+// The pool used for random starter selection. Intentionally excludes
+// null_element (Voidborne) — Voidborne is not a starter line, it is obtained
+// through other means. The two lists are not the same on purpose.
 const RANDOM_STARTER_LINES: SharedElementLine[] = [
   "water",
   "fire",

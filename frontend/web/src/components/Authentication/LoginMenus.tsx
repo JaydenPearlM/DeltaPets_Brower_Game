@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import "./LoginMenus.css";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/app/providers/useAuth";
+import { useEnterGame } from "@/app/entry/useEnterGame";
 
 type AuthView = "login" | "signup";
 type ForcedAuthView = AuthView | "none";
@@ -23,12 +24,14 @@ function PasswordField({
   label,
   value,
   onChange,
+  name,
   autoComplete,
   placeholder = "",
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  name: string;
   autoComplete: string;
   placeholder?: string;
 }) {
@@ -42,6 +45,7 @@ function PasswordField({
         <input
           className="dp-input dp-input--withIcon"
           type={showPassword ? "text" : "password"}
+          name={name}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete={autoComplete}
@@ -93,6 +97,7 @@ export function LoginMenus({
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn } = useAuth();
+  const { enterGame } = useEnterGame();
 
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<AuthView>("login");
@@ -227,56 +232,8 @@ export function LoginMenus({
         return;
       }
 
-      const { data: authData, error: userError } =
-        await supabase.auth.getUser();
-
-      if (userError) {
-        setMessage({
-          type: "error",
-          text:
-            userError.message ?? "Sign in succeeded, but user lookup failed.",
-        });
-        return;
-      }
-
-      const userId = authData.user?.id;
-
-      if (!userId) {
-        setMessage({
-          type: "error",
-          text: "Sign in succeeded, but no user was returned.",
-        });
-        return;
-      }
-
-      console.log("[auth] sign-in success userId=%s", userId);
-
-      const { data: existingPet, error: petLookupError } = await supabase
-        .from("pets")
-        .select("id")
-        .eq("user_id", userId)
-        .limit(1)
-        .maybeSingle();
-
-      if (petLookupError) {
-        console.error("[auth] pet lookup failed:", petLookupError);
-        closeModal();
-        console.log("[auth] routing -> /pet (pet lookup fallback)");
-        navigate("/pet");
-        return;
-      }
-
       closeModal();
-
-      if (existingPet) {
-        console.log("[auth] pet lookup -> existing pet found");
-        console.log("[auth] routing -> /pet");
-        navigate("/pet");
-      } else {
-        console.log("[auth] pet lookup -> no pet found");
-        console.log("[auth] routing -> /create");
-        navigate("/create");
-      }
+      await enterGame();
     } catch (error) {
       console.error("[auth] sign-in failed:", error);
       setMessage({
@@ -387,6 +344,7 @@ export function LoginMenus({
           email: trimmedEmail,
           password: signupPassword,
           options: {
+            emailRedirectTo: `${window.location.origin}/authcallback`,
             data: {
               full_name: trimmedName,
               username: normalizedNickname,
@@ -412,13 +370,10 @@ export function LoginMenus({
 
       resetSignupFields();
       setLoginPassword("");
-      closeModal();
-      navigate("/");
-    } catch (error) {
-      console.error("[signup] failed:", error);
+      setView("login");
       setMessage({
-        type: "error",
-        text: "Signup failed. Please try again.",
+        type: "success",
+        text: "Account created! Check your email to verify before signing in.",
       });
     } finally {
       setLoading(false);
@@ -465,6 +420,8 @@ export function LoginMenus({
                         <label className="dp-label">Username or Email</label>
                         <input
                           className="dp-input"
+                          type="text"
+                          name="username"
                           value={email}
                           onChange={(event) => setEmail(event.target.value)}
                           autoComplete="username"
@@ -477,6 +434,7 @@ export function LoginMenus({
                         label="Password"
                         value={loginPassword}
                         onChange={setLoginPassword}
+                        name="current-password"
                         autoComplete="current-password"
                         placeholder="Enter your password"
                       />
@@ -526,7 +484,7 @@ export function LoginMenus({
                           value={name}
                           onChange={(event) => setName(event.target.value)}
                           autoComplete="name"
-                          placeholder="First and Last Legal"
+                          placeholder="Legal first name:"
                           required
                         />
                       </div>
@@ -548,9 +506,11 @@ export function LoginMenus({
                         <label className="dp-label">Email</label>
                         <input
                           className="dp-input"
+                          type="email"
+                          name="username"
                           value={email}
                           onChange={(event) => setEmail(event.target.value)}
-                          autoComplete="email"
+                          autoComplete="username"
                           inputMode="email"
                           placeholder="you@example.com"
                           required
@@ -561,6 +521,7 @@ export function LoginMenus({
                         label="Password"
                         value={signupPassword}
                         onChange={setSignupPassword}
+                        name="new-password"
                         autoComplete="new-password"
                         placeholder="At least 8 characters"
                       />
@@ -569,6 +530,7 @@ export function LoginMenus({
                         label="Confirm Password"
                         value={confirmPassword}
                         onChange={setConfirmPassword}
+                        name="confirm-password"
                         autoComplete="new-password"
                         placeholder="Repeat password"
                       />

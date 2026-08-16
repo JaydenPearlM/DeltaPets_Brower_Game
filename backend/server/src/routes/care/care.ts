@@ -31,7 +31,7 @@ function devOnly(_req: AuthedRequest, res: Response, next: NextFunction) {
   next();
 }
 
-const STARTER_MERCHANT_HREF = "/cities/kithna?merchant=starter-rescue";
+const STARTER_MERCHANT_HREF = "/pet";
 
 type StarterMerchantState = {
   show: boolean;
@@ -40,6 +40,69 @@ type StarterMerchantState = {
   body: string;
   ctaLabel: string;
 };
+type PetLanguageProgress = {
+  rune_count: number;
+  highest_rune: number;
+  hatchling_fluent: boolean;
+  owned_rune_keys: string[];
+};
+
+async function getPetLanguageProgress(
+  userId: string,
+): Promise<PetLanguageProgress> {
+  const { data: ownedRows, error: ownedError } = await supabaseAdmin
+    .from("user_runes")
+    .select("rune_id")
+    .eq("user_id", userId);
+
+  if (ownedError) {
+    throw ownedError;
+  }
+
+  const runeIds = (ownedRows ?? [])
+    .map((row: any) => row?.rune_id)
+    .filter(
+      (value: unknown): value is string =>
+        typeof value === "string" && value.trim().length > 0,
+    );
+
+  if (!runeIds.length) {
+    return {
+      rune_count: 0,
+      highest_rune: 0,
+      hatchling_fluent: false,
+      owned_rune_keys: [],
+    };
+  }
+
+  const { data: runeRows, error: runeError } = await supabaseAdmin
+    .from("rune_defs")
+    .select("key,rune_number")
+    .in("id", runeIds)
+    .order("rune_number", { ascending: true });
+
+  if (runeError) {
+    throw runeError;
+  }
+
+  const runes = (runeRows ?? []).filter(
+    (row: any) =>
+      typeof row?.key === "string" && Number.isFinite(Number(row?.rune_number)),
+  );
+
+  const ownedRuneKeys = runes.map((row: any) => String(row.key));
+
+  return {
+    rune_count: runes.length,
+    highest_rune: runes.reduce(
+      (highest: number, row: any) =>
+        Math.max(highest, Number(row.rune_number ?? 0)),
+      0,
+    ),
+    hatchling_fluent: ownedRuneKeys.includes("rune_of_first_speech"),
+    owned_rune_keys: ownedRuneKeys,
+  };
+}
 
 async function getStarterMerchantState(
   userId: string,
@@ -61,9 +124,9 @@ async function getStarterMerchantState(
     return {
       show: true,
       href: STARTER_MERCHANT_HREF,
-      title: "Pet Ran Away",
-      body: "All of your Kith are gone. A quiet merchant has opened inside Kithna's tutorial market with lower-tier starter rescues so you can rebuild.",
-      ctaLabel: "Visit the Kithna Merchant",
+      title: "You Lost Your Last Delta",
+      body: 'Every Delta you had has run off. A hunched spellcaster with a fuzzy, half-hidden face steps out from a hidden lair. "Take care of them more often, or buy items to help." He holds out a new egg.',
+      ctaLabel: "Accept the Egg",
     };
   }
 
@@ -107,8 +170,8 @@ function titleCaseValue(value: unknown, fallback = "Mysterious") {
 
 function petNeedsRunawayLock(pet: Record<string, any>) {
   const hunger = wholeCare(pet.hunger, 50);
-  const clean = wholeCare(pet.clean ?? pet.cleanliness, 50);
-  const happy = wholeCare(pet.happy ?? pet.happiness, 50);
+  const clean = wholeCare(pet.clean, 50);
+  const happy = wholeCare(pet.happy, 50);
   const neglectHours = wholeStat(pet.neglect_hours, 0, 0);
 
   return (hunger <= 0 || clean <= 0 || happy <= 0) && neglectHours >= 24;
@@ -242,7 +305,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
         (a: any, b: any) =>
           Number(a?.slot_index ?? 0) - Number(b?.slot_index ?? 0),
       )
-      .slice(0, 5);
+      .slice(0, 4);
 
     const teamPetIds = normalizedSlots
       .map((row: any) => row?.pet_id)
@@ -330,7 +393,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
           const source = petMap.get(String(slot.pet_id));
           if (!source?.id) return null;
 
-          const rawElement = String(source.line ?? "null_element")
+          const rawElement = String(source.line ?? "")
             .trim()
             .toLowerCase();
 
@@ -354,15 +417,26 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
                 source.personality_key,
               "Mysterious",
             ),
-            element: titleCaseValue(source.line ?? "Voidborne", "Voidborne"),
-            elementKey: rawElement === "neutral" ? "null_element" : rawElement,
+            element: titleCaseValue(source.line, "Unknown"),
+            elementKey:
+              rawElement === "neutral" ? "null_element" : rawElement || null,
             level: Number(source.level ?? 1),
+            rarity: source.rarity ?? null,
             isActive: Boolean(source.is_active),
             previewUrl:
               source.portrait_url ||
               source.sprite_url ||
               source.image_url ||
               null,
+            passive_trait_id: source.passive_trait_id ?? null,
+            passive_trait_key: source.passive_trait_key ?? null,
+            passive_trait_name: source.passive_trait_name ?? null,
+            passive_trait_rarity: source.passive_trait_rarity ?? null,
+            passive_trait_description: source.passive_trait_description ?? null,
+            passive_trait_effect_summary:
+              source.passive_trait_effect_summary ?? null,
+            passive_trait_effects: source.passive_trait_effects ?? null,
+            passive_trait_stat_key: source.passive_trait_stat_key ?? null,
           };
         })
         .filter(Boolean);
@@ -495,7 +569,11 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       hp_display = pointsResult.hp_display ?? null;
     }
 
-    const starterMerchant = await getStarterMerchantState(userId);
+    // starter_merchant is null on the happy path: the active pet's existence
+    // already proves not all pets have run away, so there is no need to query
+    // the pets table again. getStarterMerchantState is only relevant when
+    // there is no active pet (handled by buildNoPetCareResponse above).
+    const starterMerchant = null;
 
     if (elementsResult.error) {
       logger.error(
@@ -765,10 +843,9 @@ careRouter.post("/place", requireUser, async (req: AuthedRequest, res) => {
         .status(400)
         .json({ error: "That Delta has already run away." });
     }
-
     const { error: clearError } = await supabaseAdmin
       .from("pets")
-      .update({ is_active: false, location: "storage" })
+      .update({ is_active: false })
       .eq("user_id", userId)
       .eq("is_active", true);
 

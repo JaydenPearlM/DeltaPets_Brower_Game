@@ -15,6 +15,7 @@ import {
   fetchHatcheryEgg,
   fetchHatcherySlotGroups,
   fetchStarterPetAnyStage,
+  releaseHatcherySlotsForPets,
 } from "./petsRepo";
 import {
   rollGrowthTraits,
@@ -36,7 +37,16 @@ import {
   getStarterForSelection,
 } from "./starters";
 
-import { getKithnaNonStarterSpecies } from "../../shared/pets/KithnaSpecies";
+import {
+  findNonStarterSpeciesByEggName,
+  findNonStarterSpeciesById,
+} from "../../shared/pets/species/all-species";
+import { KITHNA_RARITY_RULES } from "../../shared/pets/species/kithna-species";
+import {
+  isVoidborneLine,
+  VOIDBORNE_HATCH_BONUS_POINTS,
+} from "../../shared/pets/species/voidborne";
+import { getWorldTimeOfDay } from "../../lib/deltaTime";
 
 import {
   BASIC_EGG_HATCH_MINUTES,
@@ -104,6 +114,7 @@ type PetInsertPayload = {
   passive_trait_key?: string | null;
   hatch_time_alignment?: string | null;
   growth_strong_stats?: string[] | null;
+  mutation_capacity?: number;
   growth_weak_stat?: string | null;
 };
 
@@ -129,10 +140,10 @@ type AliuneHatchSignal = {
 };
 
 const HATCH_CORRUPTION_ROLL_MAX = 1000;
-const LOW_CORRUPTION_EGG_LOSS_CHANCE = 100; // 10%
-const RISING_CORRUPTION_EGG_LOSS_CHANCE = 250; // 25%, tune later
-const HIGH_CORRUPTION_EGG_LOSS_CHANCE = 650; // 65%, tune later
-const TOO_HIGH_CORRUPTION_EGG_LOSS_CHANCE = 900; // 90%, tune later
+const LOW_CORRUPTION_EGG_LOSS_CHANCE = 20; // 2%
+const RISING_CORRUPTION_EGG_LOSS_CHANCE = 50; // 5%
+const HIGH_CORRUPTION_EGG_LOSS_CHANCE = 120; // 12%
+const TOO_HIGH_CORRUPTION_EGG_LOSS_CHANCE = 250; // 25%
 
 function isMysteryEggProtected(egg: EggRow): boolean {
   const eggName = String(egg.name ?? "").toLowerCase();
@@ -338,7 +349,9 @@ petsRouter.get(
       }
 
       const normalizedPet = normalizePetForClient(pet);
-      const hydratedPet = normalizePetForClient(applyCareDecay(normalizedPet));
+      const hydratedPet = await hydrateHatchedPassiveTrait(
+        normalizePetForClient(applyCareDecay(normalizedPet)),
+      );
 
       const careChanged =
         hydratedPet.hunger !== normalizedPet.hunger ||
@@ -369,9 +382,7 @@ petsRouter.get(
 
       const points = await fetchTotalPoints(hydratedPet.id);
       const stats = points?.base ?? null;
-      const elements = elementMapForLine(
-        (hydratedPet.line ?? "null_element") as ElementalLine,
-      );
+      const elements = elementMapForLine(hydratedPet.line ?? null);
 
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
@@ -487,8 +498,9 @@ petsRouter.post(
 
       const fullInsertPayload = {
         user_id: userId,
-        name: starter.eggName,
+        name: "Prismatic Egg",
         species: starter.speciesId,
+        rarity: "epic",
         line: resolvedLine,
         stage: "egg",
         energy: 100,
@@ -501,8 +513,8 @@ petsRouter.post(
         hatch_time_alignment: worldTime ?? null,
         growth_strong_stats: strongStats,
         growth_weak_stat: weakStat,
+        mutation_capacity: 1,
       } as PetInsertPayload;
-
       const fullInsertResult = await supabaseAdmin
         .from("pets")
         .insert(fullInsertPayload)
@@ -582,6 +594,390 @@ petsRouter.post(
 );
 
 // ============================================================
+// POST /api/pets/rescue-egg
+//
+// The "Lost Kith" rescue flow. Only usable when the user currently has
+// zero healthy pets (everything they own has run away). Grants one
+// fresh random-line starter egg, same 2-minute hatch timer as a normal
+// starter, so the player isn't locked out of the game entirely.
+//
+// Gated server-side on healthy pet count so this can't be spammed for
+// free eggs while pets are still alive, the Lost Kith Registry is the
+// path for that case instead.
+// ============================================================
+petsRouter.post(
+  "/rescue-egg",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+
+      const { data: existingPets, error: existingPetsError } =
+        await supabaseAdmin
+          .from("pets")
+          .select("id, ran_away")
+          .eq("user_id", userId);
+
+      if (existingPetsError) throw existingPetsError;
+
+      const healthyCount = (existingPets ?? []).filter(
+        (row: any) => !row?.ran_away,
+      ).length;
+
+      if (healthyCount > 0) {
+        return res.status(400).json({
+          success: false,
+          error:
+            "You still have a Delta. The rescue egg is only for when every Delta has run away.",
+        });
+      }
+
+      const { data: openSlot, error: openSlotError } = await supabaseAdmin
+        .from("hatchery_slots")
+        .select("id, slot_index")
+        .eq("user_id", userId)
+        .eq("unlocked", true)
+        .is("pet_id", null)
+        .order("slot_index", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (openSlotError) throw openSlotError;
+
+      if (!openSlot) {
+        return res.status(400).json({
+          success: false,
+          error: "No open hatchery slot is available for a rescue egg.",
+        });
+      }
+
+      const worldTime = getWorldTimeOfDay();
+      const starter = getStarterForSelection({
+        line: "random",
+        worldTime,
+        personalityKey: null,
+      });
+
+      const now = new Date();
+      const hatchEndsAt = new Date(
+        now.getTime() + BASIC_EGG_HATCH_MINUTES * 60 * 1000,
+      ).toISOString();
+
+      const { strongStats, weakStat } = rollGrowthTraits();
+      const passiveTrait = await rollPassiveTrait();
+
+      const { data: insertedPet, error: insertError } = await supabaseAdmin
+        .from("pets")
+        .insert({
+          user_id: userId,
+          name: starter.eggName,
+          species: starter.speciesId,
+          line: starter.line,
+          stage: "egg",
+          energy: 100,
+          hatch_ends_at: hatchEndsAt,
+          is_active: false,
+          location: "hatchery",
+          passive_trait_id: passiveTrait?.id ?? null,
+          passive_trait_key: passiveTrait?.key ?? null,
+          hatch_time_alignment: worldTime,
+          growth_strong_stats: strongStats,
+          growth_weak_stat: weakStat,
+          mutation_capacity: 1,
+        })
+        .select("*")
+        .single();
+
+      if (insertError) {
+        logger.error("[rescue-egg] pet insert failed", insertError);
+        return res.status(500).json({
+          success: false,
+          error: insertError.message,
+        });
+      }
+
+      if (
+        insertedPet.species !== starter.speciesId ||
+        insertedPet.line !== starter.line
+      ) {
+        logger.error("[rescue-egg] persisted identity mismatch", {
+          petId: insertedPet.id,
+          expectedSpecies: starter.speciesId,
+          storedSpecies: insertedPet.species ?? null,
+          expectedLine: starter.line,
+          storedLine: insertedPet.line ?? null,
+        });
+
+        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+
+        return res.status(500).json({
+          success: false,
+          error: "Rescue egg identity was not stored correctly.",
+        });
+      }
+
+      try {
+        await insertBaseStats(insertedPet.id, starter.baseStats);
+      } catch (statsError: any) {
+        logger.error("[rescue-egg] insertBaseStats failed", statsError);
+        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+
+        return res.status(500).json({
+          success: false,
+          error:
+            statsError?.message ??
+            statsError?.details ??
+            "Failed to insert egg base stats",
+        });
+      }
+
+      const { error: slotError } = await supabaseAdmin
+        .from("hatchery_slots")
+        .update({ pet_id: insertedPet.id })
+        .eq("id", openSlot.id)
+        .eq("user_id", userId);
+
+      if (slotError) {
+        logger.error("[rescue-egg] slot assignment failed", slotError);
+        // Roll back the pet insert so we don't leave an orphaned egg with
+        // no slot, better to fail the whole rescue than half-grant it.
+        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+        return res.status(500).json({
+          success: false,
+          error: slotError.message,
+        });
+      }
+
+      logger.info("[rescue-egg] rescue egg granted", {
+        userId,
+        petId: insertedPet.id,
+        speciesId: starter.speciesId,
+        line: starter.line,
+        slotIndex: openSlot.slot_index,
+      });
+
+      return res.status(200).json({
+        success: true,
+        pet: insertedPet,
+        slot_index: openSlot.slot_index,
+      });
+    } catch (err: any) {
+      logger.error("[rescue-egg] failed", err);
+
+      return res.status(500).json({
+        success: false,
+        error: err?.message ?? "Failed to grant rescue egg.",
+      });
+    }
+  },
+);
+
+// ============================================================
+// POST /api/pets/hatchery/move-to-hatchery
+// ============================================================
+petsRouter.post(
+  "/hatchery/move-to-hatchery",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const petId = String(req.body?.petId ?? "");
+
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          petId,
+        )
+      ) {
+        return res.status(400).json({ error: "Invalid pet id." });
+      }
+
+      const { data: egg, error: eggError } = await supabaseAdmin
+        .from("pets")
+        .select("id, stage, location, pending_hatch_minutes")
+        .eq("id", petId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (eggError) throw eggError;
+
+      if (!egg) {
+        return res.status(404).json({ error: "Egg not found." });
+      }
+
+      if (
+        egg.stage !== "egg" ||
+        (egg.location !== "storage" && egg.location !== "inventory")
+      ) {
+        return res.status(400).json({
+          error: "Only an egg in storage or inventory can enter the hatchery.",
+        });
+      }
+
+      const { data: incubatingEgg, error: incubatingEggError } =
+        await supabaseAdmin
+          .from("pets")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("stage", "egg")
+          .eq("location", "hatchery")
+          .neq("id", petId)
+          .limit(1)
+          .maybeSingle();
+
+      if (incubatingEggError) throw incubatingEggError;
+
+      if (incubatingEgg) {
+        return res.status(400).json({
+          error:
+            "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
+        });
+      }
+
+      const { data: openSlot, error: openSlotError } = await supabaseAdmin
+        .from("hatchery_slots")
+        .select("id, slot_index")
+        .eq("user_id", userId)
+        .eq("unlocked", true)
+        .is("pet_id", null)
+        .order("slot_index", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (openSlotError) throw openSlotError;
+
+      if (!openSlot) {
+        return res.status(400).json({
+          error: "No open hatchery slot is available right now.",
+        });
+      }
+
+      const previousLocation = egg.location;
+      const hatchMinutes = egg.pending_hatch_minutes ?? 3;
+      const hatchEndsAt = new Date(
+        Date.now() + hatchMinutes * 60 * 1000,
+      ).toISOString();
+
+      const { error: updateError } = await supabaseAdmin
+        .from("pets")
+        .update({
+          location: "hatchery",
+          is_active: false,
+          hatch_ends_at: hatchEndsAt,
+          pending_hatch_minutes: null,
+        })
+        .eq("id", petId)
+        .eq("user_id", userId);
+
+      if (updateError) throw updateError;
+
+      const { error: slotError } = await supabaseAdmin
+        .from("hatchery_slots")
+        .update({ pet_id: petId })
+        .eq("id", openSlot.id)
+        .eq("user_id", userId);
+
+      if (slotError) {
+        await supabaseAdmin
+          .from("pets")
+          .update({
+            location: previousLocation,
+            hatch_ends_at: null,
+            pending_hatch_minutes: hatchMinutes,
+          })
+          .eq("id", petId)
+          .eq("user_id", userId);
+
+        throw slotError;
+      }
+
+      return res.json({
+        success: true,
+        slot_index: openSlot.slot_index,
+        hatch_ends_at: hatchEndsAt,
+      });
+    } catch (err: any) {
+      logger.error("[hatchery] move egg to hatchery failed", err);
+
+      return res.status(500).json({
+        error: err?.message ?? "Failed to move egg to hatchery.",
+      });
+    }
+  },
+);
+
+// ============================================================
+// POST /api/pets/hatchery/move-to-storage
+// ============================================================
+petsRouter.post(
+  "/hatchery/move-to-storage",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const petId = String(req.body?.petId ?? "");
+
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          petId,
+        )
+      ) {
+        return res.status(400).json({ error: "Invalid pet id." });
+      }
+
+      const { data: egg, error: eggError } = await supabaseAdmin
+        .from("pets")
+        .select("id, stage, location")
+        .eq("id", petId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (eggError) throw eggError;
+
+      if (!egg) {
+        return res.status(404).json({ error: "Egg not found." });
+      }
+
+      if (egg.stage !== "egg" || egg.location !== "hatchery") {
+        return res.status(400).json({
+          error: "Only an egg in the hatchery can be moved to storage.",
+        });
+      }
+
+      const { error: updateError } = await supabaseAdmin
+        .from("pets")
+        .update({
+          location: "storage",
+          is_active: false,
+        })
+        .eq("id", petId)
+        .eq("user_id", userId);
+
+      if (updateError) throw updateError;
+
+      try {
+        await releaseHatcherySlotsForPets(userId, [petId]);
+      } catch (slotCleanupError) {
+        await supabaseAdmin
+          .from("pets")
+          .update({ location: "hatchery" })
+          .eq("id", petId)
+          .eq("user_id", userId);
+
+        throw slotCleanupError;
+      }
+
+      return res.json({ success: true });
+    } catch (err: any) {
+      logger.error("[hatchery] move egg to storage failed", err);
+
+      return res.status(500).json({
+        error: err?.message ?? "Failed to move egg to storage.",
+      });
+    }
+  },
+);
+
+// ============================================================
 // GET /api/pets/hatchery
 // ============================================================
 petsRouter.get(
@@ -651,9 +1047,7 @@ petsRouter.get(
 
       const points = await fetchTotalPoints(egg.id);
       const stats = points?.base ?? null;
-      const elements = elementMapForLine(
-        (egg.line ?? "null_element") as ElementalLine,
-      );
+      const elements = elementMapForLine(egg.line ?? null);
 
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
@@ -699,7 +1093,22 @@ petsRouter.post(
       const serverNowMs = Date.now();
       const nowIso = new Date(serverNowMs).toISOString();
 
-      const { pet: egg } = await fetchHatcheryEgg(userId);
+      const eggId = String(req.body?.eggId ?? "").trim();
+
+      if (!eggId) {
+        return res.status(400).json({ error: "Egg id is required" });
+      }
+
+      const { data: egg, error: eggError } = await supabaseAdmin
+        .from("pets")
+        .select("*")
+        .eq("id", eggId)
+        .eq("user_id", userId)
+        .eq("stage", "egg")
+        .not("hatch_ends_at", "is", null)
+        .maybeSingle();
+
+      if (eggError) throw eggError;
 
       if (!egg) {
         return res.status(404).json({ error: "No egg to hatch" });
@@ -740,11 +1149,18 @@ petsRouter.post(
         cryptoRandomInt(HATCH_CORRUPTION_ROLL_MAX) < eggLossChance;
 
       if (eggCorrupted) {
-        await supabaseAdmin
-          .from("hatchery_slots")
-          .update({ pet_id: null })
-          .eq("user_id", userId)
-          .eq("pet_id", egg.id);
+        try {
+          await releaseHatcherySlotsForPets(userId, [egg.id]);
+        } catch (slotCleanupError) {
+          logger.error(
+            "[hatch] corrupted egg slot cleanup failed",
+            slotCleanupError,
+          );
+
+          return res.status(500).json({
+            error: "The egg corrupted, but cleanup failed.",
+          });
+        }
 
         const { error: deleteEggError } = await supabaseAdmin
           .from("pets")
@@ -789,7 +1205,7 @@ petsRouter.post(
             condition: aliuneSignal.condition,
             corruption: aliuneSignal.corruption,
             message:
-              "Aliune Signal interference corrupted the egg. The shell fractured and the egg was lost.",
+              "Aliune Signal interference corrupted the egg. The egg was lost.",
           },
         });
       }
@@ -798,11 +1214,9 @@ petsRouter.post(
         ? (STARTERS.find((s) => s.speciesId === typedEgg.species) ?? null)
         : (STARTERS.find((s) => s.line === typedEgg.line) ?? null);
 
-      const kithnaSpecies = typedEgg.species
-        ? (getKithnaNonStarterSpecies().find(
-            (species) => species.id === typedEgg.species,
-          ) ?? null)
-        : null;
+      const kithnaSpecies =
+        findNonStarterSpeciesById(typedEgg.species) ??
+        findNonStarterSpeciesByEggName(typedEgg.name);
 
       const hatchlingName =
         starter?.hatchlingName ?? kithnaSpecies?.evolution.hatchling ?? null;
@@ -811,8 +1225,16 @@ petsRouter.post(
       const hatchSpeciesId = starter?.speciesId ?? kithnaSpecies?.id ?? null;
       const hatchLine =
         typedEgg.line ?? starter?.line ?? kithnaSpecies?.line ?? null;
+      const rarityBonusPoints = isVoidborneLine(hatchLine)
+        ? VOIDBORNE_HATCH_BONUS_POINTS
+        : kithnaSpecies?.rarity
+          ? KITHNA_RARITY_RULES[kithnaSpecies.rarity].rarityBonusPoints
+          : starter
+            ? KITHNA_RARITY_RULES.epic.rarityBonusPoints
+            : 0;
+      const hatchAllocationPoints = HATCH_ALLOCATION_POINTS + rarityBonusPoints;
 
-      if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId) {
+      if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId || !hatchLine) {
         logger.error("[hatch] no hatch species matched egg", {
           egg_id: egg.id,
           egg_species: typedEgg.species,
@@ -824,13 +1246,13 @@ petsRouter.post(
 
       await insertBaseStats(egg.id, hatchBaseStats);
 
-      const iv = rollIV(HATCH_ALLOCATION_POINTS);
+      const iv = rollIV(hatchAllocationPoints);
 
-      if (sumStats(iv) !== HATCH_ALLOCATION_POINTS) {
+      if (sumStats(iv) !== hatchAllocationPoints) {
         logger.error("[hatch] invalid hatch allocation total", {
           eggId: egg.id,
           iv,
-          expected: HATCH_ALLOCATION_POINTS,
+          expected: hatchAllocationPoints,
         });
 
         return res.status(500).json({ error: "Invalid hatch stat roll" });
@@ -852,11 +1274,38 @@ petsRouter.post(
           personalityKey = personalityRow.key;
         }
       }
-
       if (!personalityId || !personalityKey) {
         const rolled = await rollPersonality();
-        personalityKey = rolled.key;
-        personalityId = rolled.id;
+        personalityKey = rolled?.key ?? null;
+        personalityId = rolled?.id ?? null;
+      }
+
+      let passiveTraitId = typedEgg.passive_trait_id ?? null;
+      let passiveTraitKey = typedEgg.passive_trait_key ?? null;
+
+      if (!passiveTraitId && !passiveTraitKey) {
+        const rolledPassiveTrait = await rollPassiveTrait();
+        passiveTraitId = rolledPassiveTrait?.id ?? null;
+        passiveTraitKey = rolledPassiveTrait?.key ?? null;
+
+        if (passiveTraitId || passiveTraitKey) {
+          const { error: passiveTraitUpdateError } = await supabaseAdmin
+            .from("pets")
+            .update({
+              passive_trait_id: passiveTraitId,
+              passive_trait_key: passiveTraitKey,
+            })
+            .eq("id", egg.id)
+            .eq("user_id", userId)
+            .eq("stage", "egg");
+
+          if (passiveTraitUpdateError) {
+            logger.error(
+              "[hatch] passive trait fallback failed",
+              passiveTraitUpdateError,
+            );
+          }
+        }
       }
 
       const savedStrongStats = sanitizeGrowthStrongStats(
@@ -909,13 +1358,19 @@ petsRouter.post(
           p_growth_strong_stats: strengths,
           p_growth_weak_stat: growthWeakStatForRpc,
           p_hatch_time_alignment: hatchTimeAlignmentForRpc,
+          p_line: hatchLine,
         },
       );
 
       if (hatchError) {
         logger.error("[hatch] RPC failed", hatchError);
 
-        return res.status(500).json({ error: "Failed to hatch pet" });
+        return res.status(500).json({
+          error: hatchError.message || "Failed to hatch pet",
+          code: hatchError.code ?? null,
+          details: hatchError.details ?? null,
+          hint: hatchError.hint ?? null,
+        });
       }
 
       const result = Array.isArray(hatchResult) ? hatchResult[0] : hatchResult;
@@ -928,31 +1383,68 @@ petsRouter.post(
         });
       }
 
+      try {
+        await releaseHatcherySlotsForPets(userId, [egg.id]);
+      } catch (slotCleanupError) {
+        logger.error(
+          "[hatch] hatched egg slot cleanup failed",
+          slotCleanupError,
+        );
+      }
+
       const hatched = result.pet_row;
+
+      const { data: existingActivePet, error: activePetError } =
+        await supabaseAdmin
+          .from("pets")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("is_active", true)
+          .neq("id", egg.id)
+          .limit(1)
+          .maybeSingle();
+
+      if (activePetError) throw activePetError;
+
       const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
 
-      let finalLocation: "active" | "storage" = "storage";
+      let finalLocation: "active" | "party" | "storage" = "storage";
       let finalIsActive = false;
       let postHatchDestination: string | null = null;
       let storageResult: "party" | "storage" = "storage";
 
       if (assignedPartySlot) {
+        const shouldBecomeActive = !existingActivePet;
+
         const { error: activateErr } = await supabaseAdmin
           .from("pets")
           .update({
             location: "active",
-            is_active: true,
+            is_active: shouldBecomeActive,
           })
           .eq("id", egg.id)
           .eq("user_id", userId);
 
         if (activateErr) {
           logger.error("[hatch] activate pet failed", activateErr);
+
+          const { error: rollbackPartyError } = await supabaseAdmin
+            .from("party_slots")
+            .delete()
+            .eq("user_id", userId)
+            .eq("pet_id", egg.id);
+
+          if (rollbackPartyError) {
+            logger.error(
+              "[hatch] party assignment rollback failed",
+              rollbackPartyError,
+            );
+          }
         } else {
           finalLocation = "active";
-          finalIsActive = true;
+          finalIsActive = shouldBecomeActive;
           storageResult = "party";
-          postHatchDestination = "/pet";
+          postHatchDestination = starter ? "/pet" : null;
         }
       }
 
@@ -971,14 +1463,14 @@ petsRouter.post(
         location: finalLocation,
         is_active: finalIsActive,
         description,
-        passive_trait_id: typedEgg.passive_trait_id ?? null,
-        passive_trait_key: typedEgg.passive_trait_key ?? null,
+        passive_trait_id: passiveTraitId,
+        passive_trait_key: passiveTraitKey,
       });
 
       return res.json({
         server_now: nowIso,
         pet: hatchedPetForClient,
-        awarded_points: HATCH_ALLOCATION_POINTS,
+        awarded_points: hatchAllocationPoints,
         iv,
         points,
         gender,
