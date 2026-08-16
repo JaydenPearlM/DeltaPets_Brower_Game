@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import { requireUser, type AuthedRequest } from "../../pets/middleware/auth";
+import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "./../../lib/supabaseAdmin";
 import { getDeltaTime } from "../../lib/deltaTime";
 import { logger } from "../../lib/logger";

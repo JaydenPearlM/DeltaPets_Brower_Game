@@ -155,10 +155,10 @@
 
   /* Standard panel tokens: normal page panels use cyan outside, purple inset, and no popup-only grid requirement. */
   /* Global standard non-popup panel system */
-  --dp-standard-panel-border: var(--dp-cyber-cyan);
-  --dp-standard-panel-inner-border: var(--dp-panel-purple-border);
+  --dp-standard-panel-border: var(--dp-panel-purple-border);
+  --dp-standard-panel-inner-border: var(--dp-cyber-cyan);
   --dp-standard-panel-inset-gap: 18px;
-  --dp-standard-panel-inner-size: 6px;
+  --dp-standard-panel-inner-size: 3px;
   --dp-standard-panel-title-size: 1.35rem;
   --dp-standard-panel-section-title-size: 1.18rem;
   --dp-standard-panel-splash-purple: rgba(169, 105, 255, 0.56);
@@ -212,7 +212,7 @@
   --dp-popup-cyan-wash: rgba(77, 234, 255, 0.16);
   --dp-popup-purple-splash: rgba(169, 105, 255, 0.16);
   --dp-popup-border-width: 3px;
-  --dp-popup-inner-border-width: 4px;
+  --dp-popup-inner-border-width: 3px;
   --dp-popup-inset-gap: 10px;
   --dp-popup-window-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
 
@@ -400,7 +400,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border: 2px solid var(--dp-standard-panel-border);
+  border: 3px solid var(--dp-standard-panel-border);
   border-radius: 24px;
   background: var(--dp-standard-panel-bg);
   box-shadow: var(--dp-standard-panel-shadow);

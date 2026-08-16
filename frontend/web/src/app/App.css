@@ -23,7 +23,8 @@
 /* ===== HEADER BASE ===== */
 
 .appHeader {
-  position: relative;
+  position: sticky;
+  top: 0;
   width: 100%;
   z-index: 9999;
   overflow: visable;

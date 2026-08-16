@@ -612,15 +612,79 @@
     box-sizing: border-box;
   }
 
-  /* Weekly rewards bar */
-  .wr-header,
+  .wr-header {
+    align-items: flex-start;
+  }
+
+  .wr-title {
+    font-size: 1.25rem;
+    line-height: 1.05;
+  }
+
   .wr-actions {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    flex-wrap: nowrap;
   }
 
   .wr-bar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  /* Rewards bar */
+  .wr-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dp-profile-rewards-popup {
+    width: calc(100% - 16px) !important;
+    max-width: none !important;
+    max-height: calc(100vh - 16px) !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  .dp-profile-rewards-popup .wr-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  .dp-profile-rewards-popup .wr-title {
+    font-size: 1.25rem;
+    line-height: 1.05;
+  }
+
+  .dp-profile-rewards-popup .wr-slot {
+    min-width: 0;
+    min-height: 94px;
+    padding: 12px 10px 10px;
+  }
+
+  .dp-profile-rewards-popup .wr-reward {
+    font-size: 11px;
+  }
+
+  .dp-profile-rewards-popup .wr-day,
+  .dp-profile-rewards-popup .wr-state {
+    font-size: 10px;
+  }
+
+  .dp-profile-rewards-popup .dp-close-button,
+  .dp-profile-rewards-popup .wr-claimBtn {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  .wr-slot {
+    min-width: 0;
+    min-height: 96px;
+    padding: 12px 10px 10px;
   }
 
   /* Alpha cutscene text */
@@ -2215,10 +2279,35 @@
     width: 100% !important;
     box-sizing: border-box !important;
   }
-
+  .dp-profile-page .dp-profile-popup-backdrop {
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    padding: 12px !important;
+    display: grid !important;
+    place-items: center !important;
+  }
   /* Rewards bar */
-  .wr-bar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Rewards bar */
+  .dp-profile-rewards-popup .wr-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .dp-profile-rewards-popup {
+    width: calc(100% - 12px) !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 12px) !important;
+    padding: 8px !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .dp-profile-rewards-popup .wr-wrap {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -2359,26 +2448,43 @@
   }
 
   /* Weekly rewards: 1 column */
+  .dp-profile-rewards-popup .wr-reward {
+    font-size: 11px;
+  }
+
+  .dp-profile-rewards-popup .wr-day,
+  .dp-profile-rewards-popup .wr-state {
+    font-size: 10px;
+  }
+
+  .dp-profile-rewards-popup .dp-close-button,
+  .dp-profile-rewards-popup .wr-claimBtn {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
   .wr-bar {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dp-profile-rewards-button {
     width: 100% !important;
+    min-height: 44px !important;
     margin: 0 0 18px !important;
   }
 
   .dp-profile-rewards-popup {
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: calc(100vh - 20px) !important;
-    padding: 18px 12px 12px !important;
+    width: calc(100% - 16px) !important;
+    max-width: none !important;
+    max-height: calc(100vh - 16px) !important;
+    padding: 8px !important;
     box-sizing: border-box !important;
   }
 
   .dp-profile-rewards-popup .wr-wrap {
     width: 100% !important;
     min-width: 0 !important;
+    padding: 14px !important;
     box-sizing: border-box !important;
   }
 }

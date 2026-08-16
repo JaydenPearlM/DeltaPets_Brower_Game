@@ -121,9 +121,12 @@
   box-shadow: inset 0 0 0 2px var(--dp-purple);
   transform-bottom: translateY(2px);
 }
-.dp-profile-trainer-avatar span {
-  font-size: 5rem;
-  color: var(--dp-text-muted);
+.dp-profile-trainer-avatar img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 210px;
+  object-fit: contain;
 }
 
 .dp-profile-customize-button {
@@ -143,6 +146,49 @@
 
 .dp-profile-info {
   min-width: 0;
+}
+
+.dp-profile-customizer {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.dp-profile-customizer-card {
+  width: 100%;
+  min-height: 112px;
+  padding: 16px 18px;
+  border: 1px solid var(--dp-border-panel-soft);
+  border-radius: var(--radius-md);
+  background: var(--dp-surface-card-dark);
+  color: var(--dp-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dp-profile-customizer-card strong,
+.dp-profile-customizer-card span {
+  display: block;
+}
+
+.dp-profile-customizer-card strong {
+  margin-bottom: 8px;
+  font-family: var(--dp-font-display);
+  color: var(--dp-title-gold);
+  font-size: 1.1rem;
+}
+
+.dp-profile-customizer-card span {
+  margin-top: 4px;
+  color: var(--dp-text-muted);
+}
+
+.dp-profile-customizer-card:hover,
+.dp-profile-customizer-card:focus-visible {
+  border-color: var(--dp-cyber-cyan);
 }
 
 .dp-profile-info h1 {
@@ -630,13 +676,13 @@
 .dp-profile-popup-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 10000;
   padding: 10px;
-  background: rgba(4, 8, 20, 0.78);
+  background: rgba(4, 8, 20, 0.68);
+  backdrop-filter: blur(8px);
   display: grid;
   place-items: center;
 }
-
 .dp-profile-rewards-popup {
   width: min(960px, 100%);
   max-height: calc(100vh - 20px);
@@ -711,6 +757,12 @@
   .dp-profile-info h1 {
     text-align: center;
   }
+
+  .dp-profile-customizer {
+    align-items: center;
+  }
+
+  .dp-profile-details > div {
 
   .dp-profile-details > div {
     grid-template-columns: 1fr;

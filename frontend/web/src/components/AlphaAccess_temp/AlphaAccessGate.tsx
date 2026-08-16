@@ -1,3 +1,7 @@
+// NOTE: The folder is named AlphaAccess_temp but this component is NOT temporary —
+// it is the live Closed Alpha password gate, active in router.tsx.
+// TODO: Delete this component entirely when transitioning to Open Alpha.
+// Until then, do not remove it.
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import "./AlphaAccessGate.css";
 

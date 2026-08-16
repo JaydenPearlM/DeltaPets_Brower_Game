@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { Response } from "express";
 import { randomUUID } from "crypto";
-import { requireUser, type AuthedRequest } from "../../pets/middleware/auth";
+import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { logger } from "../../lib/logger";
 
@@ -51,6 +51,7 @@ type BattleState = {
   activeUnitId: string | null;
   playerTeam: BattleUnit[];
   enemyTeam: BattleUnit[];
+  mendMultiplier: number;
   log: string[];
   createdAt: string;
   updatedAt: string;
@@ -323,7 +324,14 @@ function performSkill(
 ) {
   if (skillId === "mend") {
     const allyTarget = target.side === actor.side ? target : actor;
-    const heal = Math.max(4, Math.round(actor.magi * 1.25 + actor.level * 2));
+    const baseHeal = Math.max(
+      4,
+      Math.round(actor.magi * 1.25 + actor.level * 2),
+    );
+    const heal =
+      actor.side === "player"
+        ? Math.round(baseHeal * state.mendMultiplier)
+        : baseHeal;
 
     allyTarget.hpCur = clampHp(allyTarget.hpCur + heal, allyTarget.hpMax);
     state.log.push(`${actor.name} mends ${allyTarget.name} for ${heal} HP.`);
@@ -499,7 +507,6 @@ battlePveRouter.post(
           error: "One or more pets were not found for this user.",
         });
       }
-
       const playerTeam = pets.map(normalizePetToBattleUnit);
       const avgLevel = Math.max(
         1,
@@ -508,6 +515,18 @@ battlePveRouter.post(
             playerTeam.length,
         ),
       );
+
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .select("active_title")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (profileError) {
+        return res.status(500).json({ error: profileError.message });
+      }
+
+      const mendMultiplier = profile?.active_title === "Alpha Pro" ? 1.05 : 1;
 
       const now = new Date().toISOString();
 
@@ -521,6 +540,7 @@ battlePveRouter.post(
         activeUnitId: null,
         playerTeam,
         enemyTeam: createEnemyTeam(avgLevel),
+        mendMultiplier,
         log: ["A wild enemy team appears."],
         createdAt: now,
         updatedAt: now,

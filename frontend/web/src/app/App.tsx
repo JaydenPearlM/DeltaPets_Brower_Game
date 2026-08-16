@@ -36,7 +36,7 @@ const BATTLE_LINKS: MenuLink[] = [
 
 const CITY_LINKS: MenuLink[] = [
   { label: "Kithna", to: "/cities/kithna" },
-  { label: "Kath", to: "/cities/kath" },
+  // Kath is not yet built — no route exists. Add back when the city has a page.
 ];
 
 export default function App() {

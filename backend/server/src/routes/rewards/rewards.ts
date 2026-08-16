@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { Response } from "express";
 
-import { requireUser, type AuthedRequest } from "../../pets/middleware/auth";
+import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 
 export const rewardsRouter = Router();
@@ -28,7 +28,7 @@ type WeeklyReward =
 const WEEKLY_REWARDS: readonly WeeklyReward[] = [
   { kind: "dots", amount: 300, label: "300 Dots" }, // Mon
   { kind: "dots", amount: 600, label: "600 Dots" }, // Tue
-  { kind: "item", slug: "potato", qty: 1, label: "Potato" }, // Wed
+  { kind: "item", slug: "haiku_scroll_50", qty: 1, label: "Haiku Scroll #50" }, // Wed // Wed
   { kind: "item", slug: "potion_small", qty: 3, label: "Potions x3" }, // Thu
   {
     kind: "xp_boost",

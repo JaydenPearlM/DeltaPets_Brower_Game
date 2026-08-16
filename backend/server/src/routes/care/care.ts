@@ -4,7 +4,7 @@ import { Router } from "express";
 import type { NextFunction, Response } from "express";
 import { safeNum } from "../../lib/utils";
 import { logger } from "../../lib/logger";
-import { requireUser, type AuthedRequest } from "../../pets/middleware/auth";
+import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
 import { fetchActivePet } from "../routePets/petsRepo";
@@ -170,8 +170,8 @@ function titleCaseValue(value: unknown, fallback = "Mysterious") {
 
 function petNeedsRunawayLock(pet: Record<string, any>) {
   const hunger = wholeCare(pet.hunger, 50);
-  const clean = wholeCare(pet.clean ?? pet.cleanliness, 50);
-  const happy = wholeCare(pet.happy ?? pet.happiness, 50);
+  const clean = wholeCare(pet.clean, 50);
+  const happy = wholeCare(pet.happy, 50);
   const neglectHours = wholeStat(pet.neglect_hours, 0, 0);
 
   return (hunger <= 0 || clean <= 0 || happy <= 0) && neglectHours >= 24;
@@ -569,7 +569,11 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       hp_display = pointsResult.hp_display ?? null;
     }
 
-    const starterMerchant = await getStarterMerchantState(userId);
+    // starter_merchant is null on the happy path: the active pet's existence
+    // already proves not all pets have run away, so there is no need to query
+    // the pets table again. getStarterMerchantState is only relevant when
+    // there is no active pet (handled by buildNoPetCareResponse above).
+    const starterMerchant = null;
 
     if (elementsResult.error) {
       logger.error(

@@ -6,16 +6,16 @@ import { formatDuration } from "../../../lib/timers/time";
 import { useNow } from "../../../lib/timers/useNow";
 import { useServerCountdown } from "../../../lib/timers/useServerCountdown";
 import { useDeltaTime } from "@/lib/timers/useDeltaTime";
-import prismaticEggPng from "@/Pets_Creation/assets/eggs/prismatic_egg.png";
-import tideEggPng from "@/Pets_Creation/assets/eggs/tide_egg.png";
-import emberEggPng from "@/Pets_Creation/assets/eggs/ember_egg.png";
-import groveEggPng from "@/Pets_Creation/assets/eggs/grove_egg.png";
-import zephyrEggPng from "@/Pets_Creation/assets/eggs/zephr_egg.png";
-import frostveilEggPng from "@/Pets_Creation/assets/eggs/frostviel_egg.png";
-import stormEggPng from "@/Pets_Creation/assets/eggs/storm_egg.png";
-import dawnshardEggPng from "@/Pets_Creation/assets/eggs/light_egg.png";
-import eclipseEggPng from "@/Pets_Creation/assets/eggs/eclipse_egg.png";
-import voidborneEggPng from "@/Pets_Creation/assets/eggs/Voidborne_egg.png";
+import prismaticEggPng from "@/kith/assets/eggs/prismatic_egg.png";
+import tideEggPng from "@/kith/assets/eggs/tide_egg.png";
+import emberEggPng from "@/kith/assets/eggs/ember_egg.png";
+import groveEggPng from "@/kith/assets/eggs/grove_egg.png";
+import zephyrEggPng from "@/kith/assets/eggs/zephr_egg.png";
+import frostveilEggPng from "@/kith/assets/eggs/frostviel_egg.png";
+import stormEggPng from "@/kith/assets/eggs/storm_egg.png";
+import dawnshardEggPng from "@/kith/assets/eggs/light_egg.png";
+import eclipseEggPng from "@/kith/assets/eggs/eclipse_egg.png";
+import voidborneEggPng from "@/kith/assets/eggs/Voidborne_egg.png";
 import { PetStoragePanel } from "./storage/PetStoragePanel";
 
 import {

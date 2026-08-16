@@ -5,7 +5,7 @@ import { Router } from "express";
 import { meRouter } from "./me";
 
 import { petsRouter } from "./routePets/routePets";
-import { petActionsRouter } from "./petActions";
+import { petActionsRouter } from "./care/petActions";
 import { rewardsRouter } from "./rewards/rewards";
 
 import { dailyCareRouter } from "./care/dailyCare";

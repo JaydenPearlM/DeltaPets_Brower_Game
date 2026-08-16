@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
-
+import haikuScrollIcon from "@/kith/assets/Scroll/Haiku_Scrolls.png";
 import "./inventory.css";
 
 // Backend-tracked items (GET /api/inventory). Separate from the local
@@ -354,9 +354,11 @@ export default function Inventory({ onClose }: InventoryProps) {
     crystals: 0,
   });
   const [openingCarePackage, setOpeningCarePackage] = useState(false);
-
   const [showCarePackageNotice, setShowCarePackageNotice] = useState(false);
   const [carePackageMessage, setCarePackageMessage] = useState("");
+  const [haikuCollectionOpen, setHaikuCollectionOpen] = useState(false);
+  const [selectedHaikuScroll, setSelectedHaikuScroll] =
+    useState<BackendInventoryItem | null>(null);
 
   useEffect(() => {
     const handleInventoryChange = () => {
@@ -495,6 +497,17 @@ export default function Inventory({ onClose }: InventoryProps) {
     [backendItems],
   );
 
+  const haikuScrolls = useMemo(
+    () => backendItems.filter((item) => item.effects?.collection === "haiku"),
+    [backendItems],
+  );
+
+  const nonHaikuBackendItems = useMemo(
+    () =>
+      sortedBackendItems.filter((item) => item.effects?.collection !== "haiku"),
+    [sortedBackendItems],
+  );
+
   return (
     <section className="inventoryPanel" aria-label="Inventory">
       {showCarePackageNotice ? (
@@ -577,6 +590,20 @@ export default function Inventory({ onClose }: InventoryProps) {
         </p>
       </header>
 
+      <button
+        type="button"
+        className="inventoryHaikuButton"
+        onClick={() => setHaikuCollectionOpen(true)}
+      >
+        <img
+          className="inventoryHaikuIcon"
+          src={haikuScrollIcon}
+          alt=""
+          aria-hidden="true"
+        />
+        <span>Haiku Scrolls</span>
+      </button>
+
       <p className="inventorySectionLabel">
         Items ({visibleInventoryItems.length}/{MAX_INVENTORY_SLOTS})
       </p>
@@ -616,7 +643,7 @@ export default function Inventory({ onClose }: InventoryProps) {
       </div>
 
       {(() => {
-        const nonPackageItems = sortedBackendItems.filter(
+        const nonPackageItems = nonHaikuBackendItems.filter(
           (item) => item.slug !== "closed-alpha-care-package",
         );
 
@@ -674,6 +701,115 @@ export default function Inventory({ onClose }: InventoryProps) {
           </>
         );
       })()}
+
+      {haikuCollectionOpen ? (
+        <div
+          className="inventoryHaikuBackdrop"
+          role="presentation"
+          onMouseDown={() => {
+            setHaikuCollectionOpen(false);
+            setSelectedHaikuScroll(null);
+          }}
+        >
+          <section
+            className="inventoryHaikuPopup dp-blue-grid-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Haiku Scrolls"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            {selectedHaikuScroll ? (
+              <>
+                <img
+                  className="inventoryHaikuIcon"
+                  src={haikuScrollIcon}
+                  alt=""
+                  aria-hidden="true"
+                />
+
+                <h2>{selectedHaikuScroll.name}</h2>
+
+                <p className="inventoryHaikuDescription">
+                  A tiny ribbon-bound scroll containing a piece of Aliune Lore.
+                </p>
+
+                <div className="inventoryHaikuText">
+                  {Array.isArray(selectedHaikuScroll.effects?.haiku)
+                    ? selectedHaikuScroll.effects.haiku.map((line) => (
+                        <p key={String(line)}>{String(line)}</p>
+                      ))
+                    : null}
+                </div>
+
+                <button
+                  type="button"
+                  className="dp-btn--close"
+                  onClick={() => setSelectedHaikuScroll(null)}
+                >
+                  Close
+                </button>
+              </>
+            ) : (
+              <>
+                <h2>Haiku Scrolls</h2>
+
+                <p className="inventoryHaikuDescription">
+                  A tiny ribbon-bound scroll containing a piece of Aliune Lore.
+                </p>
+
+                <div className="inventoryHaikuGrid">
+                  {Array.from({ length: 50 }, (_, index) => {
+                    const scrollNumber = index + 1;
+                    const collectedScroll = haikuScrolls.find(
+                      (item) =>
+                        Number(item.effects?.scrollNumber) === scrollNumber,
+                    );
+
+                    return (
+                      <button
+                        key={scrollNumber}
+                        type="button"
+                        className={
+                          collectedScroll
+                            ? "inventoryHaikuSlot inventoryHaikuSlot--collected"
+                            : "inventoryHaikuSlot"
+                        }
+                        disabled={!collectedScroll}
+                        onClick={() => {
+                          if (collectedScroll) {
+                            setSelectedHaikuScroll(collectedScroll);
+                          }
+                        }}
+                      >
+                        <img
+                          className="inventoryHaikuSlotIcon"
+                          src={haikuScrollIcon}
+                          alt=""
+                          aria-hidden="true"
+                        />
+
+                        <span>Haiku Scroll #{scrollNumber}</span>
+
+                        <span className="inventoryHaikuSlotState">
+                          {collectedScroll ? "Collected" : "Locked"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  className="dp-btn--close"
+                  onClick={() => setHaikuCollectionOpen(false)}
+                >
+                  Close
+                </button>
+              </>
+            )}
+          </section>
+        </div>
+      ) : null}
 
       {carePackageMessage ? (
         <p className="inventoryCarePackageMessage" role="status">

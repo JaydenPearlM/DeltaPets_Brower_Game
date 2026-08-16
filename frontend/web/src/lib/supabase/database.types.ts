@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       aliune_signal_reports: {
@@ -177,7 +202,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "announcements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       awards: {
         Row: {
@@ -292,8 +325,22 @@ export type Database = {
             foreignKeyName: "battle_runs_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "battle_runs_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
             referencedRelation: "pets"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_runs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -328,25 +375,44 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "daily_care_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       daily_login_rewards: {
         Row: {
           id: string
           last_claimed_at: string | null
+          potato_received: boolean
           streak: number
         }
         Insert: {
           id: string
           last_claimed_at?: string | null
+          potato_received?: boolean
           streak?: number
         }
         Update: {
           id?: string
           last_claimed_at?: string | null
+          potato_received?: boolean
           streak?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "daily_login_rewards_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       eggs: {
         Row: {
@@ -380,6 +446,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "eggs_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
           {
             foreignKeyName: "eggs_pet_id_fkey"
             columns: ["pet_id"]
@@ -463,7 +536,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "hatchery_shelf_slots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       hatchery_slots: {
         Row: {
@@ -498,8 +579,22 @@ export type Database = {
             foreignKeyName: "hatchery_slots_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "hatchery_slots_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
             referencedRelation: "pets"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hatchery_slots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -537,7 +632,15 @@ export type Database = {
           x?: number
           y?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "home_objects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       homepage_alerts: {
         Row: {
@@ -648,8 +751,22 @@ export type Database = {
             foreignKeyName: "inventory_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "inventory_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
             referencedRelation: "pets"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -692,6 +809,45 @@ export type Database = {
         }
         Relationships: []
       }
+      mutations: {
+        Row: {
+          created_at: string
+          description: string
+          drawback_summary: string | null
+          effect_summary: string
+          effects: Json
+          id: string
+          is_active: boolean
+          key: string
+          name: string
+          rarity: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          drawback_summary?: string | null
+          effect_summary: string
+          effects?: Json
+          id?: string
+          is_active?: boolean
+          key: string
+          name: string
+          rarity: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          drawback_summary?: string | null
+          effect_summary?: string
+          effects?: Json
+          id?: string
+          is_active?: boolean
+          key?: string
+          name?: string
+          rarity?: string
+        }
+        Relationships: []
+      }
       party_slots: {
         Row: {
           created_at: string
@@ -722,10 +878,63 @@ export type Database = {
             foreignKeyName: "party_slots_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "party_slots_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: true
             referencedRelation: "pets"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "party_slots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
         ]
+      }
+      passive_traits: {
+        Row: {
+          created_at: string
+          description: string
+          effect_summary: string
+          effects: Json
+          id: string
+          is_active: boolean
+          key: string
+          name: string
+          rarity: string
+          stat_key: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          effect_summary: string
+          effects?: Json
+          id?: string
+          is_active?: boolean
+          key: string
+          name: string
+          rarity: string
+          stat_key: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          effect_summary?: string
+          effects?: Json
+          id?: string
+          is_active?: boolean
+          key?: string
+          name?: string
+          rarity?: string
+          stat_key?: string
+        }
+        Relationships: []
       }
       patch_notes: {
         Row: {
@@ -833,6 +1042,13 @@ export type Database = {
             foreignKeyName: "pet_awards_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "pet_awards_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
             referencedRelation: "pets"
             referencedColumns: ["id"]
           },
@@ -864,6 +1080,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "element_defs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pet_element_affinities_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
           },
           {
             foreignKeyName: "pet_element_affinities_pet_id_fkey"
@@ -916,6 +1139,62 @@ export type Database = {
             foreignKeyName: "pet_elements_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "pet_elements_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: true
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pet_mutations: {
+        Row: {
+          assigned_at: string
+          has_mutation: boolean
+          mutation_id: string | null
+          pet_id: string
+          roll_value: number
+          slot_index: number
+        }
+        Insert: {
+          assigned_at?: string
+          has_mutation: boolean
+          mutation_id?: string | null
+          pet_id: string
+          roll_value: number
+          slot_index?: number
+        }
+        Update: {
+          assigned_at?: string
+          has_mutation?: boolean
+          mutation_id?: string | null
+          pet_id?: string
+          roll_value?: number
+          slot_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_mutations_mutation_id_fkey"
+            columns: ["mutation_id"]
+            isOneToOne: false
+            referencedRelation: "mutations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pet_mutations_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "pet_mutations_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
             referencedRelation: "pets"
             referencedColumns: ["id"]
           },
@@ -941,6 +1220,13 @@ export type Database = {
           unlocked_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "pet_skills_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
           {
             foreignKeyName: "pet_skills_pet_id_fkey"
             columns: ["pet_id"]
@@ -1002,6 +1288,13 @@ export type Database = {
             foreignKeyName: "pet_stat_allocations_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "pet_stat_allocations_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
             referencedRelation: "pets"
             referencedColumns: ["id"]
           },
@@ -1049,6 +1342,13 @@ export type Database = {
             foreignKeyName: "pet_stats_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "pet_stats_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: true
             referencedRelation: "pets"
             referencedColumns: ["id"]
           },
@@ -1062,6 +1362,7 @@ export type Database = {
           cd_bond_ends_at: string | null
           cd_clean_ends_at: string | null
           cd_feed_ends_at: string | null
+          cd_pet_ends_at: string | null
           cd_play_ends_at: string | null
           clean: number
           comfort: number
@@ -1088,16 +1389,20 @@ export type Database = {
           last_hunger_decay_at: string
           level: number
           line: Database["public"]["Enums"]["elemental_line"]
-          location: string | null
+          location: string
           magi: number
           mana: number
+          mutation_capacity: number
           name: string | null
           neglect_hours: number
           nickname: string | null
+          passive_trait_id: string | null
+          passive_trait_key: string | null
+          pending_hatch_minutes: number | null
           personality_id: string | null
           personality_key: string | null
-          pending_hatch_minutes: number | null
           ran_away: boolean
+          rarity: string | null
           rest: number
           runaway_at: string | null
           spd: number
@@ -1115,6 +1420,7 @@ export type Database = {
           cd_bond_ends_at?: string | null
           cd_clean_ends_at?: string | null
           cd_feed_ends_at?: string | null
+          cd_pet_ends_at?: string | null
           cd_play_ends_at?: string | null
           clean?: number
           comfort?: number
@@ -1141,16 +1447,20 @@ export type Database = {
           last_hunger_decay_at?: string
           level?: number
           line: Database["public"]["Enums"]["elemental_line"]
-          location?: string | null
+          location?: string
           magi?: number
           mana?: number
+          mutation_capacity?: number
           name?: string | null
           neglect_hours?: number
           nickname?: string | null
+          passive_trait_id?: string | null
+          passive_trait_key?: string | null
+          pending_hatch_minutes?: number | null
           personality_id?: string | null
           personality_key?: string | null
-          pending_hatch_minutes?: number | null
           ran_away?: boolean
+          rarity?: string | null
           rest?: number
           runaway_at?: string | null
           spd?: number
@@ -1168,6 +1478,7 @@ export type Database = {
           cd_bond_ends_at?: string | null
           cd_clean_ends_at?: string | null
           cd_feed_ends_at?: string | null
+          cd_pet_ends_at?: string | null
           cd_play_ends_at?: string | null
           clean?: number
           comfort?: number
@@ -1194,16 +1505,20 @@ export type Database = {
           last_hunger_decay_at?: string
           level?: number
           line?: Database["public"]["Enums"]["elemental_line"]
-          location?: string | null
+          location?: string
           magi?: number
           mana?: number
+          mutation_capacity?: number
           name?: string | null
           neglect_hours?: number
           nickname?: string | null
+          passive_trait_id?: string | null
+          passive_trait_key?: string | null
+          pending_hatch_minutes?: number | null
           personality_id?: string | null
           personality_key?: string | null
-          pending_hatch_minutes?: number | null
           ran_away?: boolean
+          rarity?: string | null
           rest?: number
           runaway_at?: string | null
           spd?: number
@@ -1216,22 +1531,36 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "pets_passive_trait_id_fkey"
+            columns: ["passive_trait_id"]
+            isOneToOne: false
+            referencedRelation: "passive_traits"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pets_personality_id_fkey"
             columns: ["personality_id"]
             isOneToOne: false
             referencedRelation: "personalities"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       profiles: {
         Row: {
+          active_title: string | null
           alpha_ribbon_awarded: boolean
           created_at: string
           daily_care_completed_at: string | null
           display_name: string | null
           email: string | null
-          food_trough_unlocked: boolean
           hatchery_initialized: boolean
           intro_cutscene_completed: boolean
           intro_seen: boolean
@@ -1243,12 +1572,12 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          active_title?: string | null
           alpha_ribbon_awarded?: boolean
           created_at?: string
           daily_care_completed_at?: string | null
           display_name?: string | null
           email?: string | null
-          food_trough_unlocked?: boolean
           hatchery_initialized?: boolean
           intro_cutscene_completed?: boolean
           intro_seen?: boolean
@@ -1260,12 +1589,12 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          active_title?: string | null
           alpha_ribbon_awarded?: boolean
           created_at?: string
           daily_care_completed_at?: string | null
           display_name?: string | null
           email?: string | null
-          food_trough_unlocked?: boolean
           hatchery_initialized?: boolean
           intro_cutscene_completed?: boolean
           intro_seen?: boolean
@@ -1276,7 +1605,15 @@ export type Database = {
           user_id?: string
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       pve_active_buffs: {
         Row: {
@@ -1309,7 +1646,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pve_active_buffs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       pve_instabilities: {
         Row: {
@@ -1470,8 +1815,22 @@ export type Database = {
             foreignKeyName: "pve_instability_runs_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "pve_instability_runs_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
             referencedRelation: "pets"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pve_instability_runs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1505,6 +1864,80 @@ export type Database = {
           total_instabilities_cleared?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pve_research_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      retired_kith_species: {
+        Row: {
+          created_at: string
+          display_name: string
+          element_key: string
+          retirement_group: string
+          retirement_note: string
+          species_key: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          element_key: string
+          retirement_group?: string
+          retirement_note?: string
+          species_key: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          element_key?: string
+          retirement_group?: string
+          retirement_note?: string
+          species_key?: string
+        }
+        Relationships: []
+      }
+      rune_defs: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          key: string
+          name: string
+          rune_number: number
+          stage_tier: string
+          updated_at: string
+          vocabulary_group: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          key: string
+          name: string
+          rune_number: number
+          stage_tier: string
+          updated_at?: string
+          vocabulary_group: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          key?: string
+          name?: string
+          rune_number?: number
+          stage_tier?: string
+          updated_at?: string
+          vocabulary_group?: string
         }
         Relationships: []
       }
@@ -1565,26 +1998,171 @@ export type Database = {
         }
         Relationships: []
       }
+      trainer_awards: {
+        Row: {
+          award_id: string
+          context: Json | null
+          created_at: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          award_id: string
+          context?: Json | null
+          created_at?: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          award_id?: string
+          context?: Json | null
+          created_at?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainer_awards_award_id_fkey"
+            columns: ["award_id"]
+            isOneToOne: false
+            referencedRelation: "awards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trainer_awards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      user_kith_discoveries: {
+        Row: {
+          display_name: string
+          first_hatched_at: string
+          species_key: string
+          user_id: string
+        }
+        Insert: {
+          display_name: string
+          first_hatched_at?: string
+          species_key: string
+          user_id: string
+        }
+        Update: {
+          display_name?: string
+          first_hatched_at?: string
+          species_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_kith_discoveries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       user_resources: {
         Row: {
-          trough_capacity: number
-          trough_fill: number
           updated_at: string
           user_id: string
         }
         Insert: {
-          trough_capacity?: number
-          trough_fill?: number
           updated_at?: string
           user_id: string
         }
         Update: {
-          trough_capacity?: number
-          trough_fill?: number
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_resources_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      user_retired_kith: {
+        Row: {
+          archived_at: string
+          first_owned_at: string
+          species_key: string
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string
+          first_owned_at: string
+          species_key: string
+          user_id: string
+        }
+        Update: {
+          archived_at?: string
+          first_owned_at?: string
+          species_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_retired_kith_species_key_fkey"
+            columns: ["species_key"]
+            isOneToOne: false
+            referencedRelation: "retired_kith_species"
+            referencedColumns: ["species_key"]
+          },
+          {
+            foreignKeyName: "user_retired_kith_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      user_runes: {
+        Row: {
+          discovered_at: string
+          discovery_context: Json
+          rune_id: string
+          user_id: string
+        }
+        Insert: {
+          discovered_at?: string
+          discovery_context?: Json
+          rune_id: string
+          user_id: string
+        }
+        Update: {
+          discovered_at?: string
+          discovery_context?: Json
+          rune_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_runes_rune_id_fkey"
+            columns: ["rune_id"]
+            isOneToOne: false
+            referencedRelation: "rune_defs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_runes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       wallet_ledger: {
         Row: {
@@ -1614,7 +2192,15 @@ export type Database = {
           ref_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wallet_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       wallets: {
         Row: {
@@ -1638,10 +2224,38 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wallets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
     }
     Views: {
+      admin_user_starters: {
+        Row: {
+          display_name: string | null
+          email: string | null
+          last_sign_in_at: string | null
+          owns_pet: boolean | null
+          pet_count: number | null
+          starter_created_at: string | null
+          starter_current_form: string | null
+          starter_element: string | null
+          starter_nickname: string | null
+          starter_pet_id: string | null
+          starter_species: string | null
+          starter_species_key: string | null
+          starter_stage: string | null
+          user_created_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       homepage_alerts_live: {
         Row: {
           alert_color: string | null
@@ -1849,6 +2463,13 @@ export type Database = {
             foreignKeyName: "pet_stats_pet_id_fkey"
             columns: ["pet_id"]
             isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
+          {
+            foreignKeyName: "pet_stats_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: true
             referencedRelation: "pets"
             referencedColumns: ["id"]
           },
@@ -1867,6 +2488,13 @@ export type Database = {
           spd: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pet_stats_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["starter_pet_id"]
+          },
           {
             foreignKeyName: "pet_stats_pet_id_fkey"
             columns: ["pet_id"]
@@ -1892,6 +2520,7 @@ export type Database = {
           rest: number
         }[]
       }
+      assign_pet_mutation: { Args: { p_pet_id: string }; Returns: string }
       consume_trough: {
         Args: { p_amount: number; p_user_id: string }
         Returns: {
@@ -1984,6 +2613,7 @@ export type Database = {
           p_iv_magi: number
           p_iv_mana: number
           p_iv_spd: number
+          p_line: Database["public"]["Enums"]["elemental_line"]
           p_personality_id: string
           p_personality_key: string
           p_user_id: string
@@ -2016,6 +2646,44 @@ export type Database = {
         }
         Returns: undefined
       }
+      open_closed_alpha_care_package: {
+        Args: { p_user_id: string }
+        Returns: {
+          dots: number
+          opened: boolean
+        }[]
+      }
+      recover_runaway_pet_to_party: {
+        Args: { p_pet_id: string; p_user_id: string }
+        Returns: {
+          destination: string
+          message: string
+          party_slot: number
+        }[]
+      }
+      restore_test_runaway_pets: {
+        Args: { p_confirm_text?: string }
+        Returns: {
+          action: string
+          email: string
+          new_is_active: boolean
+          new_location: string
+          new_ran_away: boolean
+          new_runaway_at: string
+          old_is_active: boolean
+          old_location: string
+          old_ran_away: boolean
+          old_runaway_at: string
+          pet_id: string
+          pet_name: string
+          species: string
+          user_id: string
+        }[]
+      }
+      spend_wallet: {
+        Args: { p_crystals?: number; p_dots?: number; p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       age_stage:
@@ -2044,6 +2712,7 @@ export type Database = {
         | "storm"
         | "light"
         | "shadow"
+        | "null_element"
       fight_kind: "normal" | "boss"
       item_type:
         | "care"
@@ -2076,7 +2745,7 @@ export type Database = {
         | "generous"
         | "kind"
       pet_gender: "male" | "female" | "null" | "null_gender"
-      pet_location: "hatchery" | "active" | "storage"
+      pet_location: "hatchery" | "active" | "storage" | "inventory" | "party"
       pet_stage:
         | "egg"
         | "baby"
@@ -2214,6 +2883,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       age_stage: [
@@ -2244,6 +2916,7 @@ export const Constants = {
         "storm",
         "light",
         "shadow",
+        "null_element",
       ],
       fight_kind: ["normal", "boss"],
       item_type: [
@@ -2279,7 +2952,7 @@ export const Constants = {
         "kind",
       ],
       pet_gender: ["male", "female", "null", "null_gender"],
-      pet_location: ["hatchery", "active", "storage"],
+      pet_location: ["hatchery", "active", "storage", "inventory", "party"],
       pet_stage: [
         "egg",
         "baby",

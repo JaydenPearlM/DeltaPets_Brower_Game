@@ -6,7 +6,7 @@
 
 import { Router, Response } from "express";
 import { randomInt as cryptoRandomInt } from "node:crypto";
-import { requireUser, type AuthedRequest } from "../../../pets/middleware/auth";
+import { requireUser, type AuthedRequest } from "../../../middleware/auth";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { logger } from "../../../lib/logger";
 import { getDeltaTime } from "../../../lib/deltaTime";

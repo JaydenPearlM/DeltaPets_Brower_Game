@@ -15,7 +15,7 @@ import LostKithRegistry from "@/pages/petsPage/components/LostKithRegistry/LostK
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
 import StatsChamber from "@/components/StatsChamber/StatsChamber";
-import MainTeam from "@/components/Main_Team/mainTeam";
+import MainTeam from "@/components/MainTeam/mainTeam";
 import type {
   PartySlotView,
   StoragePet,
@@ -888,9 +888,7 @@ export default function PetPage() {
               onOpenSkillTree={() => setShowSkillTree(true)}
             />
 
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "18px" }}
-            >
+            <div className="petRepoBottomGrid">
               <SkillsChamber pet={pet} stats={totalStats} />
               <KithProgressCard
                 name={getPetLabel(pet)}

@@ -11,7 +11,7 @@
 // e.g. weekly reward items like Starter Equipment / Potions.
 
 import { Router, Response } from "express";
-import { requireUser, type AuthedRequest } from "../../pets/middleware/auth";
+import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { logger } from "../../lib/logger";
 

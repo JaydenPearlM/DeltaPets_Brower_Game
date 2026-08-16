@@ -32,16 +32,15 @@ function safeEnergy(value: unknown, fallback = ENERGY_DEFAULT) {
 export function normalizePetForClient<T extends Record<string, any>>(
   pet: T,
 ): T {
-  const clean = safeWhole(pet.clean ?? pet.cleanliness, CARE_DEFAULT);
-  const happy = safeWhole(pet.happy ?? pet.happiness, CARE_DEFAULT);
-  const ranAway = Boolean(pet.ran_away ?? pet.is_runaway);
+  const clean = safeWhole(pet.clean, CARE_DEFAULT);
+  const happy = safeWhole(pet.happy, CARE_DEFAULT);
+  const ranAway = Boolean(pet.ran_away);
   const lastCareDecayAt =
-    pet.last_care_decay_at ?? pet.last_care_update ?? new Date().toISOString();
+    pet.last_care_decay_at ?? new Date().toISOString();
 
   return {
     ...pet,
     hunger: safeWhole(pet.hunger, CARE_DEFAULT),
-    // canonical columns (schema post-20260507000029)
     clean,
     happy,
     comfort: safeWhole(pet.comfort, CARE_DEFAULT),
@@ -49,12 +48,6 @@ export function normalizePetForClient<T extends Record<string, any>>(
     energy: safeEnergy(pet.energy, ENERGY_DEFAULT),
     neglect_hours: Number(pet.neglect_hours ?? 0) || 0,
     ran_away: ranAway,
-    // ghost column compat shim — remove after confirming prod DB no longer has
-    // cleanliness / happiness / is_runaway columns (check via Supabase Table Editor)
-    cleanliness: clean,
-    happiness: happy,
-    is_runaway: ranAway,
-    last_care_update: lastCareDecayAt,
     last_care_decay_at: lastCareDecayAt,
   };
 }

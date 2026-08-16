@@ -2,15 +2,15 @@ import { useState } from "react";
 import type { RoamEncounterResult } from "../../lib/kithna/useRoamEncounter";
 import { apiFetch } from "../../lib/api/baseClient";
 import { ELEMENT_EGG_NAMES, VOIDBORNE_EGG_NAME } from "@shared/pets/species";
-import tideEggImage from "../../Pets_Creation/assets/eggs/tide_egg.png";
-import emberEggImage from "../../Pets_Creation/assets/eggs/ember_egg.png";
-import groveEggImage from "../../Pets_Creation/assets/eggs/grove_egg.png";
-import zephyrEggImage from "../../Pets_Creation/assets/eggs/zephr_egg.png";
-import frostveilEggImage from "../../Pets_Creation/assets/eggs/frostviel_egg.png";
-import stormEggImage from "../../Pets_Creation/assets/eggs/storm_egg.png";
-import dawnshardEggImage from "../../Pets_Creation/assets/eggs/light_egg.png";
-import eclipseEggImage from "../../Pets_Creation/assets/eggs/eclipse_egg.png";
-import voidborneEggImage from "../../Pets_Creation/assets/eggs/Voidborne_egg.png";
+import tideEggImage from "../../kith/assets/eggs/tide_egg.png";
+import emberEggImage from "../../kith/assets/eggs/ember_egg.png";
+import groveEggImage from "../../kith/assets/eggs/grove_egg.png";
+import zephyrEggImage from "../../kith/assets/eggs/zephr_egg.png";
+import frostveilEggImage from "../../kith/assets/eggs/frostviel_egg.png";
+import stormEggImage from "../../kith/assets/eggs/storm_egg.png";
+import dawnshardEggImage from "../../kith/assets/eggs/light_egg.png";
+import eclipseEggImage from "../../kith/assets/eggs/eclipse_egg.png";
+import voidborneEggImage from "../../kith/assets/eggs/Voidborne_egg.png";
 import "./RoamEncounterToast.css";
 
 type RoamEncounterToastProps = {

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { getLogBuffer, logger, type LogLevel } from "../../lib/logger";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { env } from "../../env.server";
-import type { AuthedRequest } from "../../pets/middleware/auth";
+import type { AuthedRequest } from "../../middleware/auth";
 import type { Response } from "express";
 
 export const debugRouter = Router();

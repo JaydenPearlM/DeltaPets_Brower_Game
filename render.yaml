@@ -9,9 +9,14 @@ services:
     # and starts the backend, which serves frontend/web/dist itself
     # (see backend/server/src/app.ts, express.static + catch-all route).
     # There is no separate frontend service and no CORS layer, on purpose.
+    #
+    # Uses pnpm to match the workspace packageManager and pnpm-lock.yaml.
+    # npm install was previously used here, which bypassed the lockfile
+    # and could install different dependency versions than local/CI.
     buildCommand: >
-      cd frontend/web && npm install && npm run build &&
-      cd ../../backend/server && npm install && npm run build
+      npm install -g pnpm@9.0.0 &&
+      pnpm install --frozen-lockfile &&
+      pnpm build
 
     startCommand: node backend/server/dist/index.js
 

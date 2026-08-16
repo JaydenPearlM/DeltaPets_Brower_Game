@@ -2,6 +2,28 @@
   color: var(--dp-popup-text, var(--dp-panel-text));
 }
 
+.inventoryHaikuButton {
+  display: inline-grid;
+  justify-items: center;
+  gap: 6px;
+  width: 118px;
+  border: 2px solid var(--dp-panel-purple-border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: var(--dp-surface-glass);
+  color: var(--dp-title-gold);
+  font-family: var(--dp-font-display);
+  font-size: 0.9rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.inventoryHaikuIcon {
+  display: block;
+  width: 44px;
+  height: 44px;
+}
+
 .inventoryPanel {
   display: grid;
   gap: 18px;
@@ -386,6 +408,169 @@
   text-align: center;
 }
 
+.inventoryHaikuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 12, 28, 0.72);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.inventoryHaikuPopup {
+  width: min(920px, calc(100vw - 48px));
+  max-height: min(760px, calc(100dvh - 48px));
+  padding: 26px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.inventoryHaikuHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.inventoryHaikuHeaderIcon {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+}
+
+.inventoryHaikuHeader h2,
+.inventoryHaikuReader h2 {
+  margin: 0;
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  font-family: var(--dp-font-display);
+  line-height: 1;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
+.inventoryHaikuHeader h2 {
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+}
+
+.inventoryHaikuDescription {
+  margin: 8px 0 0;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.inventoryHaikuGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  max-height: min(560px, calc(100dvh - 245px));
+  padding: 2px 8px 2px 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.inventoryHaikuSlot {
+  appearance: none;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
+  min-height: 104px;
+  border: 1px solid rgba(77, 234, 255, 0.38);
+  border-radius: 12px;
+  padding: 10px 6px;
+  background: rgba(3, 12, 28, 0.58);
+  color: var(--dp-panel-muted, #a8c8df);
+  font: inherit;
+}
+
+.inventoryHaikuSlot:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.inventoryHaikuSlot--collected {
+  border: 2px solid var(--dp-cyber-cyan, #4deaff);
+  background: rgba(3, 12, 28, 0.78);
+  color: var(--dp-title-gold, var(--dp-brand-yellow));
+  cursor: pointer;
+  opacity: 1;
+}
+
+.inventoryHaikuSlot--collected:hover,
+.inventoryHaikuSlot--collected:focus-visible {
+  border-color: var(--dp-panel-purple-border);
+  outline: none;
+}
+
+.inventoryHaikuSlotIcon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  display: block;
+}
+.inventoryHaikuSlotNumber {
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.inventoryHaikuSlotState {
+  color: var(--dp-panel-muted, #a8c8df);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.inventoryHaikuFooter {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 18px;
+}
+
+.inventoryHaikuReader {
+  display: grid;
+  justify-items: start;
+  width: min(620px, 100%);
+  margin: 0 auto;
+}
+
+.inventoryHaikuReaderIcon {
+  width: 70px;
+  height: 70px;
+  margin-bottom: 10px;
+}
+
+.inventoryHaikuReader h2 {
+  font-size: clamp(1.75rem, 4vw, 2.4rem);
+}
+
+.inventoryHaikuText {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  margin: 24px 0;
+  padding: 24px;
+  border: 1px solid rgba(77, 234, 255, 0.34);
+  border-radius: 14px;
+  background: rgba(3, 12, 28, 0.54);
+  box-sizing: border-box;
+}
+
+.inventoryHaikuText p {
+  margin: 0;
+  color: var(--dp-white-92, rgba(255, 255, 255, 0.92));
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.inventoryHaikuReaderBack {
+  margin-top: 2px;
+}
+
 @media (max-width: 640px) {
   .inventoryGrid {
     grid-template-columns: 1fr;
@@ -444,6 +629,99 @@
     gap: 12px;
     overflow-y: auto;
   }
+
+  .inventoryHaikuButton {
+    width: 104px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+  }
+
+  .inventoryHaikuIcon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .inventoryHaikuBackdrop {
+    padding: 10px;
+  }
+
+  .inventoryHaikuPopup {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    padding: 16px;
+  }
+
+  .inventoryHaikuHeader {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .inventoryHaikuHeaderIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .inventoryHaikuHeader h2 {
+    font-size: 1.45rem;
+  }
+
+  .inventoryHaikuDescription {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .inventoryHaikuGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    max-height: calc(100dvh - 205px);
+    padding-right: 5px;
+  }
+
+  .inventoryHaikuSlot {
+    min-height: 78px;
+    padding: 8px 5px;
+  }
+
+  .inventoryHaikuSlotIcon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .inventoryHaikuSlotNumber {
+    font-size: 0.82rem;
+  }
+
+  .inventoryHaikuSlotState {
+    font-size: 0.62rem;
+  }
+
+  .inventoryHaikuFooter {
+    margin-top: 12px;
+  }
+
+  .inventoryHaikuReader {
+    width: 100%;
+  }
+
+  .inventoryHaikuReaderIcon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .inventoryHaikuReader h2 {
+    font-size: 1.55rem;
+  }
+
+  .inventoryHaikuText {
+    gap: 8px;
+    margin: 18px 0;
+    padding: 16px;
+  }
+
+  .inventoryHaikuText p {
+    font-size: 0.92rem;
+  }
 }
 
 /* =========================================================
@@ -461,4 +739,34 @@
 /* Rewards promoted above items grid: no extra top margin needed */
 .inventorySectionLabel--rewards {
   margin-top: 0;
+}
+
+.inventoryHaikuPopup > h2 {
+  margin-left: 10px;
+}
+
+.inventoryHaikuPopup > .inventoryHaikuDescription {
+  margin-left: 15px;
+}
+
+.inventoryHaikuSlot {
+  border: 1px solid var(--dp-panel-border-cyan-bright);
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      var(--dp-panel-glow-cyan),
+      transparent 42%
+    ),
+    rgba(18, 48, 76, 0.94);
+  box-shadow: none;
+}
+
+.inventoryHaikuSlot--collected {
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      var(--dp-panel-glow-cyan),
+      transparent 42%
+    ),
+    rgba(28, 74, 104, 0.96);
 }

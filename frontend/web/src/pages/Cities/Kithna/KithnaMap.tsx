@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useDeltaTime } from "../../../lib/timers/useDeltaTime";
+import PoeTayToe from "../../../components/PoeTayToe/PoeTayToe";
 import "./KithnaMap.css";
 
 type KithnaTarget = {
@@ -134,6 +135,8 @@ export default function KithnaMap() {
           <div className="kithnaNpc kithnaNpcTwo" aria-hidden="true" />
           <div className="kithnaNpc kithnaNpcThree" aria-hidden="true" />
           <div className="kithnaNpc kithnaNpcFour" aria-hidden="true" />
+
+          <PoeTayToe locationKey="hatchery-back" />
         </div>
 
         <nav className="kithnaToolbar" aria-label="Kithna facilities">

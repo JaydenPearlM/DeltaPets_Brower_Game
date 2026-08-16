@@ -9,8 +9,8 @@ import "./weeklyRewardsBar.css";
 
 const WEEK1_LABELS = [
   { day: "Mon", label: "300 Dots" },
-  { day: "Tue", label: "5 Crystals" },
-  { day: "Wed", label: "Starter Gear" },
+  { day: "Tue", label: "200 Dots" },
+  { day: "Wed", label: "Haiku Scroll #50" },
   { day: "Thu", label: "Potions" },
   { day: "Fri", label: "EXP +100" },
   { day: "Sat", label: "500 Dots" },
@@ -21,7 +21,7 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
 
-export function WeeklyRewardsBar() {
+export function WeeklyRewardsBar({ onClose }: { onClose: () => void }) {
   const [status, setStatus] = useState<RewardsStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -68,9 +68,9 @@ export function WeeklyRewardsBar() {
   //  If API fails, show the real error instead of infinite "Loading..."
   if (!status) {
     return (
-      <div className="wr-wrap">
+      <div className="wr-wrap dp-blue-grid-panel">
         <div className="wr-header">
-          <div className="wr-title">Weekly Rewards</div>
+          <div className="wr-title">Daily Rewards</div>
         </div>
 
         {error ? (
@@ -96,17 +96,9 @@ export function WeeklyRewardsBar() {
   }
 
   return (
-    <div className="wr-wrap">
+    <div className="wr-wrap dp-blue-grid-panel">
       <div className="wr-header">
-        <div className="wr-title">Weekly Rewards</div>
-        <div className="wr-meta">
-          <span>
-            Misses left: <b>{status.missesRemaining}</b>
-          </span>
-          <span>
-            Streak: <b>{status.streak}</b>
-          </span>
-        </div>
+        <div className="wr-title">Daily Rewards</div>
       </div>
 
       <div className="wr-bar">
@@ -137,6 +129,10 @@ export function WeeklyRewardsBar() {
       </div>
 
       <div className="wr-actions">
+        <button type="button" className="dp-close-button" onClick={onClose}>
+          Close
+        </button>
+
         <button
           className="wr-claimBtn"
           onClick={onClaim}
@@ -148,13 +144,6 @@ export function WeeklyRewardsBar() {
               ? "Claiming…"
               : "Claim Reward"}
         </button>
-
-        <div className="wr-preview">
-          Next: <b>{status.preview?.label ?? ""}</b>
-          {!status.week1 && (
-            <span className="wr-randomTag"> (Random pool)</span>
-          )}
-        </div>
       </div>
 
       {toast && <div className="wr-toast">{toast}</div>}

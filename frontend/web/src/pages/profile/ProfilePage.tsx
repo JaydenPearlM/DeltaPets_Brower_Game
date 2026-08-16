@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase/client";
 import { apiFetch } from "@/lib/api/baseClient";
 import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
+import templateSprite from "@/kith/assets/Sprite/Template_Sprite.png";
 
 type ProfilePageProps = {
   pageName?: string;
@@ -51,12 +52,35 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [kithDiscovered, setKithDiscovered] = useState<number | null>(null);
   const [weeklyRewardsOpen, setWeeklyRewardsOpen] = useState(false);
   const [rewardReady, setRewardReady] = useState(false);
+  const [activeTitle, setActiveTitle] = useState<string | null>(null);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
 
   const { user } = useAuth();
   const { banner } = useHomepageBanner();
   const { allPets, loading } = usePetStorage({
     userId: user?.id,
   });
+
+  useEffect(() => {
+    if (!user?.id) {
+      setActiveTitle(null);
+      return;
+    }
+
+    void supabase
+      .from("profiles")
+      .select("active_title")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          setActiveTitle(null);
+          return;
+        }
+
+        setActiveTitle(data?.active_title ?? null);
+      });
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -130,7 +154,9 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     user?.email?.split("@")[0] ||
     "Trainer";
 
-  const trainerLevel = user?.user_metadata?.trainer_level ?? 1;
+  // trainer_level is not yet stored in the database. Hiding the display
+  // until the progression system is wired to the profiles table.
+  // const trainerLevel = user?.user_metadata?.trainer_level ?? 1;
   const starterElement = user?.user_metadata?.starter_element ?? null;
   const starterElementClass = getElementClass(starterElement);
   const activeElementClass = getElementClass(activePet?.line);
@@ -146,6 +172,16 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       .catch(() => setRewardReady(false));
   }, [user]);
 
+  useEffect(() => {
+    if (!weeklyRewardsOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [weeklyRewardsOpen]);
   return (
     <div className="dp-profile-page">
       {banner?.enabled && bannerItems.length > 0 ? (
@@ -180,62 +216,89 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
         <section className="dp-profile-trainer-panel dp-profile-star-panel">
           <div className="dp-profile-viewport" aria-label="Trainer viewport">
             <div className={`dp-profile-trainer-avatar ${starterElementClass}`}>
-              <span aria-hidden="true">♙</span>
+              <img src={templateSprite} alt="Trainer" />
             </div>
 
             <button
               type="button"
               className="btn btn-gold dp-profile-customize-button"
+              onClick={() => setCustomizeOpen((current) => !current)}
+              aria-expanded={customizeOpen}
             >
               Customize
             </button>
           </div>
 
-          <div className="dp-profile-info">
-            <h1 className={starterElementClass}>{displayName}</h1>
+          {customizeOpen ? (
+            <div className="dp-profile-customizer">
+              <button type="button" className="dp-profile-customizer-card">
+                <strong>Hair</strong>
+                <span>Hairstyle</span>
+                <span>Hair Color</span>
+              </button>
 
-            <button
-              type="button"
-              className={`btn btn-gold dp-profile-rewards-button${
-                rewardReady ? " is-ready" : ""
-              }`}
-              onClick={() => setWeeklyRewardsOpen(true)}
-            >
-              Weekly Rewards
-            </button>
+              <button type="button" className="dp-profile-customizer-card">
+                <strong>Skin</strong>
+                <span>Skin Color</span>
+              </button>
 
-            <dl className="dp-profile-details">
-              <div>
-                <dt>Display Name</dt>
-                <dd>{displayName}</dd>
-              </div>
+              <button type="button" className="dp-profile-customizer-card">
+                <strong>Eyes</strong>
+                <span>Eye Style</span>
+                <span>Eye Color</span>
+              </button>
+            </div>
+          ) : (
+            <div className="dp-profile-info">
+              <h1 className={starterElementClass}>
+                {activeTitle ?? displayName}
+              </h1>
 
-              <div>
-                <dt>Trainer Level</dt>
-                <dd>{trainerLevel}</dd>
-              </div>
+              <button
+                type="button"
+                className={`btn btn-gold dp-profile-rewards-button${
+                  rewardReady ? " is-ready" : ""
+                }`}
+                onClick={() => setWeeklyRewardsOpen(true)}
+              >
+                Weekly Rewards
+              </button>
 
-              <div>
-                <dt>Joined</dt>
-                <dd>{formatJoinedDate(user?.created_at)}</dd>
-              </div>
+              <dl className="dp-profile-details">
+                <div>
+                  <dt>Display Name</dt>
+                  <dd>{displayName}</dd>
+                </div>
 
-              <div>
-                <dt>Starter Element</dt>
-                <dd>{formatElement(starterElement)}</dd>
-              </div>
+                <div>
+                  <dt>Joined</dt>
+                  <dd>{formatJoinedDate(user?.created_at)}</dd>
+                </div>
 
-              <div>
-                <dt>Title</dt>
-                <dd>None Equipped</dd>
-              </div>
+                <div>
+                  <dt>Starter Element</dt>
+                  <dd>{formatElement(starterElement)}</dd>
+                </div>
 
-              <div>
-                <dt>Dots</dt>
-                <dd>{dots === null ? "--" : dots.toLocaleString()}</dd>
-              </div>
-            </dl>
-          </div>
+                <div>
+                  <dt>Title</dt>
+                  <dd>{activeTitle ?? "None Equipped"}</dd>
+                </div>
+
+                {activeTitle === "Alpha Pro" ? (
+                  <div>
+                    <dt>Title Bonus</dt>
+                    <dd>Mend Healing +5%</dd>
+                  </div>
+                ) : null}
+
+                <div>
+                  <dt>Dots</dt>
+                  <dd>{dots === null ? "--" : dots.toLocaleString()}</dd>
+                </div>
+              </dl>
+            </div>
+          )}
 
           <div
             className="dp-profile-alpha-ribbon"
@@ -392,25 +455,15 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
             aria-label="Weekly Rewards"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="dp-profile-popup-header">
-              <h2>Weekly Rewards</h2>
+            <WeeklyRewardsBar
+              onClose={() => {
+                setWeeklyRewardsOpen(false);
 
-              <button
-                type="button"
-                className="dp-close-button"
-                onClick={() => {
-                  setWeeklyRewardsOpen(false);
-
-                  void getRewardsStatus()
-                    .then((status) => setRewardReady(status.canClaim))
-                    .catch(() => setRewardReady(false));
-                }}
-              >
-                Close
-              </button>
-            </div>
-
-            <WeeklyRewardsBar />
+                void getRewardsStatus()
+                  .then((status) => setRewardReady(status.canClaim))
+                  .catch(() => setRewardReady(false));
+              }}
+            />
           </section>
         </div>
       ) : null}

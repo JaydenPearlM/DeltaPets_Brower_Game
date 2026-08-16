@@ -7,16 +7,16 @@ import {
   authRouter,
   publicAuthRouter,
   requireUser,
-} from "./pets/middleware/auth";
+} from "./middleware/auth";
 import {
   apiLimiter,
   apiSpeedLimiter,
   authLimiter,
-} from "./pets/middleware/rateLimit";
+} from "./middleware/rateLimit";
 import { apiRouter } from "./routes";
 import { worldRouter } from "./routes/world/world";
 import { alphaAccessRouter } from "./routes/alphaAccess/alphaAccess";
-import { errorHandler } from "./pets/middleware/errorHandler";
+import { errorHandler } from "./middleware/errorHandler";
 import { debugRouter } from "./routes/debug/debugRoutes";
 import { env } from "./env.server";
 
