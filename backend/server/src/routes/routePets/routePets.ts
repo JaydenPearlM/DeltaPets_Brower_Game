@@ -67,6 +67,8 @@ import {
   updatePetCareStats,
 } from "../../lib/petCareHelpers";
 
+import { findCharacterProfileBySpeciesId } from "../../shared/pets/characterProfiles/characterRegistry";
+
 import { ensureEggSchema } from "../../lib/validation";
 import { randomInt as cryptoRandomInt } from "node:crypto";
 
@@ -383,6 +385,9 @@ petsRouter.get(
       const points = await fetchTotalPoints(hydratedPet.id);
       const stats = points?.base ?? null;
       const elements = elementMapForLine(hydratedPet.line ?? null);
+      const characterProfile = findCharacterProfileBySpeciesId(
+        hydratedPet.species ?? null,
+      );
 
       return res.json({
         server_now: new Date(serverNowMs).toISOString(),
@@ -394,6 +399,7 @@ petsRouter.get(
         stats,
         points,
         elements,
+        character_profile: characterProfile,
         cooldowns: null,
       });
     } catch (err: any) {
@@ -684,6 +690,7 @@ petsRouter.post(
           growth_strong_stats: strongStats,
           growth_weak_stat: weakStat,
           mutation_capacity: 1,
+          is_rescue_reroll: true,
         })
         .select("*")
         .single();

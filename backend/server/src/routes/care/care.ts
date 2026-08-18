@@ -9,6 +9,7 @@ import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../routePets/petsStats";
 import { fetchActivePet } from "../routePets/petsRepo";
 import { applyCareDecay } from "../../shared/pets/care/CareDecay";
+import { findCharacterProfileBySpeciesId } from "../../shared/pets/characterProfiles/characterRegistry";
 import {
   assertCooldownReady,
   calcNewCooldownEndsAtIso,
@@ -143,6 +144,7 @@ async function buildNoPetCareResponse(userId: string, team: any[]) {
     hp_display: null,
     elements: null,
     team,
+    character_profile: null,
     starter_merchant: starterMerchant,
   };
 }
@@ -193,6 +195,68 @@ async function markPetAsRunaway(pet: Record<string, any>) {
     last_care_update: timestamp,
     last_care_decay_at: timestamp,
   });
+
+  const { error: activeError } = await supabaseAdmin
+    .from("pets")
+    .update({ is_active: false })
+    .eq("id", pet.id);
+
+  if (activeError) throw activeError;
+
+  const { error: partyError } = await supabaseAdmin
+    .from("party_slots")
+    .delete()
+    .eq("pet_id", pet.id);
+
+  if (partyError) throw partyError;
+
+  const userId = String(pet.user_id ?? "");
+
+  if (!userId) return;
+
+  const { data: remainingSlots, error: remainingSlotsError } =
+    await supabaseAdmin
+      .from("party_slots")
+      .select("pet_id,slot_index")
+      .eq("user_id", userId)
+      .order("slot_index", { ascending: true });
+
+  if (remainingSlotsError) throw remainingSlotsError;
+
+  const remainingPetIds = (remainingSlots ?? [])
+    .map((row: any) => row?.pet_id)
+    .filter(
+      (petId: unknown): petId is string =>
+        typeof petId === "string" && petId.trim().length > 0,
+    );
+
+  if (!remainingPetIds.length) return;
+
+  const { data: healthyPets, error: healthyPetsError } = await supabaseAdmin
+    .from("pets")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("ran_away", false)
+    .neq("stage", "egg")
+    .in("id", remainingPetIds);
+
+  if (healthyPetsError) throw healthyPetsError;
+
+  const healthyPetIds = new Set(
+    (healthyPets ?? []).map((row: any) => String(row.id)),
+  );
+
+  const nextPetId = remainingPetIds.find((petId) => healthyPetIds.has(petId));
+
+  if (!nextPetId) return;
+
+  const { error: activateError } = await supabaseAdmin
+    .from("pets")
+    .update({ is_active: true, location: "active" })
+    .eq("id", nextPetId)
+    .eq("user_id", userId);
+
+  if (activateError) throw activateError;
 }
 
 async function hydrateMutationTraits(pet: Record<string, any>) {
@@ -574,6 +638,9 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     // the pets table again. getStarterMerchantState is only relevant when
     // there is no active pet (handled by buildNoPetCareResponse above).
     const starterMerchant = null;
+    const characterProfile = findCharacterProfileBySpeciesId(
+      activePetResolved.species ?? null,
+    );
 
     if (elementsResult.error) {
       logger.error(
@@ -595,6 +662,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
         hp_display,
         elements: null,
         team,
+        character_profile: characterProfile,
         starter_merchant: starterMerchant,
       });
     }
@@ -630,6 +698,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       hp_display,
       elements,
       team,
+      character_profile: characterProfile,
       starter_merchant: starterMerchant,
     });
   } catch (error) {

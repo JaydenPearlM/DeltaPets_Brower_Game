@@ -24,6 +24,7 @@ import "./PetPage.css";
 import SkillTree from "@/components/Skills/skilltree";
 import DpPopupWindow from "./components/DpPopupWindow";
 import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
+import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import {
   type CareInventoryCategory,
   addCareItem,
@@ -766,7 +767,11 @@ export default function PetPage() {
 
   if (authLoading || (!hasLoadedOnceRef.current && loadingPage)) {
     return (
-      <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
+      <div
+        className="petRepoPage dpTimeRoomPage poeTayToeHost"
+        data-phase={phase}
+      >
+        <PoeTayToe locationKey="pet" />
         {runawayEmergencyModal}
         <div className="petRepoStateCard">Loading Delta Room…</div>
       </div>

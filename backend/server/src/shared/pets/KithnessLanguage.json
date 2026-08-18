@@ -1,0 +1,721 @@
+{
+  "language_id": "kithness",
+  "display_name": "Kithness",
+  "version": "1.0",
+
+  "inspiration": {
+    "primary": [
+      "latin_phonetics",
+      "soft_creature_speech",
+      "repeated_syllables",
+      "chirps",
+      "vowel_harmony"
+    ],
+    "notes": [
+      "Kithness is an original constructed language.",
+      "Words are designed to feel ancient, soft, expressive, and creature-like.",
+      "Latin-inspired roots are altered heavily to avoid direct one-to-one vocabulary copying.",
+      "Short emotional syllables are common.",
+      "Repeated syllables often intensify emotion."
+    ]
+  },
+
+  "phonology": {
+    "preferred_vowels": ["a", "e", "i", "o", "u"],
+
+    "preferred_consonants": [
+      "m",
+      "n",
+      "v",
+      "l",
+      "r",
+      "s",
+      "t",
+      "k",
+      "p",
+      "f",
+      "h",
+      "y"
+    ],
+
+    "soft_consonants": ["m", "n", "v", "l", "s", "f", "y"],
+
+    "sharp_consonants": ["k", "t", "r", "p"],
+
+    "common_syllable_shapes": ["CV", "CVC", "CVV", "VC", "CVCV"],
+
+    "common_endings": [
+      "a",
+      "i",
+      "o",
+      "u",
+      "en",
+      "is",
+      "um",
+      "ai",
+      "ara",
+      "iri",
+      "ulo"
+    ],
+
+    "common_repetitions": [
+      "ki-ki",
+      "mi-mi",
+      "va-va",
+      "lu-lu",
+      "na-na",
+      "ri-ri",
+      "tu-tu",
+      "si-si"
+    ],
+
+    "emotional_particles": [
+      "ki",
+      "rii",
+      "mm",
+      "vaa",
+      "tch",
+      "hii",
+      "nu",
+      "rr",
+      "pah",
+      "mii"
+    ]
+  },
+
+  "grammar": {
+    "default_word_order": "subject_object_verb",
+
+    "subject_optional": true,
+
+    "plural_method": "reduplication_or_suffix",
+
+    "intensifier_method": "repetition",
+
+    "question_marker": "ne",
+
+    "negation_marker": "kai",
+
+    "request_marker": "va",
+
+    "affection_marker": "mira",
+
+    "urgency_marker": "ta",
+
+    "uncertainty_marker": "li",
+
+    "agreement_marker": "ya",
+
+    "softener_marker": "mi",
+
+    "possessive_marker": "na",
+
+    "past_marker": "te",
+
+    "future_marker": "ru",
+
+    "continuing_action_marker": "sa",
+
+    "sentence_endings": {
+      "neutral": "a",
+      "question": "ne",
+      "happy": "ii",
+      "sad": "uu",
+      "angry": "ka",
+      "sleepy": "mm"
+    }
+  },
+
+  "morphology": {
+    "noun_suffixes": ["um", "en", "or", "is"],
+
+    "verb_suffixes": ["a", "i", "ir", "en"],
+
+    "adjective_suffixes": ["al", "in", "ar", "is"],
+
+    "small_or_affectionate_suffixes": ["li", "mi", "ki"],
+
+    "large_or_intense_suffixes": ["ra", "tor", "va"],
+
+    "plural_suffixes": ["i", "ae", "um"],
+
+    "reduplication_rules": {
+      "full_repetition": "strong_emphasis",
+      "first_syllable_repetition": "playful_or_excited",
+      "last_syllable_repetition": "pleading_or_nervous"
+    }
+  },
+
+  "pronouns": {
+    "first_person": {
+      "singular": "mi",
+      "plural": "mirae"
+    },
+
+    "second_person": {
+      "singular": "ti",
+      "plural": "tirae"
+    },
+
+    "third_person": {
+      "singular": "si",
+      "plural": "sirae"
+    },
+
+    "neutral_creature": "ki",
+
+    "bonded_person": "miran"
+  },
+
+  "core_vocabulary": {
+    "greetings": ["sala", "sali", "vema", "miri", "hiya"],
+
+    "farewells": ["vala", "vali", "suma", "nari", "luma"],
+
+    "yes": ["ya", "yai", "mhm", "sii"],
+
+    "no": ["kai", "ka", "nah", "rrkai"],
+
+    "please": ["miva", "vami", "miri"],
+
+    "thanks": ["grati", "grii", "mira", "tavi"],
+
+    "sorry": ["pami", "sori", "mii", "vala"]
+  },
+
+  "needs": {
+    "food": ["nesh", "ciba", "mora", "papi"],
+
+    "water": ["aqua", "ava", "nira", "wii"],
+
+    "hunger": ["nesha", "moru", "pava"],
+
+    "thirst": ["aqui", "niri", "ava-ta"],
+
+    "clean": ["lavi", "shera", "purai", "vii"],
+
+    "dirty": ["muda", "dori", "gruma"],
+
+    "play": ["ludi", "pika", "tavi", "kiki"],
+
+    "bored": ["nula", "mori", "sava"],
+
+    "comfort": ["sii", "mora", "luma", "nesti"],
+
+    "sleep": ["somi", "nira", "luli", "mumu"],
+
+    "tired": ["soma", "nunu", "marii"],
+
+    "rest": ["resa", "mela", "sumi"],
+
+    "warm": ["calu", "fira", "mora"],
+
+    "cold": ["frigi", "nivi", "brru"]
+  },
+
+  "emotions": {
+    "happy": ["feli", "lumi", "yaya", "miri"],
+
+    "excited": ["tiki", "vava", "riri", "kika"],
+
+    "content": ["sii", "mela", "luma"],
+
+    "sad": ["mora", "nulu", "suu", "mimi"],
+
+    "lonely": ["sola", "mii", "nara"],
+
+    "angry": ["ira", "raka", "grr", "taka"],
+
+    "annoyed": ["rr", "tch", "kaii", "pah"],
+
+    "afraid": ["tima", "firae", "hii", "nene"],
+
+    "nervous": ["lili", "mimi", "nera"],
+
+    "curious": ["cuni", "nene", "viri"],
+
+    "confused": ["qua", "nani", "ehri"],
+
+    "proud": ["vori", "rala", "tavi"],
+
+    "jealous": ["zeli", "mara", "rrmi"],
+
+    "embarrassed": ["piri", "mii-mii", "nali"],
+
+    "affection": ["mira", "lovi", "mimi", "sani"]
+  },
+
+  "social": {
+    "friend": ["ami", "miran", "sora"],
+
+    "trainer": ["tiran", "miran", "veta"],
+
+    "family": ["fama", "mirae", "nara"],
+
+    "stranger": ["alti", "seni", "vera"],
+
+    "pet_or_companion": ["kitha", "mira", "sali"],
+
+    "come": ["veni", "vemi", "ta"],
+
+    "go": ["vai", "vado", "tavi"],
+
+    "stay": ["mani", "sita", "nari"],
+
+    "stop": ["sta", "kai-ta", "taka"],
+
+    "wait": ["mora", "teni", "sii"],
+
+    "follow": ["sequi", "mira", "veni"],
+
+    "look": ["vidi", "vii", "sena"],
+
+    "listen": ["audi", "auri", "sii"],
+
+    "help": ["adi", "miva", "sava"]
+  },
+
+  "actions": {
+    "eat": ["mangi", "cibi", "nesh"],
+
+    "drink": ["bibi", "aqui", "nira"],
+
+    "sleep_action": ["dormi", "somi", "luli"],
+
+    "wake": ["vigi", "risa", "tiki"],
+
+    "run": ["curi", "rava", "taka"],
+
+    "walk": ["pasi", "vadi", "tiri"],
+
+    "jump": ["sali", "piki", "tupa"],
+
+    "sit": ["sedi", "sita", "mela"],
+
+    "lie_down": ["cubi", "nesti", "luma"],
+
+    "hide": ["celi", "noka", "mumu"],
+
+    "find": ["invi", "vii", "sena"],
+
+    "give": ["dona", "davi", "mira"],
+
+    "take": ["taki", "capi", "vii"],
+
+    "want": ["vara", "voli", "miva"],
+
+    "need": ["nedi", "vara-ta", "mora"],
+
+    "like": ["liki", "ami", "mira"],
+
+    "dislike": ["kai-liki", "rrami", "noka"]
+  },
+
+  "objects": {
+    "food_item": ["cibum", "neshum", "morum"],
+
+    "toy": ["ludum", "kiki", "tavum"],
+
+    "brush": ["sherum", "lavum", "viri"],
+
+    "soap": ["sapa", "pura", "lavi"],
+
+    "pillow": ["pulvi", "nesti", "luma"],
+
+    "bed": ["lecti", "nesti", "somi"],
+
+    "blanket": ["tega", "mora", "luma"],
+
+    "egg": ["ovum", "ovi", "kora"],
+
+    "rune": ["runa", "runi", "kara"],
+
+    "home": ["domi", "nesti", "mara"],
+
+    "door": ["porta", "pori", "tala"],
+
+    "outside": ["fora", "vali", "sora"]
+  },
+
+  "time": {
+    "now": ["nunc", "nu", "ta"],
+
+    "later": ["post", "ru", "mora"],
+
+    "before": ["ante", "te", "nara"],
+
+    "morning": ["mane", "soli", "risa"],
+
+    "day": ["diu", "sola", "luma"],
+
+    "evening": ["vesa", "nira", "sumi"],
+
+    "night": ["nocti", "noxi", "mumu"]
+  },
+
+  "nature": {
+    "sun": ["sola", "soli", "luma"],
+
+    "moon": ["luna", "luni", "nira"],
+
+    "star": ["stela", "sira", "tiki"],
+
+    "sky": ["caeli", "sora", "avi"],
+
+    "earth": ["tera", "duma", "mora"],
+
+    "water_nature": ["aqua", "nira", "vii"],
+
+    "fire": ["igni", "fira", "taka"],
+
+    "wind": ["venti", "viri", "suu"],
+
+    "storm": ["fulga", "tora", "raka"],
+
+    "shadow": ["umbra", "noxa", "muru"],
+
+    "light": ["luma", "soli", "viri"],
+
+    "ice": ["glaci", "nivi", "fru"]
+  },
+
+  "numbers": {
+    "one": "una",
+    "two": "dua",
+    "three": "tria",
+    "four": "quara",
+    "five": "penta",
+    "six": "sesa",
+    "seven": "septi",
+    "eight": "octa",
+    "nine": "nona",
+    "ten": "deca"
+  },
+
+  "descriptors": {
+    "good": ["boni", "miri", "sii"],
+
+    "bad": ["mali", "noka", "rr"],
+
+    "big": ["magna", "vara", "tora"],
+
+    "small": ["mini", "lili", "kiki"],
+
+    "fast": ["celer", "rava", "tiki"],
+
+    "slow": ["lenta", "mora", "sumi"],
+
+    "soft": ["molli", "luma", "mimi"],
+
+    "hard": ["dura", "taka", "kara"],
+
+    "safe": ["salu", "sii", "mira"],
+
+    "danger": ["peri", "taka", "hii"],
+
+    "pretty": ["bela", "lumi", "mira"],
+
+    "strange": ["alti", "qua", "nani"]
+  },
+
+  "body": {
+    "head": ["capa", "kori"],
+
+    "eye": ["oculi", "vii"],
+
+    "ear": ["auri", "sena"],
+
+    "mouth": ["ora", "mangi"],
+
+    "paw_or_hand": ["pada", "tali"],
+
+    "foot": ["pedi", "tiri"],
+
+    "tail": ["cauda", "tavi"],
+
+    "wing": ["ala", "avi"],
+
+    "horn": ["cornu", "kara"],
+
+    "heart": ["cora", "mira"]
+  },
+
+  "question_words": {
+    "what": "qua",
+    "where": "ubi",
+    "who": "qui",
+    "why": "cura",
+    "when": "quani",
+    "how": "como",
+    "which": "quali"
+  },
+
+  "connectors": {
+    "and": "et",
+    "or": "vel",
+    "but": "sed",
+    "because": "ca",
+    "if": "si",
+    "then": "ta",
+    "with": "cum",
+    "without": "sine"
+  },
+
+  "intensifiers": {
+    "very": "valde",
+    "more": "plus",
+    "less": "mini",
+    "again": "itera",
+    "always": "semi",
+    "never": "nunca"
+  },
+
+  "creature_sounds": {
+    "happy_chirp": ["kii!", "rii!", "mii!", "yaya!"],
+
+    "excited_chirp": ["ki-ki-ki!", "va-va!", "tiri-tiri!", "riri!"],
+
+    "content_hum": ["mrrm", "mmii", "suuu", "lumm"],
+
+    "annoyed_sound": ["rr.", "tch.", "pah.", "kaii."],
+
+    "angry_sound": ["rraka!", "taka!", "grrk!", "kai-ka!"],
+
+    "afraid_sound": ["hii!", "nene!", "mii-mii!", "tima!"],
+
+    "sad_sound": ["muu...", "suu...", "mii...", "nunu..."],
+
+    "sleepy_sound": ["mumu...", "somi...", "mm...", "luli..."],
+
+    "curious_sound": ["ne?", "qua?", "nani?", "viri?"]
+  },
+
+  "personality_speech_styles": {
+    "grumpy": {
+      "sentence_length": "short",
+      "repetition": "rare",
+      "sharp_consonants": "high",
+      "softeners": "rare",
+      "preferred_particles": ["rr", "kai", "tch", "pah"],
+      "ending_preference": ["ka", "a"]
+    },
+
+    "playful": {
+      "sentence_length": "medium",
+      "repetition": "high",
+      "sharp_consonants": "medium",
+      "softeners": "common",
+      "preferred_particles": ["ki", "rii", "va", "ya"],
+      "ending_preference": ["ii", "ne"]
+    },
+
+    "shy": {
+      "sentence_length": "short",
+      "repetition": "nervous",
+      "sharp_consonants": "low",
+      "softeners": "very_common",
+      "preferred_particles": ["mi", "li", "mii", "ne"],
+      "ending_preference": ["ne", "uu"]
+    },
+
+    "calm": {
+      "sentence_length": "medium",
+      "repetition": "low",
+      "sharp_consonants": "low",
+      "softeners": "common",
+      "preferred_particles": ["sii", "mira", "mi"],
+      "ending_preference": ["a", "ii"]
+    },
+
+    "stubborn": {
+      "sentence_length": "short",
+      "repetition": "emphatic",
+      "sharp_consonants": "high",
+      "softeners": "rare",
+      "preferred_particles": ["kai", "ta", "rr", "sta"],
+      "ending_preference": ["ka", "a"]
+    },
+
+    "gentle": {
+      "sentence_length": "medium",
+      "repetition": "soft",
+      "sharp_consonants": "low",
+      "softeners": "very_common",
+      "preferred_particles": ["mi", "mira", "sii", "luma"],
+      "ending_preference": ["ii", "a"]
+    },
+
+    "bold": {
+      "sentence_length": "medium",
+      "repetition": "moderate",
+      "sharp_consonants": "medium",
+      "softeners": "low",
+      "preferred_particles": ["ta", "va", "raka", "ya"],
+      "ending_preference": ["a", "ka"]
+    },
+
+    "curious": {
+      "sentence_length": "medium",
+      "repetition": "moderate",
+      "sharp_consonants": "low",
+      "softeners": "common",
+      "preferred_particles": ["ne", "qua", "viri", "li"],
+      "ending_preference": ["ne", "ii"]
+    }
+  },
+
+  "sentence_templates": {
+    "request": [
+      "{subject} {object} va {verb} ne",
+      "{object} va ne",
+      "mi {object} vara ne"
+    ],
+
+    "refusal": ["kai {object}", "kai. kai.", "{object} kai-ka"],
+
+    "happy_response": ["{emotion} ii", "{object} boni ii", "mira {object} ii"],
+
+    "complaint": ["{need} ta", "{need} rr", "mi {need} nedi ka"],
+
+    "question": ["qua {object} ne", "{object} ne", "ubi {object} ne"],
+
+    "affection": ["mira ti", "ti miran", "mira mira ii"],
+
+    "fear": ["hii {object}", "{object} peri ta", "mi tima ka"],
+
+    "sleepy": ["mi somi mm", "somi va mm", "nesti... mumu..."]
+  },
+
+  "rune_groups": {
+    "rune_01": ["mi", "ti", "ya", "kai"],
+
+    "rune_02": ["nesh", "aqua", "somi", "ludi"],
+
+    "rune_03": ["mira", "ami", "tiran", "fama"],
+
+    "rune_04": ["feli", "ira", "tima", "mora"],
+
+    "rune_05": ["veni", "vai", "mani", "sta"],
+
+    "rune_06": ["lavi", "shera", "nesti", "cibum"],
+
+    "rune_07": ["sola", "luna", "noxi", "caeli"],
+
+    "rune_08": ["igni", "aqua", "tera", "venti"],
+
+    "rune_09": ["nivi", "fulga", "luma", "umbra"],
+
+    "rune_10": ["runa", "cora", "salu", "peri"]
+  },
+
+  "bond_speech_rules": {
+    "bond_0_19": {
+      "translation_visibility": "none",
+      "sentence_complexity": "simple",
+      "uses_emotional_particles": "high",
+      "allows_full_sentences": false
+    },
+
+    "bond_20_39": {
+      "translation_visibility": "rune_words_only",
+      "sentence_complexity": "simple",
+      "uses_emotional_particles": "high",
+      "allows_full_sentences": false
+    },
+
+    "bond_40_59": {
+      "translation_visibility": "partial",
+      "sentence_complexity": "medium",
+      "uses_emotional_particles": "medium",
+      "allows_full_sentences": true
+    },
+
+    "bond_60_79": {
+      "translation_visibility": "mostly_understood",
+      "sentence_complexity": "medium",
+      "uses_emotional_particles": "medium",
+      "allows_full_sentences": true
+    },
+
+    "bond_80_99": {
+      "translation_visibility": "high",
+      "sentence_complexity": "complex",
+      "uses_emotional_particles": "natural",
+      "allows_full_sentences": true
+    },
+
+    "bond_100": {
+      "translation_visibility": "complete",
+      "sentence_complexity": "complex",
+      "uses_emotional_particles": "natural",
+      "allows_full_sentences": true
+    }
+  },
+
+  "dialect_rules": {
+    "fire": {
+      "preferred_sounds": ["ra", "ta", "ka"],
+      "speech_energy": "high"
+    },
+
+    "water": {
+      "preferred_sounds": ["li", "na", "vi"],
+      "speech_energy": "flowing"
+    },
+
+    "earth": {
+      "preferred_sounds": ["mo", "ra", "um"],
+      "speech_energy": "steady"
+    },
+
+    "air": {
+      "preferred_sounds": ["si", "vi", "ha"],
+      "speech_energy": "light"
+    },
+
+    "ice": {
+      "preferred_sounds": ["ni", "fri", "li"],
+      "speech_energy": "quiet"
+    },
+
+    "storm": {
+      "preferred_sounds": ["tor", "ra", "ki"],
+      "speech_energy": "sharp"
+    },
+
+    "light": {
+      "preferred_sounds": ["lu", "si", "mi"],
+      "speech_energy": "bright"
+    },
+
+    "shadow": {
+      "preferred_sounds": ["no", "mur", "rr"],
+      "speech_energy": "low"
+    },
+
+    "null_element": {
+      "preferred_sounds": ["ae", "ii", "xo"],
+      "speech_energy": "unusual"
+    }
+  },
+
+  "generation_rules": {
+    "minimum_words_per_sentence": 1,
+    "maximum_words_low_bond": 4,
+    "maximum_words_high_bond": 10,
+
+    "allow_repetition": true,
+    "allow_emotional_particles": true,
+    "allow_personality_reordering": true,
+    "allow_element_dialect": true,
+
+    "never_translate_automatically": true,
+
+    "translation_should_be_derived_from": [
+      "unlocked_runes",
+      "bond_level",
+      "context",
+      "individual_pet_memory"
+    ]
+  }
+}

@@ -1,0 +1,437 @@
+{
+  "identity": {
+    "species_id": "YOU DECIDE",
+    "species_name": "YOU DECIDE",
+    "egg_name": "YOU DECIDE",
+
+    "evolution": {
+      "hatchling": "YOU DECIDE",
+      "lowform": "YOU DECIDE",
+      "highform": "YOU DECIDE",
+      "legion": "YOU DECIDE",
+      "mythical_legendary": null
+    },
+
+    "rarity": "YOU DECIDE",
+
+    "elements": {
+      "primary": "YOU DECIDE",
+      "secondary": null,
+      "additional_trainable_elements": true,
+      "maximum_elements": 4
+    }
+  },
+
+  "egg": {
+    "base_stats": {
+      "hp": "YOU DECIDE",
+      "atk": "YOU DECIDE",
+      "magi": "YOU DECIDE",
+      "def": "YOU DECIDE",
+      "spd": "YOU DECIDE",
+      "mana": "YOU DECIDE",
+      "base_total": "YOU DECIDE"
+    },
+
+    "hatch_minutes": "YOU DECIDE",
+
+    "art_path": "YOU DECIDE"
+  },
+
+  "species_stats": {
+    "hatchling_base": {
+      "hp": "YOU DECIDE",
+      "atk": "YOU DECIDE",
+      "magi": "YOU DECIDE",
+      "def": "YOU DECIDE",
+      "spd": "YOU DECIDE",
+      "mana": "YOU DECIDE"
+    },
+
+    "growth_traits": {
+      "strong_stats": "COMPUTER ROLL",
+      "weak_stat": "COMPUTER ROLL"
+    }
+  },
+
+  "individual_rolls": {
+    "personality": "COMPUTER ROLL",
+    "passive_trait": "COMPUTER ROLL",
+    "mutation_traits": "COMPUTER ROLL",
+    "gender": "COMPUTER ROLL",
+    "sleep_behavior": "COMPUTER ROLL",
+    "stat_variance": "COMPUTER ROLL",
+    "individual_preferences": "COMPUTER ROLL"
+  },
+
+  "species_personality": {
+    "baseline_temperament": "YOU DECIDE",
+
+    "natural_traits": ["YOU DECIDE", "YOU DECIDE", "YOU DECIDE"],
+
+    "social_behavior": "YOU DECIDE",
+
+    "stranger_behavior": "YOU DECIDE",
+
+    "owner_behavior": "YOU DECIDE",
+
+    "affection_style": "YOU DECIDE",
+
+    "stress_behavior": "YOU DECIDE",
+
+    "fear_triggers": ["YOU DECIDE"],
+
+    "comfort_preferences": ["YOU DECIDE"],
+
+    "species_quirks": ["YOU DECIDE"]
+  },
+
+  "kithness": {
+    "native_language": "Kithness",
+
+    "voice": {
+      "sound": "YOU DECIDE",
+      "sentence_length": "YOU DECIDE",
+      "volume": "YOU DECIDE",
+      "rhythm": "YOU DECIDE",
+
+      "common_sounds": ["YOU DECIDE"]
+    },
+
+    "species_words": {
+      "hello": "YOU DECIDE",
+      "yes": "YOU DECIDE",
+      "no": "YOU DECIDE",
+      "food": "YOU DECIDE",
+      "water": "YOU DECIDE",
+      "clean": "YOU DECIDE",
+      "play": "YOU DECIDE",
+      "comfort": "YOU DECIDE",
+      "sleep": "YOU DECIDE",
+      "happy": "YOU DECIDE",
+      "sad": "YOU DECIDE",
+      "angry": "YOU DECIDE",
+      "afraid": "YOU DECIDE",
+      "friend": "YOU DECIDE",
+      "trainer": "YOU DECIDE",
+      "stay": "YOU DECIDE",
+      "stop": "YOU DECIDE",
+      "thank_you": "YOU DECIDE"
+    },
+
+    "comprehension": {
+      "unknown": {
+        "description": "Player hears untranslated Kithness.",
+        "example": "YOU DECIDE"
+      },
+
+      "rune_partial": {
+        "description": "Known rune words are translated inside otherwise untranslated speech.",
+        "example": "YOU DECIDE"
+      },
+
+      "bond_partial": {
+        "description": "The trainer begins understanding emotional intent and fragments through Bond.",
+        "example": "YOU DECIDE"
+      },
+
+      "high_understanding": {
+        "description": "Most Kithness is presented as translated meaning.",
+        "example": "YOU DECIDE"
+      },
+
+      "lifelong": {
+        "description": "Trainer understands the Kith naturally while the creature may still audibly speak Kithness.",
+        "example": "YOU DECIDE"
+      }
+    }
+  },
+
+  "personality_tone_modifiers": {
+    "note": "COMPUTER ROLL selects one personality. The underlying message stays the same, but wording, animation, willingness, and attitude change.",
+
+    "grumpy": {
+      "speech_style": "short, irritated, reluctant",
+      "affection_style": "subtle",
+      "care_acceptance_modifier": "lower",
+      "example_translation": "I know I need it. Stop staring and give it here.",
+      "example_kithness_style": "YOU DECIDE LATER"
+    },
+
+    "playful": {
+      "speech_style": "teasing, energetic, curious",
+      "affection_style": "obvious",
+      "care_acceptance_modifier": "normal",
+      "example_translation": "Is that for me? Give it here!",
+      "example_kithness_style": "YOU DECIDE LATER"
+    },
+
+    "shy": {
+      "speech_style": "quiet, hesitant, indirect",
+      "affection_style": "slow",
+      "care_acceptance_modifier": "depends_on_bond",
+      "example_translation": "Could I... maybe have that?",
+      "example_kithness_style": "YOU DECIDE LATER"
+    },
+
+    "calm": {
+      "speech_style": "measured, patient, soft",
+      "affection_style": "steady",
+      "care_acceptance_modifier": "normal",
+      "example_translation": "Yes. That would help.",
+      "example_kithness_style": "YOU DECIDE LATER"
+    },
+
+    "stubborn": {
+      "speech_style": "defiant, opinionated, resistant",
+      "affection_style": "earned",
+      "care_acceptance_modifier": "lower_when_upset",
+      "example_translation": "No. ...Fine. Maybe.",
+      "example_kithness_style": "YOU DECIDE LATER"
+    }
+  },
+
+  "care_behavior": {
+    "rule": "The care need determines WHAT the Kith wants. Species and personality determine HOW it reacts.",
+
+    "feed": {
+      "need_low": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I am hungry.",
+        "animation": "YOU DECIDE"
+      },
+
+      "accepted": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "That was good.",
+        "animation": "YOU DECIDE"
+      },
+
+      "favorite_item": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I love this.",
+        "animation": "YOU DECIDE"
+      },
+
+      "disliked_item": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I do not want that.",
+        "animation": "YOU DECIDE"
+      },
+
+      "refused": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "No.",
+        "animation": "turn_away"
+      }
+    },
+
+    "clean": {
+      "need_low": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I feel dirty.",
+        "animation": "YOU DECIDE"
+      },
+
+      "accepted": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I feel clean now.",
+        "animation": "YOU DECIDE"
+      },
+
+      "happy": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "That feels really good.",
+        "animation": "YOU DECIDE"
+      },
+
+      "refused": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "Do not clean me right now.",
+        "animation": "turn_away"
+      }
+    },
+
+    "play": {
+      "need_low": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I am bored or unhappy.",
+        "animation": "YOU DECIDE"
+      },
+
+      "accepted": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "Let's play.",
+        "animation": "YOU DECIDE"
+      },
+
+      "happy": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "That was fun!",
+        "animation": "YOU DECIDE"
+      },
+
+      "refused": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "Leave me alone.",
+        "animation": "turn_away"
+      }
+    },
+
+    "comfort": {
+      "need_low": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I cannot get comfortable.",
+        "animation": "YOU DECIDE"
+      },
+
+      "accepted": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "This is comfortable.",
+        "animation": "settle"
+      },
+
+      "happy": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I feel safe here.",
+        "animation": "YOU DECIDE"
+      },
+
+      "refused": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "Not this.",
+        "animation": "turn_away"
+      }
+    },
+
+    "sleep": {
+      "tired": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I am tired.",
+        "animation": "sleepy"
+      },
+
+      "accepted": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I am going to sleep.",
+        "animation": "settle_sleep"
+      },
+
+      "preferred_sleep_time": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "This is when I like to sleep.",
+        "animation": "YOU DECIDE"
+      },
+
+      "wrong_time": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I am not tired yet.",
+        "animation": "YOU DECIDE"
+      },
+
+      "refused": {
+        "kithness_base": "YOU DECIDE",
+        "meaning": "I do not want to sleep.",
+        "animation": "turn_away"
+      }
+    }
+  },
+
+  "mood_behavior": {
+    "happy": {
+      "body_language": "YOU DECIDE",
+      "idle_behavior": ["YOU DECIDE"],
+      "care_willingness": "high"
+    },
+
+    "content": {
+      "body_language": "YOU DECIDE",
+      "idle_behavior": ["YOU DECIDE"],
+      "care_willingness": "normal"
+    },
+
+    "upset": {
+      "body_language": "YOU DECIDE",
+      "idle_behavior": ["YOU DECIDE"],
+      "care_willingness": "reduced"
+    },
+
+    "angry": {
+      "body_language": "YOU DECIDE",
+      "idle_behavior": ["YOU DECIDE"],
+      "care_willingness": "low"
+    }
+  },
+
+  "refusal_system": {
+    "item_is_consumed_on_refusal": false,
+
+    "computer_calculates": [
+      "current mood",
+      "bond",
+      "rolled personality",
+      "item preference",
+      "current need",
+      "recent interactions"
+    ],
+
+    "possible_responses": [
+      "accept",
+      "hesitate_then_accept",
+      "refuse",
+      "turn_away"
+    ],
+
+    "species_refusal_animation": "YOU DECIDE",
+
+    "species_reconciliation_behavior": "YOU DECIDE"
+  },
+
+  "bond_behavior": {
+    "low": {
+      "trust": "low",
+      "physical_affection": "YOU DECIDE",
+      "communication": "mostly Kithness",
+      "care_behavior": "YOU DECIDE"
+    },
+
+    "medium": {
+      "trust": "growing",
+      "physical_affection": "YOU DECIDE",
+      "communication": "Kithness with increasing comprehension",
+      "care_behavior": "YOU DECIDE"
+    },
+
+    "high": {
+      "trust": "high",
+      "physical_affection": "YOU DECIDE",
+      "communication": "mostly understood",
+      "care_behavior": "YOU DECIDE"
+    },
+
+    "lifelong": {
+      "trust": "maximum",
+      "physical_affection": "YOU DECIDE",
+      "communication": "naturally understood",
+      "care_behavior": "YOU DECIDE"
+    }
+  },
+
+  "memory_reactions": {
+    "after_good_care": "YOU DECIDE",
+    "after_repeated_good_care": "YOU DECIDE",
+    "after_neglect": "YOU DECIDE",
+    "after_returning": "YOU DECIDE",
+    "after_refusal": "YOU DECIDE",
+    "after_favorite_item": "YOU DECIDE"
+  },
+
+  "art": {
+    "egg": "YOU DECIDE",
+    "hatchling": "YOU DECIDE",
+    "lowform": "YOU DECIDE",
+    "highform": "YOU DECIDE",
+    "legion": "YOU DECIDE",
+    "mythical_legendary": null
+  }
+}

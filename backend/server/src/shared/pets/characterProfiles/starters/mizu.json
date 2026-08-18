@@ -2,83 +2,50 @@
   "schema_version": 2,
   "profile_enabled": true,
 
-  "species_key": "esperon",
+  "species_key": "mizu",
+  "species_ids": [
+    "water_starter"
+  ],
 
-  "species_ids": ["shadow_night_bad", "shadow_day_good"],
-
-  "display_name": "Esperon",
-  "element": "shadow",
+  "display_name": "Mizu",
+  "element": "water",
   "rarity": "epic",
-  "asset_key": "esperon",
+  "asset_key": "mizu",
 
   "egg": {
     "name": "Prismatic Egg",
-    "stats_are_fixed": true,
-    "stats_depend_on_species_path": true
-  },
 
-  "evolution_paths": {
-    "night_path": {
-      "species_id": "shadow_night_bad",
-      "registry_variant": "bad",
-      "preferred_time": "night",
-
-      "variant_is_personality": false,
-
-      "egg_base_stats": {
-        "hp": 1,
-        "atk": 0,
-        "magi": 4,
-        "def": 1,
-        "spd": 1,
-        "mana": 3,
-        "base_total": 10
-      },
-
-      "evolution": {
-        "hatchling": "Esperon",
-        "lowform": "Noctimp",
-        "highform": "Nightmareimp",
-        "legion": "Espereonite",
-        "mythical_legendary": null
-      }
+    "base_stats": {
+      "hp": 1,
+      "atk": 1,
+      "magi": 3,
+      "def": 2,
+      "spd": 2,
+      "mana": 1,
+      "base_total": 10
     },
 
-    "day_path": {
-      "species_id": "shadow_day_good",
-      "registry_variant": "good",
-      "preferred_time": "day",
+    "stats_are_fixed": true
+  },
 
-      "variant_is_personality": false,
-
-      "egg_base_stats": {
-        "hp": 1,
-        "atk": 4,
-        "magi": 1,
-        "def": 1,
-        "spd": 3,
-        "mana": 0,
-        "base_total": 10
-      },
-
-      "evolution": {
-        "hatchling": "Esperon",
-        "lowform": "Flareclaw",
-        "highform": "Shadeclaw",
-        "legion": "Nightvielclaw",
-        "mythical_legendary": null
-      }
-    }
+  "evolution": {
+    "hatchling": "Mizu",
+    "lowform": "Mizule",
+    "highform": "Zulelon",
+    "legion": "Aquilyth",
+    "mythical_legendary": null
   },
 
   "lore": {
-    "native_habitat": "",
-    "clan": "",
-    "summary": "",
+    "native_habitat": "underwater",
+    "clan": "Neruva Clan",
+
+    "summary": "Mizu originate from an underwater Kith clan known as the Neruva Clan.",
 
     "species_locked_facts": [
-      "Esperon are Shadow-element Kith.",
-      "Esperon can belong to either the night-aligned starter path or the day-aligned starter path."
+      "Mizu are Water-element Kith.",
+      "Mizu originate from the Neruva Clan.",
+      "The Neruva Clan lives underwater."
     ]
   },
 
@@ -100,33 +67,25 @@
       "current_needs"
     ],
 
-    "individuality_rule": "Two Esperon are not required to share personality, temperament, affection style, social behavior, preferences, fears, habits, morality, or reactions.",
-
-    "path_rule": "The Esperon evolution path does not automatically determine the individual Esperon's personality.",
+    "individuality_rule": "Two Mizu of the same species are not required to share personality, temperament, affection style, social behavior, preferences, fears, habits, or reactions.",
 
     "self_awareness": {
       "recognizes_self_as_individual": true,
       "recognizes_own_name": true,
       "recognizes_trainer_as_individual": true,
       "recognizes_other_kith_as_individuals": true,
-
       "can_form_preferences": true,
       "can_change_preferences": true,
-
       "can_request_things": true,
       "can_refuse_things": true,
-
       "can_remember_past_events": true,
       "can_anticipate_future_events": true,
-
       "can_form_relationships": true,
       "can_form_friendships": true,
       "can_form_rivalries": true,
-
       "can_feel_jealousy": true,
       "can_apologize": true,
       "can_change_opinion": true,
-
       "can_remember_previous_evolution_forms": true
     }
   },
@@ -135,8 +94,6 @@
     "source": "individual_roll",
 
     "species_locked_traits": [],
-
-    "evolution_path_does_not_force_personality": true,
 
     "allowed_runtime_dimensions": [
       "cheerfulness",
@@ -157,7 +114,7 @@
       "impulsiveness"
     ],
 
-    "behavior_rule": "Personality rolls change how this individual Esperon expresses an intent. They do not change the underlying biological need.",
+    "behavior_rule": "Personality rolls change how this individual Mizu expresses an intent. They do not change the underlying biological need.",
 
     "examples": {
       "grumpy": {
@@ -247,7 +204,7 @@
     "mood_can_influence_experience": true,
     "personality_can_influence_experience": true,
 
-    "discovery_rule": "Repeated experiences gradually establish the individual Esperon's preferences rather than assigning universal species favorites."
+    "discovery_rule": "Repeated experiences gradually establish the individual Mizu's preferences rather than assigning universal species favorites."
   },
 
   "relationship": {
@@ -294,7 +251,7 @@
     "language": "kithness",
     "language_file": "KithnessLanguage.json",
 
-    "dialect_key": "shadow",
+    "dialect_key": "water",
 
     "starts_translated": false,
 
@@ -310,7 +267,6 @@
     "intent_categories": [
       "greeting",
       "farewell",
-
       "request_food",
       "request_water",
       "request_clean",
@@ -319,19 +275,16 @@
       "request_sleep",
       "request_space",
       "request_affection",
-
       "accept_food",
       "accept_clean",
       "accept_play",
       "accept_comfort",
       "accept_sleep",
-
       "refuse_food",
       "refuse_clean",
       "refuse_play",
       "refuse_comfort",
       "refuse_sleep",
-
       "happy",
       "excited",
       "content",
@@ -345,7 +298,6 @@
       "confused",
       "proud",
       "affectionate",
-
       "apologize",
       "thank",
       "warn",
@@ -357,14 +309,13 @@
       "apply_individual_personality",
       "apply_current_mood",
       "apply_bond_behavior",
-      "apply_shadow_dialect",
+      "apply_water_dialect",
       "select_kithness_words",
       "apply_rune_comprehension",
       "apply_bond_comprehension"
     ],
 
-    "never_generate_personality_from_species_name": true,
-    "never_generate_personality_from_evolution_path": true
+    "never_generate_personality_from_species_name": true
   },
 
   "request_style": {
@@ -398,13 +349,16 @@
 
     "low": {
       "comprehension": "mostly_untranslated",
-
-      "allowed_intents": ["basic_need", "basic_emotion", "accept", "refuse"]
+      "allowed_intents": [
+        "basic_need",
+        "basic_emotion",
+        "accept",
+        "refuse"
+      ]
     },
 
     "medium": {
       "comprehension": "rune_and_context_fragments",
-
       "allowed_intents": [
         "basic_need",
         "preference",
@@ -417,7 +371,6 @@
 
     "high": {
       "comprehension": "mostly_understood",
-
       "allowed_intents": [
         "need",
         "preference",
@@ -432,7 +385,6 @@
 
     "lifelong": {
       "comprehension": "naturally_understood",
-
       "allowed_intents": [
         "need",
         "preference",
@@ -569,15 +521,17 @@
 
     "high_bond_does_not_remove_personality": true,
 
-    "rule": "High bond can increase trust and willingness, but does not force an individual Esperon to become cheerful, social, affectionate, energetic, obedient, good, or bad."
+    "rule": "High bond can increase trust and willingness, but does not force an individual Mizu to become cheerful, social, affectionate, energetic, or obedient."
   },
 
   "bond_behavior": {
     "low": {
       "relationship_state": "unfamiliar",
+
       "communication": "mostly_kithness",
 
       "trainer_recognition": true,
+
       "trust": "low",
 
       "behavior": "determined_by_individual_personality",
@@ -589,6 +543,7 @@
 
     "medium": {
       "relationship_state": "familiar",
+
       "communication": "partially_understood_kithness",
 
       "trust": "growing",
@@ -602,6 +557,7 @@
 
     "high": {
       "relationship_state": "bonded",
+
       "communication": "mostly_understood_kithness",
 
       "trust": "high",
@@ -615,6 +571,7 @@
 
     "lifelong": {
       "relationship_state": "lifelong",
+
       "communication": "naturally_understood_kithness",
 
       "trust": "very_high",
@@ -650,8 +607,7 @@
       "first_boss_victory",
       "defeated_by_boss",
       "returned_to_defeat_boss",
-      "evolution",
-      "evolution_path_selected"
+      "evolution"
     ],
 
     "short_term_types": [
@@ -671,7 +627,6 @@
     "remember_relationship_events": true,
     "remember_preferences": true,
     "remember_evolution": true,
-    "remember_evolution_path": true,
 
     "memory_can_affect_future_reactions": true,
 
@@ -741,22 +696,27 @@
 
     "manual_player_commands_override_personality": true,
 
-    "element": "shadow",
+    "element": "water",
 
     "strong_stat_rolls": "runtime",
     "weak_stat_roll": "runtime",
 
     "tactical_personality": "runtime",
+
     "preferred_action_categories": "runtime",
 
     "low_health_behavior": "runtime",
+
     "ally_in_danger_behavior": "runtime",
+
     "trainer_in_danger_behavior": "runtime",
 
     "boss_behavior": "runtime",
 
     "victory_behavior": "runtime",
+
     "defeat_behavior": "runtime",
+
     "rematch_behavior": "runtime",
 
     "bond_can_unlock_tactical_cooperation": true
@@ -774,8 +734,6 @@
       "story_experience"
     ],
 
-    "evolution_variant_does_not_force_morality": true,
-
     "stranger_attitude": "runtime",
     "ally_attitude": "runtime",
     "authority_attitude": "runtime",
@@ -791,15 +749,19 @@
   },
 
   "presentation": {
-    "care_image_key": "esperon",
-    "portrait_key": "esperon",
-    "spotlight_image_key": "esperon",
-
-    "visual_theme_key": "shadow_esperon",
+    "care_image_key": "mizu",
+    "portrait_key": "mizu",
+    "spotlight_image_key": "mizu",
+    "visual_theme_key": "water_mizu",
 
     "voice_source": "kithness",
 
-    "voice_tags_source": ["species", "element_dialect", "personality", "mood"],
+    "voice_tags_source": [
+      "species",
+      "element_dialect",
+      "personality",
+      "mood"
+    ],
 
     "idle_behavior_source": [
       "current_state",
@@ -811,45 +773,75 @@
 
     "use_talk_bubble": true,
     "allow_element_effect": true,
-    "allow_item_hint": true,
-
-    "path_visual_keys": {
-      "shadow_night_bad": "shadow_night",
-      "shadow_day_good": "shadow_day"
-    }
+    "allow_item_hint": true
   },
 
   "idle_behavior": {
     "happy": {
-      "intent_pool": ["happy", "content", "affectionate", "play"]
+      "intent_pool": [
+        "happy",
+        "content",
+        "affectionate",
+        "play"
+      ]
     },
 
     "neutral": {
-      "intent_pool": ["observe", "rest", "curious"]
+      "intent_pool": [
+        "observe",
+        "rest",
+        "curious"
+      ]
     },
 
     "hungry": {
-      "intent_pool": ["request_food", "annoyed", "sad"]
+      "intent_pool": [
+        "request_food",
+        "annoyed",
+        "sad"
+      ]
     },
 
     "dirty": {
-      "intent_pool": ["request_clean", "annoyed", "uncomfortable"]
+      "intent_pool": [
+        "request_clean",
+        "annoyed",
+        "uncomfortable"
+      ]
     },
 
     "lonely": {
-      "intent_pool": ["request_affection", "request_company", "sad", "annoyed"]
+      "intent_pool": [
+        "request_affection",
+        "request_company",
+        "sad",
+        "annoyed"
+      ]
     },
 
     "bored": {
-      "intent_pool": ["request_play", "curious", "annoyed"]
+      "intent_pool": [
+        "request_play",
+        "curious",
+        "annoyed"
+      ]
     },
 
     "tired": {
-      "intent_pool": ["request_sleep", "request_comfort", "content"]
+      "intent_pool": [
+        "request_sleep",
+        "request_comfort",
+        "content"
+      ]
     },
 
     "stressed": {
-      "intent_pool": ["request_space", "request_comfort", "afraid", "annoyed"]
+      "intent_pool": [
+        "request_space",
+        "request_comfort",
+        "afraid",
+        "annoyed"
+      ]
     }
   },
 
@@ -876,31 +868,22 @@
       "important_memory",
       "battle_history",
       "gender",
-      "level",
-      "preferred_time",
-      "evolution_path"
+      "level"
     ],
 
-    "fixed_species_facts": ["shadow"],
-
-    "path_facts": {
-      "shadow_night_bad": {
-        "preferred_time": "night",
-        "evolution": ["Esperon", "Noctimp", "Nightmareimp", "Espereonite"]
-      },
-
-      "shadow_day_good": {
-        "preferred_time": "day",
-        "evolution": ["Esperon", "Flareclaw", "Shadeclaw", "Nightvielclaw"]
-      }
-    },
+    "fixed_species_facts": [
+      "water",
+      "Neruva Clan",
+      "underwater origin"
+    ],
 
     "personality_descriptions_are_generated_from_individual_roll": true,
+
     "preference_descriptions_are_generated_from_learned_state": true,
+
     "relationship_descriptions_are_generated_from_bond_and_memory": true,
 
-    "never_describe_all_esperon_as_having_the_same_personality": true,
-    "never_use_registry_variant_as_personality_description": true
+    "never_describe_all_mizu_as_having_the_same_personality": true
   },
 
   "runtime_contract": {
@@ -910,37 +893,27 @@
 
     "individual_state_fields": [
       "pet_id",
-      "species_id",
-      "evolution_path",
       "nickname",
       "gender",
-
       "personality",
       "passive_trait",
       "mutation_traits",
-
       "strong_stats",
       "weak_stat",
-
       "bond",
       "trust",
       "mood",
-
       "hunger",
       "clean",
       "happy",
       "comfort",
       "rest",
       "energy",
-
       "learned_preferences",
-
       "recent_memories",
       "important_memories",
-
       "proximity_preference",
       "care_willingness",
-
       "battle_history",
       "story_history",
       "rune_knowledge"
@@ -955,9 +928,7 @@
       "universal_grumpiness",
       "universal_laziness",
       "universal_happiness",
-      "universal_proximity_preference",
-      "universal_good_personality",
-      "universal_bad_personality"
+      "universal_proximity_preference"
     ]
   }
 }

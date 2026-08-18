@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./ProfilePage.css";
 import "../Homepage/homepage.css";
+import "../../mobile.css";
 import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
@@ -8,6 +9,7 @@ import { useHomepageBanner } from "../Homepage/useHomepageBanner";
 import { supabase } from "@/lib/supabase/client";
 import { apiFetch } from "@/lib/api/baseClient";
 import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
+import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
 import templateSprite from "@/kith/assets/Sprite/Template_Sprite.png";
 
@@ -182,8 +184,11 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       document.body.style.overflow = previousOverflow;
     };
   }, [weeklyRewardsOpen]);
+
   return (
-    <div className="dp-profile-page">
+    <div className="dp-profile-page poeTayToeHost">
+      <PoeTayToe locationKey="profile" />
+
       {banner?.enabled && bannerItems.length > 0 ? (
         <section
           className={`hp-banner hp-banner--${banner.theme}`}

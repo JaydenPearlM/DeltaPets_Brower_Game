@@ -2,73 +2,55 @@
   "schema_version": 2,
   "profile_enabled": true,
 
-  "species_key": "esperon",
+  "species_key": "clodian",
+  "species_ids": ["kithna_clodian"],
 
-  "species_ids": ["shadow_night_bad", "shadow_day_good"],
+  "display_name": "Clodian",
+  "source": "kithna",
+  "region": "kithna",
+  "tutorial_locked": true,
 
-  "display_name": "Esperon",
-  "element": "shadow",
-  "rarity": "epic",
-  "asset_key": "esperon",
+  "element": "storm",
+  "rarity": "uncommon",
+  "encounter_time": "day",
+
+  "asset_key": "clodian",
+  "find_xp_reward": 30,
+  "can_roll_aliune_corruption": true,
 
   "egg": {
-    "name": "Prismatic Egg",
-    "stats_are_fixed": true,
-    "stats_depend_on_species_path": true
-  },
+    "element_line": "storm",
+    "name_source": "ELEMENT_EGG_NAMES.storm",
 
-  "evolution_paths": {
-    "night_path": {
-      "species_id": "shadow_night_bad",
-      "registry_variant": "bad",
-      "preferred_time": "night",
-
-      "variant_is_personality": false,
-
-      "egg_base_stats": {
-        "hp": 1,
-        "atk": 0,
-        "magi": 4,
-        "def": 1,
-        "spd": 1,
-        "mana": 3,
-        "base_total": 10
-      },
-
-      "evolution": {
-        "hatchling": "Esperon",
-        "lowform": "Noctimp",
-        "highform": "Nightmareimp",
-        "legion": "Espereonite",
-        "mythical_legendary": null
-      }
+    "visual": {
+      "display_name": "Storm",
+      "shell_color": "violet",
+      "marking_color": "yellow",
+      "glow_color": "electric purple"
     },
 
-    "day_path": {
-      "species_id": "shadow_day_good",
-      "registry_variant": "good",
-      "preferred_time": "day",
+    "base_stats": {
+      "hp": 2,
+      "atk": 2,
+      "magi": 2,
+      "def": 1,
+      "spd": 2,
+      "mana": 1,
+      "base_total": 10
+    },
 
-      "variant_is_personality": false,
+    "stats_are_fixed": true
+  },
 
-      "egg_base_stats": {
-        "hp": 1,
-        "atk": 4,
-        "magi": 1,
-        "def": 1,
-        "spd": 3,
-        "mana": 0,
-        "base_total": 10
-      },
+  "evolution": {
+    "hatchling": "Clodian",
+    "lowform": "Clodian",
+    "highform": "Clodian",
+    "legion": "Clodian",
+    "mythical_legendary": null,
 
-      "evolution": {
-        "hatchling": "Esperon",
-        "lowform": "Flareclaw",
-        "highform": "Shadeclaw",
-        "legion": "Nightvielclaw",
-        "mythical_legendary": null
-      }
-    }
+    "line_finalized": false,
+    "factory_default_note": "In kithna-species.ts, lowform, highform, and legion currently default to the hatchling because no later forms have been defined yet."
   },
 
   "lore": {
@@ -77,8 +59,10 @@
     "summary": "",
 
     "species_locked_facts": [
-      "Esperon are Shadow-element Kith.",
-      "Esperon can belong to either the night-aligned starter path or the day-aligned starter path."
+      "Clodian are Storm-element Kith.",
+      "Clodian are a wild Kithna species.",
+      "Clodian currently appear during the day in Kithna.",
+      "Clodian currently use the balanced Kithna egg stat spread."
     ]
   },
 
@@ -100,33 +84,25 @@
       "current_needs"
     ],
 
-    "individuality_rule": "Two Esperon are not required to share personality, temperament, affection style, social behavior, preferences, fears, habits, morality, or reactions.",
-
-    "path_rule": "The Esperon evolution path does not automatically determine the individual Esperon's personality.",
+    "individuality_rule": "Two Clodian of the same species are not required to share personality, temperament, affection style, social behavior, preferences, fears, habits, or reactions.",
 
     "self_awareness": {
       "recognizes_self_as_individual": true,
       "recognizes_own_name": true,
       "recognizes_trainer_as_individual": true,
       "recognizes_other_kith_as_individuals": true,
-
       "can_form_preferences": true,
       "can_change_preferences": true,
-
       "can_request_things": true,
       "can_refuse_things": true,
-
       "can_remember_past_events": true,
       "can_anticipate_future_events": true,
-
       "can_form_relationships": true,
       "can_form_friendships": true,
       "can_form_rivalries": true,
-
       "can_feel_jealousy": true,
       "can_apologize": true,
       "can_change_opinion": true,
-
       "can_remember_previous_evolution_forms": true
     }
   },
@@ -135,8 +111,6 @@
     "source": "individual_roll",
 
     "species_locked_traits": [],
-
-    "evolution_path_does_not_force_personality": true,
 
     "allowed_runtime_dimensions": [
       "cheerfulness",
@@ -157,7 +131,7 @@
       "impulsiveness"
     ],
 
-    "behavior_rule": "Personality rolls change how this individual Esperon expresses an intent. They do not change the underlying biological need.",
+    "behavior_rule": "Personality rolls change how this individual Clodian expresses an intent. They do not change the underlying biological need.",
 
     "examples": {
       "grumpy": {
@@ -247,7 +221,7 @@
     "mood_can_influence_experience": true,
     "personality_can_influence_experience": true,
 
-    "discovery_rule": "Repeated experiences gradually establish the individual Esperon's preferences rather than assigning universal species favorites."
+    "discovery_rule": "Repeated experiences gradually establish the individual Clodian's preferences rather than assigning universal species favorites."
   },
 
   "relationship": {
@@ -294,7 +268,7 @@
     "language": "kithness",
     "language_file": "KithnessLanguage.json",
 
-    "dialect_key": "shadow",
+    "dialect_key": "storm",
 
     "starts_translated": false,
 
@@ -310,7 +284,6 @@
     "intent_categories": [
       "greeting",
       "farewell",
-
       "request_food",
       "request_water",
       "request_clean",
@@ -319,19 +292,16 @@
       "request_sleep",
       "request_space",
       "request_affection",
-
       "accept_food",
       "accept_clean",
       "accept_play",
       "accept_comfort",
       "accept_sleep",
-
       "refuse_food",
       "refuse_clean",
       "refuse_play",
       "refuse_comfort",
       "refuse_sleep",
-
       "happy",
       "excited",
       "content",
@@ -345,7 +315,6 @@
       "confused",
       "proud",
       "affectionate",
-
       "apologize",
       "thank",
       "warn",
@@ -357,14 +326,13 @@
       "apply_individual_personality",
       "apply_current_mood",
       "apply_bond_behavior",
-      "apply_shadow_dialect",
+      "apply_storm_dialect",
       "select_kithness_words",
       "apply_rune_comprehension",
       "apply_bond_comprehension"
     ],
 
-    "never_generate_personality_from_species_name": true,
-    "never_generate_personality_from_evolution_path": true
+    "never_generate_personality_from_species_name": true
   },
 
   "request_style": {
@@ -398,13 +366,11 @@
 
     "low": {
       "comprehension": "mostly_untranslated",
-
       "allowed_intents": ["basic_need", "basic_emotion", "accept", "refuse"]
     },
 
     "medium": {
       "comprehension": "rune_and_context_fragments",
-
       "allowed_intents": [
         "basic_need",
         "preference",
@@ -417,7 +383,6 @@
 
     "high": {
       "comprehension": "mostly_understood",
-
       "allowed_intents": [
         "need",
         "preference",
@@ -432,7 +397,6 @@
 
     "lifelong": {
       "comprehension": "naturally_understood",
-
       "allowed_intents": [
         "need",
         "preference",
@@ -472,7 +436,6 @@
     "care_actions": {
       "feed": {
         "need_stat": "hunger",
-
         "possible_intents": [
           "request_food",
           "accept_food",
@@ -484,7 +447,6 @@
 
       "clean": {
         "need_stat": "clean",
-
         "possible_intents": [
           "request_clean",
           "accept_clean",
@@ -496,7 +458,6 @@
 
       "play": {
         "need_stat": "happy",
-
         "possible_intents": [
           "request_play",
           "accept_play",
@@ -509,7 +470,6 @@
 
       "comfort": {
         "need_stat": "comfort",
-
         "possible_intents": [
           "request_comfort",
           "accept_comfort",
@@ -521,7 +481,6 @@
 
       "sleep": {
         "need_stat": "rest",
-
         "possible_intents": [
           "request_sleep",
           "accept_sleep",
@@ -533,7 +492,6 @@
 
       "pet": {
         "need_stat": null,
-
         "possible_intents": [
           "accept_affection",
           "request_space",
@@ -569,60 +527,44 @@
 
     "high_bond_does_not_remove_personality": true,
 
-    "rule": "High bond can increase trust and willingness, but does not force an individual Esperon to become cheerful, social, affectionate, energetic, obedient, good, or bad."
+    "rule": "High bond can increase trust and willingness, but does not force an individual Clodian to become cheerful, social, affectionate, energetic, or obedient."
   },
 
   "bond_behavior": {
     "low": {
       "relationship_state": "unfamiliar",
       "communication": "mostly_kithness",
-
       "trainer_recognition": true,
       "trust": "low",
-
       "behavior": "determined_by_individual_personality",
-
       "physical_contact": "not_assumed",
-
       "requests": "simple_or_indirect"
     },
 
     "medium": {
       "relationship_state": "familiar",
       "communication": "partially_understood_kithness",
-
       "trust": "growing",
-
       "behavior": "determined_by_individual_personality_and_experience",
-
       "physical_contact": "learned_preference",
-
       "requests": "clearer"
     },
 
     "high": {
       "relationship_state": "bonded",
       "communication": "mostly_understood_kithness",
-
       "trust": "high",
-
       "behavior": "individual_personality_remains_intact",
-
       "physical_contact": "learned_preference",
-
       "requests": "direct_when_personality_allows"
     },
 
     "lifelong": {
       "relationship_state": "lifelong",
       "communication": "naturally_understood_kithness",
-
       "trust": "very_high",
-
       "behavior": "individual_personality_remains_intact",
-
       "physical_contact": "learned_preference",
-
       "requests": "shared_routines_and_established_signals"
     }
   },
@@ -650,8 +592,7 @@
       "first_boss_victory",
       "defeated_by_boss",
       "returned_to_defeat_boss",
-      "evolution",
-      "evolution_path_selected"
+      "evolution"
     ],
 
     "short_term_types": [
@@ -671,10 +612,7 @@
     "remember_relationship_events": true,
     "remember_preferences": true,
     "remember_evolution": true,
-    "remember_evolution_path": true,
-
     "memory_can_affect_future_reactions": true,
-
     "does_not_remember_every_click": true
   },
 
@@ -741,20 +679,16 @@
 
     "manual_player_commands_override_personality": true,
 
-    "element": "shadow",
+    "element": "storm",
 
     "strong_stat_rolls": "runtime",
     "weak_stat_roll": "runtime",
-
     "tactical_personality": "runtime",
     "preferred_action_categories": "runtime",
-
     "low_health_behavior": "runtime",
     "ally_in_danger_behavior": "runtime",
     "trainer_in_danger_behavior": "runtime",
-
     "boss_behavior": "runtime",
-
     "victory_behavior": "runtime",
     "defeat_behavior": "runtime",
     "rematch_behavior": "runtime",
@@ -774,12 +708,9 @@
       "story_experience"
     ],
 
-    "evolution_variant_does_not_force_morality": true,
-
     "stranger_attitude": "runtime",
     "ally_attitude": "runtime",
     "authority_attitude": "runtime",
-
     "betrayal_response": "runtime",
     "danger_response": "runtime",
     "corruption_response": "runtime",
@@ -791,11 +722,10 @@
   },
 
   "presentation": {
-    "care_image_key": "esperon",
-    "portrait_key": "esperon",
-    "spotlight_image_key": "esperon",
-
-    "visual_theme_key": "shadow_esperon",
+    "care_image_key": "clodian",
+    "portrait_key": "clodian",
+    "spotlight_image_key": "clodian",
+    "visual_theme_key": "storm_clodian",
 
     "voice_source": "kithness",
 
@@ -811,12 +741,7 @@
 
     "use_talk_bubble": true,
     "allow_element_effect": true,
-    "allow_item_hint": true,
-
-    "path_visual_keys": {
-      "shadow_night_bad": "shadow_night",
-      "shadow_day_good": "shadow_day"
-    }
+    "allow_item_hint": true
   },
 
   "idle_behavior": {
@@ -876,31 +801,16 @@
       "important_memory",
       "battle_history",
       "gender",
-      "level",
-      "preferred_time",
-      "evolution_path"
+      "level"
     ],
 
-    "fixed_species_facts": ["shadow"],
-
-    "path_facts": {
-      "shadow_night_bad": {
-        "preferred_time": "night",
-        "evolution": ["Esperon", "Noctimp", "Nightmareimp", "Espereonite"]
-      },
-
-      "shadow_day_good": {
-        "preferred_time": "day",
-        "evolution": ["Esperon", "Flareclaw", "Shadeclaw", "Nightvielclaw"]
-      }
-    },
+    "fixed_species_facts": ["storm", "kithna", "day_encounter"],
 
     "personality_descriptions_are_generated_from_individual_roll": true,
     "preference_descriptions_are_generated_from_learned_state": true,
     "relationship_descriptions_are_generated_from_bond_and_memory": true,
 
-    "never_describe_all_esperon_as_having_the_same_personality": true,
-    "never_use_registry_variant_as_personality_description": true
+    "never_describe_all_clodian_as_having_the_same_personality": true
   },
 
   "runtime_contract": {
@@ -910,37 +820,27 @@
 
     "individual_state_fields": [
       "pet_id",
-      "species_id",
-      "evolution_path",
       "nickname",
       "gender",
-
       "personality",
       "passive_trait",
       "mutation_traits",
-
       "strong_stats",
       "weak_stat",
-
       "bond",
       "trust",
       "mood",
-
       "hunger",
       "clean",
       "happy",
       "comfort",
       "rest",
       "energy",
-
       "learned_preferences",
-
       "recent_memories",
       "important_memories",
-
       "proximity_preference",
       "care_willingness",
-
       "battle_history",
       "story_history",
       "rune_knowledge"
@@ -955,9 +855,7 @@
       "universal_grumpiness",
       "universal_laziness",
       "universal_happiness",
-      "universal_proximity_preference",
-      "universal_good_personality",
-      "universal_bad_personality"
+      "universal_proximity_preference"
     ]
   }
 }

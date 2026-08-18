@@ -2352,8 +2352,33 @@
   }
 
   /* Profile panel: still 34px */
+  /* Profile page */
+  .dp-profile-page {
+    padding: 10px 0 !important;
+    gap: 10px !important;
+  }
+
   .dp-profile-panel {
-    padding: 34px !important;
+    padding: 16px !important;
+    border-radius: 10px !important;
+  }
+
+  .dp-profile-trainer-panel {
+    padding: 16px !important;
+    gap: 14px !important;
+  }
+
+  .dp-profile-viewport {
+    min-height: 240px !important;
+    padding: 5px 12px 12px !important;
+  }
+
+  .dp-profile-trainer-avatar {
+    min-height: 190px !important;
+  }
+
+  .dp-profile-trainer-avatar img {
+    height: 180px !important;
   }
 
   /* Hatchery egg preview: tighten height */

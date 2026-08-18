@@ -14,7 +14,9 @@ import { careRouter } from "./care/care";
 import { battleRouter } from "./battle";
 import { kithnaRouter } from "./cities/kithna/kithnaEncounter";
 import { inventoryRouter } from "./inventory/inventory";
+
 import { kithnaMerchantsRouter } from "./merchants/kithnaMerchants";
+import { poeTayToeRouter } from "./alphaAccess/poeTayToe/poeTayToe";
 
 const apiRouter = Router();
 
@@ -66,5 +68,5 @@ apiRouter.use("/rewards", rewardsRouter);
 =============================== */
 
 apiRouter.use("/inventory", inventoryRouter);
-
+apiRouter.use("/poe-tay-toe", poeTayToeRouter);
 export { apiRouter };

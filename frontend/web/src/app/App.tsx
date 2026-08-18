@@ -500,6 +500,24 @@ export default function App() {
         <Outlet />
       </main>
 
+      <footer className="appCopyright">
+        <div className="appCopyrightInner">
+          <div className="appCopyrightTitle">△ DELTAPETS</div>
+
+          <div className="appCopyrightLegal">
+            <span>© 2026 DeltaPets. All rights reserved.</span>
+            <span>Independent game project.</span>
+          </div>
+
+          <div className="appCopyrightLinks">
+            <span>Privacy & Account Support</span>
+            <a href="mailto:deltapets.support@gmail.com">
+              deltapets.support@gmail.com
+            </a>
+          </div>
+        </div>
+      </footer>
+
       <LoginMenus forcedView={forcedAuthView} showLaunchers={false} />
 
       {inventoryOpen && user && (

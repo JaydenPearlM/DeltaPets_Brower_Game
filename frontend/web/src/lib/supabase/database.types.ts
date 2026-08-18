@@ -1383,6 +1383,7 @@ export type Database = {
           hunger: number
           id: string
           is_active: boolean
+          is_rescue_reroll: boolean
           last_care_decay_at: string | null
           last_cared_at: string | null
           last_fed_at: string
@@ -1441,6 +1442,7 @@ export type Database = {
           hunger?: number
           id?: string
           is_active?: boolean
+          is_rescue_reroll?: boolean
           last_care_decay_at?: string | null
           last_cared_at?: string | null
           last_fed_at?: string
@@ -1499,6 +1501,7 @@ export type Database = {
           hunger?: number
           id?: string
           is_active?: boolean
+          is_rescue_reroll?: boolean
           last_care_decay_at?: string | null
           last_cared_at?: string | null
           last_fed_at?: string
@@ -1547,6 +1550,92 @@ export type Database = {
           {
             foreignKeyName: "pets_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      poe_tay_toe_finds: {
+        Row: {
+          dots_awarded: number
+          found_at: string
+          id: string
+          item_qty: number
+          item_slug: string
+          location_key: string
+          user_id: string
+        }
+        Insert: {
+          dots_awarded: number
+          found_at?: string
+          id?: string
+          item_qty: number
+          item_slug: string
+          location_key: string
+          user_id: string
+        }
+        Update: {
+          dots_awarded?: number
+          found_at?: string
+          id?: string
+          item_qty?: number
+          item_slug?: string
+          location_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poe_tay_toe_finds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      poe_tay_toe_state: {
+        Row: {
+          claimed_at: string | null
+          claimed_by_user_id: string | null
+          current_location_key: string
+          find_count: number
+          hidden_at: string
+          hidden_by_user_id: string | null
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
+          current_location_key: string
+          find_count?: number
+          hidden_at?: string
+          hidden_by_user_id?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
+          current_location_key?: string
+          find_count?: number
+          hidden_at?: string
+          hidden_by_user_id?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poe_tay_toe_state_claimed_by_user_id_fkey"
+            columns: ["claimed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_starters"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "poe_tay_toe_state_hidden_by_user_id_fkey"
+            columns: ["hidden_by_user_id"]
             isOneToOne: false
             referencedRelation: "admin_user_starters"
             referencedColumns: ["user_id"]
@@ -2521,6 +2610,17 @@ export type Database = {
         }[]
       }
       assign_pet_mutation: { Args: { p_pet_id: string }; Returns: string }
+      claim_poe_tay_toe: {
+        Args: { p_location_key: string; p_user_id: string }
+        Returns: {
+          claimed: boolean
+          cooldown_ends_at: string
+          dots_awarded: number
+          item_qty: number
+          item_slug: string
+          reason: string
+        }[]
+      }
       consume_trough: {
         Args: { p_amount: number; p_user_id: string }
         Returns: {
@@ -2623,6 +2723,10 @@ export type Database = {
           pet_row: Database["public"]["Tables"]["pets"]["Row"]
           success: boolean
         }[]
+      }
+      hide_poe_tay_toe: {
+        Args: { p_location_key: string; p_user_id: string }
+        Returns: boolean
       }
       increment_pve_research_stats: {
         Args: {

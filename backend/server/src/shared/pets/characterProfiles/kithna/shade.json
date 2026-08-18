@@ -2,73 +2,55 @@
   "schema_version": 2,
   "profile_enabled": true,
 
-  "species_key": "esperon",
+  "species_key": "shade",
+  "species_ids": ["kithna_shade"],
 
-  "species_ids": ["shadow_night_bad", "shadow_day_good"],
+  "display_name": "Shade",
+  "source": "kithna",
+  "region": "kithna",
+  "tutorial_locked": true,
 
-  "display_name": "Esperon",
   "element": "shadow",
-  "rarity": "epic",
-  "asset_key": "esperon",
+  "rarity": "common",
+  "encounter_time": "night",
+
+  "asset_key": "shade",
+  "find_xp_reward": 30,
+  "can_roll_aliune_corruption": true,
 
   "egg": {
-    "name": "Prismatic Egg",
-    "stats_are_fixed": true,
-    "stats_depend_on_species_path": true
-  },
+    "element_line": "shadow",
+    "name_source": "ELEMENT_EGG_NAMES.shadow",
 
-  "evolution_paths": {
-    "night_path": {
-      "species_id": "shadow_night_bad",
-      "registry_variant": "bad",
-      "preferred_time": "night",
-
-      "variant_is_personality": false,
-
-      "egg_base_stats": {
-        "hp": 1,
-        "atk": 0,
-        "magi": 4,
-        "def": 1,
-        "spd": 1,
-        "mana": 3,
-        "base_total": 10
-      },
-
-      "evolution": {
-        "hatchling": "Esperon",
-        "lowform": "Noctimp",
-        "highform": "Nightmareimp",
-        "legion": "Espereonite",
-        "mythical_legendary": null
-      }
+    "visual": {
+      "display_name": "Shadow",
+      "shell_color": "deep purple",
+      "marking_color": "black",
+      "glow_color": "violet"
     },
 
-    "day_path": {
-      "species_id": "shadow_day_good",
-      "registry_variant": "good",
-      "preferred_time": "day",
+    "base_stats": {
+      "hp": 2,
+      "atk": 2,
+      "magi": 2,
+      "def": 1,
+      "spd": 2,
+      "mana": 1,
+      "base_total": 10
+    },
 
-      "variant_is_personality": false,
+    "stats_are_fixed": true
+  },
 
-      "egg_base_stats": {
-        "hp": 1,
-        "atk": 4,
-        "magi": 1,
-        "def": 1,
-        "spd": 3,
-        "mana": 0,
-        "base_total": 10
-      },
+  "evolution": {
+    "hatchling": "Shade",
+    "lowform": "Shade",
+    "highform": "Shade",
+    "legion": "Shade",
+    "mythical_legendary": null,
 
-      "evolution": {
-        "hatchling": "Esperon",
-        "lowform": "Flareclaw",
-        "highform": "Shadeclaw",
-        "legion": "Nightvielclaw",
-        "mythical_legendary": null
-      }
-    }
+    "line_finalized": false,
+    "factory_default_note": "In kithna-species.ts, lowform, highform, and legion currently default to the hatchling because no later forms have been defined yet."
   },
 
   "lore": {
@@ -77,14 +59,15 @@
     "summary": "",
 
     "species_locked_facts": [
-      "Esperon are Shadow-element Kith.",
-      "Esperon can belong to either the night-aligned starter path or the day-aligned starter path."
+      "Shade are Shadow-element Kith.",
+      "Shade are a wild Kithna species.",
+      "Shade currently appear during the night in Kithna.",
+      "Shade currently use the balanced Kithna egg stat spread."
     ]
   },
 
   "identity": {
     "personality_source": "individual_roll",
-
     "species_locked_traits": [],
 
     "runtime_personality_inputs": [
@@ -100,43 +83,32 @@
       "current_needs"
     ],
 
-    "individuality_rule": "Two Esperon are not required to share personality, temperament, affection style, social behavior, preferences, fears, habits, morality, or reactions.",
-
-    "path_rule": "The Esperon evolution path does not automatically determine the individual Esperon's personality.",
+    "individuality_rule": "Two Shade of the same species are not required to share personality, temperament, affection style, social behavior, preferences, fears, habits, or reactions.",
 
     "self_awareness": {
       "recognizes_self_as_individual": true,
       "recognizes_own_name": true,
       "recognizes_trainer_as_individual": true,
       "recognizes_other_kith_as_individuals": true,
-
       "can_form_preferences": true,
       "can_change_preferences": true,
-
       "can_request_things": true,
       "can_refuse_things": true,
-
       "can_remember_past_events": true,
       "can_anticipate_future_events": true,
-
       "can_form_relationships": true,
       "can_form_friendships": true,
       "can_form_rivalries": true,
-
       "can_feel_jealousy": true,
       "can_apologize": true,
       "can_change_opinion": true,
-
       "can_remember_previous_evolution_forms": true
     }
   },
 
   "personality": {
     "source": "individual_roll",
-
     "species_locked_traits": [],
-
-    "evolution_path_does_not_force_personality": true,
 
     "allowed_runtime_dimensions": [
       "cheerfulness",
@@ -157,7 +129,7 @@
       "impulsiveness"
     ],
 
-    "behavior_rule": "Personality rolls change how this individual Esperon expresses an intent. They do not change the underlying biological need.",
+    "behavior_rule": "Personality rolls change how this individual Shade expresses an intent. They do not change the underlying biological need.",
 
     "examples": {
       "grumpy": {
@@ -165,31 +137,26 @@
         "body_language_modifier": "restrained",
         "care_willingness_modifier": "slightly_lower"
       },
-
       "cheerful": {
         "delivery_modifier": "bright_expressive",
         "body_language_modifier": "animated",
         "care_willingness_modifier": "normal"
       },
-
       "lazy": {
         "delivery_modifier": "slow_minimal",
         "body_language_modifier": "low_energy",
         "care_willingness_modifier": "depends_on_effort"
       },
-
       "shy": {
         "delivery_modifier": "quiet_hesitant",
         "body_language_modifier": "distance_seeking",
         "care_willingness_modifier": "bond_sensitive"
       },
-
       "playful": {
         "delivery_modifier": "repetitive_energetic",
         "body_language_modifier": "active",
         "care_willingness_modifier": "normal"
       },
-
       "stubborn": {
         "delivery_modifier": "firm",
         "body_language_modifier": "resistant",
@@ -200,7 +167,6 @@
 
   "preferences": {
     "source": "learned_over_time",
-
     "species_locked_likes": [],
     "species_locked_dislikes": [],
 
@@ -218,17 +184,14 @@
     ],
 
     "individual_preferences_begin_unknown": true,
-
     "favorites_can_change": true,
     "dislikes_can_change": true
   },
 
   "preference_discovery": {
     "minimum_experiences": 3,
-
     "favorite_score_threshold": 12,
     "dislike_score_threshold": -10,
-
     "favorite_change_margin": 4,
 
     "allow_favorites_to_change": true,
@@ -236,7 +199,6 @@
 
     "positive_context_bonus": 2,
     "negative_context_penalty": -3,
-
     "favorite_item_bonus": 3,
     "disliked_item_penalty": -3,
 
@@ -247,7 +209,7 @@
     "mood_can_influence_experience": true,
     "personality_can_influence_experience": true,
 
-    "discovery_rule": "Repeated experiences gradually establish the individual Esperon's preferences rather than assigning universal species favorites."
+    "discovery_rule": "Repeated experiences gradually establish the individual Shade's preferences rather than assigning universal species favorites."
   },
 
   "relationship": {
@@ -276,7 +238,6 @@
 
     "proximity": {
       "learned": true,
-
       "minimum": -100,
       "maximum": 100,
 
@@ -293,7 +254,6 @@
   "communication": {
     "language": "kithness",
     "language_file": "KithnessLanguage.json",
-
     "dialect_key": "shadow",
 
     "starts_translated": false,
@@ -301,16 +261,13 @@
     "personality_affects_delivery": true,
     "mood_affects_delivery": true,
     "bond_affects_delivery": true,
-
     "bond_affects_comprehension": true,
     "runes_affect_comprehension": true,
-
     "underlying_intent_is_separate_from_spoken_line": true,
 
     "intent_categories": [
       "greeting",
       "farewell",
-
       "request_food",
       "request_water",
       "request_clean",
@@ -319,19 +276,16 @@
       "request_sleep",
       "request_space",
       "request_affection",
-
       "accept_food",
       "accept_clean",
       "accept_play",
       "accept_comfort",
       "accept_sleep",
-
       "refuse_food",
       "refuse_clean",
       "refuse_play",
       "refuse_comfort",
       "refuse_sleep",
-
       "happy",
       "excited",
       "content",
@@ -345,7 +299,6 @@
       "confused",
       "proud",
       "affectionate",
-
       "apologize",
       "thank",
       "warn",
@@ -363,19 +316,16 @@
       "apply_bond_comprehension"
     ],
 
-    "never_generate_personality_from_species_name": true,
-    "never_generate_personality_from_evolution_path": true
+    "never_generate_personality_from_species_name": true
   },
 
   "request_style": {
     "source": "individual_personality",
-
     "directness": "runtime",
     "patience": "runtime",
     "pride": "runtime",
     "shyness": "runtime",
     "persistence": "runtime",
-
     "uses_objects_as_hints": "runtime",
 
     "preferred_request_types": [
@@ -393,18 +343,15 @@
 
   "request_dialogue": {
     "language": "kithness",
-
     "use_global_language_templates": true,
 
     "low": {
       "comprehension": "mostly_untranslated",
-
       "allowed_intents": ["basic_need", "basic_emotion", "accept", "refuse"]
     },
 
     "medium": {
       "comprehension": "rune_and_context_fragments",
-
       "allowed_intents": [
         "basic_need",
         "preference",
@@ -417,7 +364,6 @@
 
     "high": {
       "comprehension": "mostly_understood",
-
       "allowed_intents": [
         "need",
         "preference",
@@ -432,7 +378,6 @@
 
     "lifelong": {
       "comprehension": "naturally_understood",
-
       "allowed_intents": [
         "need",
         "preference",
@@ -458,7 +403,6 @@
     "recent_memory_affects_reaction": true,
 
     "can_refuse_care": true,
-
     "consume_item_on_refusal": false,
 
     "possible_results": [
@@ -472,7 +416,6 @@
     "care_actions": {
       "feed": {
         "need_stat": "hunger",
-
         "possible_intents": [
           "request_food",
           "accept_food",
@@ -481,10 +424,8 @@
           "annoyed"
         ]
       },
-
       "clean": {
         "need_stat": "clean",
-
         "possible_intents": [
           "request_clean",
           "accept_clean",
@@ -493,10 +434,8 @@
           "annoyed"
         ]
       },
-
       "play": {
         "need_stat": "happy",
-
         "possible_intents": [
           "request_play",
           "accept_play",
@@ -506,10 +445,8 @@
           "annoyed"
         ]
       },
-
       "comfort": {
         "need_stat": "comfort",
-
         "possible_intents": [
           "request_comfort",
           "accept_comfort",
@@ -518,10 +455,8 @@
           "affectionate"
         ]
       },
-
       "sleep": {
         "need_stat": "rest",
-
         "possible_intents": [
           "request_sleep",
           "accept_sleep",
@@ -530,10 +465,8 @@
           "annoyed"
         ]
       },
-
       "pet": {
         "need_stat": null,
-
         "possible_intents": [
           "accept_affection",
           "request_space",
@@ -569,70 +502,52 @@
 
     "high_bond_does_not_remove_personality": true,
 
-    "rule": "High bond can increase trust and willingness, but does not force an individual Esperon to become cheerful, social, affectionate, energetic, obedient, good, or bad."
+    "rule": "High bond can increase trust and willingness, but does not force an individual Shade to become cheerful, social, affectionate, energetic, or obedient."
   },
 
   "bond_behavior": {
     "low": {
       "relationship_state": "unfamiliar",
       "communication": "mostly_kithness",
-
       "trainer_recognition": true,
       "trust": "low",
-
       "behavior": "determined_by_individual_personality",
-
       "physical_contact": "not_assumed",
-
       "requests": "simple_or_indirect"
     },
 
     "medium": {
       "relationship_state": "familiar",
       "communication": "partially_understood_kithness",
-
       "trust": "growing",
-
       "behavior": "determined_by_individual_personality_and_experience",
-
       "physical_contact": "learned_preference",
-
       "requests": "clearer"
     },
 
     "high": {
       "relationship_state": "bonded",
       "communication": "mostly_understood_kithness",
-
       "trust": "high",
-
       "behavior": "individual_personality_remains_intact",
-
       "physical_contact": "learned_preference",
-
       "requests": "direct_when_personality_allows"
     },
 
     "lifelong": {
       "relationship_state": "lifelong",
       "communication": "naturally_understood_kithness",
-
       "trust": "very_high",
-
       "behavior": "individual_personality_remains_intact",
-
       "physical_contact": "learned_preference",
-
       "requests": "shared_routines_and_established_signals"
     }
   },
 
   "memory": {
     "enabled": true,
-
     "maximum_recent": 15,
     "maximum_important": 5,
-
     "recent_memory_lifetime_days": 7,
 
     "important_types": [
@@ -650,8 +565,7 @@
       "first_boss_victory",
       "defeated_by_boss",
       "returned_to_defeat_boss",
-      "evolution",
-      "evolution_path_selected"
+      "evolution"
     ],
 
     "short_term_types": [
@@ -671,10 +585,7 @@
     "remember_relationship_events": true,
     "remember_preferences": true,
     "remember_evolution": true,
-    "remember_evolution_path": true,
-
     "memory_can_affect_future_reactions": true,
-
     "does_not_remember_every_click": true
   },
 
@@ -738,23 +649,17 @@
 
   "battle_profile": {
     "combat_behavior_source": "individual_personality",
-
     "manual_player_commands_override_personality": true,
-
     "element": "shadow",
 
     "strong_stat_rolls": "runtime",
     "weak_stat_roll": "runtime",
-
     "tactical_personality": "runtime",
     "preferred_action_categories": "runtime",
-
     "low_health_behavior": "runtime",
     "ally_in_danger_behavior": "runtime",
     "trainer_in_danger_behavior": "runtime",
-
     "boss_behavior": "runtime",
-
     "victory_behavior": "runtime",
     "defeat_behavior": "runtime",
     "rematch_behavior": "runtime",
@@ -764,7 +669,6 @@
 
   "story_profile": {
     "personality_source": "individual_roll",
-
     "values_source": "individual_development",
 
     "moral_behavior_source": [
@@ -774,28 +678,23 @@
       "story_experience"
     ],
 
-    "evolution_variant_does_not_force_morality": true,
-
     "stranger_attitude": "runtime",
     "ally_attitude": "runtime",
     "authority_attitude": "runtime",
-
     "betrayal_response": "runtime",
     "danger_response": "runtime",
     "corruption_response": "runtime",
 
     "can_develop_story_opinions": true,
     "can_change_story_opinions": true,
-
     "does_not_require_species_locked_morality": true
   },
 
   "presentation": {
-    "care_image_key": "esperon",
-    "portrait_key": "esperon",
-    "spotlight_image_key": "esperon",
-
-    "visual_theme_key": "shadow_esperon",
+    "care_image_key": "shade",
+    "portrait_key": "shade",
+    "spotlight_image_key": "shade",
+    "visual_theme_key": "shadow_shade",
 
     "voice_source": "kithness",
 
@@ -811,43 +710,31 @@
 
     "use_talk_bubble": true,
     "allow_element_effect": true,
-    "allow_item_hint": true,
-
-    "path_visual_keys": {
-      "shadow_night_bad": "shadow_night",
-      "shadow_day_good": "shadow_day"
-    }
+    "allow_item_hint": true
   },
 
   "idle_behavior": {
     "happy": {
       "intent_pool": ["happy", "content", "affectionate", "play"]
     },
-
     "neutral": {
       "intent_pool": ["observe", "rest", "curious"]
     },
-
     "hungry": {
       "intent_pool": ["request_food", "annoyed", "sad"]
     },
-
     "dirty": {
       "intent_pool": ["request_clean", "annoyed", "uncomfortable"]
     },
-
     "lonely": {
       "intent_pool": ["request_affection", "request_company", "sad", "annoyed"]
     },
-
     "bored": {
       "intent_pool": ["request_play", "curious", "annoyed"]
     },
-
     "tired": {
       "intent_pool": ["request_sleep", "request_comfort", "content"]
     },
-
     "stressed": {
       "intent_pool": ["request_space", "request_comfort", "afraid", "annoyed"]
     }
@@ -855,9 +742,7 @@
 
   "description_profile": {
     "stable_seed_source": "pet_id",
-
     "prevent_refresh_reroll": true,
-
     "maximum_sentences": 4,
     "maximum_characters": 520,
 
@@ -876,71 +761,44 @@
       "important_memory",
       "battle_history",
       "gender",
-      "level",
-      "preferred_time",
-      "evolution_path"
+      "level"
     ],
 
-    "fixed_species_facts": ["shadow"],
-
-    "path_facts": {
-      "shadow_night_bad": {
-        "preferred_time": "night",
-        "evolution": ["Esperon", "Noctimp", "Nightmareimp", "Espereonite"]
-      },
-
-      "shadow_day_good": {
-        "preferred_time": "day",
-        "evolution": ["Esperon", "Flareclaw", "Shadeclaw", "Nightvielclaw"]
-      }
-    },
+    "fixed_species_facts": ["shadow", "kithna", "night_encounter"],
 
     "personality_descriptions_are_generated_from_individual_roll": true,
     "preference_descriptions_are_generated_from_learned_state": true,
     "relationship_descriptions_are_generated_from_bond_and_memory": true,
-
-    "never_describe_all_esperon_as_having_the_same_personality": true,
-    "never_use_registry_variant_as_personality_description": true
+    "never_describe_all_shade_as_having_the_same_personality": true
   },
 
   "runtime_contract": {
     "species_profile_is_static": true,
-
     "individual_state_is_stored_separately": true,
 
     "individual_state_fields": [
       "pet_id",
-      "species_id",
-      "evolution_path",
       "nickname",
       "gender",
-
       "personality",
       "passive_trait",
       "mutation_traits",
-
       "strong_stats",
       "weak_stat",
-
       "bond",
       "trust",
       "mood",
-
       "hunger",
       "clean",
       "happy",
       "comfort",
       "rest",
       "energy",
-
       "learned_preferences",
-
       "recent_memories",
       "important_memories",
-
       "proximity_preference",
       "care_willingness",
-
       "battle_history",
       "story_history",
       "rune_knowledge"
@@ -955,9 +813,7 @@
       "universal_grumpiness",
       "universal_laziness",
       "universal_happiness",
-      "universal_proximity_preference",
-      "universal_good_personality",
-      "universal_bad_personality"
+      "universal_proximity_preference"
     ]
   }
 }
