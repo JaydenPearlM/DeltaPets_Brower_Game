@@ -190,11 +190,13 @@ export default function App() {
         }>("/api/me/intro");
 
         if (!cancelled) {
-          setExploreUnlocked(Boolean(response.has_hatched_pet));
+          setExploreUnlocked(
+            (prev) => prev || Boolean(response.has_hatched_pet),
+          );
         }
       } catch {
         if (!cancelled) {
-          setExploreUnlocked(false);
+          setExploreUnlocked((prev) => prev);
         }
       }
     })();
@@ -203,7 +205,6 @@ export default function App() {
       cancelled = true;
     };
   }, [loading, user, location.pathname]);
-
   function toggleSection(section: MenuSectionKey) {
     setExpandedSections((prev) => ({
       ...prev,

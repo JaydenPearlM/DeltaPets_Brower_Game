@@ -110,7 +110,7 @@ async function getStarterMerchantState(
 ): Promise<StarterMerchantState | null> {
   const { data, error } = await supabaseAdmin
     .from("pets")
-    .select("id,ran_away")
+    .select("id,ran_away,stage")
     .eq("user_id", userId);
 
   if (error) {
@@ -118,9 +118,9 @@ async function getStarterMerchantState(
   }
 
   const pets = Array.isArray(data) ? data : [];
-  const totalOwned = pets.length;
-  const healthyCount = pets.filter((row: any) => !row?.ran_away).length;
-
+  const livingPets = pets.filter((row: any) => row?.stage !== "egg");
+  const totalOwned = livingPets.length;
+  const healthyCount = livingPets.filter((row: any) => !row?.ran_away).length;
   if (totalOwned > 0 && healthyCount === 0) {
     return {
       show: true,
@@ -223,6 +223,23 @@ async function markPetAsRunaway(pet: Record<string, any>) {
 
   if (remainingSlotsError) throw remainingSlotsError;
 
+  for (let index = 0; index < (remainingSlots ?? []).length; index += 1) {
+    const slot = (remainingSlots ?? [])[index];
+    const targetSlotIndex = index + 1;
+
+    if (Number(slot.slot_index) === targetSlotIndex) continue;
+
+    const { error: compactSlotError } = await supabaseAdmin
+      .from("party_slots")
+      .update({ slot_index: targetSlotIndex })
+      .eq("user_id", userId)
+      .eq("pet_id", slot.pet_id);
+
+    if (compactSlotError) throw compactSlotError;
+
+    slot.slot_index = targetSlotIndex;
+  }
+
   const remainingPetIds = (remainingSlots ?? [])
     .map((row: any) => row?.pet_id)
     .filter(
@@ -246,7 +263,9 @@ async function markPetAsRunaway(pet: Record<string, any>) {
     (healthyPets ?? []).map((row: any) => String(row.id)),
   );
 
-  const nextPetId = remainingPetIds.find((petId) => healthyPetIds.has(petId));
+  const nextPetId = remainingPetIds.find((petId: string) =>
+    healthyPetIds.has(petId),
+  );
 
   if (!nextPetId) return;
 
@@ -786,20 +805,9 @@ careRouter.post(
         return res.status(404).json({ error: "No active pet found" });
       }
 
-      const timestamp = new Date().toISOString();
-
-      await updatePetCareStats(pet.id, {
-        hunger: 0,
-        clean: 0,
-        happy: 0,
-        comfort: 0,
-        rest: 0,
-        energy: 0,
+      await markPetAsRunaway({
+        ...pet,
         neglect_hours: 999,
-        ran_away: true,
-        runaway_at: timestamp,
-        last_care_update: timestamp,
-        last_care_decay_at: timestamp,
       });
 
       const { data: updatedPet, error } = await supabaseAdmin

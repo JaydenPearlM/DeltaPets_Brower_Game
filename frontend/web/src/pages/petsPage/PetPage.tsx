@@ -721,11 +721,9 @@ export default function PetPage() {
             aria-labelledby="pet-runaway-title"
           >
             <div className="petRepoRunawayModalHeader">
-              <p className="petRepoRunawayModalEyebrow">Emergency</p>
               <h2 id="pet-runaway-title" className="petRepoRunawayModalTitle">
-                {starterMerchant?.title || "Pet Ran Away"}
+                No active pet found.
               </h2>
-              <p className="petRepoRunawayModalCopy">{starterMerchant?.body}</p>
             </div>
 
             <div className="petRepoRunawayModalActions">
@@ -733,11 +731,17 @@ export default function PetPage() {
                 type="button"
                 className="petRepoRunawayModalPrimary"
                 disabled={claimingRescueEgg}
+                onClick={() => setShowLostRegistry(true)}
+              >
+                Registry
+              </button>
+              <button
+                type="button"
+                className="petRepoRunawayModalPrimary"
+                disabled={claimingRescueEgg}
                 onClick={claimRescueEgg}
               >
-                {claimingRescueEgg
-                  ? "Summoning egg..."
-                  : starterMerchant?.ctaLabel || "Accept the Egg"}
+                {claimingRescueEgg ? "Summoning egg..." : "Merchant Egg Reroll"}
               </button>
               {rescueEggError ? (
                 <p className="petRepoRunawayModalError">{rescueEggError}</p>
@@ -782,6 +786,14 @@ export default function PetPage() {
     return (
       <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
         {runawayEmergencyModal}
+        <LostKithRegistry
+          open={showLostRegistry}
+          onClose={() => setShowLostRegistry(false)}
+          onRecovered={() => {
+            setShowLostRegistry(false);
+            void loadPetPage(false);
+          }}
+        />
       </div>
     );
   }
@@ -796,10 +808,40 @@ export default function PetPage() {
       ) : null}
 
       {!loadErr && !loadingPage && !pet && !starterMerchant?.show ? (
-        <div className="petRepoStateCard">
-          <h2>No active pet found</h2>
-          <p>Put one of your Deltas into the main team, then come back here.</p>
-        </div>
+        <>
+          <div className="petRepoStateCard petRepoNoActiveStateCard">
+            <h2>No active pet found.</h2>
+            <div className="petRepoNoActiveActions">
+              <button
+                type="button"
+                className="petRepoRunawayModalPrimary"
+                onClick={() => setShowLostRegistry(true)}
+              >
+                Registry
+              </button>
+              <button
+                type="button"
+                className="petRepoRunawayModalPrimary"
+                disabled={claimingRescueEgg}
+                onClick={claimRescueEgg}
+              >
+                {claimingRescueEgg ? "Rerolling..." : "Merchant Egg Reroll"}
+              </button>
+            </div>
+            {rescueEggError ? (
+              <p className="petRepoRunawayModalError">{rescueEggError}</p>
+            ) : null}
+          </div>
+
+          <LostKithRegistry
+            open={showLostRegistry}
+            onClose={() => setShowLostRegistry(false)}
+            onRecovered={() => {
+              setShowLostRegistry(false);
+              void loadPetPage(false);
+            }}
+          />
+        </>
       ) : null}
 
       {!loadErr && pet ? (

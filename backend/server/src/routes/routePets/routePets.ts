@@ -621,13 +621,13 @@ petsRouter.post(
       const { data: existingPets, error: existingPetsError } =
         await supabaseAdmin
           .from("pets")
-          .select("id, ran_away")
+          .select("id, ran_away, stage")
           .eq("user_id", userId);
 
       if (existingPetsError) throw existingPetsError;
 
       const healthyCount = (existingPets ?? []).filter(
-        (row: any) => !row?.ran_away,
+        (row: any) => !row?.ran_away && row?.stage !== "egg",
       ).length;
 
       if (healthyCount > 0) {
@@ -752,6 +752,26 @@ petsRouter.post(
         return res.status(500).json({
           success: false,
           error: slotError.message,
+        });
+      }
+
+      const { error: forfeitError } = await supabaseAdmin
+        .from("pets")
+        .update({ runaway_at: null })
+        .eq("user_id", userId)
+        .eq("ran_away", true);
+
+      if (forfeitError) {
+        logger.error("[rescue-egg] runaway forfeit failed", forfeitError);
+        await supabaseAdmin
+          .from("hatchery_slots")
+          .update({ pet_id: null })
+          .eq("id", openSlot.id)
+          .eq("user_id", userId);
+        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+        return res.status(500).json({
+          success: false,
+          error: forfeitError.message,
         });
       }
 
