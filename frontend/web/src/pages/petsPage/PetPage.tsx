@@ -33,6 +33,7 @@ import {
   getCareInventoryCounts,
   getInventoryChangeEventName,
 } from "@/components/inventory/inventory";
+import { SHARED_SPECIES } from "@shared/pets/species";
 
 type CareAction = "feed" | "clean" | "play" | "pet";
 
@@ -941,12 +942,16 @@ export default function PetPage() {
                 name={getPetLabel(pet)}
                 level={safeNum(pet.level, 1)}
                 xp={safeNum(pet.experience ?? pet.xp, 0)}
-                xpToNext={safeNum(
-                  pet.experience_to_next_level ??
-                    pet.xp_to_next_level ??
-                    pet.next_level_xp,
-                  100,
-                )}
+                xpToNext={
+                  SHARED_SPECIES.some((species) => species.id === pet.species)
+                    ? 100
+                    : safeNum(
+                        pet.experience_to_next_level ??
+                          pet.xp_to_next_level ??
+                          pet.next_level_xp,
+                        100,
+                      )
+                }
                 wins={safeNum(pet.wins, 0)}
                 losses={safeNum(pet.losses, 0)}
                 hatchCount={safeNum(pet.hatch_count, 0)}

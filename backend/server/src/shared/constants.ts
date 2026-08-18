@@ -8,6 +8,6 @@ export const CARE_DECAY_STEP_MINUTES = {
   clean: 360,
   happy: 300,
   comfort: 480,
-  rest: 480,
+  rest: 600,
   energy: 360,
 } as const;

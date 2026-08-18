@@ -118,7 +118,6 @@ export function WeeklyRewardsBar({ onClose }: { onClose: () => void }) {
               ].join(" ")}
               title={slot.label}
             >
-              <div className="wr-day">{slot.day}</div>
               <div className="wr-reward">{slot.label}</div>
               <div className="wr-state">
                 {claimed ? "Claimed" : claimable ? "Ready" : "Locked"}

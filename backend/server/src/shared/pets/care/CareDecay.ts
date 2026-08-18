@@ -26,6 +26,7 @@ export type CarePet = {
   ran_away?: boolean | null;
   runaway_at?: string | null;
   last_care_decay_at?: string | null;
+  personality_key?: string | null;
 };
 
 const CARE_MAX = 50;
@@ -38,7 +39,33 @@ const HAPPY_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.happy;
 const COMFORT_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.comfort;
 const REST_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.rest;
 
-const RUNAWAY_THRESHOLD_HOURS = 24;
+const PERSONALITY_STEP_OFFSETS = [-30, -15, 0, 15, 30] as const;
+
+function personalityStepMinutes(
+  personalityKey: string | null | undefined,
+  stat: keyof typeof CARE_DECAY_STEP_MINUTES,
+  baseMinutes: number,
+): number {
+  const key = String(personalityKey ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (!key) return baseMinutes;
+
+  const seed = `${key}:${stat}`;
+  let hash = 0;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
+  }
+
+  return (
+    baseMinutes +
+    PERSONALITY_STEP_OFFSETS[hash % PERSONALITY_STEP_OFFSETS.length]
+  );
+}
+
+const RUNAWAY_THRESHOLD_HOURS = 72;
 
 // Energy does not decay over time.
 // Energy only decreases from Gym/training actions.
@@ -213,11 +240,37 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   );
   const elapsedHours = elapsedMinutes / 60;
 
-  const hungerLoss = stepsFromMinutes(elapsedMinutes, HUNGER_STEP_MINUTES);
-  const cleanLoss = stepsFromMinutes(elapsedMinutes, CLEAN_STEP_MINUTES);
-  const happyLoss = stepsFromMinutes(elapsedMinutes, HAPPY_STEP_MINUTES);
-  const comfortLoss = stepsFromMinutes(elapsedMinutes, COMFORT_STEP_MINUTES);
-  const restLoss = stepsFromMinutes(elapsedMinutes, REST_STEP_MINUTES);
+  const hungerStepMinutes = personalityStepMinutes(
+    pet.personality_key,
+    "hunger",
+    HUNGER_STEP_MINUTES,
+  );
+  const cleanStepMinutes = personalityStepMinutes(
+    pet.personality_key,
+    "clean",
+    CLEAN_STEP_MINUTES,
+  );
+  const happyStepMinutes = personalityStepMinutes(
+    pet.personality_key,
+    "happy",
+    HAPPY_STEP_MINUTES,
+  );
+  const comfortStepMinutes = personalityStepMinutes(
+    pet.personality_key,
+    "comfort",
+    COMFORT_STEP_MINUTES,
+  );
+  const restStepMinutes = personalityStepMinutes(
+    pet.personality_key,
+    "rest",
+    REST_STEP_MINUTES,
+  );
+
+  const hungerLoss = stepsFromMinutes(elapsedMinutes, hungerStepMinutes);
+  const cleanLoss = stepsFromMinutes(elapsedMinutes, cleanStepMinutes);
+  const happyLoss = stepsFromMinutes(elapsedMinutes, happyStepMinutes);
+  const comfortLoss = stepsFromMinutes(elapsedMinutes, comfortStepMinutes);
+  const restLoss = stepsFromMinutes(elapsedMinutes, restStepMinutes);
 
   const totalLoss = hungerLoss + cleanLoss + happyLoss + comfortLoss + restLoss;
 
@@ -274,6 +327,14 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   logCareDecay("output", {
     petId: pet.id,
     elapsedMinutes,
+    personalityKey: pet.personality_key ?? null,
+    stepMinutes: {
+      hunger: hungerStepMinutes,
+      clean: cleanStepMinutes,
+      happy: happyStepMinutes,
+      comfort: comfortStepMinutes,
+      rest: restStepMinutes,
+    },
     losses: {
       hungerLoss,
       cleanLoss,

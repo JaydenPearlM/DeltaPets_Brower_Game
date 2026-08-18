@@ -151,11 +151,15 @@ function getHpNumbers(pet: PetStats | null) {
 
 function getXpNumbers(pet: PetStats | null) {
   const currentXp = pet?.experience ?? pet?.xp ?? 0;
-  const nextXp =
-    pet?.experience_to_next_level ??
-    pet?.xp_to_next_level ??
-    pet?.next_level_xp ??
-    100;
+  const isStarter = SHARED_SPECIES.some(
+    (species) => species.id === pet?.species,
+  );
+  const nextXp = isStarter
+    ? 100
+    : (pet?.experience_to_next_level ??
+      pet?.xp_to_next_level ??
+      pet?.next_level_xp ??
+      100);
 
   return {
     currentXp,

@@ -7,9 +7,8 @@ import { supabaseAdmin } from "../../lib/supabaseAdmin";
 export const rewardsRouter = Router();
 
 /* =============================================================================
-   Rewards: Daily Login / Weekly Streak
+   Rewards: Daily Login / 7-Day Streak
    - Repeating 7-day reward cycle
-   - Wednesday Potato is awarded only once per trainer
 ============================================================================= */
 
 /** ---- Config ------------------------------------------------------------- */
@@ -17,33 +16,40 @@ export const rewardsRouter = Router();
 type Reward =
   | { kind: "dots"; amount: number; label: string }
   | { kind: "item"; slug: string; qty: number; label: string }
-  | { kind: "xp_boost"; strength: number; label: string };
+  | { kind: "xp"; amount: number; label: string }
+  | { kind: "ribbon"; label: string };
 
 type WeeklyReward =
   | { kind: "dots"; amount: number; label: string }
   | { kind: "item"; slug: string; qty: number; label: string }
-  | { kind: "xp_boost"; strength: number; label: string };
+  | { kind: "xp"; amount: number; label: string }
+  | { kind: "ribbon"; label: string };
 
-/** Weekly rewards (Mon..Sun, mapped by streak dayIndex 0..6). */
+/** Daily rewards, mapped by streak dayIndex 0..6. */
 const WEEKLY_REWARDS: readonly WeeklyReward[] = [
-  { kind: "dots", amount: 300, label: "300 Dots" }, // Mon
-  { kind: "dots", amount: 600, label: "600 Dots" }, // Tue
-  { kind: "item", slug: "haiku_scroll_50", qty: 1, label: "Haiku Scroll #50" }, // Wed // Wed
-  { kind: "item", slug: "potion_small", qty: 3, label: "Potions x3" }, // Thu
-  {
-    kind: "xp_boost",
-    strength: 2,
-    label: "Double XP for the Day",
-  }, // Fri
-  { kind: "dots", amount: 1000, label: "1,000 Dots" }, // Sat
+  { kind: "dots", amount: 300, label: "300 Dots" },
+  { kind: "dots", amount: 200, label: "200 Dots" },
   {
     kind: "item",
-    slug: "weekly_mystery_box",
+    slug: "haiku_scroll_50",
     qty: 1,
-    label: "Mystery Box",
-  }, // Sun
+    label: "Haiku Scroll #50",
+  },
+  { kind: "item", slug: "potion_small", qty: 3, label: "Potions x3" },
+  {
+    kind: "xp",
+    amount: 100,
+    label: "EXP +100",
+  },
+  { kind: "dots", amount: 500, label: "500 Dots" },
+  {
+    kind: "ribbon",
+    label: "Alpha Tester Ribbon",
+  },
 ] as const;
+
 /** ---- Date helpers ------------------------------------------------------- */
+
 function daysBetweenUTC(a: Date, b: Date): number {
   const aDay = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate());
   const bDay = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
@@ -100,27 +106,84 @@ async function giveItem(user_id: string, slug: string, qty: number) {
   if (e2) throw e2;
 }
 
-async function giveDailyXPBoost(user_id: string, strength: number) {
-  const expiresAt = new Date();
-  expiresAt.setUTCHours(23, 59, 59, 999);
-
-  const { error: deleteError } = await supabaseAdmin
-    .from("pve_active_buffs")
-    .delete()
+async function giveXPToActivePet(user_id: string, amount: number) {
+  const { data: pet, error } = await supabaseAdmin
+    .from("pets")
+    .select("id, level")
     .eq("user_id", user_id)
-    .eq("buff_type", "bonus_xp");
-
-  if (deleteError) throw deleteError;
-
-  const { error } = await supabaseAdmin.from("pve_active_buffs").insert({
-    user_id,
-    buff_type: "bonus_xp",
-    strength,
-    description: "Weekly Rewards: Double XP for the day.",
-    expires_at: expiresAt.toISOString(),
-  });
+    .eq("is_active", true)
+    .maybeSingle();
 
   if (error) throw error;
+  if (!pet) return;
+
+  const { data: row, error: e1 } = await supabaseAdmin
+    .from("pet_stat_allocations")
+    .select("id, xp")
+    .eq("pet_id", pet.id)
+    .eq("level", pet.level)
+    .maybeSingle();
+
+  if (e1) throw e1;
+
+  if (!row) {
+    const { error: e2 } = await supabaseAdmin
+      .from("pet_stat_allocations")
+      .insert({
+        pet_id: pet.id,
+        level: pet.level,
+        xp: amount,
+        hp: 0,
+        atk: 0,
+        magi: 0,
+        def: 0,
+        spd: 0,
+        mana: 0,
+      });
+
+    if (e2) throw e2;
+    return;
+  }
+
+  const { error: e3 } = await supabaseAdmin
+    .from("pet_stat_allocations")
+    .update({ xp: (row.xp ?? 0) + amount })
+    .eq("id", row.id);
+
+  if (e3) throw e3;
+}
+
+async function awardAlphaTesterRibbon(user_id: string, earnedAtIso: string) {
+  const { data: award, error: awardErr } = await supabaseAdmin
+    .from("awards")
+    .upsert(
+      {
+        key: "alpha_tester",
+        name: "Alpha Tester",
+        type: "ribbon",
+        rarity: "special",
+        description:
+          "Awarded for participating in the Alpha deployment testing.",
+      },
+      { onConflict: "key" },
+    )
+    .select("id")
+    .single();
+
+  if (awardErr) throw new Error(awardErr.message);
+  if (!award?.id) throw new Error("Failed to resolve award id.");
+
+  const { error: taErr } = await supabaseAdmin.from("trainer_awards").upsert(
+    {
+      user_id,
+      award_id: award.id,
+      earned_at: earnedAtIso,
+      context: { source: "daily_login_rewards", deployment: "alpha" },
+    },
+    { onConflict: "user_id,award_id" },
+  );
+
+  if (taErr) throw new Error(taErr.message);
 }
 
 async function applyReward(user_id: string, reward: Reward) {
@@ -129,8 +192,10 @@ async function applyReward(user_id: string, reward: Reward) {
       return addWallet(user_id, "dots", reward.amount);
     case "item":
       return giveItem(user_id, reward.slug, reward.qty);
-    case "xp_boost":
-      return giveDailyXPBoost(user_id, reward.strength);
+    case "xp":
+      return giveXPToActivePet(user_id, reward.amount);
+    case "ribbon":
+      return awardAlphaTesterRibbon(user_id, new Date().toISOString());
     default: {
       const _never: never = reward;
       return _never;
@@ -161,9 +226,16 @@ function rewardForStreak(nextStreak: number): Reward {
     };
   }
 
+  if (reward.kind === "xp") {
+    return {
+      kind: "xp",
+      amount: reward.amount,
+      label: reward.label,
+    };
+  }
+
   return {
-    kind: "xp_boost",
-    strength: reward.strength,
+    kind: "ribbon",
     label: reward.label,
   };
 }
@@ -200,20 +272,7 @@ rewardsRouter.get(
     const nextStreak = baseStreak + 1;
     const nextDayIndex = (nextStreak - 1) % 7;
 
-    let preview = rewardForStreak(nextStreak);
-
-    if (
-      nextDayIndex === 2 &&
-      preview.kind === "item" &&
-      preview.slug === "potato" &&
-      row?.potato_received
-    ) {
-      preview = {
-        kind: "dots",
-        amount: 300,
-        label: "300 Dots",
-      };
-    }
+    const preview = rewardForStreak(nextStreak);
 
     return res.json({
       streak,
@@ -246,6 +305,7 @@ rewardsRouter.post(
     const last = row?.last_claimed_at ? new Date(row.last_claimed_at) : null;
 
     const diffDays = last ? daysBetweenUTC(last, now) : 999;
+
     if (diffDays === 0)
       return res.status(400).json({ error: "Already claimed today." });
 
@@ -254,20 +314,7 @@ rewardsRouter.post(
     const nextStreak = baseStreak + 1;
     const dayIndex = (nextStreak - 1) % 7;
 
-    let reward = rewardForStreak(nextStreak);
-
-    if (
-      dayIndex === 2 &&
-      reward.kind === "item" &&
-      reward.slug === "potato" &&
-      row?.potato_received
-    ) {
-      reward = {
-        kind: "dots",
-        amount: 300,
-        label: "300 Dots",
-      };
-    }
+    const reward = rewardForStreak(nextStreak);
 
     try {
       await applyReward(user_id, reward);
@@ -286,9 +333,7 @@ rewardsRouter.post(
           id: user_id,
           streak: nextStreak,
           last_claimed_at: now.toISOString(),
-          potato_received:
-            row?.potato_received ||
-            (reward.kind === "item" && reward.slug === "potato"),
+          potato_received: row?.potato_received ?? false,
         },
         { onConflict: "id" },
       );

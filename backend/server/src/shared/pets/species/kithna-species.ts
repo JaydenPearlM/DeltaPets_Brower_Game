@@ -17,7 +17,7 @@ import {
   VOIDBORNE_RULES,
 } from "./voidborne";
 
-export const EGG_FIND_XP_REWARD = 30 as const;
+export const EGG_FIND_XP_REWARD = 20 as const;
 
 export type KithnaEggVisual = {
   element: SharedElementLine;
@@ -317,6 +317,10 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
 
     hatchling: "Clodian",
     mythical_legendary: null,
+
+    rules: {
+      xpMultiplier: 0.9,
+    },
   }),
 
   createKithnaNonStarterSpecies({
@@ -327,6 +331,10 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
 
     hatchling: "Pebelin",
     mythical_legendary: null,
+
+    rules: {
+      xpMultiplier: 1,
+    },
   }),
 
   createKithnaNonStarterSpecies({
@@ -337,6 +345,10 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
 
     hatchling: "Magmado",
     mythical_legendary: null,
+
+    rules: {
+      xpMultiplier: 0.85,
+    },
   }),
 
   createKithnaNonStarterSpecies({
@@ -347,6 +359,10 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
 
     hatchling: "Shade",
     mythical_legendary: null,
+
+    rules: {
+      xpMultiplier: 0.95,
+    },
   }),
 
   createKithnaNonStarterSpecies({
@@ -357,6 +373,10 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
 
     hatchling: "Glimmer",
     mythical_legendary: null,
+
+    rules: {
+      xpMultiplier: 0.8,
+    },
   }),
 
   // VOIDBORNE TEMPLATE — uncomment after names and stats are ready.
