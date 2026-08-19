@@ -1,0 +1,15 @@
+[
+  {
+    "slug": "item-slug",
+    "name": "Item Name",
+    "type": "equipment",
+    "category": "armor",
+    "description": "What the armor is and what it protects.",
+    "rarity": 1,
+    "stack_limit": 1,
+    "effects": {
+      "def": 1
+    },
+    "image": "item_image.png"
+  }
+]

@@ -310,6 +310,99 @@ meRouter.post(
 );
 
 /**
+/**
+ * GET /api/me/starter-cleanup
+ * Returns whether the user should see the one-time starter cleanup notice.
+ */
+meRouter.get(
+  "/me/starter-cleanup",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        logger.error("[GET /api/me/starter-cleanup] missing req.user");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from("profiles")
+        .select("starter_cleanup_affected, starter_cleanup_notice_seen")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) {
+        logger.error(
+          "[GET /api/me/starter-cleanup] profile query failed:",
+          error,
+        );
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({
+        affected:
+          (data as { starter_cleanup_affected?: boolean } | null)
+            ?.starter_cleanup_affected ?? false,
+        seen:
+          (data as { starter_cleanup_notice_seen?: boolean } | null)
+            ?.starter_cleanup_notice_seen ?? false,
+      });
+    } catch (e: unknown) {
+      logger.error("[GET /api/me/starter-cleanup] crash:", e);
+      return res.status(500).json({
+        error: "Server error",
+      });
+    }
+  },
+);
+
+/**
+ * POST /api/me/starter-cleanup/seen
+ * Permanently acknowledges the one-time starter cleanup notice.
+ */
+meRouter.post(
+  "/me/starter-cleanup/seen",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        logger.error("[POST /api/me/starter-cleanup/seen] missing req.user");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { error } = await supabaseAdmin
+        .from("profiles")
+        .update({
+          starter_cleanup_notice_seen: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId)
+        .eq("starter_cleanup_affected", true);
+
+      if (error) {
+        logger.error(
+          "[POST /api/me/starter-cleanup/seen] profile update failed:",
+          error,
+        );
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({
+        seen: true,
+      });
+    } catch (e: unknown) {
+      logger.error("[POST /api/me/starter-cleanup/seen] crash:", e);
+      return res.status(500).json({
+        error: "Server error",
+      });
+    }
+  },
+);
+
+/**
  * GET /api/me/wallet
  * Returns the user's Dots wallet.
  */

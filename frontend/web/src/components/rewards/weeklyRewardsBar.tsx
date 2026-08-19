@@ -46,7 +46,30 @@ export function WeeklyRewardsBar({ onClose }: { onClose: () => void }) {
 
   const claimedCount = useMemo(() => {
     const streak = status?.streak ?? 0;
-    return Math.min(streak, 7);
+
+    if (streak <= 0) return 0;
+    if (streak % 7 === 0 && status?.canClaim) return 0;
+
+    return ((streak - 1) % 7) + 1;
+  }, [status]);
+
+  const rewardSlots = useMemo(() => {
+    if (!status) return WEEK1_LABELS;
+
+    const weekRewards = (
+      status as RewardsStatus & {
+        weekRewards?: Array<{ kind: string; label: string }>;
+      }
+    ).weekRewards;
+
+    if (!weekRewards || weekRewards.length !== 7) {
+      return WEEK1_LABELS;
+    }
+
+    return weekRewards.map((reward, i) => ({
+      day: String(i),
+      label: reward.label,
+    }));
   }, [status]);
 
   async function onClaim() {
@@ -102,8 +125,8 @@ export function WeeklyRewardsBar({ onClose }: { onClose: () => void }) {
       </div>
 
       <div className="wr-bar">
-        {WEEK1_LABELS.map((slot, i) => {
-          const claimed = i < claimedCount && status.streak <= 7;
+        {rewardSlots.map((slot, i) => {
+          const claimed = i < claimedCount;
           const isNext = i === nextIdx;
           const claimable = isNext && status.canClaim;
 

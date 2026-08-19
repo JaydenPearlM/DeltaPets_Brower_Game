@@ -6,16 +6,16 @@ import {
 } from "./usePetStorage";
 import MainTeam from "../../../MainTeam/mainTeam";
 import { ELEMENT_EGG_NAMES, SHARED_SPECIES } from "@shared/pets/species";
-import prismaticEggPng from "@/kith/assets/eggs/prismatic_egg.png";
-import tideEggPng from "@/kith/assets/eggs/tide_egg.png";
-import emberEggPng from "@/kith/assets/eggs/ember_egg.png";
-import groveEggPng from "@/kith/assets/eggs/grove_egg.png";
-import zephyrEggPng from "@/kith/assets/eggs/zephr_egg.png";
-import frostveilEggPng from "@/kith/assets/eggs/frostviel_egg.png";
-import stormEggPng from "@/kith/assets/eggs/storm_egg.png";
-import dawnshardEggPng from "@/kith/assets/eggs/light_egg.png";
-import eclipseEggPng from "@/kith/assets/eggs/eclipse_egg.png";
-import voidborneEggPng from "@/kith/assets/eggs/Voidborne_egg.png";
+import prismaticEggPng from "@/kith/assets/eggs/eggs/prismatic_egg/prismatic_egg.png";
+import tideEggPng from "@/kith/assets/eggs/eggs/tide_egg/tide_normal.png";
+import emberEggPng from "@/kith/assets/eggs/eggs/ember_egg/ember_normal.png";
+import groveEggPng from "@/kith/assets/eggs/eggs/grove_egg/grove_normal.png";
+import zephyrEggPng from "@/kith/assets/eggs/eggs/zephyr_egg/zephyr_normal.png";
+import frostveilEggPng from "@/kith/assets/eggs/eggs/frostviel_egg/frostviel_normal.png";
+import stormEggPng from "@/kith/assets/eggs/eggs/storm_egg/storm_normal.png";
+import dawnshardEggPng from "@/kith/assets/eggs/eggs/light_egg/light_normal.png";
+import eclipseEggPng from "@/kith/assets/eggs/eggs/eclipse_egg/eclipse_normal.png";
+import voidborneEggPng from "@/kith/assets/eggs/eggs/Voidborne_egg/voidborne_normal.png";
 import "./PetStoragePanel.css";
 type PetStoragePanelProps = {
   userId?: string;

@@ -1,0 +1,28 @@
+[
+  {
+    "slug": "soft-cleaning-brush",
+    "name": "Soft Cleaning Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A soft brush used to clean a Delta.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 25
+    },
+    "image": "soft_cleaning_brush.png"
+  },
+  {
+    "slug": "spark-toy",
+    "name": "Spark Toy",
+    "type": "care",
+    "category": "toys",
+    "description": "A bright little toy that keeps a Delta entertained.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 25
+    },
+    "image": "spark_toy.png"
+  }
+]

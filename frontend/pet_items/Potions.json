@@ -1,0 +1,15 @@
+[
+  {
+    "slug": "minor-healing-potion",
+    "name": "Minor Healing Potion",
+    "type": "consumable",
+    "category": "potion",
+    "description": "Restores a small amount of health.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 20
+    },
+    "image": "minor_healing_potion.png"
+  }
+]

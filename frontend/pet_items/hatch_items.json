@@ -1,0 +1,15 @@
+[
+  {
+    "slug": "item-slug",
+    "name": "Item Name",
+    "type": "consumable",
+    "category": "hatch",
+    "description": "What the hatch item does.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_percent": 10
+    },
+    "image": "item_image.png"
+  }
+]

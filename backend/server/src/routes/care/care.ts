@@ -176,7 +176,7 @@ function petNeedsRunawayLock(pet: Record<string, any>) {
   const happy = wholeCare(pet.happy, 50);
   const neglectHours = wholeStat(pet.neglect_hours, 0, 0);
 
-  return (hunger <= 0 || clean <= 0 || happy <= 0) && neglectHours >= 24;
+  return (hunger <= 0 || clean <= 0 || happy <= 0) && neglectHours >= 72;
 }
 
 async function markPetAsRunaway(pet: Record<string, any>) {

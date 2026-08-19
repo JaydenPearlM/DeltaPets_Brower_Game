@@ -621,7 +621,7 @@ petsRouter.post(
       const { data: existingPets, error: existingPetsError } =
         await supabaseAdmin
           .from("pets")
-          .select("id, ran_away, stage")
+          .select("id, ran_away, stage, is_rescue_reroll")
           .eq("user_id", userId);
 
       if (existingPetsError) throw existingPetsError;
@@ -629,6 +629,20 @@ petsRouter.post(
       const healthyCount = (existingPets ?? []).filter(
         (row: any) => !row?.ran_away && row?.stage !== "egg",
       ).length;
+
+      const hasPendingRescueEgg = (existingPets ?? []).some(
+        (row: any) =>
+          !row?.ran_away &&
+          row?.stage === "egg" &&
+          row?.is_rescue_reroll === true,
+      );
+
+      if (hasPendingRescueEgg) {
+        return res.status(409).json({
+          success: false,
+          error: "You already have a rescue egg waiting to hatch.",
+        });
+      }
 
       if (healthyCount > 0) {
         return res.status(400).json({
@@ -1408,6 +1422,68 @@ petsRouter.post(
         return res.status(500).json({
           error: result?.error_message || "Failed to hatch pet",
         });
+      }
+
+      const deltaSlugByElement: Record<string, string> = {
+        water: "water-delta",
+        fire: "fire-delta",
+        earth: "earth-delta",
+        air: "air-delta",
+        ice: "ice-delta",
+        storm: "storm-delta",
+        light: "light-delta",
+        shadow: "shadow-delta",
+      };
+
+      const deltaSlug = deltaSlugByElement[hatchLine];
+
+      if (deltaSlug) {
+        const { data: deltaItem, error: deltaItemError } = await supabaseAdmin
+          .from("item_defs")
+          .select("id")
+          .eq("slug", deltaSlug)
+          .single();
+
+        if (deltaItemError || !deltaItem) {
+          logger.error("[hatch] elemental Delta item missing", {
+            hatchLine,
+            deltaSlug,
+            deltaItemError,
+          });
+        } else {
+          const { data: existingDeltaInventory, error: deltaInventoryError } =
+            await supabaseAdmin
+              .from("inventory")
+              .select("qty")
+              .eq("user_id", userId)
+              .eq("item_id", deltaItem.id)
+              .maybeSingle();
+
+          if (deltaInventoryError) {
+            logger.error(
+              "[hatch] failed to read elemental Delta inventory",
+              deltaInventoryError,
+            );
+          } else {
+            const { error: deltaGrantError } = await supabaseAdmin
+              .from("inventory")
+              .upsert(
+                {
+                  user_id: userId,
+                  item_id: deltaItem.id,
+                  qty: (existingDeltaInventory?.qty ?? 0) + 5,
+                },
+                { onConflict: "user_id,item_id" },
+              );
+
+            if (deltaGrantError) {
+              logger.error(
+                "[hatch] failed to grant elemental Deltas",
+                deltaGrantError,
+              );
+            }
+          }
+        }
       }
 
       try {

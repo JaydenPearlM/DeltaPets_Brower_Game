@@ -1,0 +1,106 @@
+[
+  {
+    "slug": "water-delta",
+    "name": "Water Delta",
+    "type": "material",
+    "category": "evolution_material",
+    "description": "A Delta symbol infused with Water energy. Used for Water evolution.",
+    "rarity": 1,
+    "stack_limit": 999,
+    "effects": {
+      "element": "water"
+    },
+    "image": "water_delta.png"
+  },
+  {
+    "slug": "fire-delta",
+    "name": "Fire Delta",
+    "type": "material",
+    "category": "evolution_material",
+    "description": "A Delta symbol infused with Fire energy. Used for Fire evolution.",
+    "rarity": 1,
+    "stack_limit": 999,
+    "effects": {
+      "element": "fire"
+    },
+    "image": "fire_delta.png"
+  },
+  {
+    "slug": "earth-delta",
+    "name": "Earth Delta",
+    "type": "material",
+    "category": "evolution_material",
+    "description": "A Delta symbol infused with Earth energy. Used for Earth evolution.",
+    "rarity": 1,
+    "stack_limit": 999,
+    "effects": {
+      "element": "earth"
+    },
+    "image": "earth_delta.png"
+  },
+  {
+    "slug": "air-delta",
+    "name": "Air Delta",
+    "type": "material",
+    "category": "evolution_material",
+    "description": "A Delta symbol infused with Air energy. Used for Air evolution.",
+    "rarity": 1,
+    "stack_limit": 999,
+    "effects": {
+      "element": "air"
+    },
+    "image": "air_delta.png"
+  },
+  {
+    "slug": "ice-delta",
+    "name": "Ice Delta",
+    "type": "material",
+    "category": "evolution_material",
+    "description": "A Delta symbol infused with Ice energy. Used for Ice evolution.",
+    "rarity": 1,
+    "stack_limit": 999,
+    "effects": {
+      "element": "ice"
+    },
+    "image": "ice_delta.png"
+  },
+  {
+    "slug": "storm-delta",
+    "name": "Storm Delta",
+    "type": "material",
+    "category": "evolution_material",
+    "description": "A Delta symbol infused with Storm energy. Used for Storm evolution.",
+    "rarity": 1,
+    "stack_limit": 999,
+    "effects": {
+      "element": "storm"
+    },
+    "image": "storm_delta.png"
+  },
+  {
+    "slug": "light-delta",
+    "name": "Light Delta",
+    "type": "material",
+    "category": "evolution_material",
+    "description": "A Delta symbol infused with Light energy. Used for Light evolution.",
+    "rarity": 1,
+    "stack_limit": 999,
+    "effects": {
+      "element": "light"
+    },
+    "image": "light_delta.png"
+  },
+  {
+    "slug": "shadow-delta",
+    "name": "Shadow Delta",
+    "type": "material",
+    "category": "evolution_material",
+    "description": "A Delta symbol infused with Shadow energy. Used for Shadow evolution.",
+    "rarity": 1,
+    "stack_limit": 999,
+    "effects": {
+      "element": "shadow"
+    },
+    "image": "shadow_delta.png"
+  }
+]
