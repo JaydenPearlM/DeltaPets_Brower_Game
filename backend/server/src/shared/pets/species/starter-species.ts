@@ -297,10 +297,10 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     preferredTime: "day",
     evolution: {
       egg: PRISMATIC_EGG_NAME,
-      hatchling: "Esperon",
-      lowform: "Flareclaw",
+      hatchling: "Espyr",
+      lowform: "Nightclaw",
       highform: "Shadeclaw",
-      legion: "Nightvielclaw",
+      legion: "Scytheclaw",
       mythical_legendary: null,
     },
     eggBaseStats: {
