@@ -11,6 +11,8 @@ import {
   getSelfAwareBubbleText,
   rememberSelfAwareVisit,
 } from "../selfAware/selfAware";
+import cribiPlaceholder from "@/kith/assets/startepets/hatchling_cribi.png";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type PetRecord = {
@@ -865,14 +867,11 @@ export default function PetDetailsPanel({
                       alt={getPetLabel(pet)}
                     />
                   ) : (
-                    <div
-                      className="petRepoCreatureCore petRepoCreatureCore--scene"
-                      aria-label="Pet placeholder"
-                    >
-                      <span className="petRepoCreatureEye petRepoCreatureEyeLeft" />
-                      <span className="petRepoCreatureEye petRepoCreatureEyeRight" />
-                      <span className="petRepoCreatureSmile" />
-                    </div>
+                    <img
+                      className="petRepoScenePetImage"
+                      src={cribiPlaceholder}
+                      alt="Pet placeholder"
+                    />
                   )}
                 </div>
 

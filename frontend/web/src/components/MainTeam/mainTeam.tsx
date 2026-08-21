@@ -5,6 +5,7 @@ import type {
 } from "../Hatchery/pages/storage/usePetStorage";
 import { SHARED_SPECIES } from "@shared/pets/species";
 import { STARTER_DISPLAY_NAMES } from "@/kith/registry/starterDisplayNames";
+import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
 import "./mainTeam.css";
 
 type MainTeamProps = {
@@ -170,7 +171,14 @@ function getXpNumbers(pet: PetStats | null) {
 }
 
 function getPetImage(pet: PetStats | null) {
-  return pet?.portrait_url || pet?.image_url || pet?.sprite_url || "";
+  if (!pet) return "";
+
+  return (
+    pet.portrait_url ||
+    pet.image_url ||
+    pet.sprite_url ||
+    (pet.species === "ice_starter" ? cribiHatchling : "")
+  );
 }
 
 function getToneClass(line?: string | null) {

@@ -1,5 +1,4 @@
 import { titleCase } from "@/lib/petUtils";
-import Armory from "@/pages/petsPage/components/Armory/Armory";
 import "./StatsChamber.css";
 
 type PetRecord = Record<string, any>;
@@ -34,7 +33,6 @@ type StatsChamberProps = {
     strongStats: StatKey[];
     weakStat: StatKey | null;
   };
-  onOpenSkillTree: () => void;
 };
 
 function SectionPill({ title }: { title: string }) {
@@ -52,8 +50,12 @@ export default function StatsChamber({
   elementRows,
   petElementTheme,
   growthTraits,
-  onOpenSkillTree,
 }: StatsChamberProps) {
+  const mutation =
+    Array.isArray(pet.mutations) && pet.mutations.length > 0
+      ? pet.mutations[0]
+      : null;
+
   return (
     <article className="statsChamber dp-standard-panel">
       <h2 className="statsChamberTitle dp-standard-panel-title">
@@ -156,6 +158,31 @@ export default function StatsChamber({
               </span>
             </div>
           </div>
+
+          {mutation ? (
+            <div className="petRepoPassiveTraitCard petRepoMutationCard">
+              <div className="petRepoPassiveTraitHeader">
+                <span>Mutation</span>
+                <span
+                  className="petRepoPassiveTraitRarity"
+                  data-rarity={(mutation.rarity ?? "Common").toLowerCase()}
+                >
+                  {mutation.rarity ?? "Common"}
+                </span>
+              </div>
+
+              <h3 className="petRepoPassiveTraitName">
+                <span>
+                  {titleCase(mutation.name ?? mutation.key ?? "Mutation")}
+                </span>
+              </h3>
+
+              <p>
+                {mutation.description ??
+                  "This Kith carries a permanent mutation."}
+              </p>
+            </div>
+          ) : null}
         </section>
 
         <section
@@ -183,17 +210,37 @@ export default function StatsChamber({
             })}
           </div>
 
-          <button
-            type="button"
-            className="petRepoSkillTreeButton btn btn-gold"
-            onClick={onOpenSkillTree}
-          >
-            Skill Trees
-          </button>
+          <div className="petRepoPassiveTraitCard petRepoRelicCard">
+            <div className="petRepoPassiveTraitHeader">
+              <span>Relic</span>
+              <span className="petRepoPassiveTraitRarity">Unequipped</span>
+            </div>
+
+            <h3 className="petRepoPassiveTraitName">
+              <span>No Relic Equipped</span>
+            </h3>
+
+            <p>Equip a Relic to gain Etching slots and build Resonance.</p>
+
+            <div className="petRepoPassiveTraitEffects petRepoRelicEffects">
+              <div>
+                <strong>Etchings:</strong>
+                <span>No slots available</span>
+              </div>
+
+              <div>
+                <strong>Resonance:</strong>
+                <span>0%</span>
+              </div>
+
+              <div>
+                <strong>Awakened Effect:</strong>
+                <span>Locked</span>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
-
-      <Armory />
     </article>
   );
 }

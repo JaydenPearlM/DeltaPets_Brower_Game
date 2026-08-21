@@ -7,6 +7,7 @@ import { useAuth } from "@/app/providers/useAuth";
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
 import { useHomepageBanner } from "./useHomepageBanner";
 import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
+import cribiPlaceholder from "@/kith/assets/startepets/hatchling_cribi.png";
 
 type HeroFeature = {
   label: string;
@@ -224,9 +225,10 @@ export default function Homepage() {
                   <div
                     className={`hp-spotlightVisual hp-spotlightVisual--${spotlightPet.element}`}
                   >
-                    <div
-                      className={`hp-spotlightOrb hp-spotlightOrb--${spotlightPet.element}`}
-                      aria-hidden="true"
+                    <img
+                      className="hp-spotlightPetImage"
+                      src={cribiPlaceholder}
+                      alt="Spotlight pet"
                     />
                   </div>
 

@@ -12,6 +12,7 @@ import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
 import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
 import templateSprite from "@/kith/assets/Sprite/Template_Sprite.png";
+import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
 
 type ProfilePageProps = {
   pageName?: string;
@@ -149,6 +150,9 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       : [];
 
   const activePet = allPets.find((pet) => pet.is_active) ?? null;
+  const activePetImage =
+    activePet?.portrait_url ||
+    (activePet?.species === "ice_starter" ? cribiHatchling : "");
 
   const displayName =
     user?.user_metadata?.display_name ||
@@ -322,10 +326,10 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
           <h2>Active Kith</h2>
 
           <div className="dp-profile-active-pet">
-            {activePet?.portrait_url ? (
+            {activePetImage ? (
               <img
-                src={activePet.portrait_url}
-                alt={activePet.nickname || activePet.name || "Active Kith"}
+                src={activePetImage}
+                alt={activePet?.nickname || activePet?.name || "Active Kith"}
               />
             ) : (
               <div className="dp-profile-pet-placeholder" aria-hidden="true">

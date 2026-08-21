@@ -983,6 +983,13 @@
   padding-top: 0rem;
 }
 
+.hp-spotlightPetImage {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  display: block;
+}
+
 .hp-spotlightVisual--null {
   border-color: #9a9a9a;
 }

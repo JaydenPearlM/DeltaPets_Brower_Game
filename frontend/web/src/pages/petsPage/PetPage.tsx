@@ -800,7 +800,11 @@ export default function PetPage() {
   }
 
   return (
-    <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
+    <div
+      className="petRepoPage dpTimeRoomPage poeTayToeHost"
+      data-phase={phase}
+    >
+      <PoeTayToe locationKey="pet" />
       {loadErr ? (
         <div className="petRepoStateCard petRepoStateCardError">
           <h2>Pet page load error</h2>
@@ -937,7 +941,16 @@ export default function PetPage() {
             />
 
             <div className="petRepoBottomGrid">
-              <SkillsChamber pet={pet} stats={totalStats} />
+              <SkillsChamber
+                pet={{
+                  ...pet,
+                  portrait_url:
+                    team.find((teamPet) => teamPet.id === pet.id)?.previewUrl ??
+                    pet.portrait_url ??
+                    null,
+                }}
+                stats={totalStats}
+              />
               <KithProgressCard
                 name={getPetLabel(pet)}
                 level={safeNum(pet.level, 1)}
