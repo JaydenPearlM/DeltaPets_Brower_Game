@@ -794,3 +794,7 @@
     grid-template-columns: 1fr;
   }
 }
+
+.statsChamber .petRepoMutationCard {
+  margin-top: auto;
+}

@@ -181,6 +181,20 @@ export default function StatsChamber({
                 {mutation.description ??
                   "This Kith carries a permanent mutation."}
               </p>
+
+              {mutation.effect_summary ? (
+                <div className="petRepoPassiveTraitEffects">
+                  <strong>Mutation Effect:</strong>
+                  <span>{mutation.effect_summary}</span>
+                </div>
+              ) : null}
+
+              {mutation.drawback_summary ? (
+                <div className="petRepoPassiveTraitEffects petRepoMutationDrawback">
+                  <strong>Drawback:</strong>
+                  <span>{mutation.drawback_summary}</span>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </section>
@@ -208,36 +222,6 @@ export default function StatsChamber({
                 </div>
               );
             })}
-          </div>
-
-          <div className="petRepoPassiveTraitCard petRepoRelicCard">
-            <div className="petRepoPassiveTraitHeader">
-              <span>Relic</span>
-              <span className="petRepoPassiveTraitRarity">Unequipped</span>
-            </div>
-
-            <h3 className="petRepoPassiveTraitName">
-              <span>No Relic Equipped</span>
-            </h3>
-
-            <p>Equip a Relic to gain Etching slots and build Resonance.</p>
-
-            <div className="petRepoPassiveTraitEffects petRepoRelicEffects">
-              <div>
-                <strong>Etchings:</strong>
-                <span>No slots available</span>
-              </div>
-
-              <div>
-                <strong>Resonance:</strong>
-                <span>0%</span>
-              </div>
-
-              <div>
-                <strong>Awakened Effect:</strong>
-                <span>Locked</span>
-              </div>
-            </div>
           </div>
         </section>
       </div>

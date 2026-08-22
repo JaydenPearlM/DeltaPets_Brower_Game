@@ -1,7 +1,8 @@
 import "./homepage.css";
 import { useNavigate } from "react-router-dom";
-import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
+
 import { AlphaSystemsPanel } from "@/components/AlphaSystems/AlphaSystemsPanel";
+import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { KithnaEggTray } from "@/components/KithnaEggTray/KithnaEggTray";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
@@ -19,21 +20,21 @@ type HeroFeature = {
 const HERO_FEATURES: HeroFeature[] = [
   {
     label: "Features",
-    title: "Eggs",
+    title: "Hatch & Discover",
     icon: "",
-    text: "Every egg holds the start of something bigger. Hatch, raise, and discover a companion that can grow far beyond first impressions.",
+    text: "Hatch elemental eggs, discover new Kith, and build a team full of different rarities, traits, mutations, and potential.",
   },
   {
     label: "Features",
-    title: "Raise Through Care",
+    title: "Raise & Bond",
     icon: "",
-    text: "Bond is everything. Feeding, cleaning, and spending time together does more than keep your Delta happy. It shapes growth.",
+    text: "Feed, clean, play with, and care for your Kith. Build trust over time as their personality, preferences, and bond begin to show.",
   },
   {
     label: "Features",
-    title: "Element Training",
+    title: "Train & Battle",
     icon: "",
-    text: "Train your element. Shape your skills. Learn new abilities, strengthen roles, and open new ways to fight and grow.",
+    text: "Build your Kith for battle with stats, skills, elemental strengths, passive traits, mutations, and powerful Relics and Etchings.",
   },
 ];
 
@@ -115,8 +116,12 @@ export default function Homepage() {
             </div>
 
             <p className="hp-heroSubtitle">
-              Hatch, raise, and bond with elemental creatures in the growing
-              world of <span>Aliune</span>.
+              Hatch, raise, train, Bond and battle alongside mysterious
+              creatures called Kith in the world of{" "}
+              <strong>
+                <span>Aliune</span>
+              </strong>
+              .
             </p>
 
             <div className="hp-heroCtaRow">
@@ -156,6 +161,8 @@ export default function Homepage() {
         </section>
       </div>
 
+      <AnnouncementPanel />
+
       {user ? (
         <KithnaEggTray
           eggs={inventoryEggs}
@@ -166,12 +173,7 @@ export default function Homepage() {
           onStartIncubating={moveEggFromInventoryToHatchery}
         />
       ) : null}
-
       <section className="hp-lowerGrid" aria-label="Homepage content">
-        <aside className="hp-newsColumn">
-          <AnnouncementPanel />
-        </aside>
-
         <div className="hp-spotlightColumn">
           <section
             className="hp-spotlightPanel hp-spotlightPanel--featured dp-standard-panel-purple"
