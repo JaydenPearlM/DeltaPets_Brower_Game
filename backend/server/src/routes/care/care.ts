@@ -284,7 +284,7 @@ async function hydrateMutationTraits(pet: Record<string, any>) {
   const { data, error } = await supabaseAdmin
     .from("pet_mutations")
     .select(
-      "slot_index,has_mutation,mutations:mutation_id(name,key,rarity,description)",
+      "slot_index,has_mutation,mutations:mutation_id(name,key,rarity,description,effect_summary,drawback_summary,effects)",
     )
     .eq("pet_id", pet.id)
     .eq("has_mutation", true)
@@ -300,6 +300,9 @@ async function hydrateMutationTraits(pet: Record<string, any>) {
       key: mutation.key ?? null,
       rarity: mutation.rarity ?? null,
       description: mutation.description ?? null,
+      effect_summary: mutation.effect_summary ?? null,
+      drawback_summary: mutation.drawback_summary ?? null,
+      effects: mutation.effects ?? null,
     }))
     .filter((mutation: any) => mutation.name || mutation.key);
 

@@ -1433,7 +1433,233 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(420px, 0.82fr);
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.petRepoBottomRightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  align-self: stretch;
+}
+
+.petRepoBottomRightColumn > .skillsPanel {
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.petRepoBottomRightColumn > .petRepoRelicPanel {
+  flex: 0 0 auto;
+}
+
+.petRepoRelicPanel {
+  padding: 6px 6px 6px 9px;
+  border: 4px solid var(--dp-panel-purple-border);
+  border-radius: 20px;
+  background: var(--dp-standard-panel-bg);
+  box-shadow: var(--dp-standard-panel-shadow);
+}
+
+.petRepoRelicPanelInner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100%;
+  padding: 18px;
+  border: 3px solid var(--dp-cyber-cyan);
+  border-radius: 14px;
+  background: var(--dp-standard-panel-bg);
+  box-sizing: border-box;
+}
+
+.petRepoRelicPanelContent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 18px;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+}
+
+.petRepoRelicArtColumn {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  min-width: 0;
+}
+
+.petRepoRelicArtFrame {
+  display: grid;
+  place-items: center;
+  width: 180px;
+  min-height: 180px;
+  padding: 12px;
+  border: 2px solid var(--dp-panel-purple-border);
+  border-radius: 12px;
+  background: var(--dp-standard-panel-bg);
+  box-sizing: border-box;
+}
+
+.petRepoRelicArtFrame span {
+  color: var(--dp-panel-text-muted);
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.petRepoRelicArtCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.petRepoRelicActions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.petRepoRelicBrowseButton,
+.petRepoRelicTreeButton {
+  width: 100%;
+  min-height: 44px;
+}
+
+.petRepoRelicTreeButton:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.petRepoRelicPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--dp-title-gold, var(--dp-brand-yellow-bright));
+  font-family: var(--font-heading);
+  font-weight: 1000;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.petRepoRelicPanelHeader span:last-child {
+  color: var(--dp-cyber-cyan);
+  font-size: 0.74rem;
+}
+
+.petRepoRelicPanel p {
+  margin: 0;
+  color: var(--dp-panel-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.petRepoRelicArtFrame {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  padding: 12px;
+  border: 2px solid var(--dp-standard-panel-border, var(--dp-cyber-cyan));
+  border-radius: 12px;
+  background: var(--dp-standard-panel-bg);
+}
+
+.petRepoRelicArtFrame span {
+  color: var(--dp-panel-text-muted);
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.petRepoRelicBrowseButton {
+  min-height: 44px;
+}
+
+.petRepoRelicPanel p {
+  margin: 0;
+  color: var(--dp-panel-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.petRepoRelicPanelDetails {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.petRepoRelicPanelDetails > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--dp-standard-panel-border, var(--dp-cyber-cyan));
+  border-radius: 12px;
+  background: var(--dp-standard-panel-bg);
+}
+
+.petRepoRelicPanelDetails strong {
+  color: var(--dp-title-gold, var(--dp-brand-yellow-bright));
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.petRepoRelicPanelDetails span {
+  color: var(--dp-panel-text);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.petRepoBottomRightColumn > .kithProgressCard {
+  margin-top: auto;
+  grid-column: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__header,
+.petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__levelRow,
+.petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__xpBar {
+  grid-column: 1 / -1;
+}
+
+.petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__stats {
+  grid-column: 1;
+  grid-row: span 2;
+}
+
+.petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__section {
+  grid-column: 2;
+}
+
+@media (max-width: 720px) {
+  .petRepoRelicPanelDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .petRepoBottomRightColumn > .kithProgressCard {
+    grid-template-columns: 1fr;
+  }
+
+  .petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__header,
+  .petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__levelRow,
+  .petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__xpBar,
+  .petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__stats,
+  .petRepoBottomRightColumn > .kithProgressCard .kithProgressCard__section {
+    grid-column: 1;
+    grid-row: auto;
+  }
 }
 
 .petRepoBottomGrid > .statsChamber,

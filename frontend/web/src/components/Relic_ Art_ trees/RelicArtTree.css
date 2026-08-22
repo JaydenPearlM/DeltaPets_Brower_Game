@@ -1,0 +1,45 @@
+.relicArtTreeRarity--common {
+  color: var(--accent-green-neon);
+}
+
+.relicArtTreeRarity--uncommon {
+  color: var(--accent-green-2);
+}
+
+.relicArtTreeRarity--rare {
+  color: var(--dp-cyber-blue);
+}
+
+.relicArtTreeRarity--epic {
+  color: var(--dp-panel-purple-border);
+}
+
+.relicArtTreeRarity--legendary {
+  color: var(--dp-title-gold, var(--dp-brand-yellow-bright));
+}
+
+.relicArtTreeBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  background: rgba(4, 10, 24, 0.72);
+}
+
+.relicArtTreeModal {
+  position: relative;
+  z-index: 12001;
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100dvh - 44px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 26px;
+  box-sizing: border-box;
+}
+
+.relicArtTreeRarity--common {
+  color: var(--accent-green-neon);
+}

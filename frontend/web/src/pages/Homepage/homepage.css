@@ -570,16 +570,15 @@
 .hp-heroDisclaimer {
   max-width: 860px;
   margin: 35px auto 0;
-  color: var(--dp-text-primary);
+  color: rgba(235, 242, 255, 0.6);
   font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 800;
+  font-size: 0.82rem;
+  font-weight: 700;
   line-height: 1.55;
   text-align: center;
-  letter-spacing: 0.1em;
-  text-shadow:
-    0 0 4px var(--dp-panel-border-cyan-soft),
-    0 1px 0 var(--dp-panel-inner-shadow);
+  letter-spacing: 0.08em;
+  opacity: 0.82;
+  text-shadow: none;
 }
 
 .hp-signalBanner {
@@ -781,7 +780,7 @@
 
 .hp-lowerGrid {
   display: grid;
-  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.6fr);
+  grid-template-columns: 1fr;
   gap: 1rem;
   align-items: start;
   margin-top: 1rem;
@@ -981,6 +980,13 @@
   justify-content: center;
   position: relative;
   padding-top: 0rem;
+}
+
+.hp-spotlightPetImage {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  display: block;
 }
 
 .hp-spotlightVisual--null {

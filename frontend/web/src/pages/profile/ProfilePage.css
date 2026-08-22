@@ -18,6 +18,10 @@
   gap: 24px;
 }
 
+.dp-profile-aliune-channel {
+  grid-column: 1 / -1;
+}
+
 .dp-profile-star-panel {
   position: relative;
   isolation: isolate;
@@ -410,11 +414,6 @@
   margin-top: 4px;
   color: var(--dp-text-primary);
   overflow-wrap: anywhere;
-}
-
-.dp-profile-announcements {
-  grid-column: 1 / -1;
-  min-width: 0;
 }
 
 .dp-profile-panel {

@@ -925,6 +925,33 @@
     box-sizing: border-box !important;
   }
 
+  .relicArtTreeBackdrop {
+    padding: 8px !important;
+  }
+
+  .relicArtTreeModal {
+    width: 100% !important;
+    max-height: calc(100vh - 16px) !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  .relicArtTreeHeader {
+    align-items: flex-start !important;
+  }
+
+  .relicArtTreeStage {
+    width: min(330px, 88vw) !important;
+  }
+
+  .relicArtTreeStatusGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .relicArtTreeNode {
+    touch-action: manipulation;
+  }
+
   /* PetPage.css sets --petRepo-left-offset:145px with no media
      guard. Vite loads it after mobile.css so !important is needed. */
   .petRepoStage {
@@ -2512,4 +2539,54 @@
     padding: 14px !important;
     box-sizing: border-box !important;
   }
+}
+/* Relic Artes Chamber */
+.petRepoRelicPanelInner {
+  padding: 14px !important;
+  gap: 10px !important;
+}
+
+.petRepoRelicPanelContent {
+  grid-template-columns: 1fr !important;
+  gap: 14px !important;
+}
+
+.petRepoRelicArtColumn {
+  grid-template-columns: 118px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+.petRepoRelicArtFrame {
+  width: 118px !important;
+  height: 118px !important;
+  min-height: 118px !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 10px !important;
+}
+
+.petRepoRelicArtCopy {
+  min-width: 0 !important;
+}
+
+.petRepoRelicArtCopy h3 {
+  margin: 0 0 6px !important;
+}
+
+.petRepoRelicArtCopy p {
+  line-height: 1.35 !important;
+}
+
+.petRepoRelicActions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.petRepoRelicBrowseButton,
+.petRepoRelicTreeButton {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+  margin: 0 !important;
 }

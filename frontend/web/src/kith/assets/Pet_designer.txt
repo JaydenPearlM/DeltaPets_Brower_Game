@@ -1,0 +1,54 @@
+# DeltaPets Style Consistency Prompt
+
+Use **Image A** as the **style reference only**.
+Use **Image B** as the **new pet drawing / design to preserve**.
+
+Render Image B in the same overall coloring and finishing style as Image A while **preserving the design of Image B**.
+
+Important rules:
+
+* **Do not redesign the pet.**
+* **Do not change the anatomy, silhouette, species traits, markings, or proportions of Image B.**
+* **Do not copy Cribi’s features onto the new pet.**
+* **Do not invent a new color palette.**
+* Use the colors already present in Image B, or keep the intended local colors if they are already indicated.
+* The goal is to transfer the **rendering style**, not the species design.
+
+Match the following style qualities from Image A:
+
+* soft cartoon rendering
+* hand-drawn, non-vector finish
+* clean and readable shading
+* cel-shaded gradient feel
+* cool-toned shadows when appropriate
+* soft highlights
+* limited, controlled rendering
+* polished but still painterly/cartoon-like
+* suitable for the DeltaPets world
+* inspired by a Pokémon / Neopets / creature-raising game feel
+* not realistic
+* not overly glossy
+* not over-rendered
+
+Keep the final result looking like it was drawn by the same artist as Image A.
+
+If Image B is lineart or a rough clean drawing:
+
+* preserve the drawing faithfully
+* color and render it in the same style language as Image A
+* keep edges clean and the form readable
+* avoid excessive texture or unnecessary detail
+
+If Image B already has flat colors:
+
+* preserve those flat colors
+* refine them with shading, highlights, and polish in the style of Image A
+* do not replace the chosen colors with a different palette unless specifically instructed
+
+Overall goal:
+
+Create a final polished render of Image B that looks like it belongs in the same game and art pipeline as Image A, while keeping Image B’s identity fully intact.
+
+## Short reusable version
+
+Use Image A as a **style/rendering reference only** and Image B as the **design reference to preserve**. Render Image B in the same coloring, shading, and finishing style as Image A. Do not redesign the pet, do not copy Image A’s species traits, and do not invent a new palette. Preserve Image B’s anatomy, silhouette, markings, and intended colors. The result should look like the same artist rendered both pets in a consistent DeltaPets style: soft cartoon finish, cel-shaded gradient rendering, controlled highlights, cool-toned shadows, and a polished but hand-drawn look.

@@ -8,6 +8,7 @@ import {
   PROGRESSION_SKILLS,
   type SkillId,
 } from "../Skills/skillsRegistry";
+import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
 import "./skillChamber.css";
 
 type SkillChamberProps = {
@@ -462,6 +463,11 @@ export default function SkillChamber({
 
   const petName = getPetName(pet);
   const petLevel = getPetLevel(pet);
+  const petPreviewUrl =
+    pet?.portrait_url ||
+    pet?.sprite_url ||
+    pet?.image_url ||
+    (pet?.species === "ice_starter" ? cribiHatchling : null);
 
   function equipSkill(skillId: SkillId) {
     if (!LOADOUT_SKILL_IDS.includes(skillId)) return;
@@ -558,7 +564,15 @@ export default function SkillChamber({
             className="skillChamberCommandOrb"
             style={getCommandButtonStyle("basic-strike", pet)}
             aria-label="Pet battle image slot"
-          />
+          >
+            {petPreviewUrl ? (
+              <img
+                className="skillChamberCommandOrbImage"
+                src={petPreviewUrl}
+                alt={petName}
+              />
+            ) : null}
+          </div>
 
           <div
             className="skillChamberBattleSlots"

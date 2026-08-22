@@ -1,7 +1,11 @@
 .skillsPanel {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  padding: 22px;
-  transform: translate(4px, 4px);
+  min-height: 0;
+  padding: 35px;
+  box-sizing: border-box;
+  transform: none;
 }
 
 .skillsPanelHeader {
@@ -99,7 +103,7 @@
 }
 
 .skillInventoryPanel {
-  margin: 0 0 24px;
+  margin: 0;
   padding: 18px;
   border: 1px solid color-mix(in srgb, var(--ui-line, #567bad) 56%, white 10%);
   border-radius: 22px;
@@ -282,21 +286,38 @@
 
 .skillChamberCommandOrb {
   width: 104px;
+
   height: 104px;
+
+  overflow: hidden;
+
   border: 1px solid var(--skill-command-border, rgba(203, 238, 255, 0.88));
+
   border-radius: 50%;
+
   background: var(
     --skill-command-bg,
     radial-gradient(
       circle at center,
+
       rgba(7, 34, 63, 0.98),
       rgba(3, 13, 28, 0.98)
     )
   );
+
   color: var(--skill-command-text, #eef8ff);
+
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.18),
     0 0 20px var(--skill-command-border, rgba(89, 188, 255, 0.18));
+}
+.skillChamberCommandOrbImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 50%;
 }
 
 .skillChamberBattleSlots {
@@ -906,7 +927,8 @@
 
   .skillsPanel {
     width: 100%;
-    padding: 30px;
+    padding: 22px;
+    transform: none;
   }
 
   .skillCenterActionRow,

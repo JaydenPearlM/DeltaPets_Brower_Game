@@ -15,14 +15,14 @@ import LostKithRegistry from "@/pages/petsPage/components/LostKithRegistry/LostK
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
 import StatsChamber from "@/components/StatsChamber/StatsChamber";
+import RelicArtTree from "@/components/Relic_ Art_ trees/RelicArtTree";
 import MainTeam from "@/components/MainTeam/mainTeam";
 import type {
   PartySlotView,
   StoragePet,
 } from "@/components/Hatchery/pages/storage/usePetStorage";
 import "./PetPage.css";
-import SkillTree from "@/components/Skills/skilltree";
-import DpPopupWindow from "./components/DpPopupWindow";
+
 import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
 import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import {
@@ -255,7 +255,7 @@ export default function PetPage() {
   const [stats, setStats] = useState<PetStatsRow | null>(null);
   const [elements, setElements] = useState<PetElementsRow | null>(null);
   const [team, setTeam] = useState<TeamCardPet[]>([]);
-  const [showSkillTree, setShowSkillTree] = useState(false);
+
   const [busy, setBusy] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -264,6 +264,7 @@ export default function PetPage() {
   const [starterMerchant, setStarterMerchant] =
     useState<StarterMerchantState | null>(null);
   const [showLostRegistry, setShowLostRegistry] = useState(false);
+  const [showRelicArteTree, setShowRelicArteTree] = useState(false);
   const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
   const [rescueEggError, setRescueEggError] = useState<string | null>(null);
   const [nicknameDraft, setNicknameDraft] = useState("");
@@ -800,7 +801,11 @@ export default function PetPage() {
   }
 
   return (
-    <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
+    <div
+      className="petRepoPage dpTimeRoomPage poeTayToeHost"
+      data-phase={phase}
+    >
+      <PoeTayToe locationKey="pet" />
       {loadErr ? (
         <div className="petRepoStateCard petRepoStateCardError">
           <h2>Pet page load error</h2>
@@ -933,11 +938,62 @@ export default function PetPage() {
               elementRows={elementRows}
               petElementTheme={petElementTheme}
               growthTraits={growthTraits}
-              onOpenSkillTree={() => setShowSkillTree(true)}
             />
 
-            <div className="petRepoBottomGrid">
-              <SkillsChamber pet={pet} stats={totalStats} />
+            <div className="petRepoBottomRightColumn">
+              <SkillsChamber
+                pet={{
+                  ...pet,
+                  portrait_url:
+                    team.find((teamPet) => teamPet.id === pet.id)?.previewUrl ??
+                    pet.portrait_url ??
+                    null,
+                }}
+                stats={totalStats}
+              />
+
+              <div className="petRepoRelicPanel">
+                <div className="petRepoRelicPanelInner dp-blue-grid-panel">
+                  <div className="petRepoRelicPanelHeader">
+                    <span>Relic Artes Chamber</span>
+                  </div>
+
+                  <div className="petRepoRelicPanelContent">
+                    <div className="petRepoRelicArtColumn">
+                      <div className="petRepoRelicArtFrame">
+                        <span>No Relic</span>
+                      </div>
+
+                      <div className="petRepoRelicArtCopy">
+                        <h3>No Relic</h3>
+
+                        <p>
+                          Browse this Kith's collected Relics and equip one
+                          here.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="petRepoRelicActions">
+                      <button
+                        type="button"
+                        className="dp-btn--close petRepoRelicBrowseButton"
+                      >
+                        Browse Relics
+                      </button>
+
+                      <button
+                        type="button"
+                        className="dp-btn--close petRepoRelicTreeButton"
+                        onClick={() => setShowRelicArteTree(true)}
+                      >
+                        See Arte Tree
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <KithProgressCard
                 name={getPetLabel(pet)}
                 level={safeNum(pet.level, 1)}
@@ -962,20 +1018,16 @@ export default function PetPage() {
               />
             </div>
           </section>
-
-          {showSkillTree ? (
-            <DpPopupWindow
-              open
-              onClose={() => setShowSkillTree(false)}
-              label="Kith Talent System"
-              size="wide"
-              className="skillTreePopupShell"
-            >
-              <SkillTree pet={pet} onClose={() => setShowSkillTree(false)} />
-            </DpPopupWindow>
-          ) : null}
         </section>
       ) : null}
+
+      <RelicArtTree
+        open={showRelicArteTree}
+        onClose={() => setShowRelicArteTree(false)}
+        relicName="Relic Arte Tree"
+        relicRarity="common"
+        relicElement="water"
+      />
     </div>
   );
 }

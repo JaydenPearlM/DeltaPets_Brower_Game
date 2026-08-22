@@ -2,20 +2,104 @@ import { useEffect, useState } from "react";
 import "./ProfilePage.css";
 import "../Homepage/homepage.css";
 import "../../mobile.css";
-import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
 import { useHomepageBanner } from "../Homepage/useHomepageBanner";
+import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { supabase } from "@/lib/supabase/client";
 import { apiFetch } from "@/lib/api/baseClient";
 import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
 import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
 import templateSprite from "@/kith/assets/Sprite/Template_Sprite.png";
+import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
 
 type ProfilePageProps = {
   pageName?: string;
 };
+
+const ALPHA_ACHIEVEMENTS = [
+  {
+    title: "First Bond",
+    text: "Reach your first meaningful bond milestone with a Kith.",
+  },
+  {
+    title: "Growing Team",
+    text: "Build out your Kith team during the Closed Alpha.",
+  },
+  {
+    title: "Aliune Explorer",
+    text: "Explore the world of Aliune during the Closed Alpha.",
+  },
+  {
+    title: "Kith Keeper",
+    text: "Care for your Kith and keep them happy and healthy.",
+  },
+  {
+    title: "First Hatch",
+    text: "Hatch your first Kith during the Closed Alpha.",
+  },
+  {
+    title: "Elemental Start",
+    text: "Begin your journey with your starter element.",
+  },
+  {
+    title: "Roaming Trainer",
+    text: "Find a Kith while roaming.",
+  },
+  {
+    title: "Rare Encounter",
+    text: "Encounter a Rare Kith.",
+  },
+  {
+    title: "Epic Encounter",
+    text: "Encounter an Epic Kith.",
+  },
+  {
+    title: "Care Routine",
+    text: "Use care actions to look after your Kith.",
+  },
+  {
+    title: "Well Fed",
+    text: "Feed your Kith during the Closed Alpha.",
+  },
+  {
+    title: "Play Time",
+    text: "Use a toy with one of your Kith.",
+  },
+  {
+    title: "Rested Up",
+    text: "Help one of your Kith recover through rest.",
+  },
+  {
+    title: "Dot Collector",
+    text: "Earn Dots during the Closed Alpha.",
+  },
+  {
+    title: "Weekly Reward",
+    text: "Claim a Weekly Reward.",
+  },
+  {
+    title: "Merchant Visitor",
+    text: "Visit a merchant during the Closed Alpha.",
+  },
+  {
+    title: "Egg Collector",
+    text: "Add an egg to your collection.",
+  },
+  {
+    title: "Team Builder",
+    text: "Place multiple Kith on your active team.",
+  },
+  {
+    title: "Registry Scout",
+    text: "Discover multiple Kith species for your registry.",
+  },
+  {
+    title: "Closed Alpha Tester",
+    text: "Participate in the DeltaPets Closed Alpha.",
+  },
+] as const;
 
 function formatJoinedDate(value?: string | null) {
   if (!value) return "--";
@@ -49,13 +133,13 @@ function getElementClass(value?: string | null) {
 }
 
 export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
-  const [talentTreesOpen, setTalentTreesOpen] = useState(false);
   const [dots, setDots] = useState<number | null>(null);
   const [kithDiscovered, setKithDiscovered] = useState<number | null>(null);
   const [weeklyRewardsOpen, setWeeklyRewardsOpen] = useState(false);
   const [rewardReady, setRewardReady] = useState(false);
   const [activeTitle, setActiveTitle] = useState<string | null>(null);
   const [customizeOpen, setCustomizeOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
 
   const { user } = useAuth();
   const { banner } = useHomepageBanner();
@@ -149,6 +233,9 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       : [];
 
   const activePet = allPets.find((pet) => pet.is_active) ?? null;
+  const activePetImage =
+    activePet?.portrait_url ||
+    (activePet?.species === "ice_starter" ? cribiHatchling : "");
 
   const displayName =
     user?.user_metadata?.display_name ||
@@ -218,6 +305,8 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       ) : null}
 
       <div className="dp-profile-layout">
+        <AnnouncementPanel className="dp-profile-aliune-channel" />
+
         <section className="dp-profile-trainer-panel dp-profile-star-panel">
           <div className="dp-profile-viewport" aria-label="Trainer viewport">
             <div className={`dp-profile-trainer-avatar ${starterElementClass}`}>
@@ -322,10 +411,10 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
           <h2>Active Kith</h2>
 
           <div className="dp-profile-active-pet">
-            {activePet?.portrait_url ? (
+            {activePetImage ? (
               <img
-                src={activePet.portrait_url}
-                alt={activePet.nickname || activePet.name || "Active Kith"}
+                src={activePetImage}
+                alt={activePet?.nickname || activePet?.name || "Active Kith"}
               />
             ) : (
               <div className="dp-profile-pet-placeholder" aria-hidden="true">
@@ -373,24 +462,6 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
               <p>Choose an active Kith to showcase it here.</p>
             )}
           </div>
-        </section>
-
-        <AnnouncementPanel
-          className="dp-profile-announcements"
-          pageScope="profile"
-          title="Aliune Announcements"
-        />
-
-        <section className="dp-profile-panel dp-profile-talents-panel">
-          <h2>Trainer Talent Trees</h2>
-
-          <button
-            type="button"
-            className="btn btn-gold dp-profile-talents-button"
-            onClick={() => setTalentTreesOpen(true)}
-          >
-            Trainer Talent Trees
-          </button>
         </section>
 
         <section className="dp-profile-team-section">
@@ -473,49 +544,44 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
         </div>
       ) : null}
 
-      {talentTreesOpen ? (
+      {achievementsOpen ? (
         <div
           className="dp-profile-popup-backdrop"
           role="presentation"
-          onMouseDown={() => setTalentTreesOpen(false)}
+          onMouseDown={() => setAchievementsOpen(false)}
         >
           <section
-            className="dp-profile-talent-popup dp-popup-grid-panel dp-blue-grid-panel"
+            className="dp-profile-achievements-popup"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="dp-profile-talent-popup-title"
+            aria-labelledby="dp-profile-achievements-popup-title"
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="dp-profile-popup-header">
-              <h2 id="dp-profile-talent-popup-title">Trainer Talent Trees</h2>
+              <h2 id="dp-profile-achievements-popup-title">
+                Alpha Achievements
+              </h2>
 
               <button
                 type="button"
                 className="dp-close-button"
-                onClick={() => setTalentTreesOpen(false)}
+                onClick={() => setAchievementsOpen(false)}
               >
                 Close
               </button>
             </div>
 
-            <div className="dp-profile-talent-grid">
-              <article>
-                <h3>Genesis</h3>
-                <p>Breeding, inherited traits, and egg development.</p>
-                <span>Coming Soon</span>
-              </article>
+            <div className="dp-profile-alpha-achievement-list">
+              {ALPHA_ACHIEVEMENTS.map((achievement, index) => (
+                <article key={achievement.title}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
 
-              <article>
-                <h3>Bonding</h3>
-                <p>Strengthen care, trust, and trainer-to-Kith bonuses.</p>
-                <span>Coming Soon</span>
-              </article>
-
-              <article>
-                <h3>Aggressive Fighter</h3>
-                <p>Improve offensive support and battle-focused training.</p>
-                <span>Coming Soon</span>
-              </article>
+                  <div>
+                    <strong>{achievement.title}</strong>
+                    <p>{achievement.text}</p>
+                  </div>
+                </article>
+              ))}
             </div>
           </section>
         </div>
