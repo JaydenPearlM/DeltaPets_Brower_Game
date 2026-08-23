@@ -8,7 +8,6 @@ import { useAuth } from "@/app/providers/useAuth";
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
 import { useHomepageBanner } from "./useHomepageBanner";
 import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
-import cribiPlaceholder from "@/kith/assets/startepets/hatchling_cribi.png";
 
 type HeroFeature = {
   label: string;
@@ -46,7 +45,8 @@ export default function Homepage() {
     pet: spotlightPet,
     displayName: spotlightDisplayName,
     loading: spotlightLoading,
-  } = useHomepageSpotlightPet();
+  } = useHomepageSpotlightPet(Boolean(user));
+
   const {
     inventoryEggs,
     loading: petStorageLoading,
@@ -55,21 +55,23 @@ export default function Homepage() {
     moveEggFromInventoryToStorage,
     moveEggFromInventoryToHatchery,
   } = usePetStorage({ userId: user?.id });
-
   const bannerItems =
     banner?.enabled && Array.isArray(banner.items)
       ? [...banner.items, ...banner.items]
       : [];
 
-  const displayElement =
-    spotlightPet.element === "null"
+  const displayElement = spotlightPet
+    ? spotlightPet.element === "null"
       ? "Voidborne"
       : spotlightPet.element.charAt(0).toUpperCase() +
-        spotlightPet.element.slice(1);
+        spotlightPet.element.slice(1)
+    : "";
 
-  const displayStage = spotlightPet.stage
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  const displayStage = spotlightPet
+    ? spotlightPet.stage
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase())
+    : "";
 
   return (
     <div className="hp-root">
@@ -188,6 +190,12 @@ export default function Homepage() {
             <div className="hp-panelBody hp-spotlightBody">
               {spotlightLoading ? (
                 <p className="hp-loadingBlock">Loading spotlight pet...</p>
+              ) : !spotlightPet ? (
+                <p className="hp-loadingBlock">
+                  {user
+                    ? "Add a Kith to your active team to feature it here."
+                    : "Sign in to feature one of your active Kith here."}
+                </p>
               ) : (
                 <>
                   <div className="hp-spotlightTop">
@@ -227,11 +235,13 @@ export default function Homepage() {
                   <div
                     className={`hp-spotlightVisual hp-spotlightVisual--${spotlightPet.element}`}
                   >
-                    <img
-                      className="hp-spotlightPetImage"
-                      src={cribiPlaceholder}
-                      alt="Spotlight pet"
-                    />
+                    {spotlightPet.previewUrl ? (
+                      <img
+                        className="hp-spotlightPetImage"
+                        src={spotlightPet.previewUrl}
+                        alt={`${spotlightDisplayName} spotlight pet`}
+                      />
+                    ) : null}
                   </div>
 
                   <div className="hp-spotlightContent">

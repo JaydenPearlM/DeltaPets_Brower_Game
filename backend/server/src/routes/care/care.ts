@@ -514,6 +514,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
               source.sprite_url ||
               source.image_url ||
               null,
+            description: source.description ?? null,
             passive_trait_id: source.passive_trait_id ?? null,
             passive_trait_key: source.passive_trait_key ?? null,
             passive_trait_name: source.passive_trait_name ?? null,
