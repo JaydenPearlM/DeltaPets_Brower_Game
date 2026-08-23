@@ -366,6 +366,143 @@ async function enforceCareCooldown(userId: string, action: CooldownKey) {
   if (error) throw error;
 }
 
+careRouter.get("/spotlight", async (_req, res) => {
+  try {
+    const { data: slots, error: slotsError } = await supabaseAdmin
+      .from("party_slots")
+      .select("user_id,pet_id,slot_index")
+      .eq("slot_index", 1)
+      .order("user_id", { ascending: true });
+
+    if (slotsError) {
+      throw slotsError;
+    }
+
+    const candidates = Array.isArray(slots) ? slots : [];
+
+    if (!candidates.length) {
+      return res.json({ pet: null });
+    }
+
+    const rotationWindowMs = 2 * 60 * 60 * 1000;
+    const rotationIndex =
+      Math.floor(Date.now() / rotationWindowMs) % candidates.length;
+
+    const selectedSlot = candidates[rotationIndex];
+
+    const [
+      { data: pet, error: petError },
+      { data: profile, error: profileError },
+    ] = await Promise.all([
+      supabaseAdmin
+        .from("pets")
+        .select("*")
+        .eq("id", selectedSlot.pet_id)
+        .eq("ran_away", false)
+        .neq("stage", "egg")
+        .maybeSingle(),
+
+      supabaseAdmin
+        .from("profiles")
+        .select("username,display_name")
+        .eq("user_id", selectedSlot.user_id)
+        .maybeSingle(),
+    ]);
+
+    if (petError) {
+      throw petError;
+    }
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    if (!pet) {
+      return res.json({ pet: null });
+    }
+
+    const hydratedPet = await hydrateMutationTraits(
+      await hydratePassiveTrait(pet),
+    );
+
+    const rawElement = String(hydratedPet.line ?? "")
+      .trim()
+      .toLowerCase();
+
+    const rawStage = String(hydratedPet.stage ?? "unknown")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_");
+
+    return res.json({
+      pet: {
+        id: String(hydratedPet.id),
+
+        username:
+          profile?.username?.trim() ||
+          profile?.display_name?.trim() ||
+          "Trainer",
+
+        species:
+          hydratedPet.species?.trim() ||
+          hydratedPet.name?.trim() ||
+          "Unknown Delta",
+
+        nickname: hydratedPet.nickname?.trim() || null,
+
+        level: Number(hydratedPet.level ?? 1),
+
+        element:
+          rawElement === "neutral"
+            ? "null"
+            : rawElement.replace(/_element$/, "") || "null",
+
+        stage: rawStage,
+
+        personality: titleCaseValue(
+          hydratedPet.personality_name ??
+            hydratedPet.personality ??
+            hydratedPet.personality_key,
+          "Mysterious",
+        ),
+
+        passiveTrait:
+          hydratedPet.passive_trait_name ??
+          hydratedPet.passive_trait_key ??
+          null,
+
+        mutation: Array.isArray(hydratedPet.mutation_trait_names)
+          ? (hydratedPet.mutation_trait_names[0] ?? null)
+          : null,
+
+        description: hydratedPet.description ?? null,
+
+        previewUrl:
+          hydratedPet.portrait_url ||
+          hydratedPet.sprite_url ||
+          hydratedPet.image_url ||
+          null,
+
+        stats: {
+          hpCur: Number(hydratedPet.hp_cur ?? 0),
+          hpMax: Number(hydratedPet.hp_max ?? 0),
+          atk: Number(hydratedPet.atk ?? 0),
+          def: Number(hydratedPet.def ?? 0),
+          spd: Number(hydratedPet.spd ?? 0),
+          magi: Number(hydratedPet.magi ?? 0),
+          mana: Number(hydratedPet.mana ?? 0),
+        },
+      },
+    });
+  } catch (error) {
+    logger.error("[care/spotlight] failed", error);
+
+    return res.status(500).json({
+      error: "Failed to load spotlight pet.",
+    });
+  }
+});
+
 careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
   const userId = req.user!.id;
 

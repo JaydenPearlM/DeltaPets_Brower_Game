@@ -45,7 +45,7 @@ export default function Homepage() {
     pet: spotlightPet,
     displayName: spotlightDisplayName,
     loading: spotlightLoading,
-  } = useHomepageSpotlightPet(Boolean(user));
+  } = useHomepageSpotlightPet();
 
   const {
     inventoryEggs,
@@ -55,6 +55,7 @@ export default function Homepage() {
     moveEggFromInventoryToStorage,
     moveEggFromInventoryToHatchery,
   } = usePetStorage({ userId: user?.id });
+
   const bannerItems =
     banner?.enabled && Array.isArray(banner.items)
       ? [...banner.items, ...banner.items]
@@ -175,6 +176,7 @@ export default function Homepage() {
           onStartIncubating={moveEggFromInventoryToHatchery}
         />
       ) : null}
+
       <section className="hp-lowerGrid" aria-label="Homepage content">
         <div className="hp-spotlightColumn">
           <section
@@ -192,19 +194,25 @@ export default function Homepage() {
                 <p className="hp-loadingBlock">Loading spotlight pet...</p>
               ) : !spotlightPet ? (
                 <p className="hp-loadingBlock">
-                  {user
-                    ? "Add a Kith to your active team to feature it here."
-                    : "Sign in to feature one of your active Kith here."}
+                  No featured Kith is available right now.
                 </p>
               ) : (
                 <>
                   <div className="hp-spotlightTop">
                     <div className="hp-spotlightIdentity">
+                      <p className="hp-spotlightRotation">
+                        Featured Active Kith • rotates every 2 hours
+                      </p>
+
                       <h3
                         className={`hp-spotlightName hp-spotlightName--${spotlightPet.element}`}
                       >
-                        {spotlightDisplayName}
+                        {spotlightPet.username}&apos;s {spotlightDisplayName}
                       </h3>
+
+                      <p className="hp-spotlightSpecies">
+                        Species: {spotlightPet.species}
+                      </p>
 
                       <div className="hp-spotlightMetaRow">
                         <span className="hp-spotlightMetaItem">
@@ -228,6 +236,18 @@ export default function Homepage() {
                           </span>{" "}
                           {spotlightPet.personality}
                         </span>
+
+                        <span className="hp-spotlightMetaItem">
+                          <span className="hp-spotlightAccent">
+                            Passive Trait:
+                          </span>{" "}
+                          {spotlightPet.passiveTrait || "None"}
+                        </span>
+
+                        <span className="hp-spotlightMetaItem">
+                          <span className="hp-spotlightAccent">Mutation:</span>{" "}
+                          {spotlightPet.mutation || "None"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -247,8 +267,42 @@ export default function Homepage() {
                   <div className="hp-spotlightContent">
                     <p className="hp-spotlightText">
                       {spotlightPet.description?.trim() ||
-                        "This Delta's description will appear here."}
+                        "This Kith is still discovering who they are."}
                     </p>
+
+                    <div className="hp-spotlightStats">
+                      <div className="hp-spotlightStat">
+                        <span>HP</span>
+                        <strong>
+                          {spotlightPet.stats.hpCur}/{spotlightPet.stats.hpMax}
+                        </strong>
+                      </div>
+
+                      <div className="hp-spotlightStat">
+                        <span>ATK</span>
+                        <strong>{spotlightPet.stats.atk}</strong>
+                      </div>
+
+                      <div className="hp-spotlightStat">
+                        <span>DEF</span>
+                        <strong>{spotlightPet.stats.def}</strong>
+                      </div>
+
+                      <div className="hp-spotlightStat">
+                        <span>SPD</span>
+                        <strong>{spotlightPet.stats.spd}</strong>
+                      </div>
+
+                      <div className="hp-spotlightStat">
+                        <span>MAGI</span>
+                        <strong>{spotlightPet.stats.magi}</strong>
+                      </div>
+
+                      <div className="hp-spotlightStat">
+                        <span>MANA</span>
+                        <strong>{spotlightPet.stats.mana}</strong>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
