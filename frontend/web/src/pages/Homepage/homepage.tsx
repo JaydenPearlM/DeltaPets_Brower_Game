@@ -1,7 +1,6 @@
 import "./homepage.css";
 import { useNavigate } from "react-router-dom";
 
-import { AlphaSystemsPanel } from "@/components/AlphaSystems/AlphaSystemsPanel";
 import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { KithnaEggTray } from "@/components/KithnaEggTray/KithnaEggTray";
 import { useAuth } from "@/app/providers/useAuth";
@@ -119,8 +118,9 @@ export default function Homepage() {
             </div>
 
             <p className="hp-heroSubtitle">
-              Hatch, raise, train, Bond and battle alongside mysterious
-              creatures called Kith in the world of{" "}
+              Hatch, raise, train, bond, and battle alongside mysterious
+              creatures called Kith. Build a team that feels like yours and
+              discover what is waiting across{" "}
               <strong>
                 <span>Aliune</span>
               </strong>
@@ -134,6 +134,14 @@ export default function Homepage() {
                 onClick={() => navigate("/signup")}
               >
                 Start Your Journey Today!
+              </button>
+
+              <button
+                type="button"
+                className="hp-primaryBtn hp-supportBtn"
+                title="Support link coming soon"
+              >
+                Support DeltaPets
               </button>
             </div>
 
@@ -164,8 +172,6 @@ export default function Homepage() {
         </section>
       </div>
 
-      <AnnouncementPanel />
-
       {user ? (
         <KithnaEggTray
           eggs={inventoryEggs}
@@ -178,6 +184,10 @@ export default function Homepage() {
       ) : null}
 
       <section className="hp-lowerGrid" aria-label="Homepage content">
+        <div className="hp-newsColumn">
+          <AnnouncementPanel />
+        </div>
+
         <div className="hp-spotlightColumn">
           <section
             className="hp-spotlightPanel hp-spotlightPanel--featured dp-standard-panel-purple"
@@ -198,12 +208,29 @@ export default function Homepage() {
                 </p>
               ) : (
                 <>
+                  <div className="hp-spotlightUtilityRow">
+                    <span className="hp-spotlightSlot">SLOT 1</span>
+                    <span className="hp-spotlightRotation">
+                      Featured Active Pet • rotates every 2 hours.
+                    </span>
+                  </div>
+
+                  <div
+                    className={`hp-spotlightVisual hp-spotlightVisual--${spotlightPet.element}`}
+                  >
+                    <div className="hp-spotlightPetFrame">
+                      {spotlightPet.previewUrl ? (
+                        <img
+                          className="hp-spotlightPetImage"
+                          src={spotlightPet.previewUrl}
+                          alt={`${spotlightDisplayName} spotlight pet`}
+                        />
+                      ) : null}
+                    </div>
+                  </div>
+
                   <div className="hp-spotlightTop">
                     <div className="hp-spotlightIdentity">
-                      <p className="hp-spotlightRotation">
-                        Featured Active Kith • rotates every 2 hours
-                      </p>
-
                       <h3
                         className={`hp-spotlightName hp-spotlightName--${spotlightPet.element}`}
                       >
@@ -252,25 +279,16 @@ export default function Homepage() {
                     </div>
                   </div>
 
-                  <div
-                    className={`hp-spotlightVisual hp-spotlightVisual--${spotlightPet.element}`}
-                  >
-                    {spotlightPet.previewUrl ? (
-                      <img
-                        className="hp-spotlightPetImage"
-                        src={spotlightPet.previewUrl}
-                        alt={`${spotlightDisplayName} spotlight pet`}
-                      />
-                    ) : null}
-                  </div>
-
                   <div className="hp-spotlightContent">
                     <p className="hp-spotlightText">
                       {spotlightPet.description?.trim() ||
-                        "This Kith is still discovering who they are."}
+                        "This Delta's description will appear here."}
                     </p>
 
-                    <div className="hp-spotlightStats">
+                    <div
+                      className="hp-spotlightStats"
+                      aria-label="Spotlight stats"
+                    >
                       <div className="hp-spotlightStat">
                         <span>HP</span>
                         <strong>
@@ -308,8 +326,6 @@ export default function Homepage() {
               )}
             </div>
           </section>
-
-          <AlphaSystemsPanel />
         </div>
       </section>
     </div>

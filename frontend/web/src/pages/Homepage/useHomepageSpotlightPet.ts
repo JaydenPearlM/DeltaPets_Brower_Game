@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/lib/api/baseClient";
 
 export type HomepageSpotlightPet = {
   id: string;
@@ -42,7 +41,14 @@ export function useHomepageSpotlightPet() {
 
     setLoading(true);
 
-    void apiFetch<SpotlightResponse>("/api/care/spotlight")
+    void fetch("/api/care/spotlight")
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Failed to load spotlight pet.");
+        }
+
+        return (await response.json()) as SpotlightResponse;
+      })
       .then((result) => {
         if (cancelled) return;
 

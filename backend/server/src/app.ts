@@ -3,11 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import helmet from "helmet";
 import { healthRouter } from "./routes/health";
-import {
-  authRouter,
-  publicAuthRouter,
-  requireUser,
-} from "./middleware/auth";
+import { authRouter, publicAuthRouter, requireUser } from "./middleware/auth";
 import {
   apiLimiter,
   apiSpeedLimiter,
@@ -51,8 +47,14 @@ export function createApp() {
   if (env.NODE_ENV === "development") {
     app.use("/api/debug", requireUser, debugRouter);
   }
-
-  app.use("/api", apiLimiter, apiSpeedLimiter, requireUser, apiRouter);
+  app.use(
+    "/api",
+    apiLimiter,
+    apiSpeedLimiter,
+    (req, res, next) =>
+      req.path === "/care/spotlight" ? next() : requireUser(req, res, next),
+    apiRouter,
+  );
 
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "Not found" });
