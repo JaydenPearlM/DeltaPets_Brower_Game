@@ -386,7 +386,7 @@
 /* ===== LEFT: LOGO LINK ===== */
 .logoBlock {
   grid-column: 1;
-  grid-row: 1 / span 2;
+  grid-row: 1;
   display: inline-flex;
   flex-direction: row;
   align-items: center;
@@ -399,6 +399,16 @@
   cursor: pointer;
   text-decoration: none;
   z-index: 3;
+}
+
+.mobileHeaderSupportBtn {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+  align-self: center;
+  text-decoration: none;
+  z-index: 3;
+  transform: translateY(4px);
 }
 
 .logoText {
