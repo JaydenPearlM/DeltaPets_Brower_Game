@@ -215,10 +215,33 @@
 .hp-heroInner {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: center;
+  gap: 28px;
   padding: 30px 28px 28px;
   text-align: center;
 }
 
+.hp-heroVideo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  align-self: start;
+  margin-top: 10px;
+}
+
+.hp-heroVideo .showcase-embed-box {
+  width: 220px;
+  height: 346px;
+}
+
+.hp-heroVideo .showcase-embed-scale {
+  transform: scale(0.73);
+}
 .hp-heroBrandRow {
   width: 100%;
   max-width: 920px;

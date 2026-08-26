@@ -43,6 +43,8 @@ const TIMING = {
   floatCycleMs: 3400, // one full slow up/down cycle
   floatCycles: 2,
 
+  embedFloatHoldMs: 60000, // homepage: repeat the normal float for about 1 minute before hatching
+
   anticipationMs: 160,
   shakeGentleMs: 480,
   shakeHardMs: 560,
@@ -268,12 +270,13 @@ export default function EggHatchShowcase({
       );
       if (!alive()) return;
 
-      // ---------- Scene 2b: floats down, up, down, up — slowly ----------
-      // Pure vertical drift — no x, no rotation, no back-and-forth sway.
-      // A sine ease (not cubic) so the turnarounds feel like a natural
-      // drift instead of snapping through the middle.
+      // ---------- Scene 2b: egg floats before the hatch sequence ----------
+      // Keep the original float speed and motion exactly as designed.
+      // On the Homepage embed, repeat complete float cycles for roughly
+      // one minute before continuing into the existing hatch animation.
+      // Standalone keeps its original two float cycles.
       if (!reduce) {
-        for (let i = 0; i < TIMING.floatCycles && alive(); i++) {
+        const floatCycle = async () => {
           await tween(
             TIMING.floatCycleMs / 2,
             (e) => {
@@ -285,6 +288,7 @@ export default function EggHatchShowcase({
             easeInOutSine,
           );
           if (!alive()) return;
+
           await tween(
             TIMING.floatCycleMs / 2,
             (e) => {
@@ -295,7 +299,23 @@ export default function EggHatchShowcase({
             alive,
             easeInOutSine,
           );
-          if (!alive()) return;
+        };
+
+        if (embed) {
+          const floatStart = performance.now();
+
+          while (
+            alive() &&
+            performance.now() - floatStart < TIMING.embedFloatHoldMs
+          ) {
+            await floatCycle();
+            if (!alive()) return;
+          }
+        } else {
+          for (let i = 0; i < TIMING.floatCycles && alive(); i++) {
+            await floatCycle();
+            if (!alive()) return;
+          }
         }
       }
 
@@ -604,7 +624,16 @@ export default function EggHatchShowcase({
     // Scaled uniformly from the same fixed-px design the standalone scene
     // uses, so the /pet-accurate arch shape never has to be re-tuned.
 
-    return <div className="showcase-page">...</div>;
+    return (
+      <div className="showcase-embed-box" key={playKey}>
+        <div className="showcase-embed-scale">
+          <div className="showcase-bg" />
+          <div className="showcase-bg-brighten" ref={bgBrightenRef} />
+          {bondMeter}
+          {archRoom}
+        </div>
+      </div>
+    );
   }
 
   return (
