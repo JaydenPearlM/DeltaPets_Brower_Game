@@ -36,6 +36,7 @@
   gap: 18px;
   align-items: stretch;
 }
+
 .kithna-food-main-layout .dp-merchant-info {
   min-width: 0;
   height: 100%;
@@ -45,22 +46,36 @@
   min-width: 0;
 }
 
+.kithna-food-shop .dp-merchant-section-title {
+  font-family: var(--font-heading);
+  color: var(--merchant-gold);
+  font-size: 1.3rem;
+}
+
 .kithna-food-trade-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
 }
 
 .kithna-food-offer-box {
-  padding: 14px 16px;
-  border: 2px solid var(--merchant-fabric);
-  border-radius: 14px;
+  min-width: 0;
+  flex: 1;
+  text-align: center;
 }
 
 .kithna-food-offer-label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.kithna-food-trade-balance {
+  margin-bottom: 16px;
+  font-family: var(--font-heading);
+  color: var(--merchant-gold);
+  text-align: center;
 }
 
 .kithna-food-trade-columns {
@@ -81,8 +96,8 @@
 
 .kithna-food-trade-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 52px 52px 60px;
+  gap: 8px;
   align-items: center;
   min-height: 46px;
   padding: 8px 10px;
@@ -97,6 +112,7 @@
   min-width: 0;
   font-family: var(--font-heading);
   color: var(--merchant-cream);
+  overflow-wrap: anywhere;
 }
 
 .kithna-food-trade-value {
@@ -110,16 +126,37 @@
   gap: 4px;
 }
 
-.kithna-food-trade-button {
-  min-width: 42px;
+.kithna-food-trade-button,
+.kithna-food-trade-cell {
+  width: 100%;
+  min-width: 0;
   min-height: 30px;
-  padding: 4px 8px;
+  padding: 4px 6px;
   border: 1px solid var(--merchant-gold);
   border-radius: 4px;
   background: var(--merchant-dark-wood);
   color: var(--merchant-cream);
   font-family: var(--font-heading);
-  cursor: pointer;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.kithna-food-trade-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.kithna-food-trade-button {
+  cursor: text;
+  appearance: textfield;
+}
+
+.kithna-food-trade-button::-webkit-inner-spin-button,
+.kithna-food-trade-button::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
 }
 
 .kithna-food-trade-button:disabled {
@@ -153,9 +190,21 @@
 }
 
 @media (max-width: 760px) {
-  .kithna-food-trade-summary,
   .kithna-food-trade-columns {
     grid-template-columns: 1fr;
+  }
+
+  .kithna-food-trade-row {
+    grid-template-columns: minmax(72px, 1fr) 44px 44px 52px;
+    gap: 6px;
+    padding: 8px 4px;
+  }
+
+  .kithna-food-trade-button,
+  .kithna-food-trade-cell {
+    min-height: 28px;
+    padding: 3px 4px;
+    font-size: 0.72rem;
   }
 }
 
@@ -166,5 +215,23 @@
 
   .kithna-food-info-actions {
     justify-content: center;
+  }
+
+  .kithna-food-shop .dp-merchant-section-title {
+    font-size: 1.35rem;
+    text-align: center;
+  }
+
+  .kithna-food-trade-summary {
+    gap: 8px;
+  }
+
+  .kithna-food-offer-label {
+    font-size: 0.72rem;
+  }
+
+  .kithna-food-trade-row {
+    grid-template-columns: minmax(68px, 1fr) 42px 42px 48px;
+    gap: 5px;
   }
 }

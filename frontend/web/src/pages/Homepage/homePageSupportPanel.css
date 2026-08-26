@@ -1,0 +1,88 @@
+.hp-supportPanel {
+  width: 100%;
+  min-width: 0;
+  border: 3px solid var(--dp-panel-purple-border);
+  --dp-standard-panel-inset-gap: 10px;
+  --dp-standard-panel-inner-size: 3px;
+  box-shadow: none;
+}
+
+.hp-supportPanelInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 30px 34px;
+  text-align: center;
+}
+
+.hp-supportPanelEyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: var(--dp-cyber-cyan);
+}
+
+.hp-supportPanelTitle {
+  text-align: center;
+}
+
+.hp-supportPanelIntro {
+  max-width: 720px;
+  margin: 0;
+  color: var(--dp-panel-text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.hp-supportPanelSections {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 4px;
+}
+
+.hp-supportPanelSection {
+  min-width: 0;
+  padding: 8px 10px;
+}
+
+.hp-supportPanelSection p {
+  margin: 10px 0 0;
+  color: var(--dp-panel-muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.hp-supportPanelFooter {
+  margin: 2px 0 0;
+  color: var(--dp-panel-text);
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.5;
+}
+
+.hp-supportPanelButton {
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .hp-supportPanelSections {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .hp-supportPanelInner {
+    padding: 28px 26px;
+  }
+}
+
+@media (max-width: 560px) {
+  .hp-supportPanelInner {
+    padding: 26px 22px;
+  }
+}

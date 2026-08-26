@@ -57,3 +57,37 @@ kithnaMerchantsRouter.post(
     return res.json({ ok: true, quantity, cost });
   },
 );
+
+kithnaMerchantsRouter.post(
+  "/food/sell",
+  requireUser,
+  async (req: AuthedRequest, res) => {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: "Not authenticated." });
+
+    const rawQty = Number(req.body?.quantity);
+    const quantity = Number.isFinite(rawQty) ? Math.floor(rawQty) : 0;
+
+    if (quantity < 1) {
+      return res.status(400).json({
+        error: "Quantity must be at least 1.",
+      });
+    }
+
+    const value = quantity * FOOD_PRICE_DOTS;
+
+    const { error } = await supabaseAdmin.rpc("increment_wallet", {
+      p_user_id: userId,
+      p_dots: value,
+      p_crystals: 0,
+    });
+
+    if (error) {
+      return res.status(500).json({
+        error: "Failed to process sale.",
+      });
+    }
+
+    return res.json({ ok: true, quantity, value });
+  },
+);
