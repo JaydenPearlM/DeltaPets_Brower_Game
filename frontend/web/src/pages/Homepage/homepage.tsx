@@ -1,12 +1,13 @@
 import "./homepage.css";
 import { useNavigate } from "react-router-dom";
-
+import { HomepageSupportPanel } from "./homePageSupportPanel";
 import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel";
 import { KithnaEggTray } from "@/components/KithnaEggTray/KithnaEggTray";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
 import { useHomepageBanner } from "./useHomepageBanner";
 import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
+import EggHatchShowcase from "@/components/Video_hatch/EggHatchShowcase";
 
 type HeroFeature = {
   label: string;
@@ -106,68 +107,66 @@ export default function Homepage() {
       <div className="hp-mainShell">
         <section className="hp-heroCard" aria-label="Homepage hero">
           <div className="hp-heroInner">
-            <div className="hp-heroBrandRow">
-              <div className="hp-heroTitleWrap">
-                <h1 className="hp-heroTitle--logo">DeltaPets</h1>
-                <p className="hp-heroTagline">Raise. Train. Evolve. Bond.</p>
+            <div className="hp-heroVideo">
+              <EggHatchShowcase variant="embed" />
+            </div>
+
+            <div className="hp-heroContent">
+              <div className="hp-heroBrandRow">
+                <div className="hp-heroTitleWrap">
+                  <h1 className="hp-heroTitle--logo">DeltaPets</h1>
+                  <p className="hp-heroTagline">Raise. Train. Evolve. Bond.</p>
+                </div>
+
+                <div className="hp-heroCrest" aria-hidden="true">
+                  ∆
+                </div>
               </div>
 
-              <div className="hp-heroCrest" aria-hidden="true">
-                ∆
+              <p className="hp-heroSubtitle">
+                Hatch, raise, train, bond, and battle alongside mysterious
+                creatures called Kith. Build a team that feels like yours and
+                discover what is waiting across{" "}
+                <strong>
+                  <span>Aliune</span>
+                </strong>
+                .
+              </p>
+
+              <div className="hp-heroCtaRow">
+                <button
+                  type="button"
+                  className="hp-primaryBtn dp-btn"
+                  onClick={() => navigate("/signup")}
+                >
+                  Start Your Journey Today!
+                </button>
               </div>
+
+              <div className="hp-heroFeatureRow">
+                {HERO_FEATURES.map((feature) => (
+                  <article key={feature.title} className="hp-heroFeature">
+                    <div className="hp-heroFeatureCopy">
+                      <span className="hp-heroFeatureLabel">
+                        <span aria-hidden="true">{feature.icon}</span>{" "}
+                        {feature.label}
+                      </span>
+                      <h3 className="hp-heroFeatureTitle">{feature.title}</h3>
+                      <p className="hp-heroFeatureText">{feature.text}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <p className="hp-heroDisclaimer">
+                Everything you see here belongs to <strong>Jayden</strong>. All
+                DeltaPets art, UI design, characters, and world-building are
+                handcrafted and owned by <strong>Jayden</strong>. AI tools are
+                used solely to assist development workflows and never to
+                generate creative assets. © 2026 <strong>Jayden</strong>.{" "}
+                <strong>All rights reserved.</strong>
+              </p>
             </div>
-
-            <p className="hp-heroSubtitle">
-              Hatch, raise, train, bond, and battle alongside mysterious
-              creatures called Kith. Build a team that feels like yours and
-              discover what is waiting across{" "}
-              <strong>
-                <span>Aliune</span>
-              </strong>
-              .
-            </p>
-
-            <div className="hp-heroCtaRow">
-              <button
-                type="button"
-                className="hp-primaryBtn hp-primaryBtn--journey"
-                onClick={() => navigate("/signup")}
-              >
-                Start Your Journey Today!
-              </button>
-
-              <button
-                type="button"
-                className="hp-primaryBtn hp-supportBtn"
-                title="Support link coming soon"
-              >
-                Support DeltaPets
-              </button>
-            </div>
-
-            <div className="hp-heroFeatureRow">
-              {HERO_FEATURES.map((feature) => (
-                <article key={feature.title} className="hp-heroFeature">
-                  <div className="hp-heroFeatureCopy">
-                    <span className="hp-heroFeatureLabel">
-                      <span aria-hidden="true">{feature.icon}</span>{" "}
-                      {feature.label}
-                    </span>
-                    <h3 className="hp-heroFeatureTitle">{feature.title}</h3>
-                    <p className="hp-heroFeatureText">{feature.text}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-
-            <p className="hp-heroDisclaimer">
-              Everything you see here belongs to <strong>Jayden</strong>. All
-              DeltaPets art, UI design, characters, and world-building are
-              handcrafted and owned by <strong>Jayden</strong>. AI tools are
-              used solely to assist development workflows and never to generate
-              creative assets. © 2026 <strong>Jayden</strong>.{" "}
-              <strong>All rights reserved.</strong>
-            </p>
           </div>
         </section>
       </div>
@@ -187,13 +186,16 @@ export default function Homepage() {
         <div className="hp-newsColumn">
           <AnnouncementPanel />
         </div>
-
         <div className="hp-spotlightColumn">
           <section
             className="hp-spotlightPanel hp-spotlightPanel--featured dp-standard-panel-purple"
             aria-label="Spotlight"
           >
             <div className="hp-panelHeader">
+              <span className="hp-spotlightHeaderUser">
+                {spotlightPet?.username} ★
+              </span>
+
               <div>
                 <h2 className="hp-panelTitle">Spotlight</h2>
               </div>
@@ -208,13 +210,6 @@ export default function Homepage() {
                 </p>
               ) : (
                 <>
-                  <div className="hp-spotlightUtilityRow">
-                    <span className="hp-spotlightSlot">SLOT 1</span>
-                    <span className="hp-spotlightRotation">
-                      Featured Active Pet • rotates every 2 hours.
-                    </span>
-                  </div>
-
                   <div
                     className={`hp-spotlightVisual hp-spotlightVisual--${spotlightPet.element}`}
                   >
@@ -225,22 +220,19 @@ export default function Homepage() {
                           src={spotlightPet.previewUrl}
                           alt={`${spotlightDisplayName} spotlight pet`}
                         />
-                      ) : null}
+                      ) : (
+                        <span
+                          className={`hp-spotlightPetFallback hp-spotlightPetFallback--${spotlightPet.element}`}
+                          aria-hidden="true"
+                        >
+                          △
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <div className="hp-spotlightTop">
                     <div className="hp-spotlightIdentity">
-                      <h3
-                        className={`hp-spotlightName hp-spotlightName--${spotlightPet.element}`}
-                      >
-                        {spotlightPet.username}&apos;s {spotlightDisplayName}
-                      </h3>
-
-                      <p className="hp-spotlightSpecies">
-                        Species: {spotlightPet.species}
-                      </p>
-
                       <div className="hp-spotlightMetaRow">
                         <span className="hp-spotlightMetaItem">
                           <span className="hp-spotlightAccent">Level:</span>{" "}
@@ -289,34 +281,94 @@ export default function Homepage() {
                       className="hp-spotlightStats"
                       aria-label="Spotlight stats"
                     >
-                      <div className="hp-spotlightStat">
+                      <div
+                        className={[
+                          "hp-spotlightStat",
+                          spotlightPet.growthStrongStats.includes("hp")
+                            ? "hp-spotlightStat--strong"
+                            : "",
+                          spotlightPet.growthWeakStat === "hp"
+                            ? "hp-spotlightStat--weak"
+                            : "",
+                        ].join(" ")}
+                      >
                         <span>HP</span>
                         <strong>
                           {spotlightPet.stats.hpCur}/{spotlightPet.stats.hpMax}
                         </strong>
                       </div>
 
-                      <div className="hp-spotlightStat">
+                      <div
+                        className={[
+                          "hp-spotlightStat",
+                          spotlightPet.growthStrongStats.includes("atk")
+                            ? "hp-spotlightStat--strong"
+                            : "",
+                          spotlightPet.growthWeakStat === "atk"
+                            ? "hp-spotlightStat--weak"
+                            : "",
+                        ].join(" ")}
+                      >
                         <span>ATK</span>
                         <strong>{spotlightPet.stats.atk}</strong>
                       </div>
 
-                      <div className="hp-spotlightStat">
+                      <div
+                        className={[
+                          "hp-spotlightStat",
+                          spotlightPet.growthStrongStats.includes("def")
+                            ? "hp-spotlightStat--strong"
+                            : "",
+                          spotlightPet.growthWeakStat === "def"
+                            ? "hp-spotlightStat--weak"
+                            : "",
+                        ].join(" ")}
+                      >
                         <span>DEF</span>
                         <strong>{spotlightPet.stats.def}</strong>
                       </div>
 
-                      <div className="hp-spotlightStat">
+                      <div
+                        className={[
+                          "hp-spotlightStat",
+                          spotlightPet.growthStrongStats.includes("spd")
+                            ? "hp-spotlightStat--strong"
+                            : "",
+                          spotlightPet.growthWeakStat === "spd"
+                            ? "hp-spotlightStat--weak"
+                            : "",
+                        ].join(" ")}
+                      >
                         <span>SPD</span>
                         <strong>{spotlightPet.stats.spd}</strong>
                       </div>
 
-                      <div className="hp-spotlightStat">
+                      <div
+                        className={[
+                          "hp-spotlightStat",
+                          spotlightPet.growthStrongStats.includes("magi")
+                            ? "hp-spotlightStat--strong"
+                            : "",
+                          spotlightPet.growthWeakStat === "magi"
+                            ? "hp-spotlightStat--weak"
+                            : "",
+                        ].join(" ")}
+                      >
                         <span>MAGI</span>
                         <strong>{spotlightPet.stats.magi}</strong>
                       </div>
 
-                      <div className="hp-spotlightStat">
+                      <div
+                        className={[
+                          "hp-spotlightStat",
+                          spotlightPet.growthStrongStats.includes("mana")
+                            ? "hp-spotlightStat--strong"
+                            : "",
+                          spotlightPet.growthWeakStat === "mana"
+                            ? "hp-spotlightStat--weak"
+                            : "",
+                        ].join(" ")}
+                      >
                         <span>MANA</span>
                         <strong>{spotlightPet.stats.mana}</strong>
                       </div>
@@ -326,6 +378,8 @@ export default function Homepage() {
               )}
             </div>
           </section>
+
+          <HomepageSupportPanel />
         </div>
       </section>
     </div>

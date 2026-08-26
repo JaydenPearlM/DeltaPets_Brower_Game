@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { apiFetch, ApiError } from "../../lib/api/baseClient";
 import potatoImage from "@/kith/assets/potato/potato.png";
 import "./PoeTayToe.css";
@@ -132,18 +133,21 @@ export default function PoeTayToe({ locationKey }: PoeTayToeProps) {
 
   return (
     <>
-      {showPotato ? (
-        <button
-          type="button"
-          className={`poeTayToe poeTayToe--${locationKey}`}
-          aria-label="Poe Tay Toe"
-          title="...is that a potato?"
-          onClick={handleFind}
-          disabled={busy}
-        >
-          <img src={potatoImage} alt="" aria-hidden="true" />
-        </button>
-      ) : null}
+      {showPotato
+        ? createPortal(
+            <button
+              type="button"
+              className={`poeTayToe poeTayToe--${locationKey}`}
+              aria-label="Poe Tay Toe"
+              title="...is that a potato?"
+              onClick={handleFind}
+              disabled={busy}
+            >
+              <img src={potatoImage} alt="" aria-hidden="true" />
+            </button>,
+            document.body,
+          )
+        : null}
 
       {showHidePopup ? (
         <div className="poeTayToeBackdrop dpPopupWindowBackdrop">

@@ -1,6 +1,6 @@
 .poeTayToe {
-  position: absolute;
-  z-index: 8;
+  position: fixed;
+  z-index: 2147483647;
   display: grid;
   place-items: center;
   width: 30px;
@@ -61,7 +61,7 @@
 }
 
 .poeTayToeBackdrop {
-  z-index: 1200;
+  z-index: 10000;
 }
 
 .poeTayToePopup {

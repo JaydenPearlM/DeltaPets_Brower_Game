@@ -12,6 +12,8 @@ export type HomepageSpotlightPet = {
   passiveTrait: string | null;
   mutation: string | null;
   description: string | null;
+  growthStrongStats: Array<"hp" | "atk" | "def" | "spd" | "magi" | "mana">;
+  growthWeakStat: "hp" | "atk" | "def" | "spd" | "magi" | "mana" | null;
   previewUrl: string | null;
   stats: {
     hpCur: number;

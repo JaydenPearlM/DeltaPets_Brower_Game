@@ -286,6 +286,15 @@ export default function App() {
               <span className="logoText">DeltaPets</span>
             </button>
 
+            <a
+              className="mobileHeaderSupportBtn dp-btn btn-gold"
+              href="https://ko-fi.com/deltapets"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Support DeltaPets
+            </a>
+
             <div className="headerStack">
               <div className={`aliuneSignal aliuneSignal--${signalTone}`}>
                 <div className="signalTitle">ALIUNE SIGNAL</div>

@@ -477,6 +477,15 @@ careRouter.get("/spotlight", async (_req, res) => {
 
         description: hydratedPet.description ?? null,
 
+        growthStrongStats: Array.isArray(hydratedPet.growth_strong_stats)
+          ? hydratedPet.growth_strong_stats
+          : [],
+
+        growthWeakStat:
+          typeof hydratedPet.growth_weak_stat === "string"
+            ? hydratedPet.growth_weak_stat
+            : null,
+
         previewUrl:
           hydratedPet.portrait_url ||
           hydratedPet.sprite_url ||
