@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "profile_enabled": true,
+  "species_key": "velune",
+  "species_ids": ["velune"],
+  "display_name": "Velune",
+  "source": "legendary",
+  "region": "kithna",
+  "tutorial_locked": false,
+  "element": "air",
+  "elements": ["light", "ice", "air", "storm"],
+  "rarity": "none",
+  "classification": "mythical_legendary",
+  "role": "Protector of Kithna",
+  "asset_key": "velune",
+  "egg": {
+    "name": "Legendary Egg",
+    "hatch_minutes": 45,
+    "base_stats": {
+      "hp": 2,
+      "atk": 2,
+      "magi": 3,
+      "def": 2,
+      "spd": 3,
+      "mana": 2,
+      "base_total": 14
+    },
+    "stats_are_fixed": true
+  },
+  "evolution": {
+    "hatchling": "Velune",
+    "lowform": null,
+    "highform": null,
+    "legion": null,
+    "mythical_legendary": null,
+    "future_stages_locked_until_named": true
+  },
+  "progression": {
+    "starting_level": 1,
+    "required_trainer_level": 10,
+    "xp_multiplier": 0.6,
+    "active_gameplay_locked_below_requirement": true
+  },
+  "elemental_training": {
+    "light": 5,
+    "ice": 5,
+    "air": 5,
+    "storm": 5
+  },
+  "identity": {
+    "species_locked_traits": [
+      "Mythical Legendary Kith",
+      "Protector of Kithna",
+      "Naturally aligned with Light, Ice, Air, and Storm"
+    ],
+    "individuality_rule": "Personality, preferences, growth traits, bond, and memories belong to the individual Velune and use the normal Kith systems."
+  },
+  "communication": {
+    "language": "delta_language",
+    "language_file": "delta-language.json",
+    "dialect_key": "mythical_legendary",
+    "starts_translated": false,
+    "bond_affects_comprehension": true,
+    "runes_affect_comprehension": true
+  },
+  "runtime_contract": {
+    "species_profile_is_static": true,
+    "individual_state_is_stored_separately": true,
+    "does_not_store": [
+      "individual personality",
+      "learned preferences",
+      "bond",
+      "mood",
+      "memory"
+    ]
+  }
+}

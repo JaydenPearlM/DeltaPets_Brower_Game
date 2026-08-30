@@ -13,6 +13,7 @@ import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
 import templateSprite from "@/kith/assets/Sprite/Template_Sprite.png";
 import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
+import espyrHatchling from "@/kith/assets/startepets/hatchling_espyr.png";
 
 type ProfilePageProps = {
   pageName?: string;
@@ -138,6 +139,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [weeklyRewardsOpen, setWeeklyRewardsOpen] = useState(false);
   const [rewardReady, setRewardReady] = useState(false);
   const [activeTitle, setActiveTitle] = useState<string | null>(null);
+  const [trainerLevel, setTrainerLevel] = useState(1);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
 
@@ -235,7 +237,12 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const activePet = allPets.find((pet) => pet.is_active) ?? null;
   const activePetImage =
     activePet?.portrait_url ||
-    (activePet?.species === "ice_starter" ? cribiHatchling : "");
+    (activePet?.species === "ice_starter"
+      ? cribiHatchling
+      : activePet?.species === "shadow_night_bad" ||
+          activePet?.species === "shadow_day_good"
+        ? espyrHatchling
+        : "");
 
   const displayName =
     user?.user_metadata?.display_name ||
@@ -243,12 +250,20 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     user?.email?.split("@")[0] ||
     "Trainer";
 
-  // trainer_level is not yet stored in the database. Hiding the display
-  // until the progression system is wired to the profiles table.
-  // const trainerLevel = user?.user_metadata?.trainer_level ?? 1;
   const starterElement = user?.user_metadata?.starter_element ?? null;
   const starterElementClass = getElementClass(starterElement);
   const activeElementClass = getElementClass(activePet?.line);
+
+  useEffect(() => {
+    if (!user) {
+      setTrainerLevel(1);
+      return;
+    }
+
+    void apiFetch<{ trainer_level: number }>("/api/me/trainer-progression")
+      .then((progression) => setTrainerLevel(progression.trainer_level))
+      .catch(() => setTrainerLevel(1));
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -362,6 +377,11 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                 <div>
                   <dt>Display Name</dt>
                   <dd>{displayName}</dd>
+                </div>
+
+                <div>
+                  <dt>Trainer Level</dt>
+                  <dd>{trainerLevel}</dd>
                 </div>
 
                 <div>

@@ -6,6 +6,7 @@ import type {
 import { SHARED_SPECIES } from "@shared/pets/species";
 import { STARTER_DISPLAY_NAMES } from "@/kith/registry/starterDisplayNames";
 import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
+import espyrHatchling from "@/kith/assets/startepets/hatchling_espyr.png";
 import "./mainTeam.css";
 
 type MainTeamProps = {
@@ -177,7 +178,11 @@ function getPetImage(pet: PetStats | null) {
     pet.portrait_url ||
     pet.image_url ||
     pet.sprite_url ||
-    (pet.species === "ice_starter" ? cribiHatchling : "")
+    (pet.species === "ice_starter"
+      ? cribiHatchling
+      : pet.species === "shadow_night_bad" || pet.species === "shadow_day_good"
+        ? espyrHatchling
+        : "")
   );
 }
 

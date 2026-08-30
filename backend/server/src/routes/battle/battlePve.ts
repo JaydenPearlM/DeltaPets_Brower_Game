@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { logger } from "../../lib/logger";
+import { VELUNE } from "../../shared/pets/species/legendary-species";
 
 type BattleElement =
   | "fire"
@@ -493,6 +494,7 @@ battlePveRouter.post(
             "magi",
             "personality_id",
             "line",
+            "species",
           ].join(", "),
         )
         .eq("user_id", userId)
@@ -507,6 +509,38 @@ battlePveRouter.post(
           error: "One or more pets were not found for this user.",
         });
       }
+
+      if (
+        (pets as Array<{ species?: string | null }>).some(
+          (pet) => pet.species === VELUNE.id,
+        )
+      ) {
+        const { data: trainerProgression, error: trainerProgressionError } =
+          await supabaseAdmin
+            .from("trainer_progression")
+            .select("trainer_level")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+        if (trainerProgressionError) {
+          return res.status(500).json({
+            error: trainerProgressionError.message,
+          });
+        }
+
+        const trainerLevel = Number(
+          trainerProgression?.trainer_level ?? 1,
+        );
+        if (trainerLevel < VELUNE.requiredTrainerLevel) {
+          return res.status(403).json({
+            error:
+              "Trainer Level 10 required to use Mythical Legendary Kith.",
+            trainer_level: trainerLevel,
+            required_trainer_level: VELUNE.requiredTrainerLevel,
+          });
+        }
+      }
+
       const playerTeam = pets.map(normalizePetToBattleUnit);
       const avgLevel = Math.max(
         1,

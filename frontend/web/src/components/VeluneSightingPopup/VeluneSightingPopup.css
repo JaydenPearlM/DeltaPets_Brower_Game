@@ -1,0 +1,33 @@
+.veluneSightingWindow {
+  width: min(520px, calc(100vw - 32px));
+}
+
+.veluneSightingContent {
+  display: grid;
+  gap: 16px;
+  text-align: center;
+}
+
+.veluneSightingContent h2,
+.veluneSightingContent p {
+  margin: 0;
+}
+
+.veluneSightingContent p {
+  line-height: 1.65;
+}
+
+.veluneSightingAfterthought {
+  opacity: 0.72;
+  font-style: italic;
+}
+
+.veluneSightingReward {
+  color: var(--dp-title-gold, var(--dp-brand-yellow)) !important;
+  font-weight: 800;
+}
+
+.veluneSightingContinue {
+  justify-self: center;
+  min-width: 128px;
+}

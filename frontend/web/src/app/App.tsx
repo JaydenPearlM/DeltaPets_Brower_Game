@@ -11,6 +11,8 @@ import { useUI } from "./providers/UIProvider";
 import { apiFetch } from "../lib/api/baseClient";
 import { useRoamEncounter } from "../lib/kithna/useRoamEncounter";
 import { RoamEncounterToast } from "../components/RoamEncounterToast/RoamEncounterToast";
+import { useVeluneEncounter } from "../lib/kithna/useVeluneEncounter";
+import { VeluneSightingPopup } from "../components/VeluneSightingPopup/VeluneSightingPopup";
 import "./App.css";
 
 const APP_VERSION = __APP_VERSION__;
@@ -49,6 +51,10 @@ export default function App() {
   const { result: roamResult, clearResult: clearRoamResult } = useRoamEncounter(
     Boolean(user) && !loading && location.pathname === "/cities/kithna",
   );
+  const {
+    result: veluneResult,
+    clearResult: clearVeluneResult,
+  } = useVeluneEncounter(Boolean(user) && !loading);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [exploreHintOpen, setExploreHintOpen] = useState(false);
@@ -504,7 +510,14 @@ export default function App() {
         </header>
       )}
 
-      <RoamEncounterToast result={roamResult} onDismiss={clearRoamResult} />
+      <RoamEncounterToast
+        result={veluneResult ? null : roamResult}
+        onDismiss={clearRoamResult}
+      />
+      <VeluneSightingPopup
+        result={veluneResult}
+        onDismiss={clearVeluneResult}
+      />
 
       <main className="appContent">
         <Outlet />

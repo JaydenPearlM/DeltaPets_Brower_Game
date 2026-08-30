@@ -22,6 +22,7 @@ import {
   SHARED_SPECIES,
   ELEMENT_EGG_NAMES,
   VOIDBORNE_EGG_NAME,
+  VELUNE,
 } from "@shared/pets/species";
 import type { SharedElementLine } from "@shared/pets/species";
 import "./HatcheryPage.css";
@@ -145,6 +146,10 @@ type HatchActionResponse = {
   post_hatch_destination?: string | null;
   storage_result?: "party" | "storage" | null;
   is_mystery_starter_hatch?: boolean;
+  mythical_legendary?: boolean;
+  trainer_level?: number;
+  required_trainer_level?: number | null;
+  active_gameplay_locked?: boolean;
 };
 
 type HatchEgg = {
@@ -237,6 +242,10 @@ function resolveEggIdentity(
   label: string;
   elementKey: ElementalLineKey | null;
 } {
+  if (egg?.species === VELUNE.id) {
+    return { label: VELUNE.eggName, elementKey: VELUNE.primaryElement };
+  }
+
   if (
     STARTER_SPECIES_IDS.has(String(egg?.species ?? "").trim()) ||
     egg?.name?.trim().toLowerCase() === MYSTERY_EGG.name.toLowerCase()
@@ -339,6 +348,19 @@ function normalizeSpeciesMatch(value?: string | null) {
 }
 
 function getSharedEggStats(egg: HatchEgg): PetStatsRow | null {
+  if (egg.species === VELUNE.id) {
+    return {
+      pet_id: egg.id,
+      hp: VELUNE.eggBaseStats.hp,
+      atk: VELUNE.eggBaseStats.atk,
+      magi: VELUNE.eggBaseStats.magi,
+      def: VELUNE.eggBaseStats.def,
+      spd: VELUNE.eggBaseStats.spd,
+      mana: VELUNE.eggBaseStats.mana,
+      base_total: VELUNE.eggBaseStats.base_total,
+    };
+  }
+
   const eggKeys = new Set(
     [egg.species, egg.name, egg.line]
       .map(normalizeSpeciesMatch)
@@ -556,7 +578,9 @@ function HatchRevealOverlay({
 }) {
   const petName = result.pet?.name ?? "Unknown Kith";
   const destinationText =
-    result.storage_result === "party"
+    result.active_gameplay_locked
+      ? "Sent to Storage"
+      : result.storage_result === "party"
       ? "Joined your Main Team!"
       : "Sent to Storage";
 
@@ -576,6 +600,20 @@ function HatchRevealOverlay({
           You hatched <span className="hatchRevealPetName">{petName}</span>!
         </div>
         <div className="hatchRevealDestination">{destinationText}</div>
+        {result.mythical_legendary ? (
+          <div className="hatchRevealLegendaryDetails">
+            <strong>Mythical Legendary</strong>
+            <span>Light · Ice · Air · Storm</span>
+            <span>Elemental Training: 5% each</span>
+            {result.active_gameplay_locked ? (
+              <span>
+                Trainer Level {result.required_trainer_level ?? 10} required
+                to use this Kith. Your bond with this Kith isn&apos;t strong
+                enough yet.
+              </span>
+            ) : null}
+          </div>
+        ) : null}
         <button
           type="button"
           className="primaryBtn hatchRevealContinueBtn"

@@ -14,6 +14,7 @@ import pebelin from "./kithna/pebelin.json";
 import magmado from "./kithna/magmado.json";
 import shade from "./kithna/shade.json";
 import glimmer from "./kithna/glimmer.json";
+import velune from "./legendary/velune.json";
 
 export const CHARACTER_PROFILES: CharacterProfile[] = [
   mizu,
@@ -29,6 +30,7 @@ export const CHARACTER_PROFILES: CharacterProfile[] = [
   magmado,
   shade,
   glimmer,
+  velune,
 ];
 
 export function findCharacterProfileBySpeciesId(

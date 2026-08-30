@@ -19,6 +19,6 @@ export const STARTER_DISPLAY_NAMES: Record<string, string> = {
   ice_starter: "Cribi",
   storm_starter: "Volb",
   light_starter: "Solen",
-  shadow_night_bad: "Esperon",
-  shadow_day_good: "Esperon",
+  shadow_night_bad: "Espyr",
+  shadow_day_good: "Espyr",
 };

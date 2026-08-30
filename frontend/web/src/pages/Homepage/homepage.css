@@ -1594,27 +1594,33 @@
     font-size: 0.74rem;
   }
 
-.hp-heroInner {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
-  align-items: center;
-  gap: 28px;
-  padding: 30px 28px 28px;
-  text-align: center;
-}
-.hp-heroVideo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-width: 0;
-  overflow: hidden;
-}
+  .hp-heroInner {
+    grid-template-columns: 1fr !important;
+    justify-items: center !important;
+    padding: 34px !important;
+    gap: 10px !important;
+  }
+
+  .hp-heroVisualColumn {
+    width: 100% !important;
+    max-width: 280px !important;
+    margin: 0 auto !important;
+    align-items: center !important;
+  }
+
+  .hp-heroVideo {
+    width: 100% !important;
+    margin: 0 auto !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-width: 0;
+    overflow: hidden;
+  }
 
   .hp-heroVideo .showcase-embed-box {
-    width: min(100%, 390px);
+    width: 220px !important;
+    height: 346px !important;
+    margin: 0 auto !important;
   }
 
   .hp-heroCard::before {
@@ -1623,20 +1629,30 @@
   }
 
   .hp-heroBrandRow {
+    width: 100% !important;
     grid-template-columns: 1fr;
     align-items: center;
-    justify-items: center;
-    row-gap: 12px;
+    row-gap: 0 !important;
+    justify-items: center !important;
   }
 
   .hp-heroTitleWrap {
-    align-items: center;
-    text-align: center;
+    width: 100% !important;
+    align-items: center !important;
+    text-align: center !important;
   }
 
   .hp-heroTitle--logo {
-    font-size: clamp(2.7rem, 9vw, 4.5rem);
-    left: 0;
+    left: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: clamp(2.2rem, 9vw, 3rem) !important;
+    line-height: 1 !important;
+    color: #f3d63f !important;
+    -webkit-text-stroke: 0 !important;
+    text-shadow:
+      0 2px 0 rgba(100, 72, 12, 0.45),
+      0 5px 10px rgba(0, 0, 0, 0.32) !important;
   }
 
   .hp-heroTagline {
