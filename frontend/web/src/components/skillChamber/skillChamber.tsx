@@ -8,9 +8,9 @@ import {
   PROGRESSION_SKILLS,
   type SkillId,
 } from "../Skills/skillsRegistry";
-import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
 import "./skillChamber.css";
-
+import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
+import espyrHatchling from "@/kith/assets/startepets/hatchling_espyr.png";
 type SkillChamberProps = {
   pet?: Record<string, any> | null;
   stats?: {
@@ -467,7 +467,12 @@ export default function SkillChamber({
     pet?.portrait_url ||
     pet?.sprite_url ||
     pet?.image_url ||
-    (pet?.species === "ice_starter" ? cribiHatchling : null);
+    (pet?.species === "ice_starter"
+      ? cribiHatchling
+      : pet?.species === "shadow_night_bad" ||
+          pet?.species === "shadow_day_good"
+        ? espyrHatchling
+        : null);
 
   function equipSkill(skillId: SkillId) {
     if (!LOADOUT_SKILL_IDS.includes(skillId)) return;

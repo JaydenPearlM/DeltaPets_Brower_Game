@@ -5,8 +5,13 @@ import {
   usePetStorage,
 } from "./usePetStorage";
 import MainTeam from "../../../MainTeam/mainTeam";
-import { ELEMENT_EGG_NAMES, SHARED_SPECIES } from "@shared/pets/species";
+import {
+  ELEMENT_EGG_NAMES,
+  SHARED_SPECIES,
+  VELUNE,
+} from "@shared/pets/species";
 import prismaticEggPng from "@/kith/assets/eggs/eggs/prismatic_egg/prismatic_egg.png";
+import velunePng from "@/kith/assets/legendary/velune.png";
 import tideEggPng from "@/kith/assets/eggs/eggs/tide_egg/tide_normal.png";
 import emberEggPng from "@/kith/assets/eggs/eggs/ember_egg/ember_normal.png";
 import groveEggPng from "@/kith/assets/eggs/eggs/grove_egg/grove_normal.png";
@@ -67,6 +72,10 @@ function resolveEggIdentity(
   label: string;
   toneClass: string;
 } {
+  if (egg?.species === VELUNE.id) {
+    return { label: VELUNE.eggName, toneClass: "tone-air" };
+  }
+
   if (STARTER_SPECIES_IDS.has(String(egg?.species ?? "").trim())) {
     return { label: "Prismatic Egg", toneClass: "tone-default" };
   }
@@ -190,6 +199,7 @@ function StoragePetCard(props: {
   const isStarterEgg = isEgg && eggIdentity?.label === "Prismatic Egg";
   const isStarterPet =
     !isEgg && STARTER_SPECIES_IDS.has(String(pet.species ?? "").trim());
+  const isVelune = pet.species === VELUNE.id;
 
   return (
     <article
@@ -237,10 +247,10 @@ function StoragePetCard(props: {
               }
               alt={eggIdentity!.label}
             />
-          ) : pet.portrait_url ? (
+          ) : pet.portrait_url || isVelune ? (
             <img
               className="storagePetPortrait"
-              src={pet.portrait_url}
+              src={pet.portrait_url || velunePng}
               alt={pet.name?.trim() || "Stored pet"}
             />
           ) : (
@@ -259,6 +269,11 @@ function StoragePetCard(props: {
 
           {isStarterEgg || isStarterPet ? (
             <span className="storageRarityBadge epic">Epic</span>
+          ) : null}
+          {isVelune ? (
+            <span className="storageRarityBadge epic">
+              Mythical Legendary · Trainer Lv. {VELUNE.requiredTrainerLevel}
+            </span>
           ) : null}
         </div>
       </div>

@@ -20,6 +20,11 @@ import {
   isVoidborneLine,
   VOIDBORNE_ENCOUNTER_CHANCE_PERMILLE,
 } from "../../../shared/pets/species/voidborne";
+import {
+  VELUNE_ELIGIBLE_LOCATION_KEYS,
+  VELUNE_SIGHTING_CHANCE_PERCENT,
+  VELUNE_SIGHTING_MESSAGES,
+} from "../../../shared/pets/species/legendary-species";
 
 export const kithnaRouter = Router();
 
@@ -68,6 +73,107 @@ async function computeRecoveryCost(pet: {
 // In-memory cooldown tracker. Alpha-only, same pattern as the battle store
 // in battlePve.ts, resets on server restart, fine for a handful of testers.
 const lastRoamAttemptByUser = new Map<string, number>();
+
+// ============================================================
+// POST /api/kithna/velune/roam
+//
+// Durable, server-controlled Legendary sighting roll. The database function
+// serializes requests per account and creates the egg and completion state in
+// one transaction. A local-only forceOutcome switch keeps each branch
+// testable without exposing a production reward override.
+// ============================================================
+kithnaRouter.post(
+  "/velune/roam",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const locationKey = String(req.body?.locationKey ?? "").trim();
+      if (
+        !VELUNE_ELIGIBLE_LOCATION_KEYS.includes(
+          locationKey as (typeof VELUNE_ELIGIBLE_LOCATION_KEYS)[number],
+        )
+      ) {
+        return res.json({
+          attempted: false,
+          sighted: false,
+          egg_awarded: false,
+          reason: "ineligible_location",
+          retry_after_ms: 0,
+          egg_id: null,
+          message: null,
+        });
+      }
+
+      const forceOutcome =
+        process.env.NODE_ENV !== "production"
+          ? String(req.body?.forceOutcome ?? "").trim()
+          : "";
+
+      let sightingRoll =
+        cryptoRandomInt(100) < VELUNE_SIGHTING_CHANCE_PERCENT ? 0 : 99;
+      let eggRoll = cryptoRandomInt(100);
+
+      if (forceOutcome === "none") {
+        sightingRoll = 99;
+      } else if (forceOutcome === "sighting") {
+        sightingRoll = 0;
+        eggRoll = 99;
+      } else if (forceOutcome === "egg") {
+        sightingRoll = 0;
+        eggRoll = 0;
+      }
+
+      const { data, error } = await supabaseAdmin.rpc(
+        "roll_velune_encounter",
+        {
+          p_user_id: userId,
+          p_location_key: locationKey,
+          p_sighting_roll: sightingRoll,
+          p_egg_roll: eggRoll,
+          p_bypass_cooldown: Boolean(forceOutcome),
+        },
+      );
+
+      if (error) throw error;
+
+      const result = Array.isArray(data) ? data[0] : data;
+      if (!result) throw new Error("Velune encounter returned no result.");
+
+      const sighted = Boolean(result.sighted);
+      const eggAwarded = Boolean(result.egg_awarded);
+      const message = sighted
+        ? VELUNE_SIGHTING_MESSAGES[
+            cryptoRandomInt(VELUNE_SIGHTING_MESSAGES.length)
+          ]
+        : null;
+
+      if (sighted) {
+        logger.info("[kithna/velune] sighting", {
+          userId,
+          locationKey,
+          eggAwarded,
+          eggId: result.egg_id ?? null,
+        });
+      }
+
+      return res.json({
+        attempted: Boolean(result.attempted),
+        sighted,
+        egg_awarded: eggAwarded,
+        reason: result.reason ?? null,
+        retry_after_ms: Number(result.retry_after_ms ?? 0),
+        egg_id: result.egg_id ?? null,
+        message,
+      });
+    } catch (err: any) {
+      logger.error("[kithna/velune] failed", err);
+      return res.status(500).json({
+        error: err?.message ?? "Velune encounter failed.",
+      });
+    }
+  },
+);
 
 type PendingKithnaEncounter = {
   species: KithnaNonStarterSpecies;

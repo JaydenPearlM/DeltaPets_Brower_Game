@@ -889,6 +889,14 @@
     max-height: min(580px, calc(100vh - 80px)) !important;
     overflow-y: auto !important;
     padding: 24px !important;
+    /* The scroll container spans the purple outer window, so its children
+       otherwise paint through the transparent gap behind the cyan inset
+       border while moving. Clip paint at the inset's inner edge without
+       changing the scroll box or content spacing. */
+    clip-path: inset(
+      calc(var(--dp-popup-inset-gap) + var(--dp-popup-inner-border-width))
+        round 10px
+    ) !important;
   }
 }
 
@@ -930,6 +938,16 @@
     overflow-x: hidden !important;
     width: 100% !important;
     position: relative !important;
+  }
+
+  /* Inventory item names need more room than the component's 60px
+     auto-fill tracks provide on phones. Use two readable columns while
+     preserving the existing internal grid scroll and ten-slot layout. */
+  .inventoryGrid--slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-auto-rows: 82px !important;
+    gap: 8px !important;
+    max-height: 270px !important;
   }
 
   .appShell {
@@ -2611,6 +2629,15 @@
   .dp-merchant-panel {
     padding: 30px !important;
   }
+
+  /* Food merchant quantity fields are gameplay controls. The merchant
+     stylesheet reduces them to 28px tall below 760px, which is too small
+     for reliable phone tapping. Keep the existing columns and only restore
+     a full mobile tap target. */
+  .kithna-food-trade-button {
+    min-height: 44px !important;
+  }
+
   /* Battle arena and dungeons placeholder pages */
   .dp-arena-page,
   .dp-dungeons-page {
@@ -2681,6 +2708,14 @@
   .mainTeamGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
+  }
+
+  /* Occupied cards are 155px wide in the S22 Ultra two-column layout.
+     mainTeam.css later enlarges the center stage label to 13px, leaving
+     only about 16px for each stat track. Restore the compact label size
+     so HP and XP remain readable without changing the two-column team. */
+  .mainTeamCenterStage {
+    font-size: 0.58rem !important;
   }
 
   /* Stats Chamber: tighter info rows */
@@ -2793,6 +2828,11 @@
   /* Team: 1 column on S22 */
   .mainTeamGrid {
     grid-template-columns: 1fr !important;
+  }
+
+  /* The S22 switches cards to one column, so the base stage size fits. */
+  .mainTeamCenterStage {
+    font-size: 13px !important;
   }
 
   /* Food merchant */

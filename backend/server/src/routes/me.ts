@@ -8,6 +8,31 @@ import { logger } from "../lib/logger";
 
 export const meRouter = Router();
 
+meRouter.get(
+  "/me/trainer-progression",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const { data, error } = await supabaseAdmin
+        .from("trainer_progression")
+        .select("trainer_level, trainer_xp")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return res.json({
+        trainer_level: Number(data?.trainer_level ?? 1),
+        trainer_xp: Number(data?.trainer_xp ?? 0),
+      });
+    } catch (error) {
+      logger.error("[GET /api/me/trainer-progression] failed", error);
+      return res.status(500).json({ error: "Failed to load Trainer Level" });
+    }
+  },
+);
+
 type WalletView = {
   dots: number;
 };

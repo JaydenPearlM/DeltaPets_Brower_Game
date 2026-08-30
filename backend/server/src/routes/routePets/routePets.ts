@@ -46,6 +46,7 @@ import {
   isVoidborneLine,
   VOIDBORNE_HATCH_BONUS_POINTS,
 } from "../../shared/pets/species/voidborne";
+import { VELUNE } from "../../shared/pets/species/legendary-species";
 import { getWorldTimeOfDay } from "../../lib/deltaTime";
 
 import {
@@ -1179,9 +1180,10 @@ petsRouter.post(
       }
 
       const typedEgg = egg as EggRow;
+      const isVeluneEgg = typedEgg.species === VELUNE.id;
 
       const aliuneSignal = await fetchCurrentAliuneHatchSignal(nowIso);
-      const eggLossChance = isMysteryEggProtected(typedEgg)
+      const eggLossChance = isMysteryEggProtected(typedEgg) || isVeluneEgg
         ? 0
         : getEggLossChancePermille(aliuneSignal);
 
@@ -1258,15 +1260,32 @@ petsRouter.post(
       const kithnaSpecies =
         findNonStarterSpeciesById(typedEgg.species) ??
         findNonStarterSpeciesByEggName(typedEgg.name);
+      const legendarySpecies = isVeluneEgg ? VELUNE : null;
 
       const hatchlingName =
-        starter?.hatchlingName ?? kithnaSpecies?.evolution.hatchling ?? null;
+        starter?.hatchlingName ??
+        kithnaSpecies?.evolution.hatchling ??
+        legendarySpecies?.hatchlingName ??
+        null;
       const hatchBaseStats =
-        starter?.baseStats ?? kithnaSpecies?.eggBaseStats ?? null;
-      const hatchSpeciesId = starter?.speciesId ?? kithnaSpecies?.id ?? null;
+        starter?.baseStats ??
+        kithnaSpecies?.eggBaseStats ??
+        legendarySpecies?.eggBaseStats ??
+        null;
+      const hatchSpeciesId =
+        starter?.speciesId ??
+        kithnaSpecies?.id ??
+        legendarySpecies?.id ??
+        null;
       const hatchLine =
-        typedEgg.line ?? starter?.line ?? kithnaSpecies?.line ?? null;
-      const rarityBonusPoints = isVoidborneLine(hatchLine)
+        typedEgg.line ??
+        starter?.line ??
+        kithnaSpecies?.line ??
+        legendarySpecies?.primaryElement ??
+        null;
+      const rarityBonusPoints = legendarySpecies
+        ? legendarySpecies.hatchAllocationBonusPoints
+        : isVoidborneLine(hatchLine)
         ? VOIDBORNE_HATCH_BONUS_POINTS
         : kithnaSpecies?.rarity
           ? KITHNA_RARITY_RULES[kithnaSpecies.rarity].rarityBonusPoints
@@ -1299,7 +1318,7 @@ petsRouter.post(
         return res.status(500).json({ error: "Invalid hatch stat roll" });
       }
 
-      const gender = rollGender();
+      const gender = legendarySpecies?.gender ?? rollGender();
 
       let personalityId = egg.personality_id ?? null;
       let personalityKey = egg.personality_key ?? null;
@@ -1509,7 +1528,26 @@ petsRouter.post(
 
       if (activePetError) throw activePetError;
 
-      const assignedPartySlot = await assignPetToMainParty(userId, egg.id);
+      let trainerLevel = 1;
+      if (legendarySpecies) {
+        const { data: trainerProgression, error: trainerProgressionError } =
+          await supabaseAdmin
+            .from("trainer_progression")
+            .select("trainer_level")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+        if (trainerProgressionError) throw trainerProgressionError;
+        trainerLevel = Number(trainerProgression?.trainer_level ?? 1);
+      }
+
+      const legendaryUseLocked = Boolean(
+        legendarySpecies &&
+          trainerLevel < legendarySpecies.requiredTrainerLevel,
+      );
+      const assignedPartySlot = legendaryUseLocked
+        ? null
+        : await assignPetToMainParty(userId, egg.id);
 
       let finalLocation: "active" | "party" | "storage" = "storage";
       let finalIsActive = false;
@@ -1584,6 +1622,11 @@ petsRouter.post(
         storage_result: storageResult,
         is_mystery_starter_hatch: Boolean(starter),
         starter_species_id: starter?.speciesId ?? null,
+        mythical_legendary: Boolean(legendarySpecies),
+        trainer_level: trainerLevel,
+        required_trainer_level:
+          legendarySpecies?.requiredTrainerLevel ?? null,
+        active_gameplay_locked: legendaryUseLocked,
       });
     } catch (err: any) {
       logger.error("[POST /api/pets/hatch] crash", err);

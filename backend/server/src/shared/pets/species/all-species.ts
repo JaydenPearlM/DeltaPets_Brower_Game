@@ -4,8 +4,16 @@ import {
   KITHNA_NON_STARTER_SPECIES,
   type KithnaNonStarterSpecies,
 } from "./kithna-species";
+import {
+  LEGENDARY_SPECIES_REGISTRY,
+  findLegendarySpeciesById,
+  type LegendarySpeciesFoundation,
+} from "./legendary-species";
 
-export type RegisteredPetSpecies = SharedSpecies | KithnaNonStarterSpecies;
+export type RegisteredPetSpecies =
+  | SharedSpecies
+  | KithnaNonStarterSpecies
+  | LegendarySpeciesFoundation;
 
 export const STARTER_SPECIES_REGISTRY: SharedSpecies[] = SHARED_SPECIES;
 
@@ -16,6 +24,7 @@ export const NON_STARTER_SPECIES_REGISTRY: KithnaNonStarterSpecies[] = [
 export const ALL_PET_SPECIES: RegisteredPetSpecies[] = [
   ...STARTER_SPECIES_REGISTRY,
   ...NON_STARTER_SPECIES_REGISTRY,
+  ...LEGENDARY_SPECIES_REGISTRY,
 ];
 
 export function findStarterSpeciesById(
@@ -70,6 +79,8 @@ export function findPetSpeciesById(
   speciesId: string | null | undefined,
 ): RegisteredPetSpecies | null {
   return (
-    findNonStarterSpeciesById(speciesId) ?? findStarterSpeciesById(speciesId)
+    findLegendarySpeciesById(speciesId) ??
+    findNonStarterSpeciesById(speciesId) ??
+    findStarterSpeciesById(speciesId)
   );
 }
