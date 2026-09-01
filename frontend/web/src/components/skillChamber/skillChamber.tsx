@@ -10,7 +10,7 @@ import {
 } from "../Skills/skillsRegistry";
 import "./skillChamber.css";
 import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
-import espyrHatchling from "@/kith/assets/startepets/hatchling_espyr.png";
+import espyrHatchling from "@/kith/assets/startepets/hatchling_Espyr.png";
 type SkillChamberProps = {
   pet?: Record<string, any> | null;
   stats?: {
