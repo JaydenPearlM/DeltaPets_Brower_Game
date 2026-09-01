@@ -13,7 +13,7 @@ import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
 import templateSprite from "@/kith/assets/Sprite/Template_Sprite.png";
 import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
-import espyrHatchling from "@/kith/assets/startepets/hatchling_espyr.png";
+import espyrHatchling from "@/kith/assets/startepets/hatchling_Espyr.png";
 
 type ProfilePageProps = {
   pageName?: string;
