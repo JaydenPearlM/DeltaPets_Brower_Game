@@ -6,7 +6,7 @@ import type {
 import { SHARED_SPECIES } from "@shared/pets/species";
 import { STARTER_DISPLAY_NAMES } from "@/kith/registry/starterDisplayNames";
 import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
-import espyrHatchling from "@/kith/assets/startepets/hatchling_espyr.png";
+import espyrHatchling from "@/kith/assets/startepets/hatchling_Espyr.png";
 import "./mainTeam.css";
 
 type MainTeamProps = {
