@@ -590,19 +590,20 @@ export default function Inventory({ onClose }: InventoryProps) {
         </p>
       </header>
 
-      <button
-        type="button"
-        className="inventoryHaikuButton"
-        onClick={() => setHaikuCollectionOpen(true)}
-      >
-        <img
-          className="inventoryHaikuIcon"
-          src={haikuScrollIcon}
-          alt=""
-          aria-hidden="true"
-        />
-        <span>Haiku Scrolls</span>
-      </button>
+      <div className="inventoryBody">
+        <button
+          type="button"
+          className="inventoryHaikuButton"
+          onClick={() => setHaikuCollectionOpen(true)}
+        >
+          <img
+            className="inventoryHaikuIcon"
+            src={haikuScrollIcon}
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Haiku Scrolls</span>
+        </button>
 
       <p className="inventorySectionLabel">
         Items ({visibleInventoryItems.length}/{MAX_INVENTORY_SLOTS})
@@ -811,21 +812,22 @@ export default function Inventory({ onClose }: InventoryProps) {
         </div>
       ) : null}
 
-      {carePackageMessage ? (
-        <p className="inventoryCarePackageMessage" role="status">
-          {carePackageMessage}
-        </p>
-      ) : null}
+        {carePackageMessage ? (
+          <p className="inventoryCarePackageMessage" role="status">
+            {carePackageMessage}
+          </p>
+        ) : null}
 
-      <div className="inventoryFooter">
-        <button
-          type="button"
-          className="dp-btn--close inventoryFooterClose"
-          onClick={onClose}
-          aria-label="Close inventory"
-        >
-          Close
-        </button>
+        <div className="inventoryFooter">
+          <button
+            type="button"
+            className="dp-btn--close inventoryFooterClose"
+            onClick={onClose}
+            aria-label="Close inventory"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </section>
   );

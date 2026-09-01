@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useDeltaTime } from "../../../lib/timers/useDeltaTime";
 import PoeTayToe from "../../../components/PoeTayToe/PoeTayToe";
 import "./KithnaMap.css";
 
@@ -15,7 +14,7 @@ const KITHNA_TARGETS: KithnaTarget[] = [
   {
     id: "dungeon",
     label: "Dungeon",
-    route: "/kithna/farm/dungeon",
+    route: "/battle-dungeons",
     className: "kithnaTargetDungeon",
     icon: "☠",
   },
@@ -34,18 +33,11 @@ const KITHNA_TARGETS: KithnaTarget[] = [
     icon: "🥚",
   },
   {
-    id: "armor",
-    label: "Armor Merchant",
-    route: "/kithna/armor",
-    className: "kithnaTargetArmor",
-    icon: "▰",
-  },
-  {
-    id: "weapons",
-    label: "Weapon Merchant",
-    route: "/kithna/weapons",
-    className: "kithnaTargetWeapons",
-    icon: "⚔",
+    id: "relic-store",
+    label: "Relic Store",
+    route: "/kithna/relics",
+    className: "kithnaTargetRelics",
+    icon: "◆",
   },
   {
     id: "food-shop",
@@ -87,22 +79,21 @@ const KITHNA_TARGETS: KithnaTarget[] = [
 
 const KITHNA_TOOLBAR = [
   { label: "Hatchery", route: "/hatchery" },
+  { label: "Relic Store", route: "/kithna/relics" },
   { label: "Health", route: "/kithna/health" },
-  { label: "Armor", route: "/kithna/armor" },
-  { label: "Weapon", route: "/kithna/weapons" },
-  { label: "Gym", route: "/gym" },
-  { label: "Pet Care", route: "/pet" },
   { label: "Food", route: "/kithna/food" },
-  { label: "Farm", route: "/kithna/farm" },
-  { label: "Dungeon", route: "/kithna/farm/dungeon" },
+  { label: "Pet Care", route: "/pet" },
+  { label: "Gym", route: "/gym" },
+  { label: "Farm Merchant", route: "/farm" },
+  { label: "Dungeon", route: "/battle-dungeons" },
+  { label: "Profile", route: "/profile" },
 ];
 
 export default function KithnaMap() {
   const navigate = useNavigate();
-  const { phase } = useDeltaTime();
 
   return (
-    <main className="kithnaMapPage" data-phase={phase}>
+    <main className="kithnaMapPage">
       <section className="kithnaMapFrame" aria-label="Kithna town map">
         <div className="kithnaIsland">
           <div className="kithnaWater" />
@@ -130,11 +121,6 @@ export default function KithnaMap() {
             <div className="kithnaFountainEgg" />
             <div className="kithnaFountainBowl" />
           </div>
-
-          <div className="kithnaNpc kithnaNpcOne" aria-hidden="true" />
-          <div className="kithnaNpc kithnaNpcTwo" aria-hidden="true" />
-          <div className="kithnaNpc kithnaNpcThree" aria-hidden="true" />
-          <div className="kithnaNpc kithnaNpcFour" aria-hidden="true" />
 
           <PoeTayToe locationKey="hatchery-back" />
         </div>

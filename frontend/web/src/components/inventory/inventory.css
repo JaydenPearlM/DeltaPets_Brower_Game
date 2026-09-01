@@ -29,6 +29,10 @@
   gap: 18px;
 }
 
+.inventoryBody {
+  display: contents;
+}
+
 .inventoryHeader {
   display: grid;
   gap: 8px;

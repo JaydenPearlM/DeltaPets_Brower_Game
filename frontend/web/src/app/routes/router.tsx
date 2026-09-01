@@ -202,6 +202,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "kithna/relics",
+        element: withSuspense(
+          <ProtectedRoute>
+            <MerchantClosedPage merchantName="Relic Store" />
+          </ProtectedRoute>,
+        ),
+      },
+      {
         path: "kithna/armor",
         element: withSuspense(
           <ProtectedRoute>
