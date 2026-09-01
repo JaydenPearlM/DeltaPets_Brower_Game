@@ -368,6 +368,30 @@
   opacity: 0.45;
 }
 
+.alpha-patchSections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--dp-panel-bg-mid);
+}
+
+.alpha-patchSection {
+  padding: 0.9rem 0.9rem 1rem;
+  border-right: 1px solid var(--dp-panel-border-soft-cyan);
+  border-bottom: 1px solid var(--dp-panel-border-soft-cyan);
+}
+
+.alpha-patchSection:nth-child(2n) {
+  border-right: 0;
+}
+
+.alpha-patchSection h4 {
+  margin: 0 0 0.7rem;
+  color: var(--dp-title-gold, var(--dp-gold));
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 @media (min-width: 981px) {
   .alpha-panel {
     padding-bottom: 14.5px;
@@ -457,6 +481,15 @@
    ========================================================= */
 
 @media (max-width: 700px) {
+  .alpha-patchSections {
+    grid-template-columns: 1fr;
+  }
+
+  .alpha-patchSection,
+  .alpha-patchSection:nth-child(2n) {
+    border-right: 0;
+  }
+
   .alpha-panel {
     width: 100%;
     margin-left: 0;
