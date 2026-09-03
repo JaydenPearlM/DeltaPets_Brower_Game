@@ -11,7 +11,7 @@ import {
   getSelfAwareBubbleText,
   rememberSelfAwareVisit,
 } from "../selfAware/selfAware";
-import cribiPlaceholder from "@/kith/assets/startepets/hatchling_cribi.png";
+import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,6 +24,7 @@ type PetRecord = {
   gender?: string | null;
   element?: string | null;
   rarity?: string | null;
+  species?: string | null;
   line?: string | null;
   stage?: string | null;
   personality?: string | null;
@@ -190,6 +191,20 @@ function getDisplayedMutationTraits(
 }
 
 function getPreviewUrl(pet: PetRecord) {
+  const speciesKeys = [pet.species, pet.name]
+    .map((value) =>
+      String(value ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, ""),
+    )
+    .filter(Boolean);
+
+  if (speciesKeys.includes("cribi") || speciesKeys.includes("ice_starter")) {
+    return cribiHatchling;
+  }
+
   return pet.portrait_url || pet.sprite_url || pet.image_url || null;
 }
 function getDisplayedElement(pet: PetRecord) {
@@ -866,13 +881,7 @@ export default function PetDetailsPanel({
                       src={previewUrl}
                       alt={getPetLabel(pet)}
                     />
-                  ) : (
-                    <img
-                      className="petRepoScenePetImage"
-                      src={cribiPlaceholder}
-                      alt="Pet placeholder"
-                    />
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="petRepoScenePlatformWrap" aria-hidden="true">

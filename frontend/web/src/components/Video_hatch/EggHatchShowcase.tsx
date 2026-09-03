@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import prismaticEgg from "@/kith/assets/eggs/eggs/prismatic_egg/prismatic_egg.png";
-import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
+import { cribiPortrait } from "@/kith/registry/starterPortraits";
 import "./EggHatchShowcase.css";
 
 /**
@@ -609,7 +609,7 @@ export default function EggHatchShowcase({
         <img
           className="showcase-kith"
           ref={kithRef}
-          src={cribiHatchling}
+          src={cribiPortrait}
           alt="DeltaPets Kith"
           draggable={false}
         />

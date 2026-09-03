@@ -12,8 +12,7 @@ import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
 import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
 import templateSprite from "@/kith/assets/Sprite/Template_Sprite.png";
-import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
-import espyrHatchling from "@/kith/assets/startepets/hatchling_Espyr.png";
+import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 
 type ProfilePageProps = {
   pageName?: string;
@@ -237,12 +236,8 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const activePet = allPets.find((pet) => pet.is_active) ?? null;
   const activePetImage =
     activePet?.portrait_url ||
-    (activePet?.species === "ice_starter"
-      ? cribiHatchling
-      : activePet?.species === "shadow_night_bad" ||
-          activePet?.species === "shadow_day_good"
-        ? espyrHatchling
-        : "");
+    getStarterPortrait(activePet?.species) ||
+    "";
 
   const displayName =
     user?.user_metadata?.display_name ||

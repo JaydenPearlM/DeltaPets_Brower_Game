@@ -393,7 +393,7 @@
 
 .mainTeamPetArt img {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 150px;
   max-width: 112%;
   height: 150px;
