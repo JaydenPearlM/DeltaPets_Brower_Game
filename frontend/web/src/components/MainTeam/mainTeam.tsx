@@ -5,8 +5,7 @@ import type {
 } from "../Hatchery/pages/storage/usePetStorage";
 import { SHARED_SPECIES } from "@shared/pets/species";
 import { STARTER_DISPLAY_NAMES } from "@/kith/registry/starterDisplayNames";
-import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
-import espyrHatchling from "@/kith/assets/startepets/hatchling_Espyr.png";
+import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import "./mainTeam.css";
 
 type MainTeamProps = {
@@ -178,11 +177,8 @@ function getPetImage(pet: PetStats | null) {
     pet.portrait_url ||
     pet.image_url ||
     pet.sprite_url ||
-    (pet.species === "ice_starter"
-      ? cribiHatchling
-      : pet.species === "shadow_night_bad" || pet.species === "shadow_day_good"
-        ? espyrHatchling
-        : "")
+    getStarterPortrait(pet.species) ||
+    ""
   );
 }
 
@@ -349,24 +345,23 @@ export default function MainTeam(props: MainTeamProps) {
                   }}
                   onDragEnd={onDragEndPet}
                 >
-                  {petImage ? (
-                    <img src={petImage} alt={displayName} />
-                  ) : (
-                    <span className="mainTeamNoImageBadge">
-                      {pet ? (
-                        <>
-                          <span
-                            className="mainTeamNoImageDelta"
-                            aria-hidden="true"
-                          />
-                          <span className="mainTeamNoImageText">
-                            No image yet
-                          </span>
-                        </>
+                  {pet ? (
+                    <>
+                      <span
+                        className="mainTeamNoImageDelta"
+                        aria-hidden="true"
+                      />
+
+                      {petImage ? (
+                        <img src={petImage} alt={displayName} />
                       ) : (
-                        <span className="mainTeamNoImageText">No Pet</span>
+                        <span className="mainTeamNoImageText">
+                          No image yet
+                        </span>
                       )}
-                    </span>
+                    </>
+                  ) : (
+                    <span className="mainTeamNoImageText">No Pet</span>
                   )}
                 </div>
 

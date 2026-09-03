@@ -21,11 +21,8 @@ services:
     startCommand: node backend/server/dist/index.js
 
     envVars:
-      # env.server.ts defaults NODE_ENV to "development" when this is
-      # unset, which turns on /api/debug (see requireUser gate in app.ts).
-      # That default is backwards for a public deploy, it fails open
-      # instead of closed. Setting it here is the actual fix until the
-      # default in env.server.ts itself is flipped.
+      # Keep production behavior explicit even though env.server.ts also
+      # defaults NODE_ENV to "production".
       - key: NODE_ENV
         value: production
 
@@ -36,6 +33,13 @@ services:
         sync: false
 
       - key: SUPABASE_SECRET_KEY
+        sync: false
+
+      # Vite embeds these public client values during the Render build.
+      - key: VITE_SUPABASE_URL
+        sync: false
+
+      - key: VITE_SUPABASE_ANON_KEY
         sync: false
 
       - key: RATE_LIMIT_WINDOW_MS

@@ -26,6 +26,9 @@ const BattleDungeonsPage = lazy(
   () => import("../../pages/battleDungeons/BattleDungeonsPage"),
 );
 const GymPage = lazy(() => import("../../pages/gym/gym"));
+const FirstRevealTrailer = lazy(
+  () => import("../../components/Video_hatch/FirstRevealTrailer"),
+);
 
 const ComingSoonPage = lazy(() =>
   import("../../pages/Soon/ComingSoonPage").then((module) => ({
@@ -68,6 +71,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export const router = createBrowserRouter([
+  {
+    path: "/showcase",
+    element: withSuspense(<FirstRevealTrailer />),
+  },
   {
     path: "authcallback",
     element: <AuthCallback />,
