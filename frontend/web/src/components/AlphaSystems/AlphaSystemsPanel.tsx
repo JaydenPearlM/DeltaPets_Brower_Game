@@ -105,6 +105,23 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
                   ) : null}
                 </div>
 
+                {patch.sections?.length ? (
+                  <div className="alpha-patchSections">
+                    {patch.sections.map((section) => (
+                      <section
+                        key={section.title}
+                        className="alpha-patchSection"
+                      >
+                        <h4>{section.title}</h4>
+                        <ul className="alpha-patchList">
+                          {section.items.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </section>
+                    ))}
+                  </div>
+                ) : (
                 <div className="alpha-patchTable">
                   <div className="alpha-patchTableHeader">
                     <span>New</span>
@@ -167,6 +184,7 @@ export function AlphaSystemsPanel({ className = "" }: Props) {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             )}
           </>
