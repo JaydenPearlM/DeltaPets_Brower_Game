@@ -1,3 +1,4 @@
+import { getWorldTimeOfDay } from "../../../lib/deltaTime";
 import { safeNum } from "../../../lib/utils";
 import { CARE_DECAY_STEP_MINUTES } from "../../constants";
 
@@ -27,11 +28,43 @@ export type CarePet = {
   runaway_at?: string | null;
   last_care_decay_at?: string | null;
   personality_key?: string | null;
+  hatch_time_alignment?: string | null;
 };
 
 const CARE_MAX = 50;
 const ENERGY_MAX = 100;
 const MIN = 0;
+
+const SLEEP_RECOVERY_STEP_MINUTES = 10;
+const REST_RECOVERY_PER_STEP = 1;
+const ENERGY_RECOVERY_PER_STEP = 2;
+
+function isPetCurrentlyAsleep(
+  hatchTimeAlignment: string | null | undefined,
+): boolean {
+  const alignment = String(hatchTimeAlignment ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+
+  const worldTime = getWorldTimeOfDay();
+
+  // Day Pigeon:
+  // Active during the day, sleeps at night.
+  if (alignment === "day" || alignment === "day_pigeon") {
+    return worldTime === "night";
+  }
+
+  // Night Owl:
+  // Active during the night, sleeps during the day.
+  if (alignment === "night" || alignment === "night_owl") {
+    return worldTime === "day";
+  }
+
+  // Existing frontend behavior:
+  // Unknown/unset preferences default to Day Pigeon.
+  return worldTime === "night";
+}
 
 const HUNGER_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.hunger;
 const CLEAN_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.clean;
@@ -270,11 +303,30 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   const cleanLoss = stepsFromMinutes(elapsedMinutes, cleanStepMinutes);
   const happyLoss = stepsFromMinutes(elapsedMinutes, happyStepMinutes);
   const comfortLoss = stepsFromMinutes(elapsedMinutes, comfortStepMinutes);
-  const restLoss = stepsFromMinutes(elapsedMinutes, restStepMinutes);
 
-  const totalLoss = hungerLoss + cleanLoss + happyLoss + comfortLoss + restLoss;
+  const isAsleep = isPetCurrentlyAsleep(pet.hatch_time_alignment);
 
-  if (totalLoss <= 0) {
+  const restLoss = isAsleep
+    ? 0
+    : stepsFromMinutes(elapsedMinutes, restStepMinutes);
+
+  const sleepRecoverySteps = isAsleep
+    ? stepsFromMinutes(elapsedMinutes, SLEEP_RECOVERY_STEP_MINUTES)
+    : 0;
+
+  const restRecovery = sleepRecoverySteps * REST_RECOVERY_PER_STEP;
+  const energyRecovery = sleepRecoverySteps * ENERGY_RECOVERY_PER_STEP;
+
+  const totalChange =
+    hungerLoss +
+    cleanLoss +
+    happyLoss +
+    comfortLoss +
+    restLoss +
+    restRecovery +
+    energyRecovery;
+
+  if (totalChange <= 0) {
     const runawayState = buildRunawayState({
       pet,
       hunger: hungerBase,
@@ -307,8 +359,12 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
   const clean = clampCare(cleanBase - cleanLoss);
   const happy = clampCare(happyBase - happyLoss);
   const comfort = clampCare(comfortBase - comfortLoss);
-  const rest = clampCare(restBase - restLoss);
-  const energy = energyBase;
+
+  const rest = isAsleep
+    ? clampCare(restBase + restRecovery)
+    : clampCare(restBase - restLoss);
+
+  const energy = clampEnergy(energyBase + energyRecovery);
 
   const runawayState = buildRunawayState({
     pet,
@@ -334,6 +390,13 @@ export function applyCareDecay<T extends CarePet>(pet: T): T {
       happy: happyStepMinutes,
       comfort: comfortStepMinutes,
       rest: restStepMinutes,
+    },
+    sleep: {
+      isAsleep,
+      hatchTimeAlignment: pet.hatch_time_alignment ?? null,
+      recoverySteps: sleepRecoverySteps,
+      restRecovery,
+      energyRecovery,
     },
     losses: {
       hungerLoss,
