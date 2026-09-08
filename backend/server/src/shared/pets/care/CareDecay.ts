@@ -1,4 +1,4 @@
-import { getWorldTimeOfDay } from "../../../lib/deltaTime";
+import { getDeltaTime } from "../../../lib/deltaTime";
 import { safeNum } from "../../../lib/utils";
 import { CARE_DECAY_STEP_MINUTES } from "../../constants";
 
@@ -38,7 +38,6 @@ const MIN = 0;
 const SLEEP_RECOVERY_STEP_MINUTES = 10;
 const REST_RECOVERY_PER_STEP = 1;
 const ENERGY_RECOVERY_PER_STEP = 2;
-
 function isPetCurrentlyAsleep(
   hatchTimeAlignment: string | null | undefined,
 ): boolean {
@@ -47,21 +46,24 @@ function isPetCurrentlyAsleep(
     .toLowerCase()
     .replace(/[\s-]+/g, "_");
 
-  const worldTime = getWorldTimeOfDay();
+  const phase = getDeltaTime().phase;
 
   // Day Pigeon:
-  // Active during the day, sleeps at night.
+  // Drowsy at dusk.
+  // Sleeps through night, deep night, and twilight.
+  // Wakes when dawn begins.
   if (alignment === "day" || alignment === "day_pigeon") {
-    return worldTime === "night";
+    return phase === "night" || phase === "deep_night" || phase === "twilight";
   }
 
   // Night Owl:
-  // Active during the night, sleeps during the day.
+  // Drowsy during twilight.
+  // Sleeps through dawn and day.
+  // Wakes when dusk begins.
   if (alignment === "night" || alignment === "night_owl") {
-    return worldTime === "day";
+    return phase === "dawn" || phase === "day";
   }
 
-  // Unknown/unset preferences should not be treated as sleeping.
   return false;
 }
 

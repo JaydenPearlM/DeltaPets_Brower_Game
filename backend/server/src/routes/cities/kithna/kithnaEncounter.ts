@@ -28,6 +28,118 @@ import {
 
 export const kithnaRouter = Router();
 
+const ALIUNE_SIGNAL_QUEST_KEY = "aliune_signal_test";
+const ALIUNE_SIGNAL_QUEST_TARGET = 5;
+
+// ============================================================
+// GET /api/kithna/aliune-signal/quest
+//
+// Returns the authenticated player's Aliune Signal quest state.
+// If no quest row exists yet, the quest is available to accept.
+// ============================================================
+kithnaRouter.get(
+  "/aliune-signal/quest",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+
+      const { data: quest, error } = await supabaseAdmin
+        .from("player_quests")
+        .select(
+          "quest_key, status, progress, target, accepted_at, completed_at, reward_claimed_at",
+        )
+        .eq("user_id", userId)
+        .eq("quest_key", ALIUNE_SIGNAL_QUEST_KEY)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!quest) {
+        return res.json({
+          quest_key: ALIUNE_SIGNAL_QUEST_KEY,
+          status: "available",
+          progress: 0,
+          target: ALIUNE_SIGNAL_QUEST_TARGET,
+          accepted_at: null,
+          completed_at: null,
+          reward_claimed_at: null,
+        });
+      }
+
+      return res.json(quest);
+    } catch (err: unknown) {
+      logger.error("[kithna/aliune-signal/quest] failed", err);
+
+      return res.status(500).json({
+        error: "Unable to load Aliune Signal quest.",
+      });
+    }
+  },
+);
+
+// ============================================================
+// POST /api/kithna/aliune-signal/quest/accept
+//
+// Accepts the Aliune Signal quest.
+//
+// Repeated calls are safe:
+// - existing quest rows are returned unchanged
+// - completed quests cannot be restarted
+// ============================================================
+kithnaRouter.post(
+  "/aliune-signal/quest/accept",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+
+      const { data: existingQuest, error: existingQuestError } =
+        await supabaseAdmin
+          .from("player_quests")
+          .select(
+            "quest_key, status, progress, target, accepted_at, completed_at, reward_claimed_at",
+          )
+          .eq("user_id", userId)
+          .eq("quest_key", ALIUNE_SIGNAL_QUEST_KEY)
+          .maybeSingle();
+
+      if (existingQuestError) throw existingQuestError;
+
+      if (existingQuest) {
+        return res.json(existingQuest);
+      }
+
+      const acceptedAt = new Date().toISOString();
+
+      const { data: quest, error } = await supabaseAdmin
+        .from("player_quests")
+        .insert({
+          user_id: userId,
+          quest_key: ALIUNE_SIGNAL_QUEST_KEY,
+          status: "active",
+          progress: 0,
+          target: ALIUNE_SIGNAL_QUEST_TARGET,
+          accepted_at: acceptedAt,
+        })
+        .select(
+          "quest_key, status, progress, target, accepted_at, completed_at, reward_claimed_at",
+        )
+        .single();
+
+      if (error) throw error;
+
+      return res.status(201).json(quest);
+    } catch (err: unknown) {
+      logger.error("[kithna/aliune-signal/quest/accept] failed", err);
+
+      return res.status(500).json({
+        error: "Unable to accept Aliune Signal quest.",
+      });
+    }
+  },
+);
+
 // Alpha tuning. Move to game_config later if this needs to be adjustable
 // without a redeploy.
 const ROAM_FIND_CHANCE_PERCENT = 45;
@@ -89,6 +201,7 @@ kithnaRouter.post(
     try {
       const userId = req.user!.id;
       const locationKey = String(req.body?.locationKey ?? "").trim();
+
       if (
         !VELUNE_ELIGIBLE_LOCATION_KEYS.includes(
           locationKey as (typeof VELUNE_ELIGIBLE_LOCATION_KEYS)[number],
@@ -124,24 +237,25 @@ kithnaRouter.post(
         eggRoll = 0;
       }
 
-      const { data, error } = await supabaseAdmin.rpc(
-        "roll_velune_encounter",
-        {
-          p_user_id: userId,
-          p_location_key: locationKey,
-          p_sighting_roll: sightingRoll,
-          p_egg_roll: eggRoll,
-          p_bypass_cooldown: Boolean(forceOutcome),
-        },
-      );
+      const { data, error } = await supabaseAdmin.rpc("roll_velune_encounter", {
+        p_user_id: userId,
+        p_location_key: locationKey,
+        p_sighting_roll: sightingRoll,
+        p_egg_roll: eggRoll,
+        p_bypass_cooldown: Boolean(forceOutcome),
+      });
 
       if (error) throw error;
 
       const result = Array.isArray(data) ? data[0] : data;
-      if (!result) throw new Error("Velune encounter returned no result.");
+
+      if (!result) {
+        throw new Error("Velune encounter returned no result.");
+      }
 
       const sighted = Boolean(result.sighted);
       const eggAwarded = Boolean(result.egg_awarded);
+
       const message = sighted
         ? VELUNE_SIGHTING_MESSAGES[
             cryptoRandomInt(VELUNE_SIGHTING_MESSAGES.length)
@@ -168,6 +282,7 @@ kithnaRouter.post(
       });
     } catch (err: any) {
       logger.error("[kithna/velune] failed", err);
+
       return res.status(500).json({
         error: err?.message ?? "Velune encounter failed.",
       });
@@ -182,6 +297,7 @@ type PendingKithnaEncounter = {
 };
 
 const pendingRoamEncounterByUser = new Map<string, PendingKithnaEncounter>();
+
 function pickRandomSpecies(
   pool: KithnaNonStarterSpecies[],
 ): KithnaNonStarterSpecies {
@@ -202,11 +318,15 @@ function pickRandomSpecies(
     (sum, species) => sum + species.rules.encounterWeight,
     0,
   );
+
   let roll = cryptoRandomInt(totalWeight);
 
   for (const species of standardPool) {
     roll -= species.rules.encounterWeight;
-    if (roll < 0) return species;
+
+    if (roll < 0) {
+      return species;
+    }
   }
 
   return standardPool[standardPool.length - 1];
@@ -228,7 +348,9 @@ async function grantXpToActivePet(userId: string, amount: number) {
 
   const { error: updateError } = await supabaseAdmin
     .from("pets")
-    .update({ xp: (pet.xp ?? 0) + amount })
+    .update({
+      xp: (pet.xp ?? 0) + amount,
+    })
     .eq("id", pet.id);
 
   if (updateError) throw updateError;
@@ -247,6 +369,7 @@ kithnaRouter.post(
     try {
       const userId = req.user!.id;
       const now = Date.now();
+
       const pendingEncounter = pendingRoamEncounterByUser.get(userId);
 
       if (pendingEncounter) {
@@ -259,6 +382,7 @@ kithnaRouter.post(
       }
 
       const lastAttempt = lastRoamAttemptByUser.get(userId) ?? 0;
+
       if (now - lastAttempt < ROAM_COOLDOWN_MS) {
         return res.json({
           found: false,
@@ -266,6 +390,7 @@ kithnaRouter.post(
           retry_after_ms: ROAM_COOLDOWN_MS - (now - lastAttempt),
         });
       }
+
       lastRoamAttemptByUser.set(userId, now);
 
       // Block encounters until the player has at least one hatched pet.
@@ -279,16 +404,27 @@ kithnaRouter.post(
 
       if (hatchedError) {
         logger.error("[kithna/roam] hatch check failed", hatchedError);
-        return res.json({ found: false, reason: "no_find" });
+
+        return res.json({
+          found: false,
+          reason: "no_find",
+        });
       }
 
       if (!hatchedPets || hatchedPets.length === 0) {
-        return res.json({ found: false, reason: "no_hatched_pet" });
+        return res.json({
+          found: false,
+          reason: "no_hatched_pet",
+        });
       }
 
       const roll = cryptoRandomInt(100);
+
       if (roll >= ROAM_FIND_CHANCE_PERCENT) {
-        return res.json({ found: false, reason: "no_find" });
+        return res.json({
+          found: false,
+          reason: "no_find",
+        });
       }
 
       const timeOfDay = getDeltaTime(new Date(now)).timeOfDay;
@@ -298,10 +434,15 @@ kithnaRouter.post(
         logger.error("[kithna/roam] no species configured for time", {
           timeOfDay,
         });
-        return res.json({ found: false, reason: "no_pool" });
+
+        return res.json({
+          found: false,
+          reason: "no_pool",
+        });
       }
 
       const species = pickRandomSpecies(pool);
+
       const eggQuality = await rollNonStarterEggQuality(
         species.rarity ?? "common",
         isVoidborneLine(species.line),
@@ -327,7 +468,10 @@ kithnaRouter.post(
       });
     } catch (err: any) {
       logger.error("[kithna/roam] failed", err);
-      return res.status(500).json({ error: err?.message ?? "Roam failed." });
+
+      return res.status(500).json({
+        error: err?.message ?? "Roam failed.",
+      });
     }
   },
 );
@@ -347,7 +491,9 @@ kithnaRouter.post(
       const pendingEncounter = pendingRoamEncounterByUser.get(userId);
 
       if (!pendingEncounter) {
-        return res.status(409).json({ error: "No Kithna egg is waiting." });
+        return res.status(409).json({
+          error: "No Kithna egg is waiting.",
+        });
       }
 
       pendingRoamEncounterByUser.delete(userId);
@@ -381,15 +527,21 @@ kithnaRouter.post(
 
       if (insertError) {
         pendingRoamEncounterByUser.set(userId, pendingEncounter);
+
         logger.error("[kithna/roam/take] pet insert failed", insertError);
-        return res.status(500).json({ error: insertError.message });
+
+        return res.status(500).json({
+          error: insertError.message,
+        });
       }
 
       try {
         await insertBaseStats(insertedPet.id, species.eggBaseStats);
       } catch (statsError: any) {
         await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
+
         pendingRoamEncounterByUser.set(userId, pendingEncounter);
+
         logger.error("[kithna/roam/take] insertBaseStats failed", statsError);
 
         return res.status(500).json({
@@ -422,9 +574,10 @@ kithnaRouter.post(
       });
     } catch (err: any) {
       logger.error("[kithna/roam/take] failed", err);
-      return res
-        .status(500)
-        .json({ error: err?.message ?? "Taking the egg failed." });
+
+      return res.status(500).json({
+        error: err?.message ?? "Taking the egg failed.",
+      });
     }
   },
 );
@@ -439,13 +592,20 @@ kithnaRouter.post(
   requireUser,
   async (req: AuthedRequest, res: Response) => {
     const userId = req.user!.id;
+
     pendingRoamEncounterByUser.delete(userId);
 
-    logger.info("[kithna/roam/leave] egg left", { userId });
+    logger.info("[kithna/roam/leave] egg left", {
+      userId,
+    });
 
-    return res.json({ left: true });
+    return res.json({
+      left: true,
+    });
   },
 );
+
+// ============================================================
 // GET /api/kithna/lost-registry
 //
 // Lists the current user's runaway pets still inside the 48 hour
@@ -460,6 +620,7 @@ kithnaRouter.get(
     try {
       const userId = req.user!.id;
       const now = Date.now();
+
       const cutoff = new Date(now - LOST_REGISTRY_WINDOW_MS).toISOString();
 
       const { data, error } = await supabaseAdmin
@@ -468,7 +629,9 @@ kithnaRouter.get(
         .eq("user_id", userId)
         .eq("ran_away", true)
         .gte("runaway_at", cutoff)
-        .order("runaway_at", { ascending: true });
+        .order("runaway_at", {
+          ascending: true,
+        });
 
       if (error) throw error;
 
@@ -477,7 +640,9 @@ kithnaRouter.get(
       const entries = await Promise.all(
         pets.map(async (pet: any) => {
           const cost = await computeRecoveryCost(pet);
+
           const runawayAtMs = new Date(pet.runaway_at).getTime();
+
           const expiresAtMs = runawayAtMs + LOST_REGISTRY_WINDOW_MS;
 
           return {
@@ -500,12 +665,15 @@ kithnaRouter.get(
         }),
       );
 
-      return res.json({ entries });
+      return res.json({
+        entries,
+      });
     } catch (err: any) {
       logger.error("[kithna/lost-registry] failed", err);
-      return res
-        .status(500)
-        .json({ error: err?.message ?? "Failed to load lost registry." });
+
+      return res.status(500).json({
+        error: err?.message ?? "Failed to load lost registry.",
+      });
     }
   },
 );
@@ -523,11 +691,15 @@ kithnaRouter.post(
   async (req: AuthedRequest, res: Response) => {
     try {
       const userId = req.user!.id;
+
       const petId = String(req.body?.petId ?? "").trim();
+
       const currency = req.body?.currency === "crystals" ? "crystals" : "dots";
 
       if (!petId) {
-        return res.status(400).json({ error: "petId is required." });
+        return res.status(400).json({
+          error: "petId is required.",
+        });
       }
 
       const { data: pet, error: petError } = await supabaseAdmin
@@ -540,14 +712,19 @@ kithnaRouter.post(
       if (petError) throw petError;
 
       if (!pet) {
-        return res.status(404).json({ error: "That Delta was not found." });
+        return res.status(404).json({
+          error: "That Delta was not found.",
+        });
       }
 
       if (!pet.ran_away || !pet.runaway_at) {
-        return res.status(400).json({ error: "That Delta has not run away." });
+        return res.status(400).json({
+          error: "That Delta has not run away.",
+        });
       }
 
       const runawayAtMs = new Date(pet.runaway_at).getTime();
+
       if (Date.now() - runawayAtMs >= LOST_REGISTRY_WINDOW_MS) {
         return res.status(400).json({
           error: "The recovery window for that Delta has expired.",
@@ -555,6 +732,7 @@ kithnaRouter.post(
       }
 
       const cost = await computeRecoveryCost(pet);
+
       const amount = currency === "crystals" ? cost.crystals : cost.dots;
 
       const { data: spent, error: spendError } = await supabaseAdmin.rpc(
@@ -569,9 +747,9 @@ kithnaRouter.post(
       if (spendError) throw spendError;
 
       if (!spent) {
-        return res
-          .status(400)
-          .json({ error: `Not enough ${currency} to recover this Delta.` });
+        return res.status(400).json({
+          error: `Not enough ${currency} to recover this Delta.`,
+        });
       }
 
       const { data: recoveryRows, error: recoveryError } =
@@ -627,6 +805,7 @@ kithnaRouter.post(
       }
 
       const rawPartySlot = Number(recovery.party_slot ?? 0);
+
       const assignedPartySlot =
         Number.isInteger(rawPartySlot) && rawPartySlot >= 1 && rawPartySlot <= 4
           ? rawPartySlot
@@ -662,9 +841,10 @@ kithnaRouter.post(
       });
     } catch (err: any) {
       logger.error("[kithna/lost-registry/recover] failed", err);
-      return res
-        .status(500)
-        .json({ error: err?.message ?? "Failed to recover Delta." });
+
+      return res.status(500).json({
+        error: err?.message ?? "Failed to recover Delta.",
+      });
     }
   },
 );

@@ -556,8 +556,8 @@ export default function PetDetailsPanel({
   );
 
   const stablePreference = getStablePreference(pet);
-  const { timeOfDay } = useDeltaTime();
-  const isPetSleeping = isPetAsleep(stablePreference, timeOfDay);
+  const { phase } = useDeltaTime();
+  const isPetSleeping = isPetAsleep(stablePreference, phase);
   const [petSpeech, setPetSpeech] = useState("");
   const [showPetSpeech, setShowPetSpeech] = useState(false);
 

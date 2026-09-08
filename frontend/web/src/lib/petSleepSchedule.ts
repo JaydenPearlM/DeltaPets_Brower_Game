@@ -1,15 +1,41 @@
-import type { DeltaTimeOfDay } from "./timers/useDeltaTime";
+import type { DeltaPhase } from "./timers/useDeltaTime";
 
-// Every pet has its own Day Pigeon / Night Owl preference, it's stored
-// per-individual (see getStablePreference in PetDetailsPanel.tsx), not
-// tied to species or element. This just takes that already-computed
-// label plus the current time of day and says whether the pet should
-// currently be shown asleep.
+export type PetSleepState = "awake" | "drowsy" | "asleep";
+
+export function getPetSleepState(
+  dayNightLabel: string | null | undefined,
+  phase: DeltaPhase,
+): PetSleepState {
+  if (dayNightLabel === "Day Pigeon") {
+    if (phase === "dusk") {
+      return "drowsy";
+    }
+
+    if (phase === "night" || phase === "deep_night" || phase === "twilight") {
+      return "asleep";
+    }
+
+    return "awake";
+  }
+
+  if (dayNightLabel === "Night Owl") {
+    if (phase === "twilight") {
+      return "drowsy";
+    }
+
+    if (phase === "dawn" || phase === "day") {
+      return "asleep";
+    }
+
+    return "awake";
+  }
+
+  return "awake";
+}
+
 export function isPetAsleep(
   dayNightLabel: string | null | undefined,
-  timeOfDay: DeltaTimeOfDay,
+  phase: DeltaPhase,
 ): boolean {
-  if (dayNightLabel === "Night Owl") return timeOfDay === "day";
-  // Day Pigeon, or unknown/"--", defaults to sleeping at night.
-  return timeOfDay === "night";
+  return getPetSleepState(dayNightLabel, phase) === "asleep";
 }
