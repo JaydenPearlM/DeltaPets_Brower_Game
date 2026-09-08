@@ -61,9 +61,8 @@ function isPetCurrentlyAsleep(
     return worldTime === "day";
   }
 
-  // Existing frontend behavior:
-  // Unknown/unset preferences default to Day Pigeon.
-  return worldTime === "night";
+  // Unknown/unset preferences should not be treated as sleeping.
+  return false;
 }
 
 const HUNGER_STEP_MINUTES = CARE_DECAY_STEP_MINUTES.hunger;

@@ -9,6 +9,7 @@ import { useHomepageBanner } from "./useHomepageBanner";
 import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
 import EggHatchShowcase from "@/components/Video_hatch/EggHatchShowcase";
 import solenHatchling from "@/kith/assets/startepets/hatchling_solen.png";
+import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 
 type HeroFeature = {
   label: string;
@@ -74,6 +75,10 @@ export default function Homepage() {
         .replace(/_/g, " ")
         .replace(/\b\w/g, (char) => char.toUpperCase())
     : "";
+
+  const spotlightPreviewUrl = spotlightPet
+    ? spotlightPet.previewUrl || getStarterPortrait(spotlightPet.species)
+    : null;
 
   return (
     <div className="hp-root">
@@ -236,10 +241,10 @@ export default function Homepage() {
                     className={`hp-spotlightVisual hp-spotlightVisual--${spotlightPet.element}`}
                   >
                     <div className="hp-spotlightPetFrame">
-                      {spotlightPet.previewUrl ? (
+                      {spotlightPreviewUrl ? (
                         <img
                           className="hp-spotlightPetImage"
-                          src={spotlightPet.previewUrl}
+                          src={spotlightPreviewUrl}
                           alt={`${spotlightDisplayName} spotlight pet`}
                         />
                       ) : (
