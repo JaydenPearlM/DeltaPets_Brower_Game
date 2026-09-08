@@ -129,6 +129,17 @@
   filter: brightness(1.08);
 }
 
+.kithnaMapTarget--locked {
+  cursor: not-allowed;
+  filter: grayscale(0.8) brightness(0.72);
+}
+
+.kithnaMapTarget--locked:hover,
+.kithnaMapTarget--locked:focus-visible {
+  transform: none;
+  filter: grayscale(0.8) brightness(0.82);
+}
+
 .kithnaBuildingIcon,
 .kithnaBuildingLabel {
   position: relative;
@@ -159,6 +170,17 @@
   top: 8%;
   background: #6d6274;
   color: #fff4d6;
+}
+
+.kithnaTargetWildwood {
+  left: 2%;
+  top: 46%;
+  background: #78966d;
+  color: #fff4d6;
+}
+
+.kithnaTargetWildwood::before {
+  background: #315d38;
 }
 
 .kithnaTargetDungeon::before {
@@ -240,6 +262,29 @@
 
 .kithnaTargetProfile::before {
   display: none;
+}
+
+.kithnaWildwoodLockedNotice {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  bottom: 4%;
+  width: min(90%, 26rem);
+  transform: translateX(-50%);
+  border: 2px solid var(--dp-cyan, #67e8f9);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(18, 22, 38, 0.96);
+  color: #fff4d6;
+  text-align: center;
+}
+
+.kithnaWildwoodLockedNotice p {
+  margin: 0 0 8px;
+}
+
+.kithnaWildwoodLockedNotice .kithnaToolbarButton {
+  margin-top: 4px;
 }
 
 .kithnaEggFountain {

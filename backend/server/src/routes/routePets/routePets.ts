@@ -1183,9 +1183,10 @@ petsRouter.post(
       const isVeluneEgg = typedEgg.species === VELUNE.id;
 
       const aliuneSignal = await fetchCurrentAliuneHatchSignal(nowIso);
-      const eggLossChance = isMysteryEggProtected(typedEgg) || isVeluneEgg
-        ? 0
-        : getEggLossChancePermille(aliuneSignal);
+      const eggLossChance =
+        isMysteryEggProtected(typedEgg) || isVeluneEgg
+          ? 0
+          : getEggLossChancePermille(aliuneSignal);
 
       const eggCorrupted =
         eggLossChance > 0 &&
@@ -1273,10 +1274,7 @@ petsRouter.post(
         legendarySpecies?.eggBaseStats ??
         null;
       const hatchSpeciesId =
-        starter?.speciesId ??
-        kithnaSpecies?.id ??
-        legendarySpecies?.id ??
-        null;
+        starter?.speciesId ?? kithnaSpecies?.id ?? legendarySpecies?.id ?? null;
       const hatchLine =
         typedEgg.line ??
         starter?.line ??
@@ -1286,12 +1284,12 @@ petsRouter.post(
       const rarityBonusPoints = legendarySpecies
         ? legendarySpecies.hatchAllocationBonusPoints
         : isVoidborneLine(hatchLine)
-        ? VOIDBORNE_HATCH_BONUS_POINTS
-        : kithnaSpecies?.rarity
-          ? KITHNA_RARITY_RULES[kithnaSpecies.rarity].rarityBonusPoints
-          : starter
-            ? KITHNA_RARITY_RULES.epic.rarityBonusPoints
-            : 0;
+          ? VOIDBORNE_HATCH_BONUS_POINTS
+          : kithnaSpecies?.rarity
+            ? KITHNA_RARITY_RULES[kithnaSpecies.rarity].rarityBonusPoints
+            : starter
+              ? KITHNA_RARITY_RULES.epic.rarityBonusPoints
+              : 0;
       const hatchAllocationPoints = HATCH_ALLOCATION_POINTS + rarityBonusPoints;
 
       if (!hatchlingName || !hatchBaseStats || !hatchSpeciesId || !hatchLine) {
@@ -1490,7 +1488,7 @@ petsRouter.post(
                 {
                   user_id: userId,
                   item_id: deltaItem.id,
-                  qty: (existingDeltaInventory?.qty ?? 0) + 5,
+                  qty: (existingDeltaInventory?.qty ?? 0) + 1,
                 },
                 { onConflict: "user_id,item_id" },
               );
@@ -1543,7 +1541,7 @@ petsRouter.post(
 
       const legendaryUseLocked = Boolean(
         legendarySpecies &&
-          trainerLevel < legendarySpecies.requiredTrainerLevel,
+        trainerLevel < legendarySpecies.requiredTrainerLevel,
       );
       const assignedPartySlot = legendaryUseLocked
         ? null
@@ -1624,8 +1622,7 @@ petsRouter.post(
         starter_species_id: starter?.speciesId ?? null,
         mythical_legendary: Boolean(legendarySpecies),
         trainer_level: trainerLevel,
-        required_trainer_level:
-          legendarySpecies?.requiredTrainerLevel ?? null,
+        required_trainer_level: legendarySpecies?.requiredTrainerLevel ?? null,
         active_gameplay_locked: legendaryUseLocked,
       });
     } catch (err: any) {

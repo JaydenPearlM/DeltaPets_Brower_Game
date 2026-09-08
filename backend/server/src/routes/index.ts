@@ -13,6 +13,7 @@ import { careRouter } from "./care/care";
 
 import { battleRouter } from "./battle";
 import { kithnaRouter } from "./cities/kithna/kithnaEncounter";
+import { wildwoodRouter } from "./cities/kithna/wildwood";
 import { inventoryRouter } from "./inventory/inventory";
 
 import { kithnaMerchantsRouter } from "./merchants/kithnaMerchants";
@@ -39,6 +40,7 @@ apiRouter.use("/battle", battleRouter);
 =============================== */
 
 apiRouter.use("/kithna", kithnaRouter);
+apiRouter.use("/kithna/wildwood", wildwoodRouter);
 
 /* ===============================
    CARE ROOM SYSTEM 

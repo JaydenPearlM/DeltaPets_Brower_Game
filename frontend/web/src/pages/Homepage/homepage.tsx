@@ -8,6 +8,7 @@ import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage
 import { useHomepageBanner } from "./useHomepageBanner";
 import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
 import EggHatchShowcase from "@/components/Video_hatch/EggHatchShowcase";
+import solenHatchling from "@/kith/assets/startepets/hatchling_solen.png";
 
 type HeroFeature = {
   label: string;
@@ -107,8 +108,26 @@ export default function Homepage() {
       <div className="hp-mainShell">
         <section className="hp-heroCard" aria-label="Homepage hero">
           <div className="hp-heroInner">
-            <div className="hp-heroVideo">
-              <EggHatchShowcase variant="embed" />
+            <div className="hp-heroLeftRail">
+              <div className="hp-heroVideo">
+                <EggHatchShowcase variant="embed" />
+              </div>
+
+              <div className="hp-heroSolen">
+                <div className="hp-heroSolenStage" aria-hidden="true">
+                  <div className="hp-heroSolenFloor" />
+
+                  <img
+                    src={solenHatchling}
+                    alt=""
+                    className="hp-heroSolenImage"
+                  />
+                </div>
+
+                <p className="hp-heroSolenTagline">
+                  Your Kith remember, react, and grow with you.
+                </p>
+              </div>
             </div>
 
             <div className="hp-heroContent">
@@ -188,6 +207,7 @@ export default function Homepage() {
         <div className="hp-newsColumn">
           <AnnouncementPanel />
         </div>
+
         <div className="hp-spotlightColumn">
           <section
             className="hp-spotlightPanel hp-spotlightPanel--featured dp-standard-panel-purple"

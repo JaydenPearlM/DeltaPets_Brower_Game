@@ -51,10 +51,8 @@ export default function App() {
   const { result: roamResult, clearResult: clearRoamResult } = useRoamEncounter(
     Boolean(user) && !loading && location.pathname === "/cities/kithna",
   );
-  const {
-    result: veluneResult,
-    clearResult: clearVeluneResult,
-  } = useVeluneEncounter(Boolean(user) && !loading);
+  const { result: veluneResult, clearResult: clearVeluneResult } =
+    useVeluneEncounter(Boolean(user) && !loading);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [exploreHintOpen, setExploreHintOpen] = useState(false);
@@ -294,7 +292,7 @@ export default function App() {
 
             <a
               className="mobileHeaderSupportBtn dp-btn btn-gold"
-              href="https://ko-fi.com/deltapets"
+              href="https://ko-fi.com/deltapets/tiers"
               target="_blank"
               rel="noreferrer"
             >

@@ -1,6 +1,6 @@
-import solenPortrait from "@/kith/assets/startepets/hatchling_Solen.png";
+import solenPortrait from "@/kith/assets/startepets/hatchling_solen.png";
 
-import espyrPortrait from "@/kith/assets/startepets/hatchling_Espyr.png";
+import espyrPortrait from "@/kith/assets/startepets/hatchling_espyr.png";
 
 import cribiPortrait from "@/kith/assets/startepets/hatchling_cribi.png";
 

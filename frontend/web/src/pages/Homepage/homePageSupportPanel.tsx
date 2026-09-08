@@ -69,7 +69,7 @@ export function HomepageSupportPanel() {
 
         <a
           className="hp-supportPanelButton dp-btn dp-btn-yellow"
-          href="https://ko-fi.com/deltapets"
+          href="https://ko-fi.com/deltapets/tiers"
           target="_blank"
           rel="noreferrer"
         >

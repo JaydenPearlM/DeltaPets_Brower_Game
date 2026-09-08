@@ -1,5 +1,10 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PoeTayToe from "../../../components/PoeTayToe/PoeTayToe";
+import {
+  fetchWildwoodStatus,
+  type WildwoodStatus,
+} from "../../../lib/kithna/wildwoodApi";
 import "./KithnaMap.css";
 
 type KithnaTarget = {
@@ -8,9 +13,18 @@ type KithnaTarget = {
   route: string;
   className: string;
   icon: string;
+  requiresWildwoodUnlock?: boolean;
 };
 
 const KITHNA_TARGETS: KithnaTarget[] = [
+  {
+    id: "wildwood",
+    label: "Kithna Wildwood",
+    route: "/kithna/wildwood",
+    className: "kithnaTargetWildwood",
+    icon: "♣",
+    requiresWildwoodUnlock: true,
+  },
   {
     id: "dungeon",
     label: "Dungeon",
@@ -91,6 +105,33 @@ const KITHNA_TOOLBAR = [
 
 export default function KithnaMap() {
   const navigate = useNavigate();
+  const [wildwood, setWildwood] = useState<WildwoodStatus | null>(null);
+  const [wildwoodMessageOpen, setWildwoodMessageOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void fetchWildwoodStatus()
+      .then((result) => {
+        if (!cancelled) setWildwood(result);
+      })
+      .catch(() => {
+        if (!cancelled) setWildwood(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function activateTarget(target: KithnaTarget) {
+    if (target.requiresWildwoodUnlock && !wildwood?.wildwoodUnlocked) {
+      setWildwoodMessageOpen(true);
+      return;
+    }
+
+    navigate(target.route);
+  }
 
   return (
     <main className="kithnaMapPage">
@@ -107,15 +148,48 @@ export default function KithnaMap() {
             <button
               key={target.id}
               type="button"
-              className={`kithnaMapTarget ${target.className}`}
-              aria-label={target.label}
-              title={target.label}
-              onClick={() => navigate(target.route)}
+              className={[
+                "kithnaMapTarget",
+                target.className,
+                target.requiresWildwoodUnlock && !wildwood?.wildwoodUnlocked
+                  ? "kithnaMapTarget--locked"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              aria-label={
+                target.requiresWildwoodUnlock && !wildwood?.wildwoodUnlocked
+                  ? `${target.label} — path inaccessible`
+                  : target.label
+              }
+              aria-disabled={
+                target.requiresWildwoodUnlock && !wildwood?.wildwoodUnlocked
+              }
+              title={
+                target.requiresWildwoodUnlock && !wildwood?.wildwoodUnlocked
+                  ? "The path is currently inaccessible."
+                  : target.label
+              }
+              onClick={() => activateTarget(target)}
             >
               <span className="kithnaBuildingIcon">{target.icon}</span>
               <span className="kithnaBuildingLabel">{target.label}</span>
             </button>
           ))}
+
+          {wildwoodMessageOpen && !wildwood?.wildwoodUnlocked ? (
+            <div className="kithnaWildwoodLockedNotice" role="status">
+              <p>The Wildwood path is currently inaccessible.</p>
+              <p>Someone in Kithna may know what is blocking the way.</p>
+              <button
+                type="button"
+                className="kithnaToolbarButton"
+                onClick={() => setWildwoodMessageOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          ) : null}
 
           <div className="kithnaEggFountain" aria-hidden="true">
             <div className="kithnaFountainEgg" />
