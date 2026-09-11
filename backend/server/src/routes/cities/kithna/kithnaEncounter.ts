@@ -78,68 +78,6 @@ kithnaRouter.get(
   },
 );
 
-// ============================================================
-// POST /api/kithna/aliune-signal/quest/accept
-//
-// Accepts the Aliune Signal quest.
-//
-// Repeated calls are safe:
-// - existing quest rows are returned unchanged
-// - completed quests cannot be restarted
-// ============================================================
-kithnaRouter.post(
-  "/aliune-signal/quest/accept",
-  requireUser,
-  async (req: AuthedRequest, res: Response) => {
-    try {
-      const userId = req.user!.id;
-
-      const { data: existingQuest, error: existingQuestError } =
-        await supabaseAdmin
-          .from("player_quests")
-          .select(
-            "quest_key, status, progress, target, accepted_at, completed_at, reward_claimed_at",
-          )
-          .eq("user_id", userId)
-          .eq("quest_key", ALIUNE_SIGNAL_QUEST_KEY)
-          .maybeSingle();
-
-      if (existingQuestError) throw existingQuestError;
-
-      if (existingQuest) {
-        return res.json(existingQuest);
-      }
-
-      const acceptedAt = new Date().toISOString();
-
-      const { data: quest, error } = await supabaseAdmin
-        .from("player_quests")
-        .insert({
-          user_id: userId,
-          quest_key: ALIUNE_SIGNAL_QUEST_KEY,
-          status: "active",
-          progress: 0,
-          target: ALIUNE_SIGNAL_QUEST_TARGET,
-          accepted_at: acceptedAt,
-        })
-        .select(
-          "quest_key, status, progress, target, accepted_at, completed_at, reward_claimed_at",
-        )
-        .single();
-
-      if (error) throw error;
-
-      return res.status(201).json(quest);
-    } catch (err: unknown) {
-      logger.error("[kithna/aliune-signal/quest/accept] failed", err);
-
-      return res.status(500).json({
-        error: "Unable to accept Aliune Signal quest.",
-      });
-    }
-  },
-);
-
 // Alpha tuning. Move to game_config later if this needs to be adjustable
 // without a redeploy.
 const ROAM_FIND_CHANCE_PERCENT = 45;

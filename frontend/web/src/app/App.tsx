@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { LogoutButton } from "../components/Authentication/LogoutButton";
 import { LoginMenus } from "../components/Authentication/LoginMenus";
 import Inventory from "../components/inventory/inventory";
@@ -9,6 +9,7 @@ import { useDeltaTime } from "../lib/timers/useDeltaTime";
 import { useAuth } from "./providers/useAuth";
 import { useUI } from "./providers/UIProvider";
 import { apiFetch } from "../lib/api/baseClient";
+import { fetchWildwoodStatus } from "../lib/kithna/wildwoodApi";
 import { useRoamEncounter } from "../lib/kithna/useRoamEncounter";
 import { RoamEncounterToast } from "../components/RoamEncounterToast/RoamEncounterToast";
 import { useVeluneEncounter } from "../lib/kithna/useVeluneEncounter";
@@ -48,9 +49,13 @@ export default function App() {
   const { signal } = useAliuneSignal();
   const { user, loading } = useAuth();
   const { inventoryOpen, openInventory, closeInventory } = useUI();
+
+  const [aliuneSignalUnlocked, setAliuneSignalUnlocked] = useState(false);
+
   const { result: roamResult, clearResult: clearRoamResult } = useRoamEncounter(
     Boolean(user) && !loading && location.pathname === "/cities/kithna",
   );
+
   const { result: veluneResult, clearResult: clearVeluneResult } =
     useVeluneEncounter(Boolean(user) && !loading);
 
@@ -58,6 +63,7 @@ export default function App() {
   const [exploreHintOpen, setExploreHintOpen] = useState(false);
   const [exploreLockedOpen, setExploreLockedOpen] = useState(false);
   const [exploreUnlocked, setExploreUnlocked] = useState(false);
+
   const [expandedSections, setExpandedSections] = useState<
     Record<MenuSectionKey, boolean>
   >({
@@ -183,6 +189,31 @@ export default function App() {
     let cancelled = false;
 
     if (loading || !user) {
+      setAliuneSignalUnlocked(false);
+      return;
+    }
+
+    void fetchWildwoodStatus()
+      .then((state) => {
+        if (!cancelled) {
+          setAliuneSignalUnlocked(state.quest.status === "completed");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAliuneSignalUnlocked(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, user, location.pathname]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (loading || !user) {
       setExploreUnlocked(false);
       return;
     }
@@ -209,6 +240,7 @@ export default function App() {
       cancelled = true;
     };
   }, [loading, user, location.pathname]);
+
   function toggleSection(section: MenuSectionKey) {
     setExpandedSections((prev) => ({
       ...prev,
@@ -300,21 +332,23 @@ export default function App() {
             </a>
 
             <div className="headerStack">
-              <div className={`aliuneSignal aliuneSignal--${signalTone}`}>
-                <div className="signalTitle">ALIUNE SIGNAL</div>
+              {aliuneSignalUnlocked ? (
+                <div className={`aliuneSignal aliuneSignal--${signalTone}`}>
+                  <div className="signalTitle">ALIUNE SIGNAL</div>
 
-                <div className="signalRow">
-                  Condition: <strong>{conditionText}</strong>
-                </div>
+                  <div className="signalRow">
+                    Condition: <strong>{conditionText}</strong>
+                  </div>
 
-                <div className="signalRow">
-                  Region: <strong>{regionText}</strong>
-                </div>
+                  <div className="signalRow">
+                    Region: <strong>{regionText}</strong>
+                  </div>
 
-                <div className="signalRow">
-                  Corruption: <strong>{corruptionText}</strong>
+                  <div className="signalRow">
+                    Corruption: <strong>{corruptionText}</strong>
+                  </div>
                 </div>
-              </div>
+              ) : null}
 
               <div className="headerCenter">
                 <div className="versionText">{APP_VERSION}</div>
@@ -357,6 +391,7 @@ export default function App() {
                           className="exploreThoughtBubbleTail"
                           aria-hidden="true"
                         />
+
                         <p className="exploreThoughtBubbleText">
                           The map is fogged out until you sign in. Make an
                           account and step into DeltaPets! Your future Delta is
@@ -376,6 +411,7 @@ export default function App() {
                           className="exploreThoughtBubbleTail"
                           aria-hidden="true"
                         />
+
                         <p className="exploreThoughtBubbleText">
                           "You see a leaf gently blow past you... you should
                           probably close that window, theres a chill in the
@@ -433,6 +469,7 @@ export default function App() {
                             aria-expanded={expandedSections.pets}
                           >
                             <span>Pets</span>
+
                             <span className="hamburgerMenuCaret">
                               {expandedSections.pets ? "−" : "+"}
                             </span>
@@ -451,6 +488,7 @@ export default function App() {
                             aria-expanded={expandedSections.battle}
                           >
                             <span>Battle</span>
+
                             <span className="hamburgerMenuCaret">
                               {expandedSections.battle ? "−" : "+"}
                             </span>
@@ -469,6 +507,7 @@ export default function App() {
                             aria-expanded={expandedSections.cities}
                           >
                             <span>Cities</span>
+
                             <span className="hamburgerMenuCaret">
                               {expandedSections.cities ? "−" : "+"}
                             </span>
@@ -512,6 +551,7 @@ export default function App() {
         result={veluneResult ? null : roamResult}
         onDismiss={clearRoamResult}
       />
+
       <VeluneSightingPopup
         result={veluneResult}
         onDismiss={clearVeluneResult}
@@ -532,6 +572,7 @@ export default function App() {
 
           <div className="appCopyrightLinks">
             <span>Privacy & Account Support</span>
+
             <a href="mailto:deltapets.support@gmail.com">
               deltapets.support@gmail.com
             </a>
