@@ -33,3 +33,9 @@ export function acceptSomethingsAfoot() {
     method: "POST",
   });
 }
+
+export function turnInSomethingsAfoot() {
+  return apiFetch<WildwoodStatus>("/api/kithna/wildwood/quest/turn-in", {
+    method: "POST",
+  });
+}

@@ -4,7 +4,12 @@ import espyrPortrait from "@/kith/assets/startepets/hatchling_espyr.png";
 
 import cribiPortrait from "@/kith/assets/startepets/hatchling_cribi.png";
 
+import kindlekinPortrait from "@/kith/assets/startepets/hatchling_kindlekin.png";
+
 const STARTER_PORTRAITS: Readonly<Record<string, string>> = {
+  fire_starter: kindlekinPortrait,
+  kindlekin: kindlekinPortrait,
+
   light_starter: solenPortrait,
   solen: solenPortrait,
 
@@ -27,4 +32,4 @@ export function getStarterPortrait(species?: string | null) {
   );
 }
 
-export { cribiPortrait, espyrPortrait, solenPortrait };
+export { cribiPortrait, espyrPortrait, kindlekinPortrait, solenPortrait };

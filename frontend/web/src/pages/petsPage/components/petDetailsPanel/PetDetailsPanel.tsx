@@ -11,7 +11,7 @@ import {
   getSelfAwareBubbleText,
   rememberSelfAwareVisit,
 } from "../selfAware/selfAware";
-import cribiHatchling from "@/kith/assets/startepets/hatchling_cribi.png";
+import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -191,22 +191,16 @@ function getDisplayedMutationTraits(
 }
 
 function getPreviewUrl(pet: PetRecord) {
-  const speciesKeys = [pet.species, pet.name]
-    .map((value) =>
-      String(value ?? "")
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, ""),
-    )
-    .filter(Boolean);
-
-  if (speciesKeys.includes("cribi") || speciesKeys.includes("ice_starter")) {
-    return cribiHatchling;
-  }
-
-  return pet.portrait_url || pet.sprite_url || pet.image_url || null;
+  return (
+    pet.portrait_url ||
+    pet.sprite_url ||
+    pet.image_url ||
+    getStarterPortrait(pet.species) ||
+    getStarterPortrait(pet.name) ||
+    null
+  );
 }
+
 function getDisplayedElement(pet: PetRecord) {
   const value = String(pet.element || pet.line || "").toLowerCase();
   if (!value) return "Unknown";
