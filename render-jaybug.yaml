@@ -1,0 +1,16 @@
+services:
+  - type: cron
+    name: jaybug-health-monitor
+    env: node
+    plan: starter
+    schedule: "*/5 * * * *"
+
+    buildCommand: >
+      npm install -g pnpm@9.0.0 &&
+      pnpm install --frozen-lockfile
+
+    startCommand: node tools/jaybug/health-check.mjs
+
+    envVars:
+      - key: JAYBUG_GAME_URL
+        value: https://deltapets.jayden-devfolio.com
