@@ -70,11 +70,26 @@ export function createApp() {
         maxAge: "1y",
       }),
     );
-
     app.use(
       express.static(frontendDist, {
         index: false,
         maxAge: 0,
+        setHeaders(res, filePath) {
+          if (filePath.endsWith("index.html")) {
+            res.setHeader(
+              "Cache-Control",
+              "no-store, no-cache, must-revalidate",
+            );
+            return;
+          }
+
+          if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+            res.setHeader(
+              "Cache-Control",
+              "public, max-age=31536000, immutable",
+            );
+          }
+        },
       }),
     );
 
@@ -94,7 +109,11 @@ export function createApp() {
       res.setHeader("Pragma", "no-cache");
       res.setHeader("Expires", "0");
 
-      return res.sendFile(path.join(frontendDist, "index.html"));
+      res.sendFile(path.join(frontendDist, "index.html"), {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      });
     });
   }
 
