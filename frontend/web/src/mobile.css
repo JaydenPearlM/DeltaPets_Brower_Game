@@ -1,3 +1,81 @@
+@media (max-width: 1050px) {
+  .dp-profile-page .dp-profile-lower-layout,
+  .dp-profile-page .dp-profile-progression-panel {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .dp-profile-page .dp-profile-lower-layout > *,
+  .dp-profile-page .dp-profile-progression-panel > section {
+    grid-column: 1 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .dp-profile-page .dp-profile-lower-layout,
+  .dp-profile-page .dp-profile-progression-panel {
+    gap: 16px !important;
+  }
+
+  .dp-profile-page .dp-profile-progression-panel {
+    padding: 34px !important;
+  }
+
+  .dp-profile-page .dp-profile-achievement-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+/* Wildwood battle overrides; desktop and shared panel tokens stay unchanged. */
+@media (max-width: 640px) {
+  .ww-page {
+    padding: 34px !important;
+    margin: 16px auto !important;
+  }
+  .ww-page-heading h1 {
+    font-size: 1.4rem;
+  }
+  .ww-team {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .ww-quest {
+    flex-direction: column;
+    padding: 12px !important;
+  }
+  .ww-side {
+    padding: 8px !important;
+  }
+  .ww-lanes {
+    gap: 6px !important;
+  }
+  .ww-unit {
+    padding: 6px 3px !important;
+    font-size: 0.68rem !important;
+  }
+  .ww-unit .ww-portrait {
+    width: 54px !important;
+    height: 54px !important;
+  }
+  .ww-unit .ww-art-pending {
+    min-height: 54px !important;
+    font-size: 0.62rem;
+  }
+  .ww-unit-meta {
+    font-size: 0.6rem !important;
+  }
+  .ww-command-buttons {
+    gap: 8px !important;
+  }
+  .ww-command-buttons .dp-btn {
+    min-width: 0;
+    flex: 1;
+    padding: 10px 6px !important;
+    font-size: 0.8rem !important;
+  }
+  .ww-page .ww-affinity {
+    font-size: 0.68rem;
+  }
+}
+
 /* =========================================================
    DELTAPETS - MOBILE LAYER
    =========================================================
@@ -2870,8 +2948,8 @@
       min-height: 190px !important;
     }
 
-    .dp-profile-trainer-avatar img {
-      height: 180px !important;
+    .dp-profile-trainer-avatar .dp-avatar-preview > img {
+      height: 100% !important;
     }
 
     /* Hatchery egg preview: tighten height */

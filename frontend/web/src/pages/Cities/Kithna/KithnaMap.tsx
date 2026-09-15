@@ -27,7 +27,7 @@ const KITHNA_TARGETS: KithnaTarget[] = [
   },
   {
     id: "dungeon",
-    label: "Dungeon",
+    label: "Expeditions",
     route: "/battle-dungeons",
     className: "kithnaTargetDungeon",
     icon: "☠",
@@ -99,7 +99,7 @@ const KITHNA_TOOLBAR = [
   { label: "Pet Care", route: "/pet" },
   { label: "Gym", route: "/gym" },
   { label: "Farm Merchant", route: "/farm" },
-  { label: "Dungeon", route: "/battle-dungeons" },
+  { label: "Expeditions", route: "/battle-dungeons" },
   { label: "Profile", route: "/profile" },
 ];
 
@@ -174,6 +174,9 @@ export default function KithnaMap() {
             >
               <span className="kithnaBuildingIcon">{target.icon}</span>
               <span className="kithnaBuildingLabel">{target.label}</span>
+              {target.id === "wildwood" && wildwood?.quest.status === "available" ? (
+                <span className="kithnaQuestMarker" aria-hidden="true">!</span>
+              ) : null}
             </button>
           ))}
 
@@ -181,6 +184,9 @@ export default function KithnaMap() {
             <div className="kithnaWildwoodLockedNotice" role="status">
               <p>The Wildwood path is currently inaccessible.</p>
               <p>Someone in Kithna may know what is blocking the way.</p>
+              <button type="button" className="kithnaToolbarButton" onClick={() => navigate("/kithna/wildwood")}>
+                View Wildwood quest
+              </button>
               <button
                 type="button"
                 className="kithnaToolbarButton"

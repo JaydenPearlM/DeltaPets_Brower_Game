@@ -1,3 +1,4 @@
+import { calculateDamage, calculateMend } from "../../battle/battleMath";
 import { Router } from "express";
 import type { Response } from "express";
 import { randomUUID } from "crypto";
@@ -124,63 +125,6 @@ function getLivingUnits(state: BattleState, side: BattleSide) {
 
 function getEnemySide(side: BattleSide): BattleSide {
   return side === "player" ? "enemy" : "player";
-}
-
-function getElementMultiplier(
-  attacker: BattleElement,
-  defender: BattleElement,
-) {
-  const strongAgainst: Record<BattleElement, BattleElement[]> = {
-    fire: ["earth", "ice"],
-    water: ["fire"],
-    earth: ["air", "storm"],
-    air: ["water"],
-    ice: ["air"],
-    storm: ["water"],
-    light: ["shadow"],
-    shadow: ["light"],
-  };
-
-  const weakAgainst: Record<BattleElement, BattleElement[]> = {
-    fire: ["water"],
-    water: ["air", "storm"],
-    earth: ["fire", "ice"],
-    air: ["earth", "ice"],
-    ice: ["fire"],
-    storm: ["earth"],
-    light: ["shadow"],
-    shadow: ["light"],
-  };
-
-  if (strongAgainst[attacker]?.includes(defender)) return 1.25;
-  if (weakAgainst[attacker]?.includes(defender)) return 0.85;
-
-  return 1;
-}
-
-function calculateDamage(params: {
-  attacker: BattleUnit;
-  defender: BattleUnit;
-  power: number;
-  useMagi?: boolean;
-  elemental?: boolean;
-}) {
-  const { attacker, defender, power, useMagi, elemental } = params;
-
-  const offense = useMagi ? attacker.magi : attacker.atk;
-  const defense = defender.guarding ? defender.def * 1.35 : defender.def;
-
-  const exposedBonus = defender.status.exposed ? 1.2 : 1;
-  const weakenedPenalty = attacker.status.weakened ? 0.8 : 1;
-  const elementBonus = elemental
-    ? getElementMultiplier(attacker.element, defender.element)
-    : 1;
-
-  const raw =
-    offense * power * weakenedPenalty * exposedBonus * elementBonus -
-    defense * 0.45;
-
-  return Math.max(1, Math.round(raw));
 }
 
 function applyStartOfTurnEffects(state: BattleState, unit: BattleUnit) {
@@ -325,15 +269,11 @@ function performSkill(
 ) {
   if (skillId === "mend") {
     const allyTarget = target.side === actor.side ? target : actor;
-    const baseHeal = Math.max(
-      4,
-      Math.round(actor.magi * 1.25 + actor.level * 2),
+    const heal = calculateMend(
+      actor.magi,
+      actor.level,
+      actor.side === "player" ? state.mendMultiplier : 1,
     );
-    const heal =
-      actor.side === "player"
-        ? Math.round(baseHeal * state.mendMultiplier)
-        : baseHeal;
-
     allyTarget.hpCur = clampHp(allyTarget.hpCur + heal, allyTarget.hpMax);
     state.log.push(`${actor.name} mends ${allyTarget.name} for ${heal} HP.`);
     return;

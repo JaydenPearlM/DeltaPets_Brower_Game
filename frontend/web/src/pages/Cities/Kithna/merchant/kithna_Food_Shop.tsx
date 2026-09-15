@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
 import {
+  fetchWildwoodStatus,
+  type WildwoodStatus,
+} from "@/lib/kithna/wildwoodApi";
+import {
   addInventoryItem,
   consumeInventoryItem,
   getInventoryChangeEventName,
@@ -62,6 +66,9 @@ export default function KithnaFoodShop() {
     "Your";
 
   const [userDots, setUserDots] = useState<number | null>(null);
+  const [wildwoodStatus, setWildwoodStatus] = useState<WildwoodStatus | null>(
+    null,
+  );
 
   const [merchantDots, setMerchantDots] = useState(() => {
     const rotation = Math.floor(Date.now() / MERCHANT_ROTATION_MS);
@@ -96,6 +103,9 @@ export default function KithnaFoodShop() {
 
   useEffect(() => {
     void refreshWallet().catch(() => setUserDots(null));
+    void fetchWildwoodStatus()
+      .then(setWildwoodStatus)
+      .catch(() => setWildwoodStatus(null));
   }, []);
 
   useEffect(() => {
@@ -236,6 +246,13 @@ export default function KithnaFoodShop() {
   function claimDailyFood() {
     if (busyAction) return;
 
+    if (!wildwoodStatus?.dailyFoodUnlocked) {
+      setMerchantMessage(
+        "The corrupted Kith still control the meat tree farm. Clear Somethings Afoot in Wildwood first.",
+      );
+      return;
+    }
+
     setBusyAction("daily");
     setMerchantMessage("");
 
@@ -365,16 +382,26 @@ export default function KithnaFoodShop() {
                 <h3 className="dp-merchant-daily-title">Daily Food</h3>
 
                 <p className="dp-merchant-daily-copy">
-                  10 Meat + 10 Vegetables once every 24 hours.
+                  {wildwoodStatus?.dailyFoodUnlocked
+                    ? "The farm is clear. Collect 10 Meat + 10 Vegetables once every 24 hours."
+                    : "Corrupted Kith have taken over the meat tree farm. Complete Somethings Afoot in Wildwood to reopen the daily collection."}
                 </p>
 
                 <button
                   type="button"
                   className="dp-btn btn-gold kithna-food-daily-button"
-                  disabled={busyAction !== null}
+                  disabled={
+                    busyAction !== null || !wildwoodStatus?.dailyFoodUnlocked
+                  }
                   onClick={claimDailyFood}
                 >
-                  {busyAction === "daily" ? "Claiming..." : "Claim Daily Food"}
+                  {busyAction === "daily"
+                    ? "Claiming..."
+                    : wildwoodStatus === null
+                      ? "Checking Wildwood..."
+                      : wildwoodStatus.dailyFoodUnlocked
+                        ? "Claim Daily Food"
+                        : "Farm Overrun"}
                 </button>
               </div>
 

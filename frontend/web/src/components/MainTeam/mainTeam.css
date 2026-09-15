@@ -399,6 +399,7 @@
   height: 150px;
   object-fit: contain;
   object-position: center bottom;
+  transform: translateY(-10px);
 }
 
 .mainTeamNoImageText {

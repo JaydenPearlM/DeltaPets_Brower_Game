@@ -2,6 +2,10 @@ import { Router, type Response } from "express";
 import { requireUser, type AuthedRequest } from "../../../middleware/auth";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { logger } from "../../../lib/logger";
+import { BattleRuleError } from "../../../battle/battleEngine";
+import { validateBody } from "../../../middleware/validateRequest";
+import { actInWildwood, exploreSchema, exploreWildwood, getWildwoodSession, WildwoodError } from "./wildwoodBattleService";
+import type { WildwoodExploreRequest } from "../../../shared/battle/wildwoodTypes";
 import {
   getWildwoodState,
   SOMETHINGS_AFOOT_KEY,
@@ -9,6 +13,28 @@ import {
 } from "./wildwoodState";
 
 export const wildwoodRouter = Router();
+
+function battleError(res: Response, error: unknown) {
+  if (error instanceof WildwoodError) return res.status(error.status).json({ error: error.message });
+  if (error instanceof BattleRuleError) return res.status(409).json({ error: error.message });
+  logger.error("[wildwood/battle] failed", error);
+  return res.status(500).json({ error: "Wildwood could not save this step. Reload to recover your latest state." });
+}
+
+wildwoodRouter.get("/session", requireUser, async (req: AuthedRequest, res: Response) => {
+  try { return res.json(await getWildwoodSession(req.user!.id)); }
+  catch (error) { return battleError(res, error); }
+});
+
+wildwoodRouter.post("/explore", requireUser, validateBody(exploreSchema), async (req: AuthedRequest, res: Response) => {
+  try { return res.json(await exploreWildwood(req.user!.id, req.body as WildwoodExploreRequest)); }
+  catch (error) { return battleError(res, error); }
+});
+
+wildwoodRouter.post("/battle/:battleId/action", requireUser, async (req: AuthedRequest, res: Response) => {
+  try { return res.json(await actInWildwood(req.user!.id, req.params.battleId, req.body)); }
+  catch (error) { return battleError(res, error); }
+});
 
 wildwoodRouter.get(
   "/status",

@@ -3580,6 +3580,21 @@ textarea {
   flex-shrink: 0;
 }
 
+.hatchRevealCreatureImage {
+  width: min(220px, 70vw);
+  height: min(220px, 70vw);
+  object-fit: contain;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.3));
+}
+
+.hatchRevealCreature--portrait {
+  width: min(220px, 70vw);
+  height: min(220px, 70vw);
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
 .hatchRevealCreatureWrapCorrupted {
   animation: none;
 }

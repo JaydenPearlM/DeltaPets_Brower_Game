@@ -1,4 +1,19 @@
 import { apiFetch } from "../api/baseClient";
+import type { BattleAction, WildwoodExploreRequest, WildwoodSession } from "@shared/battle/wildwoodTypes";
+
+export type { BattleAction, BattleRow, BattleState, WildwoodSession } from "@shared/battle/wildwoodTypes";
+
+export function fetchWildwoodSession() {
+  return apiFetch<WildwoodSession>("/api/kithna/wildwood/session");
+}
+
+export function exploreWildwood(request: WildwoodExploreRequest) {
+  return apiFetch<WildwoodSession>("/api/kithna/wildwood/explore", { method: "POST", json: request });
+}
+
+export function submitWildwoodAction(battleId: string, action: BattleAction) {
+  return apiFetch<WildwoodSession>(`/api/kithna/wildwood/battle/${encodeURIComponent(battleId)}/action`, { method: "POST", json: action });
+}
 
 export type SomethingsAfootStatus =
   | "available"

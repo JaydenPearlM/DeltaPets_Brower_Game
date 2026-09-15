@@ -174,10 +174,10 @@ function getPetImage(pet: PetStats | null) {
   if (!pet) return "";
 
   return (
+    getStarterPortrait(pet.species) ||
     pet.portrait_url ||
     pet.image_url ||
     pet.sprite_url ||
-    getStarterPortrait(pet.species) ||
     ""
   );
 }

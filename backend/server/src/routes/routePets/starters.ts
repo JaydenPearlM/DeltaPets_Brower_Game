@@ -104,7 +104,10 @@ export function findStarterByHatchlingName(
 
 export function findStarterByName(name: string): StarterDefinition | undefined {
   const shared = findSharedStarterByName(name);
-  if (!shared) return undefined;
+
+  if (!shared) {
+    return undefined;
+  }
 
   return STARTERS.find((starter) => starter.speciesId === shared.speciesId);
 }
@@ -198,7 +201,7 @@ export function getStarterForSelection(
     });
 
     throw new Error(
-      `Could not resolve starter species for line: ${input.line ?? "unknown"}`,
+      `Could not resolve starter species for line: ${normalizedLine}`,
     );
   }
 

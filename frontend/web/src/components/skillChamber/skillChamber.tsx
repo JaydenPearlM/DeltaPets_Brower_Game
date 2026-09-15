@@ -463,10 +463,11 @@ export default function SkillChamber({
   const petName = getPetName(pet);
   const petLevel = getPetLevel(pet);
   const petPreviewUrl =
+    getStarterPortrait(pet?.species) ||
+    getStarterPortrait(pet?.name) ||
     pet?.portrait_url ||
     pet?.sprite_url ||
-    pet?.image_url ||
-    getStarterPortrait(pet?.species);
+    pet?.image_url;
 
   function equipSkill(skillId: SkillId) {
     if (!LOADOUT_SKILL_IDS.includes(skillId)) return;
