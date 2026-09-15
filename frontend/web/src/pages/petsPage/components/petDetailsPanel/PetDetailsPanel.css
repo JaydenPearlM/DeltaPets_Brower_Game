@@ -584,7 +584,7 @@
   position: absolute;
   left: 50%;
   bottom: 74px;
-  transform: translateX(-50%);
+  transform: translate(-50%, 10px);
   width: min(74%, 290px);
   height: min(72%, 290px);
   display: flex;

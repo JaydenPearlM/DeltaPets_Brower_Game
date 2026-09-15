@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./ProfilePage.css";
 import "../Homepage/homepage.css";
 import "../../mobile.css";
@@ -11,12 +11,27 @@ import { apiFetch } from "@/lib/api/baseClient";
 import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
 import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
-import templateSprite from "@/kith/assets/Sprite/Template_Sprite.png";
+import { AvatarPreview } from "@/components/Profile/Customization/AvatarPreview";
+import { createRandomAvatar } from "@/components/Profile/Customization/createRandomAvatar";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
+import ClosedAlphaRibbon from "./ClosedAlphaRibbon";
 
 type ProfilePageProps = {
   pageName?: string;
 };
+
+const CLOSED_ALPHA_TITLE = "Closed Alpha Title";
+
+const CLOSED_ALPHA_TESTER_EMAILS = new Set([
+  "jaydentestemail6790@gmail.com",
+  "estes_c@hotmail.com",
+  "wildssam8@gmail.com",
+  "p.kurzawski@yahoo.com",
+  "cindy_sanner@yahoo.com",
+  "holyfoleyproductions@gmail.com",
+  "saitinsangel@hotmail.com",
+  "cjtonry1@gmail.com",
+]);
 
 const ALPHA_ACHIEVEMENTS = [
   {
@@ -95,10 +110,17 @@ const ALPHA_ACHIEVEMENTS = [
     title: "Registry Scout",
     text: "Discover multiple Kith species for your registry.",
   },
-  {
-    title: "Closed Alpha Tester",
-    text: "Participate in the DeltaPets Closed Alpha.",
-  },
+] as const;
+
+const TRAINER_RIBBONS = [
+  "First Bond",
+  "Kith Keeper",
+  "Explorer",
+  "Team Builder",
+  "Element Student",
+  "Wildwood Pathfinder",
+  "Experienced Trainer",
+  "Registry Scholar",
 ] as const;
 
 function formatJoinedDate(value?: string | null) {
@@ -132,67 +154,158 @@ function getElementClass(value?: string | null) {
   return `dp-profile-element-${normalized || "null"}`;
 }
 
+type ActiveKithStats = {
+  hp: number;
+  atk: number;
+  magi: number;
+  def: number;
+  spd: number;
+  mana: number;
+};
+
 export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [dots, setDots] = useState<number | null>(null);
-  const [kithDiscovered, setKithDiscovered] = useState<number | null>(null);
+  const [kithOwned, setKithOwned] = useState<number | null>(null);
+  const [activeKithStats, setActiveKithStats] =
+    useState<ActiveKithStats | null>(null);
   const [weeklyRewardsOpen, setWeeklyRewardsOpen] = useState(false);
   const [rewardReady, setRewardReady] = useState(false);
   const [activeTitle, setActiveTitle] = useState<string | null>(null);
+  const [titleLoading, setTitleLoading] = useState(true);
+  const [titleSaving, setTitleSaving] = useState(false);
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [titlesOpen, setTitlesOpen] = useState(false);
   const [trainerLevel, setTrainerLevel] = useState(1);
   const [customizeOpen, setCustomizeOpen] = useState(false);
+  // Temporary per-mount preview; saved account customization comes in a later phase.
+  const [avatarCustomization] = useState(createRandomAvatar);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+
+  const titleRequestVersion = useRef(0);
 
   const { user } = useAuth();
   const { banner } = useHomepageBanner();
-  const { allPets, loading } = usePetStorage({
+  const { allPets } = usePetStorage({
     userId: user?.id,
   });
 
-  useEffect(() => {
-    if (!user?.id) {
-      setActiveTitle(null);
-      return;
-    }
+  const isClosedAlphaTester = CLOSED_ALPHA_TESTER_EMAILS.has(
+    (user?.email ?? "").trim().toLowerCase(),
+  );
 
-    void supabase
-      .from("profiles")
-      .select("active_title")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
+  const equippedTitle =
+    activeTitle === CLOSED_ALPHA_TITLE && !isClosedAlphaTester
+      ? null
+      : activeTitle;
+
+  useEffect(() => {
+    const requestVersion = ++titleRequestVersion.current;
+    const userId = user?.id;
+
+    setActiveTitle(null);
+    setTitleError(null);
+    setTitleSaving(false);
+    setTitlesOpen(false);
+    setTitleLoading(Boolean(userId));
+
+    if (!userId) return;
+
+    let cancelled = false;
+
+    async function loadTitle() {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("active_title")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (cancelled || requestVersion !== titleRequestVersion.current) {
+          return;
+        }
+
         if (error) {
-          setActiveTitle(null);
+          setTitleError("Could not load your title. Please reload the page.");
           return;
         }
 
         setActiveTitle(data?.active_title ?? null);
-      });
+      } catch {
+        if (!cancelled && requestVersion === titleRequestVersion.current) {
+          setTitleError("Could not load your title. Please reload the page.");
+        }
+      } finally {
+        if (!cancelled && requestVersion === titleRequestVersion.current) {
+          setTitleLoading(false);
+        }
+      }
+    }
+
+    void loadTitle();
+
+    return () => {
+      cancelled = true;
+      titleRequestVersion.current += 1;
+    };
   }, [user?.id]);
 
-  useEffect(() => {
-    if (!user?.id) {
-      setDots(null);
-      return;
+  async function equipTitle(nextTitle: typeof CLOSED_ALPHA_TITLE | null) {
+    const userId = user?.id;
+
+    if (!userId || titleLoading || titleSaving) return;
+    if (nextTitle === CLOSED_ALPHA_TITLE && !isClosedAlphaTester) return;
+
+    const requestVersion = titleRequestVersion.current;
+
+    setTitleSaving(true);
+    setTitleError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ active_title: nextTitle })
+        .eq("user_id", userId)
+        .select("active_title")
+        .maybeSingle();
+
+      if (requestVersion !== titleRequestVersion.current) return;
+
+      if (error || !data) {
+        setTitleError("Could not save your title. Please try again.");
+        return;
+      }
+
+      setActiveTitle(data.active_title ?? null);
+    } catch {
+      if (requestVersion === titleRequestVersion.current) {
+        setTitleError("Could not save your title. Please try again.");
+      }
+    } finally {
+      if (requestVersion === titleRequestVersion.current) {
+        setTitleSaving(false);
+      }
     }
+  }
+
+  useEffect(() => {
+    setActiveKithStats(null);
+
+    if (!user?.id) return;
 
     let cancelled = false;
 
     void apiFetch<{
-      wallet?: {
-        dots?: number;
-      };
-    }>("/api/inventory")
+      stats: ActiveKithStats | null;
+    }>("/api/care/current")
       .then((result) => {
         if (!cancelled) {
-          setDots(
-            typeof result?.wallet?.dots === "number"
-              ? result.wallet.dots
-              : null,
-          );
+          setActiveKithStats(result.stats ?? null);
         }
       })
       .catch(() => {
-        if (!cancelled) setDots(null);
+        if (!cancelled) {
+          setActiveKithStats(null);
+        }
       });
 
     return () => {
@@ -201,32 +314,75 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id) {
-      setKithDiscovered(null);
-      return;
-    }
+    setKithOwned(null);
+
+    const userId = user?.id;
+    if (!userId) return;
 
     let cancelled = false;
 
-    void supabase
-      .from("user_kith_discoveries")
-      .select("species_key")
-      .eq("user_id", user.id)
-      .then(({ data, error }) => {
+    async function loadKithOwned() {
+      try {
+        const { count, error } = await supabase
+          .from("pets")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId);
+
         if (cancelled) return;
 
-        if (error) {
-          setKithDiscovered(null);
-          return;
+        setKithOwned(error ? null : count);
+      } catch {
+        if (!cancelled) {
+          setKithOwned(null);
         }
+      }
+    }
 
-        setKithDiscovered(data?.length ?? 0);
-      });
+    void loadKithOwned();
 
     return () => {
       cancelled = true;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    setDots(null);
+
+    const userId = user?.id;
+    if (!userId || weeklyRewardsOpen) return;
+
+    let cancelled = false;
+
+    async function loadDots() {
+      try {
+        const { data, error } = await supabase
+          .from("wallets")
+          .select("dots")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (error || data?.dots == null) {
+          setDots(null);
+          return;
+        }
+
+        const balance = Number(data.dots);
+        setDots(Number.isFinite(balance) ? balance : null);
+      } catch {
+        if (!cancelled) {
+          setDots(null);
+        }
+      }
+    }
+
+    void loadDots();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, weeklyRewardsOpen]);
 
   const bannerItems =
     banner?.enabled && Array.isArray(banner.items)
@@ -235,8 +391,9 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
   const activePet = allPets.find((pet) => pet.is_active) ?? null;
   const activePetImage =
-    activePet?.portrait_url ||
     getStarterPortrait(activePet?.species) ||
+    getStarterPortrait(activePet?.name) ||
+    activePet?.portrait_url ||
     "";
 
   const displayName =
@@ -244,6 +401,10 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     user?.user_metadata?.username ||
     user?.email?.split("@")[0] ||
     "Trainer";
+
+  const titledTrainerName = equippedTitle
+    ? `${equippedTitle} ${displayName}`
+    : displayName;
 
   const starterElement = user?.user_metadata?.starter_element ?? null;
   const starterElementClass = getElementClass(starterElement);
@@ -315,12 +476,10 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       ) : null}
 
       <div className="dp-profile-layout">
-        <AnnouncementPanel className="dp-profile-aliune-channel" />
-
         <section className="dp-profile-trainer-panel dp-profile-star-panel">
           <div className="dp-profile-viewport" aria-label="Trainer viewport">
             <div className={`dp-profile-trainer-avatar ${starterElementClass}`}>
-              <img src={templateSprite} alt="Trainer" />
+              <AvatarPreview customization={avatarCustomization} />
             </div>
 
             <button
@@ -331,6 +490,14 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
             >
               Customize
             </button>
+
+            <div className="dp-profile-alpha-ribbon-stack">
+              <ClosedAlphaRibbon />
+
+              <span className="dp-profile-alpha-ribbon-message">
+                Thank you for helping shape Aliune!
+              </span>
+            </div>
           </div>
 
           {customizeOpen ? (
@@ -354,9 +521,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
             </div>
           ) : (
             <div className="dp-profile-info">
-              <h1 className={starterElementClass}>
-                {activeTitle ?? displayName}
-              </h1>
+              <h1 className={starterElementClass}>{titledTrainerName}</h1>
 
               <button
                 type="button"
@@ -371,7 +536,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
               <dl className="dp-profile-details">
                 <div>
                   <dt>Display Name</dt>
-                  <dd>{displayName}</dd>
+                  <dd>{titledTrainerName}</dd>
                 </div>
 
                 <div>
@@ -391,10 +556,100 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
                 <div>
                   <dt>Title</dt>
-                  <dd>{activeTitle ?? "None Equipped"}</dd>
+                  <dd>
+                    <button
+                      type="button"
+                      className="btn btn-gold"
+                      aria-expanded={titlesOpen}
+                      aria-controls="dp-profile-title-list"
+                      onClick={() => setTitlesOpen((current) => !current)}
+                    >
+                      {titleLoading
+                        ? "Loading Titles..."
+                        : (equippedTitle ?? "Choose Title")}
+                    </button>
+
+                    {titlesOpen ? (
+                      <div
+                        id="dp-profile-title-list"
+                        className="dp-profile-talent-grid"
+                        role="group"
+                        aria-label="Trainer titles"
+                        aria-busy={titleLoading || titleSaving}
+                      >
+                        <article>
+                          <h3>No Title</h3>
+                          <p>Show your trainer name without a title.</p>
+                          <button
+                            type="button"
+                            className="btn btn-gold"
+                            disabled={
+                              !user?.id ||
+                              titleLoading ||
+                              titleSaving ||
+                              activeTitle === null
+                            }
+                            onClick={() => void equipTitle(null)}
+                          >
+                            {activeTitle === null ? "Selected" : "Unequip"}
+                          </button>
+                        </article>
+
+                        {isClosedAlphaTester ? (
+                          <article>
+                            <h3>{CLOSED_ALPHA_TITLE}</h3>
+                            <p>
+                              Available for participating in the DeltaPets
+                              Closed Alpha.
+                            </p>
+                            <button
+                              type="button"
+                              className="btn btn-gold"
+                              disabled={
+                                titleLoading ||
+                                titleSaving ||
+                                equippedTitle === CLOSED_ALPHA_TITLE
+                              }
+                              onClick={() =>
+                                void equipTitle(CLOSED_ALPHA_TITLE)
+                              }
+                            >
+                              {equippedTitle === CLOSED_ALPHA_TITLE
+                                ? "Equipped"
+                                : "Equip"}
+                            </button>
+                          </article>
+                        ) : null}
+
+                        <article>
+                          <h3>Alpha Pro</h3>
+                          <p>
+                            {equippedTitle === "Alpha Pro"
+                              ? "Your existing equipped title."
+                              : "This title is not available to unlock yet."}
+                          </p>
+                          <button
+                            type="button"
+                            className="btn btn-gold"
+                            disabled
+                          >
+                            {equippedTitle === "Alpha Pro"
+                              ? "Equipped"
+                              : "Locked"}
+                          </button>
+                        </article>
+
+                        {titleSaving ? (
+                          <p role="status">Saving title...</p>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {titleError ? <p role="alert">{titleError}</p> : null}
+                  </dd>
                 </div>
 
-                {activeTitle === "Alpha Pro" ? (
+                {equippedTitle === "Alpha Pro" ? (
                   <div>
                     <dt>Title Bonus</dt>
                     <dd>Mend Healing +5%</dd>
@@ -405,21 +660,16 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                   <dt>Dots</dt>
                   <dd>{dots === null ? "--" : dots.toLocaleString()}</dd>
                 </div>
+
+                <div>
+                  <dt>Kith Owned</dt>
+                  <dd>
+                    {kithOwned === null ? "--" : kithOwned.toLocaleString()}
+                  </dd>
+                </div>
               </dl>
             </div>
           )}
-
-          <div
-            className="dp-profile-alpha-ribbon"
-            aria-label="Closed Alpha Tester ribbon"
-          >
-            <div className="dp-profile-alpha-medal">△</div>
-
-            <div>
-              <strong>Closed Alpha Tester</strong>
-              <span>Thank you for helping shape Aliune.</span>
-            </div>
-          </div>
         </section>
 
         <section className="dp-profile-active-panel dp-profile-star-panel">
@@ -445,27 +695,27 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
               <div className="dp-profile-active-stats">
                 <div>
                   <span>HP</span>
-                  <strong>{activePet.hp ?? "--"}</strong>
+                  <strong>{activeKithStats?.hp ?? "--"}</strong>
                 </div>
 
                 <div>
                   <span>ATK</span>
-                  <strong>{activePet.atk ?? "--"}</strong>
+                  <strong>{activeKithStats?.atk ?? "--"}</strong>
                 </div>
 
                 <div>
                   <span>MAGI</span>
-                  <strong>{activePet.magi ?? "--"}</strong>
+                  <strong>{activeKithStats?.magi ?? "--"}</strong>
                 </div>
 
                 <div>
                   <span>DEF</span>
-                  <strong>{activePet.def ?? "--"}</strong>
+                  <strong>{activeKithStats?.def ?? "--"}</strong>
                 </div>
 
                 <div>
                   <span>SPD</span>
-                  <strong>{activePet.spd ?? "--"}</strong>
+                  <strong>{activeKithStats?.spd ?? "--"}</strong>
                 </div>
 
                 <div>
@@ -479,58 +729,43 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
           </div>
         </section>
 
-        <section className="dp-profile-team-section">
-          <div className="dp-profile-kith-owned">
-            <div>
-              <span>Kith Owned</span>
-              <strong>{loading ? "--" : allPets.length}</strong>
-            </div>
+        <div className="dp-profile-lower-layout">
+          <AnnouncementPanel className="dp-profile-aliune-channel" />
 
-            <div>
-              <span>Kith Discovered</span>
-              <strong>{kithDiscovered === null ? "--" : kithDiscovered}</strong>
-            </div>
+          <div className="dp-profile-panel dp-standard-panel dp-profile-progression-panel">
+            <section className="dp-profile-ribbons-panel">
+              <h2>Trainer Ribbons</h2>
+
+              <div className="dp-profile-ribbon-grid">
+                {TRAINER_RIBBONS.map((ribbon) => (
+                  <article className="dp-profile-ribbon-row" key={ribbon}>
+                    <strong>{ribbon}</strong>
+                    <p>Locked</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="dp-profile-achievements-panel">
+              <h2 id="dp-profile-achievements-title">Achievements</h2>
+
+              <div
+                className="dp-profile-achievement-grid"
+                role="region"
+                aria-labelledby="dp-profile-achievements-title"
+                tabIndex={0}
+              >
+                {ALPHA_ACHIEVEMENTS.map((achievement) => (
+                  <article key={achievement.title}>
+                    <strong>{achievement.title}</strong>
+                    <span>Achievement locked</span>
+                    <span>{achievement.text}</span>
+                  </article>
+                ))}
+              </div>
+            </section>
           </div>
-        </section>
-
-        <section className="dp-profile-panel dp-profile-ribbons-panel">
-          <h2>Trainer Ribbons</h2>
-
-          <div className="dp-profile-ribbon-row">
-            <div className="dp-profile-ribbon-small">△</div>
-
-            <div>
-              <strong>Closed Alpha Tester</strong>
-              <p>Earned for participating in the DeltaPets Closed Alpha.</p>
-            </div>
-          </div>
-        </section>
-
-        <section className="dp-profile-panel dp-profile-achievements-panel">
-          <h2>Achievements</h2>
-
-          <div className="dp-profile-achievement-grid">
-            <article>
-              <strong>First Bond</strong>
-              <span>Achievement locked</span>
-            </article>
-
-            <article>
-              <strong>Growing Team</strong>
-              <span>Achievement locked</span>
-            </article>
-
-            <article>
-              <strong>Aliune Explorer</strong>
-              <span>Achievement locked</span>
-            </article>
-
-            <article>
-              <strong>Kith Keeper</strong>
-              <span>Achievement locked</span>
-            </article>
-          </div>
-        </section>
+        </div>
       </div>
 
       {weeklyRewardsOpen ? (

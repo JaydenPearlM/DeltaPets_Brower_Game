@@ -318,8 +318,9 @@
   object-fit: contain;
   object-position: center;
   border-radius: 50%;
+  transform: scale(1.75) translateY(10%);
+  transform-origin: 50% 32%;
 }
-
 .skillChamberBattleSlots {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

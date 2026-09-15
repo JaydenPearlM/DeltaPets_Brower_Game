@@ -7,6 +7,7 @@ import { AlphaAccessGate } from "../../components/AlphaAccess_temp/AlphaAccessGa
 
 const ParkPage = lazy(() => import("../../pages/park/park"));
 const KithnaMap = lazy(() => import("../../pages/Cities/Kithna/KithnaMap"));
+const WildwoodPage = lazy(() => import("../../pages/Cities/Kithna/Wildwood/WildwoodPage"));
 const Homepage = lazy(() => import("../../pages/Homepage/homepage"));
 const CreatePage = lazy(() => import("../../pages/cutscene/create"));
 const RescueEggReveal = lazy(
@@ -197,6 +198,14 @@ export const router = createBrowserRouter([
         element: withSuspense(
           <ProtectedRoute>
             <FoodMerchantPage />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "kithna/wildwood",
+        element: withSuspense(
+          <ProtectedRoute>
+            <WildwoodPage />
           </ProtectedRoute>,
         ),
       },

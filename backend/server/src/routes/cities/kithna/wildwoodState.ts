@@ -3,6 +3,8 @@ import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 export const SOMETHINGS_AFOOT_KEY = "somethings_afoot";
 export const SOMETHINGS_AFOOT_TARGET = 5;
+// Provisional per-Explore chance for the first playable Wildwood slice.
+export const WILDWOOD_CORRUPTED_CHANCE_PERCENT = 25;
 
 export type WildwoodQuestStatus =
   | "available"
@@ -59,22 +61,14 @@ export function selectInitialEvent(introStep: number): WildwoodEventKind {
 }
 
 export function selectProceduralEvent(
-  roomsSinceCorrupted: number,
+  _roomsSinceCorrupted: number,
   questActive: boolean,
 ): WildwoodEventKind {
   if (!questActive) {
     return "flavor";
   }
 
-  // Placeholder structure only. Final chance and guarantee threshold
-  // must be approved before implementation.
-  const corruptedChance = 0;
-  const guaranteeAfter = Number.POSITIVE_INFINITY;
-
-  if (
-    roomsSinceCorrupted >= guaranteeAfter ||
-    randomInt(100) < corruptedChance
-  ) {
+  if (randomInt(100) < WILDWOOD_CORRUPTED_CHANCE_PERCENT) {
     return "corrupted_battle";
   }
 

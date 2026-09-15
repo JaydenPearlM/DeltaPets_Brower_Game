@@ -77,7 +77,7 @@ export default function Homepage() {
     : "";
 
   const spotlightPreviewUrl = spotlightPet
-    ? spotlightPet.previewUrl || getStarterPortrait(spotlightPet.species)
+    ? getStarterPortrait(spotlightPet.species) || spotlightPet.previewUrl
     : null;
 
   return (

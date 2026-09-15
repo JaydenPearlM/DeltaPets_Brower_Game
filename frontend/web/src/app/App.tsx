@@ -34,7 +34,8 @@ const PET_LINKS: MenuLink[] = [
 
 const BATTLE_LINKS: MenuLink[] = [
   { label: "Battle Arena", to: "/battle-arena" },
-  { label: "Battle Dungeons", to: "/battle-dungeons" },
+  { label: "Expeditions", to: "/battle-dungeons" },
+  { label: "Wildwood", to: "/kithna/wildwood" },
 ];
 
 const CITY_LINKS: MenuLink[] = [

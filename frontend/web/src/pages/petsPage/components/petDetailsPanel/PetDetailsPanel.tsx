@@ -192,10 +192,10 @@ function getDisplayedMutationTraits(
 
 function getPreviewUrl(pet: PetRecord) {
   return (
+    getStarterPortrait(pet.species) ||
     pet.portrait_url ||
     pet.sprite_url ||
     pet.image_url ||
-    getStarterPortrait(pet.species) ||
     getStarterPortrait(pet.name) ||
     null
   );

@@ -24,6 +24,7 @@ import {
   VOIDBORNE_EGG_NAME,
   VELUNE,
 } from "@shared/pets/species";
+import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import type { SharedElementLine } from "@shared/pets/species";
 import "./HatcheryPage.css";
 
@@ -569,7 +570,7 @@ function StarParticles() {
 
 function HatchRevealOverlay({
   result,
-  eggRef: _eggRef,
+  eggRef,
   onDismiss,
 }: {
   result: HatchActionResponse;
@@ -577,6 +578,10 @@ function HatchRevealOverlay({
   onDismiss: () => void;
 }) {
   const petName = result.pet?.name ?? "Unknown Kith";
+  const portrait =
+    getStarterPortrait(petName) ||
+    getStarterPortrait(eggRef?.species) ||
+    getStarterPortrait(`${result.pet?.line ?? eggRef?.line}_starter`);
   const destinationText =
     result.active_gameplay_locked
       ? "Sent to Storage"
@@ -589,10 +594,20 @@ function HatchRevealOverlay({
       <div className="hatchRevealCard">
         <div className="hatchRevealCreatureWrap">
           <StarParticles />
-          <div className="hatchRevealCreature">
-            <span className="hatchRevealEye hatchRevealEyeLeft" />
-            <span className="hatchRevealEye hatchRevealEyeRight" />
-            <span className="hatchRevealSmile" />
+          <div className={`hatchRevealCreature${portrait ? " hatchRevealCreature--portrait" : ""}`}>
+            {portrait ? (
+              <img
+                className="hatchRevealCreatureImage"
+                src={portrait}
+                alt={`${petName} hatchling`}
+              />
+            ) : (
+              <>
+                <span className="hatchRevealEye hatchRevealEyeLeft" />
+                <span className="hatchRevealEye hatchRevealEyeRight" />
+                <span className="hatchRevealSmile" />
+              </>
+            )}
           </div>
         </div>
         <div className="hatchRevealCongrats">Congratulations!</div>

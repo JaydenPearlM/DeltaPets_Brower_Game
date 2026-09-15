@@ -146,6 +146,38 @@
   z-index: 1;
 }
 
+.kithnaQuestMarker {
+  position: absolute;
+  z-index: 3;
+  top: -48%;
+  right: -14%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 30px;
+  border: 3px solid #1b1a18;
+  border-radius: 50%;
+  background: #f4c84b;
+  color: #3c2505;
+  font-size: 22px;
+  font-weight: 1000;
+  line-height: 1;
+  box-shadow: 0 3px 0 rgba(27, 26, 24, 0.28);
+}
+
+.kithnaQuestMarker::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  bottom: -9px;
+  width: 10px;
+  height: 10px;
+  border-right: 3px solid #1b1a18;
+  border-bottom: 3px solid #1b1a18;
+  background: #f4c84b;
+  transform: rotate(35deg);
+}
+
 .kithnaBuildingIcon {
   display: grid;
   place-items: center;
@@ -360,5 +392,13 @@
 
   .kithnaBuildingLabel {
     font-size: 0.58rem;
+  }
+
+  .kithnaQuestMarker {
+    top: -52%;
+    right: -18%;
+    width: 30px;
+    height: 26px;
+    font-size: 18px;
   }
 }

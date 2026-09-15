@@ -292,16 +292,16 @@ export const SHARED_SPECIES: SharedSpecies[] = [
   },
 
   {
-    id: "shadow_night_bad",
+    id: "shadow_day_good",
     line: "shadow",
-    variant: "bad",
-    preferredTime: "night",
+    variant: "good",
+    preferredTime: "day",
     evolution: {
       egg: PRISMATIC_EGG_NAME,
       hatchling: "Espyr",
-      lowform: "Noctimp",
-      highform: "Nightmareimp",
-      legion: "Espereonite",
+      lowform: "Flareclaw",
+      highform: "Shadeclaw",
+      legion: "Nightvielclaw",
       mythical_legendary: null,
     },
     eggBaseStats: {

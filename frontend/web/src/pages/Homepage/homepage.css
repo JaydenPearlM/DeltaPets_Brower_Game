@@ -1122,7 +1122,7 @@
 }
 
 .hp-spotlightPetFrame::before {
-  content: "";
+  content: none;
   position: absolute;
   width: 135px;
   height: 135px;

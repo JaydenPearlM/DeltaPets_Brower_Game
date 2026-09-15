@@ -1,0 +1,51 @@
+.ww-page { max-width: 1120px; margin: 24px auto; padding: 42px; color: var(--dp-panel-text); }
+.ww-page h1, .ww-page h2, .ww-page h3, .ww-page h4 { font-family: var(--font-heading); color: var(--dp-title-gold, #ffdf75); }
+.ww-page h1 { margin: 0; }
+.ww-page h2 { font-size: 1.2rem; }
+.ww-page a { color: var(--dp-title-gold, #ffdf75); }
+.ww-page-heading, .ww-battle-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.ww-eyebrow { margin: 0 0 8px; text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; }
+.ww-quest { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 16px; margin: 24px 0; border: 1px solid var(--dp-panel-border); border-radius: 8px; background: rgba(3, 20, 38, .7); }
+.ww-quest span { font-size: .85rem; }
+.ww-error { margin: 16px 0; padding: 16px; border: 2px solid #f6a77d; border-radius: 8px; }
+.ww-formation { margin-top: 24px; }
+.ww-team { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.ww-team article { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; padding: 12px; border: 1px solid var(--dp-panel-border); border-radius: 8px; background: rgba(3, 20, 38, .7); text-align: center; }
+.ww-team article > span { font-size: .8rem; }
+.ww-page select { width: 100%; min-height: 44px; padding: 8px; margin-top: 6px; color: var(--dp-panel-text); background: #061f42; border: 1px solid var(--dp-panel-border); border-radius: 6px; }
+.ww-page label { display: block; width: 100%; font-size: .85rem; }
+.ww-portrait { width: 84px; height: 84px; object-fit: contain; }
+.ww-art-pending { display: grid; place-items: center; min-height: 84px; font-size: .72rem; color: var(--dp-panel-muted); }
+.ww-explore-control { display: flex; justify-content: center; margin: 24px 0 8px; }
+.ww-discovery { padding: 14px; border-left: 3px solid var(--dp-panel-border); }
+.ww-affinity { font-size: .75rem; border: 1px solid var(--dp-panel-border); border-radius: 20px; padding: 8px 12px; }
+.ww-turn { font-size: 1.05rem; font-weight: 700; }
+.ww-turn-order { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.ww-turn-order span { padding: 5px 8px; border: 1px solid var(--dp-panel-border); border-radius: 5px; font-size: .72rem; }
+.ww-next-now { color: #ffdf75; }
+.ww-field { display: grid; gap: 20px; }
+.ww-side { padding: 12px; border: 1px solid var(--dp-panel-border); border-radius: 10px; background: rgba(3, 20, 38, .65); }
+.ww-side-enemy { border-color: var(--dp-panel-purple-border); }
+.ww-side h3 { margin: 0 0 12px; font-size: .85rem; }
+.ww-lanes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.ww-lane { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.ww-lane h4 { text-transform: uppercase; font-size: .7rem; margin: 0; text-align: center; letter-spacing: .08em; }
+.ww-empty-row { text-align: center; font-size: .72rem; padding: 20px 4px; color: var(--dp-panel-muted); }
+.ww-unit { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 100%; min-width: 0; padding: 10px; border: 2px solid var(--dp-panel-border); border-radius: 8px; background: #06274e; color: var(--dp-panel-text); font: inherit; font-size: .8rem; }
+.ww-unit:disabled { opacity: 1; cursor: default; }
+.ww-unit:not(:disabled) { cursor: pointer; }
+.ww-unit:not(:disabled):hover, .ww-unit:focus-visible { outline: 3px solid #ffdf75; outline-offset: 2px; }
+.ww-unit-active { border-color: #ffdf75; box-shadow: 0 0 12px rgba(255, 223, 117, .25); }
+.ww-unit.ww-unit-defeated { opacity: .55; }
+.ww-unit-name { font-weight: 700; overflow-wrap: anywhere; }
+.ww-unit-meta { font-size: .7rem; text-transform: capitalize; }
+.ww-hp { display: block; width: 100%; height: 7px; background: #031426; border-radius: 5px; overflow: hidden; }
+.ww-hp > span { display: block; height: 100%; background: #8cff72; }
+.ww-actions, .ww-result { padding: 20px 0; text-align: center; }
+.ww-command-buttons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.ww-command-buttons [aria-pressed="true"] { outline: 2px solid #fff5ce; outline-offset: 3px; }
+.ww-actions p, .ww-result p { font-size: .82rem; }
+.ww-skill-select { max-width: 280px; margin: 16px auto; }
+.ww-log { border-top: 1px solid var(--dp-panel-border); padding-top: 14px; }
+.ww-log summary { cursor: pointer; font-family: var(--font-heading); }
+.ww-log ol { max-height: 180px; overflow-y: auto; padding-left: 24px; font-size: .8rem; line-height: 1.6; }
