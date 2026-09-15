@@ -63,7 +63,20 @@ export function createApp() {
   const frontendDist = path.resolve(__dirname, "../../../frontend/web/dist");
 
   if (fs.existsSync(frontendDist)) {
-    app.use(express.static(frontendDist));
+    app.use(
+      "/assets",
+      express.static(path.join(frontendDist, "assets"), {
+        immutable: true,
+        maxAge: "1y",
+      }),
+    );
+
+    app.use(
+      express.static(frontendDist, {
+        index: false,
+        maxAge: 0,
+      }),
+    );
 
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api")) {
@@ -73,6 +86,13 @@ export function createApp() {
       if (path.extname(req.path)) {
         return res.status(404).end();
       }
+
+      res.setHeader(
+        "Cache-Control",
+        "no-store, no-cache, must-revalidate, proxy-revalidate",
+      );
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
 
       return res.sendFile(path.join(frontendDist, "index.html"));
     });
