@@ -579,13 +579,10 @@ function HatchRevealOverlay({
 }) {
   const petName = result.pet?.name ?? "Unknown Kith";
   const portrait =
-    getStarterPortrait(petName) ||
-    getStarterPortrait(eggRef?.species) ||
-    getStarterPortrait(`${result.pet?.line ?? eggRef?.line}_starter`);
-  const destinationText =
-    result.active_gameplay_locked
-      ? "Sent to Storage"
-      : result.storage_result === "party"
+    getStarterPortrait(petName) || getStarterPortrait(eggRef?.species);
+  const destinationText = result.active_gameplay_locked
+    ? "Sent to Storage"
+    : result.storage_result === "party"
       ? "Joined your Main Team!"
       : "Sent to Storage";
 
@@ -594,7 +591,9 @@ function HatchRevealOverlay({
       <div className="hatchRevealCard">
         <div className="hatchRevealCreatureWrap">
           <StarParticles />
-          <div className={`hatchRevealCreature${portrait ? " hatchRevealCreature--portrait" : ""}`}>
+          <div
+            className={`hatchRevealCreature${portrait ? " hatchRevealCreature--portrait" : ""}`}
+          >
             {portrait ? (
               <img
                 className="hatchRevealCreatureImage"
@@ -622,9 +621,9 @@ function HatchRevealOverlay({
             <span>Elemental Training: 5% each</span>
             {result.active_gameplay_locked ? (
               <span>
-                Trainer Level {result.required_trainer_level ?? 10} required
-                to use this Kith. Your bond with this Kith isn&apos;t strong
-                enough yet.
+                Trainer Level {result.required_trainer_level ?? 10} required to
+                use this Kith. Your bond with this Kith isn&apos;t strong enough
+                yet.
               </span>
             ) : null}
           </div>
