@@ -1,4 +1,5 @@
 import {
+  BODY_FRAMES,
   EYE_COLORS,
   EYE_STYLES,
   HAIR_COLORS,
@@ -20,6 +21,7 @@ function pickOptionId(options: readonly AvatarOption[]): string {
 
 export function createRandomAvatar(): AvatarCustomization {
   return {
+    bodyFrame: pickOptionId(BODY_FRAMES),
     hairStyle: pickOptionId(HAIR_STYLES),
     hairColor: pickOptionId(HAIR_COLORS),
     skinTone: pickOptionId(SKIN_TONES),

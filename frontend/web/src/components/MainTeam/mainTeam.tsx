@@ -8,6 +8,8 @@ import { STARTER_DISPLAY_NAMES } from "@/kith/registry/starterDisplayNames";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import "./mainTeam.css";
 
+import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
+
 type MainTeamProps = {
   partySlots?: PartySlotView[];
   enableDragAndDrop?: boolean;
@@ -175,6 +177,8 @@ function getPetImage(pet: PetStats | null) {
 
   return (
     getStarterPortrait(pet.species) ||
+    getKithnaPortrait(pet.species) ||
+    getKithnaPortrait(pet.name) ||
     pet.portrait_url ||
     pet.image_url ||
     pet.sprite_url ||

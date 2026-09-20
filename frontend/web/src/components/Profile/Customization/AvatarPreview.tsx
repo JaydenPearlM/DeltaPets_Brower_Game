@@ -1,4 +1,3 @@
-import avatarBase from "@/kith/assets/Avatar/base/base.png";
 import { AVATAR_LAYER_ASSETS } from "./avatarAssets";
 import type { AvatarCustomization } from "./avatarTypes";
 
@@ -8,6 +7,7 @@ type AvatarPreviewProps = {
 
 export function AvatarPreview({ customization }: AvatarPreviewProps) {
   const layers = [
+    { id: "body", src: AVATAR_LAYER_ASSETS.body[customization.bodyFrame] },
     { id: "skin", src: AVATAR_LAYER_ASSETS.skin[customization.skinTone] },
     {
       id: "eyes",
@@ -15,6 +15,7 @@ export function AvatarPreview({ customization }: AvatarPreviewProps) {
         customization.eyeColor
       ],
     },
+    { id: "mouth", src: AVATAR_LAYER_ASSETS.mouth[customization.mouthStyle] },
     {
       id: "hair",
       src: AVATAR_LAYER_ASSETS.hair[customization.hairStyle]?.[
@@ -25,7 +26,6 @@ export function AvatarPreview({ customization }: AvatarPreviewProps) {
 
   return (
     <div className="dp-avatar-preview" role="img" aria-label="Trainer avatar">
-      <img src={avatarBase} alt="" draggable={false} />
       {layers.map((layer) =>
         layer.src ? (
           <img

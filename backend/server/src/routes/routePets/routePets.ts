@@ -14,7 +14,6 @@ import {
   fetchActivePet,
   fetchHatcheryEgg,
   fetchHatcherySlotGroups,
-  fetchStarterPetAnyStage,
   releaseHatcherySlotsForPets,
 } from "./petsRepo";
 import {
@@ -34,6 +33,7 @@ import {
 import {
   findStarterByName,
   STARTERS,
+  STARTER_NAMES,
   getStarterForSelection,
 } from "./starters";
 
@@ -435,42 +435,6 @@ petsRouter.post(
         requestedLine,
       });
 
-      const existingPet = await fetchStarterPetAnyStage(userId);
-      if (existingPet) {
-        const existingResolvedLine =
-          existingPet.line ?? requestedLine ?? "water";
-
-        const existingStarter = findStarterByName(existingPet.name);
-        const existingBaseStats = await fetchBaseStatsMapped(existingPet.id);
-
-        if (!existingBaseStats && existingStarter) {
-          logger.warn(
-            "[ensure-egg] existing starter missing base stats; repairing",
-            {
-              petId: existingPet.id,
-              requestedLine,
-              resolvedLine: existingResolvedLine,
-            },
-          );
-
-          await insertBaseStats(existingPet.id, existingStarter.baseStats);
-        }
-
-        logger.info("[ensure-egg] existing starter found", {
-          petId: existingPet.id,
-          requestedLine,
-          resolvedLine: existingResolvedLine,
-        });
-
-        return res.status(200).json({
-          success: true,
-          existing: true,
-          requested_line: requestedLine,
-          resolved_line: existingResolvedLine,
-          pet: existingPet,
-        });
-      }
-
       const starter = getStarterForSelection({
         line: requestedLine,
         worldTime,
@@ -522,54 +486,31 @@ petsRouter.post(
         growth_weak_stat: weakStat,
         mutation_capacity: 1,
       } as PetInsertPayload;
-      const fullInsertResult = await supabaseAdmin
-        .from("pets")
-        .insert(fullInsertPayload)
-        .select("*")
-        .single();
-
-      if (fullInsertResult.error) {
-        logger.error(
-          "[ensure-egg] full pets insert failed",
-          fullInsertResult.error,
-        );
-
-        return res.status(500).json({
-          success: false,
-          requested_line: requestedLine,
-          resolved_line: resolvedLine,
-          error: fullInsertResult.error.message,
-        });
-      }
-
-      const insertedPet = fullInsertResult.data;
-
+      const { data: creation, error: creationError } = await supabaseAdmin.rpc(
+        "ensure_original_starter",
+        {
+          p_user_id: userId,
+          p_pet: fullInsertPayload,
+          p_stats: starter.baseStats,
+          p_starter_names: STARTER_NAMES,
+        },
+      );
+      if (creationError) throw creationError;
+      const insertedPet = creation?.pet;
       if (!insertedPet?.id) {
-        return res.status(500).json({
+        return res.status(409).json({
           success: false,
-          requested_line: requestedLine,
-          resolved_line: resolvedLine,
-          error: "Pet insert finished but no pet id was returned.",
+          error: "Your original starter has already been created and is no longer available.",
         });
       }
 
-      try {
-        await insertBaseStats(insertedPet.id, starter.baseStats);
-      } catch (statsError: any) {
-        logger.error("[ensure-egg] insertBaseStats failed", statsError);
-
-        return res.status(500).json({
-          success: false,
-          requested_line: requestedLine,
-          resolved_line: resolvedLine,
-          starter_species_id: starter.speciesId,
-          pet: insertedPet,
-          base_stats: starter.baseStats,
-          error:
-            statsError?.message ??
-            statsError?.details ??
-            "Failed to insert base stats",
-        });
+      // Preserve the existing legacy base-stat repair, without inventing provenance.
+      if (creation.existing) {
+        const existingStarter = findStarterByName(insertedPet.name);
+        const existingBaseStats = await fetchBaseStatsMapped(insertedPet.id);
+        if (!existingBaseStats && existingStarter) {
+          await insertBaseStats(insertedPet.id, existingStarter.baseStats);
+        }
       }
 
       logger.info("[ensure-egg] egg ensured", {
@@ -580,10 +521,10 @@ petsRouter.post(
 
       return res.status(200).json({
         success: true,
-        existing: false,
+        existing: creation.existing,
         requested_line: requestedLine,
-        resolved_line: resolvedLine,
-        starter_species_id: starter.speciesId,
+        resolved_line: creation.resolved_line,
+        starter_species_id: insertedPet.species,
         pet: insertedPet,
       });
     } catch (err: any) {
@@ -1193,32 +1134,13 @@ petsRouter.post(
         cryptoRandomInt(HATCH_CORRUPTION_ROLL_MAX) < eggLossChance;
 
       if (eggCorrupted) {
-        try {
-          await releaseHatcherySlotsForPets(userId, [egg.id]);
-        } catch (slotCleanupError) {
-          logger.error(
-            "[hatch] corrupted egg slot cleanup failed",
-            slotCleanupError,
-          );
-
-          return res.status(500).json({
-            error: "The egg corrupted, but cleanup failed.",
-          });
-        }
-
-        const { error: deleteEggError } = await supabaseAdmin
-          .from("pets")
-          .delete()
-          .eq("id", egg.id)
-          .eq("user_id", userId)
-          .eq("stage", "egg");
-
-        if (deleteEggError) {
-          logger.error("[hatch] corrupted egg delete failed", deleteEggError);
-
-          return res.status(500).json({
-            error: "The egg corrupted, but cleanup failed.",
-          });
+        const { data: consumed, error: lossError } = await supabaseAdmin.rpc(
+          "consume_corrupted_egg",
+          { p_user_id: userId, p_egg_id: egg.id },
+        );
+        if (lossError) throw lossError;
+        if (!consumed) {
+          return res.status(409).json({ error: "Egg is no longer available to hatch" });
         }
 
         logger.warn("[hatch] egg lost to Aliune corruption", {

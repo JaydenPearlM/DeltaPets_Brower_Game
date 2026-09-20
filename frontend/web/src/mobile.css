@@ -11,6 +11,33 @@
 }
 
 @media (max-width: 700px) {
+  .dp-profile-page .dp-profile-title-selector {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dp-profile-page .dp-profile-alpha-ribbon-stack .dp-profile-rewards-button {
+    margin: 14px 0 0 !important;
+  }
+
+  .dp-profile-page .dp-profile-titles-popup {
+    width: 100% !important;
+    max-width: 680px !important;
+    max-height: calc(100dvh - 24px) !important;
+    padding: 16px !important;
+    min-width: 0;
+  }
+
+  .dp-profile-titles-popup .dp-profile-popup-header {
+    flex-wrap: wrap;
+  }
+
+  .dp-profile-titles-popup button {
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+  }
+
   .dp-profile-page .dp-profile-lower-layout,
   .dp-profile-page .dp-profile-progression-panel {
     gap: 16px !important;
@@ -2789,11 +2816,10 @@
       gap: 10px !important;
     }
 
-    /* The shared appContent gutter owns phone edge spacing. Profile's
-     component-level calc(100% - 20px) width must not add a second inset. */
+    /* Add 5px per side to the shared 5px gutter for Profile's 10px inset. */
     .dp-profile-layout,
     .dp-profile-page .hp-banner {
-      width: 100% !important;
+      width: calc(100% - 10px) !important;
       max-width: 100% !important;
     }
 

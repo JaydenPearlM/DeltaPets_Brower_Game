@@ -227,7 +227,8 @@ export default function App() {
 
         if (!cancelled) {
           setExploreUnlocked(
-            (prev) => prev || Boolean(response.has_hatched_pet),
+            (prev) =>
+              prev || import.meta.env.DEV || Boolean(response.has_hatched_pet),
           );
         }
       } catch {
@@ -316,8 +317,8 @@ export default function App() {
             <button
               type="button"
               className="logoBlock"
-              onClick={() => handleNavigate("/")}
-              aria-label="Go to DeltaPets home"
+              onClick={() => handleNavigate(user ? "/profile" : "/")}
+              aria-label={user ? "Go to profile" : "Go to DeltaPets home"}
             >
               <span className="logoTriangle">△</span>
               <span className="logoText">DeltaPets</span>

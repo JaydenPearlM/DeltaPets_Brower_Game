@@ -10,6 +10,8 @@ import {
 } from "../Skills/skillsRegistry";
 import "./skillChamber.css";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
+import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
+
 type SkillChamberProps = {
   pet?: Record<string, any> | null;
   stats?: {
@@ -464,6 +466,8 @@ export default function SkillChamber({
   const petLevel = getPetLevel(pet);
   const petPreviewUrl =
     getStarterPortrait(pet?.species) ||
+    getKithnaPortrait(pet?.species) ||
+    getKithnaPortrait(pet?.name) ||
     getStarterPortrait(pet?.name) ||
     pet?.portrait_url ||
     pet?.sprite_url ||

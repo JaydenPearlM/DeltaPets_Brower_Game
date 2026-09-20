@@ -1,4 +1,5 @@
 export type AvatarCustomization = {
+  bodyFrame: string;
   hairStyle: string;
   hairColor: string;
   skinTone: string;
