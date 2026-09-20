@@ -1,11 +1,14 @@
 import type { AvatarColorOption, AvatarOption } from "./avatarTypes";
 
+export const BODY_FRAMES: readonly AvatarOption[] = [
+  { id: "body-frame-a", label: "Frame A" },
+  { id: "body-frame-b", label: "Frame B" },
+];
+
 export const HAIR_STYLES: readonly AvatarOption[] = [
-  { id: "hair-short-01", label: "Short" },
-  { id: "hair-tousled-01", label: "Tousled" },
-  { id: "hair-curly-01", label: "Curly" },
-  { id: "hair-bob-01", label: "Bob" },
-  { id: "hair-ponytail-01", label: "Ponytail" },
+  { id: "hair-short-01", label: "Masculine" },
+  { id: "hair-ponytail-01", label: "Feminine" },
+  { id: "hair-bald", label: "Bald" },
 ];
 
 export const HAIR_COLORS: readonly AvatarColorOption[] = [
@@ -17,19 +20,13 @@ export const HAIR_COLORS: readonly AvatarColorOption[] = [
 ];
 
 export const SKIN_TONES: readonly AvatarColorOption[] = [
-  { id: "skin-01", label: "Skin Tone 1", color: "#F5D9C4" },
-  { id: "skin-02", label: "Skin Tone 2", color: "#E8B18A" },
-  { id: "skin-03", label: "Skin Tone 3", color: "#CB916C" },
-  { id: "skin-04", label: "Skin Tone 4", color: "#A96F4E" },
-  { id: "skin-05", label: "Skin Tone 5", color: "#784B35" },
+  { id: "skin-01", label: "Light", color: "#F5CCA6" },
+  { id: "skin-05", label: "Deep", color: "#935B3B" },
 ];
 
 export const EYE_STYLES: readonly AvatarOption[] = [
   { id: "eyes-round-01", label: "Round" },
   { id: "eyes-soft-01", label: "Soft" },
-  { id: "eyes-sharp-01", label: "Sharp" },
-  { id: "eyes-sleepy-01", label: "Sleepy" },
-  { id: "eyes-wide-01", label: "Wide" },
 ];
 
 export const EYE_COLORS: readonly AvatarColorOption[] = [
@@ -42,8 +39,5 @@ export const EYE_COLORS: readonly AvatarColorOption[] = [
 
 export const MOUTH_STYLES: readonly AvatarOption[] = [
   { id: "mouth-smile-01", label: "Smile" },
-  { id: "mouth-soft-01", label: "Soft" },
   { id: "mouth-neutral-01", label: "Neutral" },
-  { id: "mouth-open-01", label: "Open" },
-  { id: "mouth-grin-01", label: "Grin" },
 ];

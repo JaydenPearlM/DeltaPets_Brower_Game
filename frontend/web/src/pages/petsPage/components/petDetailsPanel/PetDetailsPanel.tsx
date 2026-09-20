@@ -12,6 +12,7 @@ import {
   rememberSelfAwareVisit,
 } from "../selfAware/selfAware";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
+import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -193,6 +194,8 @@ function getDisplayedMutationTraits(
 function getPreviewUrl(pet: PetRecord) {
   return (
     getStarterPortrait(pet.species) ||
+    getKithnaPortrait(pet.species) ||
+    getKithnaPortrait(pet.name) ||
     pet.portrait_url ||
     pet.sprite_url ||
     pet.image_url ||

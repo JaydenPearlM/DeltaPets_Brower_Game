@@ -21,7 +21,10 @@ import stormEggPng from "@/kith/assets/eggs/eggs/storm_egg/storm_normal.png";
 import dawnshardEggPng from "@/kith/assets/eggs/eggs/light_egg/light_normal.png";
 import eclipseEggPng from "@/kith/assets/eggs/eggs/eclipse_egg/eclipse_normal.png";
 import voidborneEggPng from "@/kith/assets/eggs/eggs/Voidborne_egg/voidborne_normal.png";
+import { getStarterPortrait } from "@/kith/registry/starterPortraits";
+import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
 import "./PetStoragePanel.css";
+
 type PetStoragePanelProps = {
   userId?: string;
   refreshSignal?: number;
@@ -201,6 +204,14 @@ function StoragePetCard(props: {
     !isEgg && STARTER_SPECIES_IDS.has(String(pet.species ?? "").trim());
   const isVelune = pet.species === VELUNE.id;
 
+  const petPortrait =
+    getStarterPortrait(pet.species) ||
+    getKithnaPortrait(pet.species) ||
+    getKithnaPortrait(pet.name) ||
+    getStarterPortrait(pet.name) ||
+    pet.portrait_url ||
+    null;
+
   return (
     <article
       className={[
@@ -247,10 +258,10 @@ function StoragePetCard(props: {
               }
               alt={eggIdentity!.label}
             />
-          ) : pet.portrait_url || isVelune ? (
+          ) : petPortrait || isVelune ? (
             <img
               className="storagePetPortrait"
-              src={pet.portrait_url || velunePng}
+              src={petPortrait || velunePng}
               alt={pet.name?.trim() || "Stored pet"}
             />
           ) : (

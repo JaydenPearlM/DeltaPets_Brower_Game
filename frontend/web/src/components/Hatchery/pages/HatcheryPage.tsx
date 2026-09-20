@@ -25,7 +25,7 @@ import {
   VELUNE,
 } from "@shared/pets/species";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
-import type { SharedElementLine } from "@shared/pets/species";
+import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
 import "./HatcheryPage.css";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -77,7 +77,7 @@ const STAT_ROWS = [
 ] as const;
 
 type EggStatKey = (typeof STAT_ROWS)[number]["key"];
-type ElementalLineKey = SharedElementLine;
+type ElementalLineKey = keyof typeof ELEMENT_EGG_NAMES | "null_element";
 
 type HatcherySlotResponse = {
   id: string;
@@ -579,13 +579,14 @@ function HatchRevealOverlay({
 }) {
   const petName = result.pet?.name ?? "Unknown Kith";
   const portrait =
-    getStarterPortrait(petName) ||
+    getKithnaPortrait(eggRef?.species) ||
+    getKithnaPortrait(petName) ||
     getStarterPortrait(eggRef?.species) ||
+    getStarterPortrait(petName) ||
     getStarterPortrait(`${result.pet?.line ?? eggRef?.line}_starter`);
-  const destinationText =
-    result.active_gameplay_locked
-      ? "Sent to Storage"
-      : result.storage_result === "party"
+  const destinationText = result.active_gameplay_locked
+    ? "Sent to Storage"
+    : result.storage_result === "party"
       ? "Joined your Main Team!"
       : "Sent to Storage";
 
@@ -594,7 +595,9 @@ function HatchRevealOverlay({
       <div className="hatchRevealCard">
         <div className="hatchRevealCreatureWrap">
           <StarParticles />
-          <div className={`hatchRevealCreature${portrait ? " hatchRevealCreature--portrait" : ""}`}>
+          <div
+            className={`hatchRevealCreature${portrait ? " hatchRevealCreature--portrait" : ""}`}
+          >
             {portrait ? (
               <img
                 className="hatchRevealCreatureImage"
@@ -622,9 +625,9 @@ function HatchRevealOverlay({
             <span>Elemental Training: 5% each</span>
             {result.active_gameplay_locked ? (
               <span>
-                Trainer Level {result.required_trainer_level ?? 10} required
-                to use this Kith. Your bond with this Kith isn&apos;t strong
-                enough yet.
+                Trainer Level {result.required_trainer_level ?? 10} required to
+                use this Kith. Your bond with this Kith isn&apos;t strong enough
+                yet.
               </span>
             ) : null}
           </div>

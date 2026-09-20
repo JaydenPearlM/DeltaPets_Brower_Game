@@ -11,9 +11,20 @@ import { apiFetch } from "@/lib/api/baseClient";
 import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
 import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
+import type { BackendInventoryItem } from "@/components/inventory/inventory";
 import { AvatarPreview } from "@/components/Profile/Customization/AvatarPreview";
 import { createRandomAvatar } from "@/components/Profile/Customization/createRandomAvatar";
+import {
+  BODY_FRAMES,
+  HAIR_STYLES,
+  HAIR_COLORS,
+  SKIN_TONES,
+  EYE_STYLES,
+  EYE_COLORS,
+  MOUTH_STYLES,
+} from "@/components/Profile/Customization/avatarCatalog";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
+import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
 import ClosedAlphaRibbon from "./ClosedAlphaRibbon";
 
 type ProfilePageProps = {
@@ -21,6 +32,20 @@ type ProfilePageProps = {
 };
 
 const CLOSED_ALPHA_TITLE = "Closed Alpha Title";
+const CLOSED_ALPHA_TITLE_DESCRIPTION =
+  "Available for participating in the DeltaPets Closed Alpha.";
+const ALPHA_PRO_EFFECT = "Mend Healing +5%";
+type SelectableTitle = typeof CLOSED_ALPHA_TITLE | "Alpha Pro";
+
+const AVATAR_CONTROLS = [
+  { key: "bodyFrame", label: "Body", options: BODY_FRAMES },
+  { key: "hairStyle", label: "Hair", options: HAIR_STYLES },
+  { key: "hairColor", label: "Hair Color", options: HAIR_COLORS },
+  { key: "skinTone", label: "Skin", options: SKIN_TONES },
+  { key: "eyeStyle", label: "Eyes", options: EYE_STYLES },
+  { key: "eyeColor", label: "Eye Color", options: EYE_COLORS },
+  { key: "mouthStyle", label: "Mouth", options: MOUTH_STYLES },
+] as const;
 
 const CLOSED_ALPHA_TESTER_EMAILS = new Set([
   "jaydentestemail6790@gmail.com",
@@ -165,12 +190,20 @@ type ActiveKithStats = {
 
 export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [dots, setDots] = useState<number | null>(null);
+  const [starterElement, setStarterElement] = useState<string | null>(null);
+  const [corruptedEggsLost, setCorruptedEggsLost] = useState<number | null>(
+    null,
+  );
   const [kithOwned, setKithOwned] = useState<number | null>(null);
+  const [haikuScrollsFound, setHaikuScrollsFound] = useState<number | null>(
+    null,
+  );
   const [activeKithStats, setActiveKithStats] =
     useState<ActiveKithStats | null>(null);
   const [weeklyRewardsOpen, setWeeklyRewardsOpen] = useState(false);
   const [rewardReady, setRewardReady] = useState(false);
   const [activeTitle, setActiveTitle] = useState<string | null>(null);
+  const [alphaProUnlocked, setAlphaProUnlocked] = useState(false);
   const [titleLoading, setTitleLoading] = useState(true);
   const [titleSaving, setTitleSaving] = useState(false);
   const [titleError, setTitleError] = useState<string | null>(null);
@@ -178,10 +211,13 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [trainerLevel, setTrainerLevel] = useState(1);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   // Temporary per-mount preview; saved account customization comes in a later phase.
-  const [avatarCustomization] = useState(createRandomAvatar);
+  const [avatarCustomization, setAvatarCustomization] =
+    useState(createRandomAvatar);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
 
   const titleRequestVersion = useRef(0);
+  const titleSelectorRef = useRef<HTMLButtonElement>(null);
+  const titleDialogRef = useRef<HTMLElement>(null);
 
   const { user } = useAuth();
   const { banner } = useHomepageBanner();
@@ -203,6 +239,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     const userId = user?.id;
 
     setActiveTitle(null);
+    setAlphaProUnlocked(false);
     setTitleError(null);
     setTitleSaving(false);
     setTitlesOpen(false);
@@ -214,22 +251,47 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
     async function loadTitle() {
       try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("active_title")
-          .eq("user_id", userId)
-          .maybeSingle();
+        // These are the same award sources used to grant Alpha Pro originally.
+        const [profile, trainerAward, petAward] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("active_title")
+            .eq("user_id", userId)
+            .maybeSingle(),
+          supabase
+            .from("trainer_awards")
+            .select("id, awards!inner(key)")
+            .eq("user_id", userId)
+            .eq("awards.key", "alpha_tester")
+            .limit(1),
+          supabase
+            .from("pet_awards")
+            .select("id, awards!inner(key), pets!inner(user_id)")
+            .eq("pets.user_id", userId)
+            .eq("awards.key", "alpha_tester")
+            .limit(1),
+        ]);
 
         if (cancelled || requestVersion !== titleRequestVersion.current) {
           return;
         }
 
-        if (error) {
+        if (profile.error) {
           setTitleError("Could not load your title. Please reload the page.");
           return;
         }
 
-        setActiveTitle(data?.active_title ?? null);
+        setActiveTitle(profile.data?.active_title ?? null);
+        setAlphaProUnlocked(
+          profile.data?.active_title === "Alpha Pro" ||
+            (!trainerAward.error && Boolean(trainerAward.data?.length)) ||
+            (!petAward.error && Boolean(petAward.data?.length)),
+        );
+        if (trainerAward.error || petAward.error) {
+          setTitleError(
+            "Some unlocked titles could not be loaded. Please reload the page.",
+          );
+        }
       } catch {
         if (!cancelled && requestVersion === titleRequestVersion.current) {
           setTitleError("Could not load your title. Please reload the page.");
@@ -249,11 +311,12 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     };
   }, [user?.id]);
 
-  async function equipTitle(nextTitle: typeof CLOSED_ALPHA_TITLE | null) {
+  async function equipTitle(nextTitle: SelectableTitle | null) {
     const userId = user?.id;
 
     if (!userId || titleLoading || titleSaving) return;
     if (nextTitle === CLOSED_ALPHA_TITLE && !isClosedAlphaTester) return;
+    if (nextTitle === "Alpha Pro" && !alphaProUnlocked) return;
 
     const requestVersion = titleRequestVersion.current;
 
@@ -384,6 +447,34 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     };
   }, [user?.id, weeklyRewardsOpen]);
 
+  useEffect(() => {
+    setHaikuScrollsFound(null);
+    if (!user?.id || weeklyRewardsOpen) return;
+
+    let cancelled = false;
+
+    void apiFetch<{ items: BackendInventoryItem[] }>("/api/inventory")
+      .then(({ items }) => {
+        if (cancelled) return;
+
+        const collectedScrolls = new Set(
+          items
+            .filter(
+              (item) => item.effects?.collection === "haiku" && item.qty > 0,
+            )
+            .map((item) => item.slug),
+        );
+        setHaikuScrollsFound(collectedScrolls.size);
+      })
+      .catch(() => {
+        if (!cancelled) setHaikuScrollsFound(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, weeklyRewardsOpen]);
+
   const bannerItems =
     banner?.enabled && Array.isArray(banner.items)
       ? [...banner.items, ...banner.items]
@@ -392,6 +483,8 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const activePet = allPets.find((pet) => pet.is_active) ?? null;
   const activePetImage =
     getStarterPortrait(activePet?.species) ||
+    getKithnaPortrait(activePet?.species) ||
+    getKithnaPortrait(activePet?.name) ||
     getStarterPortrait(activePet?.name) ||
     activePet?.portrait_url ||
     "";
@@ -406,7 +499,41 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     ? `${equippedTitle} ${displayName}`
     : displayName;
 
-  const starterElement = user?.user_metadata?.starter_element ?? null;
+  useEffect(() => {
+    let cancelled = false;
+    setStarterElement(null);
+    setCorruptedEggsLost(null);
+    const userId = user?.id;
+    if (!userId) return;
+
+    async function loadPermanentStats() {
+      const results = await Promise.allSettled([
+        supabase
+          .from("eggs")
+          .select("starter_element")
+          .eq("user_id", userId)
+          .eq("is_original_starter", true)
+          .maybeSingle(),
+        supabase
+          .from("trainer_progression")
+          .select("corrupted_eggs_lost")
+          .eq("user_id", userId)
+          .maybeSingle(),
+      ]);
+      if (cancelled) return;
+      const [starter, losses] = results;
+      if (starter.status === "fulfilled" && !starter.value.error) {
+        setStarterElement(starter.value.data?.starter_element ?? null);
+      }
+      if (losses.status === "fulfilled" && !losses.value.error) {
+        setCorruptedEggsLost(losses.value.data?.corrupted_eggs_lost ?? 0);
+      }
+    }
+    void loadPermanentStats();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
   const starterElementClass = getElementClass(starterElement);
   const activeElementClass = getElementClass(activePet?.line);
 
@@ -433,7 +560,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   }, [user]);
 
   useEffect(() => {
-    if (!weeklyRewardsOpen) return;
+    if (!weeklyRewardsOpen && !titlesOpen) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -441,7 +568,50 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [weeklyRewardsOpen]);
+  }, [weeklyRewardsOpen, titlesOpen]);
+
+  useEffect(() => {
+    if (!titlesOpen) return;
+
+    const selector = titleSelectorRef.current;
+    const dialog = titleDialogRef.current;
+    dialog?.focus();
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setTitlesOpen(false);
+      }
+
+      if (event.key !== "Tab" || !dialog) return;
+
+      const buttons = Array.from(
+        dialog.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"),
+      );
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+
+      if (
+        event.shiftKey &&
+        (document.activeElement === first || document.activeElement === dialog)
+      ) {
+        event.preventDefault();
+        last?.focus();
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last || document.activeElement === dialog)
+      ) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      selector?.focus();
+    };
+  }, [titlesOpen]);
 
   return (
     <div className="dp-profile-page poeTayToeHost">
@@ -497,31 +667,6 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
               <span className="dp-profile-alpha-ribbon-message">
                 Thank you for helping shape Aliune!
               </span>
-            </div>
-          </div>
-
-          {customizeOpen ? (
-            <div className="dp-profile-customizer">
-              <button type="button" className="dp-profile-customizer-card">
-                <strong>Hair</strong>
-                <span>Hairstyle</span>
-                <span>Hair Color</span>
-              </button>
-
-              <button type="button" className="dp-profile-customizer-card">
-                <strong>Skin</strong>
-                <span>Skin Color</span>
-              </button>
-
-              <button type="button" className="dp-profile-customizer-card">
-                <strong>Eyes</strong>
-                <span>Eye Style</span>
-                <span>Eye Color</span>
-              </button>
-            </div>
-          ) : (
-            <div className="dp-profile-info">
-              <h1 className={starterElementClass}>{titledTrainerName}</h1>
 
               <button
                 type="button"
@@ -532,6 +677,46 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
               >
                 Weekly Rewards
               </button>
+            </div>
+          </div>
+
+          {customizeOpen ? (
+            <div className="dp-profile-customizer">
+              {AVATAR_CONTROLS.map(({ key, label, options }) => (
+                <button
+                  key={key}
+                  type="button"
+                  className="dp-profile-customizer-card"
+                  disabled={
+                    key === "hairColor" &&
+                    avatarCustomization.hairStyle === "hair-bald"
+                  }
+                  onClick={() =>
+                    setAvatarCustomization((current) => {
+                      const index = options.findIndex(
+                        (option) => option.id === current[key],
+                      );
+                      const next = options[(index + 1) % options.length];
+                      return next ? { ...current, [key]: next.id } : current;
+                    })
+                  }
+                >
+                  <strong>{label}</strong>
+                  <span>
+                    {
+                      options.find(
+                        (option) => option.id === avatarCustomization[key],
+                      )?.label
+                    }
+                  </span>
+                  <span>Click to change</span>
+                </button>
+              ))}
+              <p>Preview only. Changes reset when you leave this page.</p>
+            </div>
+          ) : (
+            <div className="dp-profile-info">
+              <h1 className={starterElementClass}>{titledTrainerName}</h1>
 
               <dl className="dp-profile-details">
                 <div>
@@ -557,102 +742,46 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                 <div>
                   <dt>Title</dt>
                   <dd>
-                    <button
-                      type="button"
-                      className="btn btn-gold"
-                      aria-expanded={titlesOpen}
-                      aria-controls="dp-profile-title-list"
-                      onClick={() => setTitlesOpen((current) => !current)}
-                    >
+                    <span className="dp-profile-title-value">
                       {titleLoading
-                        ? "Loading Titles..."
-                        : (equippedTitle ?? "Choose Title")}
-                    </button>
-
-                    {titlesOpen ? (
-                      <div
-                        id="dp-profile-title-list"
-                        className="dp-profile-talent-grid"
-                        role="group"
-                        aria-label="Trainer titles"
-                        aria-busy={titleLoading || titleSaving}
+                        ? "Loading title..."
+                        : (equippedTitle ?? "No Title")}{" "}
+                      <button
+                        ref={titleSelectorRef}
+                        type="button"
+                        className="dp-profile-title-selector"
+                        aria-label="Choose title"
+                        aria-haspopup="dialog"
+                        aria-expanded={titlesOpen}
+                        aria-controls="dp-profile-title-list"
+                        onClick={() => setTitlesOpen(true)}
                       >
-                        <article>
-                          <h3>No Title</h3>
-                          <p>Show your trainer name without a title.</p>
-                          <button
-                            type="button"
-                            className="btn btn-gold"
-                            disabled={
-                              !user?.id ||
-                              titleLoading ||
-                              titleSaving ||
-                              activeTitle === null
-                            }
-                            onClick={() => void equipTitle(null)}
-                          >
-                            {activeTitle === null ? "Selected" : "Unequip"}
-                          </button>
-                        </article>
-
-                        {isClosedAlphaTester ? (
-                          <article>
-                            <h3>{CLOSED_ALPHA_TITLE}</h3>
-                            <p>
-                              Available for participating in the DeltaPets
-                              Closed Alpha.
-                            </p>
-                            <button
-                              type="button"
-                              className="btn btn-gold"
-                              disabled={
-                                titleLoading ||
-                                titleSaving ||
-                                equippedTitle === CLOSED_ALPHA_TITLE
-                              }
-                              onClick={() =>
-                                void equipTitle(CLOSED_ALPHA_TITLE)
-                              }
-                            >
-                              {equippedTitle === CLOSED_ALPHA_TITLE
-                                ? "Equipped"
-                                : "Equip"}
-                            </button>
-                          </article>
-                        ) : null}
-
-                        <article>
-                          <h3>Alpha Pro</h3>
-                          <p>
-                            {equippedTitle === "Alpha Pro"
-                              ? "Your existing equipped title."
-                              : "This title is not available to unlock yet."}
-                          </p>
-                          <button
-                            type="button"
-                            className="btn btn-gold"
-                            disabled
-                          >
-                            {equippedTitle === "Alpha Pro"
-                              ? "Equipped"
-                              : "Locked"}
-                          </button>
-                        </article>
-
-                        {titleSaving ? (
-                          <p role="status">Saving title...</p>
-                        ) : null}
-                      </div>
+                        <svg viewBox="0 0 20 16" aria-hidden="true">
+                          <path
+                            d="M2 2 H18 L10 14 Z"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </span>
+                    {equippedTitle === CLOSED_ALPHA_TITLE ? (
+                      <p className="dp-profile-title-description">
+                        {CLOSED_ALPHA_TITLE_DESCRIPTION}
+                      </p>
                     ) : null}
-
-                    {titleError ? <p role="alert">{titleError}</p> : null}
+                    {!titlesOpen && titleError ? (
+                      <p role="alert">{titleError}</p>
+                    ) : null}
                   </dd>
                 </div>
 
                 {equippedTitle === "Alpha Pro" ? (
                   <div>
                     <dt>Title Bonus</dt>
-                    <dd>Mend Healing +5%</dd>
+                    <dd>{ALPHA_PRO_EFFECT}</dd>
                   </div>
                 ) : null}
 
@@ -665,6 +794,23 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                   <dt>Kith Owned</dt>
                   <dd>
                     {kithOwned === null ? "--" : kithOwned.toLocaleString()}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>Haiku Scrolls Found</dt>
+                  <dd>
+                    {haikuScrollsFound === null
+                      ? "--"
+                      : haikuScrollsFound.toLocaleString()}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Corrupted Eggs Hatched</dt>
+                  <dd>
+                    {corruptedEggsLost === null
+                      ? "--"
+                      : corruptedEggsLost.toLocaleString()}
                   </dd>
                 </div>
               </dl>
@@ -767,6 +913,106 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
           </div>
         </div>
       </div>
+
+      {titlesOpen ? (
+        <div
+          className="dp-profile-popup-backdrop"
+          role="presentation"
+          onMouseDown={() => setTitlesOpen(false)}
+        >
+          <section
+            ref={titleDialogRef}
+            id="dp-profile-title-list"
+            className="dp-profile-rewards-popup dp-profile-titles-popup"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dp-profile-titles-heading"
+            tabIndex={-1}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="dp-profile-popup-header">
+              <h2 id="dp-profile-titles-heading">Titles</h2>
+              <button
+                type="button"
+                className="dp-close-button"
+                onClick={() => setTitlesOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+            <div
+              className="dp-profile-talent-grid"
+              aria-busy={titleLoading || titleSaving}
+            >
+              {titleLoading ? (
+                <p role="status">Loading titles...</p>
+              ) : (
+                <>
+                  <article>
+                    <h3>No Title</h3>
+                    <p>Show your trainer name without a title.</p>
+                    <button
+                      type="button"
+                      className="btn btn-gold"
+                      disabled={
+                        !user?.id || titleSaving || activeTitle === null
+                      }
+                      onClick={() => void equipTitle(null)}
+                    >
+                      {activeTitle === null ? "Selected" : "Unequip"}
+                    </button>
+                  </article>
+                  {isClosedAlphaTester ? (
+                    <article>
+                      <h3>{CLOSED_ALPHA_TITLE}</h3>
+                      <p>{CLOSED_ALPHA_TITLE_DESCRIPTION}</p>
+                      <button
+                        type="button"
+                        className="btn btn-gold"
+                        disabled={
+                          titleSaving || equippedTitle === CLOSED_ALPHA_TITLE
+                        }
+                        onClick={() => void equipTitle(CLOSED_ALPHA_TITLE)}
+                      >
+                        {equippedTitle === CLOSED_ALPHA_TITLE
+                          ? "Equipped"
+                          : "Equip"}
+                      </button>
+                    </article>
+                  ) : null}
+                  {alphaProUnlocked ? (
+                    <article>
+                      <h3>Alpha Pro</h3>
+                      <p>{ALPHA_PRO_EFFECT}</p>
+                      <button
+                        type="button"
+                        className="btn btn-gold"
+                        disabled={titleSaving || equippedTitle === "Alpha Pro"}
+                        onClick={() => void equipTitle("Alpha Pro")}
+                      >
+                        {equippedTitle === "Alpha Pro" ? "Equipped" : "Equip"}
+                      </button>
+                    </article>
+                  ) : null}
+                  {equippedTitle &&
+                  equippedTitle !== CLOSED_ALPHA_TITLE &&
+                  equippedTitle !== "Alpha Pro" ? (
+                    <article>
+                      <h3>{equippedTitle}</h3>
+                      <p>Your existing equipped title.</p>
+                      <button type="button" className="btn btn-gold" disabled>
+                        Equipped
+                      </button>
+                    </article>
+                  ) : null}
+                </>
+              )}
+              {titleSaving ? <p role="status">Saving title...</p> : null}
+              {titleError ? <p role="alert">{titleError}</p> : null}
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {weeklyRewardsOpen ? (
         <div

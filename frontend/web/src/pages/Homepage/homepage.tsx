@@ -10,6 +10,8 @@ import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
 import EggHatchShowcase from "@/components/Video_hatch/EggHatchShowcase";
 import solenHatchling from "@/kith/assets/startepets/hatchling_solen.png";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
+import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
+import FreeToPlayBadge from "@/pages/Homepage/FreeToPlayBadge";
 
 type HeroFeature = {
   label: string;
@@ -77,7 +79,9 @@ export default function Homepage() {
     : "";
 
   const spotlightPreviewUrl = spotlightPet
-    ? getStarterPortrait(spotlightPet.species) || spotlightPet.previewUrl
+    ? getStarterPortrait(spotlightPet.species) ||
+      getKithnaPortrait(spotlightPet.species) ||
+      spotlightPet.previewUrl
     : null;
 
   return (
@@ -138,12 +142,19 @@ export default function Homepage() {
             <div className="hp-heroContent">
               <div className="hp-heroBrandRow">
                 <div className="hp-heroTitleWrap">
-                  <h1 className="hp-heroTitle--logo">DeltaPets</h1>
+                  <div className="hp-heroTitleLine">
+                    <h1 className="hp-heroTitle--logo">DeltaPets</h1>
+
+                    <div className="hp-heroCrest" aria-hidden="true">
+                      ∆
+                    </div>
+                  </div>
+
                   <p className="hp-heroTagline">Raise. Train. Evolve. Bond.</p>
                 </div>
 
-                <div className="hp-heroCrest" aria-hidden="true">
-                  ∆
+                <div className="hp-heroFreeToPlaySlot">
+                  <FreeToPlayBadge />
                 </div>
               </div>
 
