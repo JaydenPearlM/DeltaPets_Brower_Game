@@ -679,6 +679,7 @@
 
     .hp-heroInner {
       padding: 34px !important;
+      gap: 14px !important;
     }
 
     /* Profile page */
@@ -994,8 +995,6 @@
       max-height: min(580px, calc(100vh - 80px)) !important;
       overflow: hidden !important;
       padding: 24px !important;
-      /* Keep all Inventory paint inside the cyan inset border while the
-       dedicated body below scrolls. */
       clip-path: inset(
         calc(var(--dp-popup-inset-gap) + var(--dp-popup-inner-border-width))
           round 10px
@@ -1020,8 +1019,6 @@
     }
   }
 
-  /* Homepage Spotlight needs its phone composition slightly before the shared
-   430px breakpoint so narrow browser panels do not retain the tablet columns. */
   @media (max-width: 480px) {
     .hp-spotlightPanel .hp-panelBody.hp-spotlightBody {
       width: 100% !important;
@@ -1069,19 +1066,11 @@
    Smaller width sections add only the adjustments they need.
    ========================================================= */
   @media (max-width: 430px) {
-    /* Global inset border thickness: every standard panel (cyan outer /
-     purple inset) and popup (purple outer / cyan inset) reads its inset
-     border thickness from these two shared tokens declared in
-     global.css :root. Overriding them here drops every inset border
-     sitewide from 6px/4px to ~3px on phones, without touching each
-     panel individually. Panels below that already hardcode their own
-     border-width (bypassing the variable) are updated to match. */
     :root {
       --dp-standard-panel-inner-size: 3px;
       --dp-popup-inner-border-width: 3px;
     }
 
-    /* Global safety net */
     * {
       min-width: 0;
     }
@@ -1103,9 +1092,6 @@
       position: relative !important;
     }
 
-    /* Inventory item names need more room than the component's 60px
-     auto-fill tracks provide on phones. Use two readable columns while
-     preserving the existing internal grid scroll and ten-slot layout. */
     .inventoryGrid--slots {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       grid-auto-rows: 82px !important;
@@ -1130,14 +1116,11 @@
       box-sizing: border-box !important;
     }
 
-    /* Shared phone viewport gutter for every routed page. */
     .appContent {
       padding-left: 5px !important;
       padding-right: 5px !important;
     }
 
-    /* Hatchery has several legacy phone padding declarations; the shared
-     appContent gutter now owns its outer viewport spacing. */
     .hatcheryPage {
       padding-left: 0 !important;
       padding-right: 0 !important;
@@ -1249,7 +1232,6 @@
       margin: 0 auto !important;
     }
 
-    /* Pet page: full bleed */
     .petRepoPage {
       width: 100% !important;
       padding-left: 0 !important;
@@ -1284,8 +1266,6 @@
       touch-action: manipulation;
     }
 
-    /* PetPage.css sets --petRepo-left-offset:145px with no media
-     guard. Vite loads it after mobile.css so !important is needed. */
     .petRepoStage {
       --petRepo-left-offset: 0px !important;
       padding-left: 0 !important;
@@ -1293,13 +1273,10 @@
       box-sizing: border-box !important;
     }
 
-    /* petRepoBottomGrid right column has minmax(420px, 0.82fr).
-     That minimum guarantees overflow on every phone. */
     .petRepoBottomGrid {
       grid-template-columns: 1fr !important;
     }
 
-    /* All panel grids: single column */
     .petRepoMainGrid,
     .petRepoBottomGrid {
       grid-template-columns: 1fr !important;
@@ -1311,9 +1288,6 @@
       gap: 10px !important;
     }
 
-    /* Standard panels: 34px padding (10px from inset border face).
-     inset:18px + border:6px = border face at 24px from edge.
-     10px gap needed = 34px total from edge. */
     .petRepoPanel--infoShell,
     .petRepoTeamPanel,
     .petRepoPanel,
@@ -1322,10 +1296,6 @@
       box-sizing: border-box !important;
     }
 
-    /* Hero card: 2-column grid.
-     [Current Focus box] | [Delta Care Chamber title]
-     Subtitle spans full width below. Button full width below that.
-     Panel is standard (cyan outer / purple inset): 34px padding. */
     .petRepoHeroCard {
       display: grid !important;
       grid-template-columns: auto 1fr !important;
@@ -1336,7 +1306,6 @@
       min-height: 130px !important;
     }
 
-    /* Hero card inset border tightened on phone */
     .petRepoHeroCard::before {
       inset: 5px !important;
       border-width: 3px !important;
@@ -1347,7 +1316,6 @@
       inset: 9px !important;
     }
 
-    /* Status box: row 1 col 1 */
     .petRepoHeroStatus {
       grid-column: 1 !important;
       grid-row: 1 !important;
@@ -1370,7 +1338,6 @@
       font-size: 1rem !important;
     }
 
-    /* Title block: row 1 col 2 */
     .petRepoHeroTextShifted {
       grid-column: 2 !important;
       grid-row: 1 !important;
@@ -1383,7 +1350,6 @@
       align-self: center !important;
     }
 
-    /* Panel title: gold, Space Mono, uppercase */
     .petRepoTitle {
       font-family: var(--font-heading) !important;
       font-size: 1.05rem !important;
@@ -1395,7 +1361,6 @@
       letter-spacing: 0.1em !important;
     }
 
-    /* Subtitle: row 2, spans full width */
     .petRepoSubtitle {
       grid-column: 1 / -1 !important;
       grid-row: 2 !important;
@@ -1407,7 +1372,6 @@
       max-width: 100% !important;
     }
 
-    /* Lost Kith button: row 3, full width */
     .lostKithRegistryOpenButton {
       grid-column: 1 / -1 !important;
       grid-row: 3 !important;
@@ -1415,8 +1379,6 @@
       margin-top: 4px !important;
     }
 
-    /* Care card: standard panel (cyan outer / purple inset).
-     inset:18px + border:6px + 10px gap = 34px padding. */
     .petRepoCareCard::after {
       inset: 5px !important;
       border-width: 3px !important;
@@ -1427,7 +1389,6 @@
       gap: 14px !important;
     }
 
-    /* Details top panel title: gold, Space Mono */
     .petRepoDetailsTopPanel {
       padding: 12px 14px !important;
       margin-top: -10px !important;
@@ -1445,7 +1406,6 @@
       font-size: 2rem !important;
     }
 
-    /* Scene orb */
     .petRepoSceneOrb {
       width: min(100%, 320px) !important;
       height: 400px !important;
@@ -1473,7 +1433,6 @@
       padding: 10px !important;
     }
 
-    /* Energy panel: static flow inside care status */
     .petRepoEnergyPanel {
       position: static !important;
       left: auto !important;
@@ -1502,7 +1461,6 @@
       height: 10px !important;
     }
 
-    /* Care status panel: standard panel, 34px padding */
     .petRepoCareStatusPanel {
       display: flex !important;
       flex-direction: column !important;
@@ -1516,13 +1474,11 @@
       padding: 0 !important;
     }
 
-    /* Action buttons: 2 columns */
     .petRepoActionGrid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       gap: 8px !important;
     }
 
-    /* Talk bubble: static flow */
     .petRepoTalkBubble {
       position: static !important;
       left: auto !important;
@@ -1540,7 +1496,6 @@
       content: none !important;
     }
 
-    /* Farm button: below the orb */
     .petRepoFarmButtonWrap {
       position: relative !important;
       z-index: 10 !important;
@@ -1553,7 +1508,6 @@
       min-width: 0 !important;
     }
 
-    /* Passive trait: expand into a card */
     .petRepoInfoRow--passive-trait,
     .petRepoInfoRow[data-label="Passive Trait"] {
       display: flex !important;
@@ -1582,18 +1536,12 @@
       color: var(--dp-text-primary) !important;
     }
 
-    /* dp-standard-panel inset tightening: applies to every panel
-     sharing the class (Stats Chamber, Skills Panel, etc.)
-     inset:5px + border:4px = border face at 9px.
-     Content padding already covers the 10px clearance via
-     the parent panel's 34px padding. */
     .petRepoPage .dp-standard-panel::before,
     .petRepoPage .dp-standard-panel-purple::before {
       inset: 5px !important;
       border-width: 3px !important;
     }
 
-    /* Kith Team panel: purple outer / cyan inset = 34px padding */
     .petRepoTeamPanel {
       padding: 34px !important;
       box-sizing: border-box !important;
@@ -1622,7 +1570,6 @@
       transform: none;
     }
 
-    /* Main team panel: purple outer / cyan inset = 34px padding */
     .mainTeamPanel {
       padding: 34px !important;
     }
@@ -1637,7 +1584,6 @@
       gap: 10px !important;
     }
 
-    /* Keep the Bond ring below the stage/rarity row on narrow team cards. */
     .mainTeamCircleWrap {
       margin-top: -36px !important;
       margin-bottom: -48px !important;
@@ -1662,8 +1608,6 @@
       transform: none;
     }
 
-    /* Skill tree modal: fit phone width.
-     Popup: purple outer / cyan inset = 24px padding. */
     .skillTreeModal {
       width: calc(100vw - 52px) !important;
       max-width: calc(100vw - 52px) !important;
@@ -1680,6 +1624,7 @@
       scrollbar-width: none !important;
       transform: translateX(-12px) !important;
     }
+
     .skillTreeModal::-webkit-scrollbar {
       width: 0 !important;
       height: 0 !important;
@@ -1717,6 +1662,7 @@
       max-width: 82px !important;
       font-size: 0.56rem !important;
     }
+
     .talentNode {
       min-width: 0 !important;
       overflow: hidden !important;
@@ -1740,7 +1686,6 @@
       font-size: 0.7rem !important;
     }
 
-    /* Talent node details panel: popup = 24px padding */
     .skillTreeModal .talentNodeDetails {
       height: auto !important;
       min-height: 220px !important;
@@ -1823,7 +1768,6 @@
       width: 100% !important;
     }
 
-    /* Armory: title gold Space Mono, header row layout */
     .petArmoryHeaderAccent {
       display: none !important;
     }
@@ -1845,9 +1789,6 @@
       transform: none !important;
     }
 
-    /* Armory: force Space Mono on all gear/weapon labels.
-     Desktop uses --dp-font-display (New Rocker). Mobile uses --font-heading (Space Mono).
-     Covers: slot item names, stats, closet title, closet toolbar label, closet h4s. */
     .petArmorySlotText h3,
     .armoryClosetTitle,
     .armoryClosetToolbar label,
@@ -1870,7 +1811,6 @@
       overflow-x: hidden !important;
     }
 
-    /* Armory popup: purple outer / cyan inset = 24px padding */
     .dpPopupWindow.armoryClosetWindow {
       width: min(96vw, 420px) !important;
       max-height: min(88vh, 700px) !important;
@@ -1888,8 +1828,6 @@
       padding: 24px !important;
     }
 
-    /* Authentication popups: fit Pixel 10 / generic mobile without
-     changing the shared desktop popup system. */
     .dpPopupWindow.auth-modal--signup,
     .dpPopupWindow.auth-modal--login {
       width: calc(100vw - 16px) !important;
@@ -1959,7 +1897,6 @@
       display: none !important;
     }
 
-    /* Skills chamber title: gold, Space Mono */
     .skillsPanelHeader {
       margin-bottom: 8px !important;
     }
@@ -2004,8 +1941,6 @@
       font-size: 0.7rem !important;
     }
 
-    /* Skills inventory: scroll inside panel border.
-     Standard panel: 34px padding. */
     .skillsPanel {
       max-height: min(88vh, 700px) !important;
       overflow: hidden !important;
@@ -2037,10 +1972,6 @@
       min-height: 80px !important;
     }
 
-    /* Hatchery mobile pet action menu.
-     Panel chrome (border, background, box-shadow, text color) now comes
-     from the shared .dpPopupWindow class in global.css (purple outer /
-     cyan inset, matches every other popup). Only sizing/layout stays here. */
     .mobilePetActionBackdrop {
       position: fixed;
       inset: 0;
@@ -2064,8 +1995,6 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Popup: inset 10px + border 4px = border face at 14px from edge.
-     10px clearance needed = 24px total padding. */
     .mobilePetActionContent {
       max-height: calc(100dvh - 20px);
       overflow-y: auto;
@@ -2153,11 +2082,6 @@
       justify-content: flex-start !important;
       overflow-y: auto !important;
       padding: 24px 10px env(safe-area-inset-bottom, 16px) !important;
-      /* .appHeader is z-index: 9999 (App.css) and sits in normal document
-       flow. The overlay's original z-index of 1000 (HatcheryPage.css)
-       loses that stacking fight, so the header/banner paints through on
-       top of the overlay and appears to "move" as the overlay scrolls
-       underneath it. Must clear 9999. */
       z-index: 100000 !important;
     }
 
@@ -2182,10 +2106,6 @@
         0 0 46px var(--dp-panel-purple-glow) !important;
     }
 
-    /* Inset purple border, offset from the outer cyan border by
-     --dp-standard-panel-inset-gap (18px), same as every other standard
-     panel. The grid texture and color splashes live inside this inset
-     layer only, never touching the outer cyan border. */
     .hatchRevealCard::before {
       content: "" !important;
       position: absolute !important;
@@ -2194,13 +2114,6 @@
       border: var(--dp-standard-panel-inner-size) solid
         var(--dp-standard-panel-inner-border) !important;
       border-radius: 14px !important;
-      /* var(--dp-standard-panel-blue-grid) is itself 2 layers (horizontal
-       line grid + vertical line grid), not 1. Every list below must
-       carry exactly 6 entries to stay aligned:
-       1-2: real crosshatch grid (blue-grid, 2 layers) - matches every
-            other standard panel in the game
-       3-5: the three color splashes
-       6:   base panel background */
       background-image:
         var(--dp-standard-panel-blue-grid),
         radial-gradient(
@@ -2254,11 +2167,6 @@
       color: var(--dp-panel-text) !important;
     }
 
-    /* Continue button: .primaryBtn has no CSS rule anywhere in the
-     codebase, so this button was rendering as a bare native browser
-     button (square corners, no gradient). Apply the full pearl close
-     button treatment (same values as .dp-btn--close in global.css)
-     so it actually matches, not just its colors. */
     .hatchRevealContinueBtn {
       appearance: none !important;
       display: inline-flex !important;
@@ -2296,9 +2204,6 @@
       ) !important;
     }
 
-    /* Hatchery action buttons: wrap to column */
-
-    /* Hatchery action buttons: wrap to column */
     .hatcheryActionsRow,
     .hatcheryBottomActions {
       flex-wrap: wrap !important;
@@ -2329,9 +2234,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       gap: 10px !important;
     }
-    /* Egg rack: 2 columns keeps the 10 incubation slots compact.
-     1fr was stacking all 10 as individual full-width rows. */
-    /* Egg rack: 3 columns displays 15 slots as three groups of five. */
+
     .eggGridCompact,
     .rackPanelSide .eggGridCompact {
       grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -2339,12 +2242,6 @@
       justify-content: stretch !important;
     }
 
-    /* HatcheryPage.css sets .rackPanelSide .eggSlotCard to a hardcoded
-     min-width: 96px with no media guard. On S22 (360px) and iPhone 8
-     (375px), 3 columns at that floor overflow the rack's 34px padding
-     and get clipped by the global overflow-x:hidden safety rule,
-     visually collapsing back to 2 columns. Let the card fill its
-     track instead of enforcing a fixed minimum. */
     .rackPanelSide .eggSlotCard {
       width: 100% !important;
       min-width: 0 !important;
@@ -2357,11 +2254,6 @@
       width: 100%;
     }
 
-    /* Storage: PetStoragePanel.css sets max-height:none on this element,
-     which cancels the vh-based cap HatcheryPage.css tries to apply
-     elsewhere. With no max-height, the container just grows to fit
-     every pet instead of scrolling internally. Restore a real cap so
-     storage with more than 4 pets actually scrolls on phones. */
     .storageGridScroll {
       max-height: 55vh !important;
       overflow-y: auto !important;
@@ -2371,26 +2263,14 @@
       scrollbar-color: var(--dp-border-panel) transparent !important;
     }
 
-    /* Storage grid: center the whole grid of cards within the panel
-     instead of left-aligning (PetStoragePanel.css uses
-     justify-content: start, which reads as left-biased once there
-     are only 2 columns worth of room on phones). */
     .hatcheryPage .storagePetGrid {
       justify-content: center !important;
     }
 
-    /* Storage cards (eggs and pets): drag-and-drop is a desktop-only
-     interaction, so hide the "Drag to team" hint on mobile - the card
-     and the Options button both open the same tap-to-move popup. */
     .dragHandleHint {
       display: none !important;
     }
 
-    /* Search input: no appearance reset anywhere in PetStoragePanel.css,
-     so some mobile browsers (Samsung Internet, certain Android
-     WebViews) render their own native pill-shaped focus/validation
-     decoration on top of the custom border, producing a double-outline
-     oval artifact. Force a clean rounded rectangle. */
     .storageSearchWrap {
       margin-top: -4px !important;
     }
@@ -2407,12 +2287,6 @@
       box-shadow: none !important;
     }
 
-    /* Pet card action button: match the egg card's single clean pearl
-     button instead of the yellow "Move to Slot X" button. Uses the
-     same global pearl treatment as .dp-btn--close (Skill Popup,
-     Inventory, Armory Closet, mobile pet action Close). Needs
-     !important to beat .hatcheryPage .storageActionBtn's yellow
-     gradient, which is more specific than the plain .btn-pearl class. */
     .hatcheryPage .storageActionBtn--options {
       min-height: 34px !important;
       padding: 7px 14px !important;
@@ -2439,12 +2313,6 @@
       ) !important;
     }
 
-    /* Egg viewer (non-popup, Hatchery "Incubator Core Activated" panel):
-     HatcheryPage.css draws the purple inset ring as
-     box-shadow: 0 0 0 4px ... inset with no offset, so it sits flush
-     against the outer cyan border with no gap. It also explicitly
-     disables ::before/::after (content: none). Re-enable ::before here
-     as a real inset layer, same pattern as the hatch reveal card. */
     .selectedEggPreviewArea {
       box-shadow:
         inset 0 0 24px rgba(0, 0, 0, 0.26),
@@ -2467,7 +2335,6 @@
       z-index: 1 !important;
     }
 
-    /* Kithna map */
     .kithnaMapFrame {
       padding: 8px !important;
       border-radius: 14px !important;
@@ -2536,6 +2403,7 @@
       grid-template-columns: minmax(0, 1fr) auto !important;
       align-items: center !important;
     }
+
     .hp-bannerTickerTrack {
       gap: 36px !important;
     }
@@ -2553,19 +2421,98 @@
 
     .hp-heroCard {
       width: 100% !important;
+      margin-top: 10px !important;
+      margin-bottom: 10px !important;
       max-width: 100% !important;
       margin-left: 0 !important;
       margin-right: 0 !important;
       box-sizing: border-box !important;
     }
 
+    /* Mobile hero inset: exactly 10px from cyan outer border, 3px thick. */
+    .hp-heroCard::before {
+      inset: 10px !important;
+      border-width: 3px !important;
+    }
+
+    /* Keep the hero texture aligned to the same 10px inset. */
+    .hp-heroCard::after {
+      inset: 10px !important;
+    }
+
     .hp-heroInner {
-      padding: 34px !important;
+      /*
+   * Mobile hero spacing:
+   *
+   * purple inset border -> FREE △ PLAY = 10px
+   * FREE △ PLAY -> egg/care animation = 10px
+   *
+   * FREE △ PLAY stays at top: 23px.
+   */
+      --hp-mobile-badge-height: calc(108px * 0.44);
+      padding: 23px 34px 34px !important;
       gap: 14px !important;
     }
 
     .hp-heroBrandRow {
       row-gap: 0 !important;
+    }
+
+    /*
+ * Reserve only the physical height of the FREE △ PLAY badge.
+ * The care animation owns its own 10px gap below.
+ */
+    .hp-heroLeftRail {
+      padding-top: calc(var(--hp-mobile-badge-height) - 6px) !important;
+      box-sizing: border-box !important;
+    }
+
+    /*
+ * Purple inset border face is at 13px.
+ * Badge starts at 23px.
+ * Result: exactly 10px from purple border to badge.
+ */
+    .hp-heroFreeToPlaySlot {
+      position: absolute !important;
+      top: 23px !important;
+      left: 50% !important;
+      width: calc(100% - 36px) !important;
+      min-width: 0 !important;
+      height: var(--hp-mobile-badge-height) !important;
+      transform: translateX(-50%) !important;
+      z-index: 5 !important;
+      overflow: visible !important;
+    }
+
+    /*
+ * Exactly 10px between FREE △ PLAY and the care animation.
+ */
+    .hp-heroVideo {
+      position: relative !important;
+      top: -25px !important;
+      margin-top: 10px !important;
+    }
+
+    /*
+ * Anchor the scaled badge from its top edge.
+ * This keeps its visible position stable.
+ */
+    .hp-heroFreeToPlaySlot .dp-free-to-play {
+      position: absolute !important;
+      top: 0 !important;
+      left: 50% !important;
+      width: calc(100% / 0.44) !important;
+      min-width: 0 !important;
+      height: 108px !important;
+      box-sizing: border-box !important;
+      transform: translateX(-50%) scale(0.44) !important;
+      transform-origin: top center !important;
+    }
+
+    /* Mobile-only type adjustment: larger FREE / PLAY with cleaner kerning. */
+    .hp-heroFreeToPlaySlot .dp-free-to-play__word {
+      font-size: 2.75rem !important;
+      letter-spacing: 0.14em !important;
     }
 
     .hp-heroTitle--logo {
@@ -2595,7 +2542,6 @@
       text-align: center !important;
     }
 
-    /* Homepage CTA: mobile-only spacing + global gold button treatment */
     .hp-heroCtaRow {
       margin-bottom: 26px !important;
     }
@@ -2681,8 +2627,6 @@
       font-size: 2rem !important;
     }
 
-    /* Homepage spotlight: stack on phone.
-     Keeps desktop/web layout untouched. */
     .hp-spotlightBody {
       width: 100% !important;
       max-width: 100% !important;
@@ -2697,6 +2641,7 @@
       transform: none !important;
       box-sizing: border-box !important;
     }
+
     .hp-spotlightPanel .hp-panelBody.hp-spotlightBody {
       padding: 1px 34px 34px !important;
     }
@@ -2810,13 +2755,11 @@
       box-sizing: border-box !important;
     }
 
-    /* Profile page: standard panel = 34px padding */
     .dp-profile-page {
       padding: 14px 0 !important;
       gap: 10px !important;
     }
 
-    /* Add 5px per side to the shared 5px gutter for Profile's 10px inset. */
     .dp-profile-layout,
     .dp-profile-page .hp-banner {
       width: calc(100% - 10px) !important;
@@ -2834,12 +2777,10 @@
       flex-shrink: 0 !important;
     }
 
-    /* Food merchant */
     .foodMerchantPage {
       padding: 20px 0 48px !important;
     }
 
-    /* Food merchant */
     .foodMerchantPage {
       padding: 25px 0 60px !important;
     }
@@ -2848,15 +2789,10 @@
       padding: 30px !important;
     }
 
-    /* Food merchant quantity fields are gameplay controls. The merchant
-     stylesheet reduces them to 28px tall below 760px, which is too small
-     for reliable phone tapping. Keep the existing columns and only restore
-     a full mobile tap target. */
     .kithna-food-trade-button {
       min-height: 44px !important;
     }
 
-    /* Battle arena and dungeons placeholder pages */
     .dp-arena-page,
     .dp-dungeons-page {
       padding: 16px 0 !important;
@@ -2868,6 +2804,7 @@
       width: 100% !important;
       box-sizing: border-box !important;
     }
+
     .dp-profile-page .dp-profile-popup-backdrop {
       inset: 0 !important;
       width: 100% !important;
@@ -2876,12 +2813,12 @@
       display: grid !important;
       place-items: center !important;
     }
-    /* Rewards bar */
-    /* Rewards bar */
+
     .dp-profile-rewards-popup .wr-bar {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       gap: 8px !important;
     }
+
     .dp-profile-rewards-popup {
       width: calc(100% - 12px) !important;
       max-width: none !important;
@@ -2902,12 +2839,8 @@
 
   /* =========================================================
    SECTION 4 - COMPACT SMARTPHONES  (390px)
-   Covers iPhone 13, S22 Ultra, iPhone 8, S22, and any other
-   viewport at or below 390px. Layers on top of section 3.
    ========================================================= */
   @media (max-width: 390px) {
-    /* Hero card: tighten on smaller phones.
-     Still 34px from inset border face. */
     .petRepoHeroCard {
       padding: 34px !important;
       gap: 8px 10px !important;
@@ -2922,21 +2855,15 @@
       font-size: 0.98rem !important;
     }
 
-    /* Main team: 2 columns (S22 gets 1 column from section 5) */
     .mainTeamGrid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       gap: 8px !important;
     }
 
-    /* Occupied cards are 155px wide in the S22 Ultra two-column layout.
-     mainTeam.css later enlarges the center stage label to 13px, leaving
-     only about 16px for each stat track. Restore the compact label size
-     so HP and XP remain readable without changing the two-column team. */
     .mainTeamCenterStage {
       font-size: 0.58rem !important;
     }
 
-    /* Stats Chamber: tighter info rows */
     .statsChamber .petRepoInfoRow {
       font-size: 0.85rem !important;
       padding: 0 8px !important;
@@ -2948,8 +2875,6 @@
       padding: 1px 4px !important;
     }
 
-    /* Profile panel: still 34px */
-    /* Profile page */
     .dp-profile-page {
       padding: 10px 0 !important;
       gap: 10px !important;
@@ -2978,18 +2903,15 @@
       height: 100% !important;
     }
 
-    /* Hatchery egg preview: tighten height */
     .selectedEggPreviewArea {
       height: min(360px, 94vw) !important;
       max-height: 360px !important;
     }
 
-    /* Food merchant */
     .foodMerchantPanel {
       padding: 34px !important;
     }
 
-    /* Kithna map */
     .kithnaMapFrame {
       padding: 6px !important;
     }
@@ -2999,7 +2921,6 @@
       max-width: 48px !important;
     }
 
-    /* App shell */
     .appShell {
       padding-left: 8px !important;
       padding-right: 8px !important;
@@ -3008,8 +2929,6 @@
 
   /* =========================================================
    SECTION 5 - NARROW SMARTPHONE SAFETY  (360px)
-   Applies to the S22 and any viewport at or below 360px.
-   Only rules required by narrow screens belong here.
    ========================================================= */
   @media (max-width: 360px) {
     html,
@@ -3026,10 +2945,6 @@
       overflow-x: hidden !important;
     }
 
-    /* Hero card: S22 minimum.
-     Reduce padding but keep 10px from inset border face.
-     inset tightened to 4px + border 3px = face at 7px.
-     10px clearance = 17px min from edge. Use 18px. */
     .petRepoHeroCard {
       padding: 18px !important;
     }
@@ -3038,27 +2953,22 @@
       font-size: 0.92rem !important;
     }
 
-    /* Care card: same S22 reduction */
     .petRepoCareCard {
       padding-inline: 18px !important;
     }
 
-    /* Team: 1 column on S22 */
     .mainTeamGrid {
       grid-template-columns: 1fr !important;
     }
 
-    /* The S22 switches cards to one column, so the base stage size fits. */
     .mainTeamCenterStage {
       font-size: 13px !important;
     }
 
-    /* Food merchant */
     .foodMerchantPanel {
       padding: 34px !important;
     }
 
-    /* Kithna map */
     .kithnaMapFrame {
       padding: 4px !important;
     }
@@ -3068,13 +2978,11 @@
       max-width: 40px !important;
     }
 
-    /* Hatchery egg preview */
     .selectedEggPreviewArea {
       height: min(320px, 88vw) !important;
       max-height: 320px !important;
     }
 
-    /* Weekly rewards: 1 column */
     .dp-profile-rewards-popup .wr-reward {
       font-size: 11px;
     }
@@ -3115,6 +3023,7 @@
       box-sizing: border-box !important;
     }
   }
+
   /* Relic Artes Chamber */
   .petRepoRelicPanelInner {
     padding: 14px !important;
@@ -3185,6 +3094,7 @@
   grid-template-columns: 1fr !important;
   gap: 14px !important;
 }
+
 /* =========================================================
    HOMEPAGE - SOLEN SHOWCASE MOBILE
    Pixel 10 / generic phone portrait
