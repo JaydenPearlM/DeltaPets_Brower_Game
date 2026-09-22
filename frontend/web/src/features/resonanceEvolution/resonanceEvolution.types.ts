@@ -33,6 +33,7 @@ export type ResonanceEvolutionRequest = {
   fromStage: PetStage;
   toStage: PetStage;
   element: ResonanceElement;
+  elements?: ResonanceElement[];
   fromImage: string;
   strainImage?: string | null;
   toImage: string;
@@ -73,6 +74,7 @@ export type ResonanceElementConfig = {
   color: string;
   accent: string;
   rune: string;
+  iconPath: string;
   effect:
     | "fire"
     | "water"
