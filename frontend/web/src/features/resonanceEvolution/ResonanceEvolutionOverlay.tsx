@@ -65,7 +65,6 @@ export function ResonanceEvolutionOverlay({
   displayedHp,
   reducedMotion,
 }: Props) {
-  const firstRenderRef = useRef(true);
   const [mirrorStorm, setMirrorStorm] = useState(false);
 
   useEffect(() => {
