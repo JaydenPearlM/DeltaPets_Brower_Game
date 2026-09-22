@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ELEMENT_RESONANCE } from "./resonanceElements";
 import type {
   ResonanceEvolutionPhase,
@@ -70,10 +70,7 @@ export function ResonanceEvolutionOverlay({
 
   useEffect(() => {
     if (!request || request.element !== "storm") return;
-    if (firstRenderRef.current) {
-      firstRenderRef.current = false;
-      setMirrorStorm(request.petId.length % 2 === 0);
-    }
+    setMirrorStorm(request.petId.length % 2 === 0);
   }, [request]);
 
   const config = useMemo(
