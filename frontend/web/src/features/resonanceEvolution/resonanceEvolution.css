@@ -605,3 +605,434 @@
     transition: opacity .45s ease;
   }
 }
+
+
+/* =========================================================
+   Resonance lock-in opening
+   Keeps the global overlay intact while giving the title room
+   to arrive from opposite sides around the centered Kith.
+========================================================= */
+
+.resonanceEvolution__lockComposition {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.resonanceEvolution__lockPet {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  z-index: 3;
+  width: auto;
+  max-width: min(58vw, 520px);
+  max-height: min(48vh, 460px);
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 82%;
+  object-fit: contain;
+  opacity: 0;
+  filter:
+    drop-shadow(0 16px 24px rgba(0, 0, 0, 0.72))
+    drop-shadow(0 0 12px rgba(255, 255, 255, 0.14));
+}
+
+.resonanceEvolution__elementEmblem {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.resonanceEvolution__elementEmblem--lock {
+  z-index: 1;
+  width: min(56vw, 520px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(.86);
+  opacity: 0;
+}
+
+.resonanceEvolution__elementEmblem--scene {
+  z-index: 1;
+  width: min(52vw, 560px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  opacity: .16;
+}
+
+.resonanceEvolution__elementEmblemImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 18px color-mix(in srgb, var(--resonance-color) 58%, transparent))
+    drop-shadow(0 0 42px color-mix(in srgb, var(--resonance-accent) 30%, transparent));
+}
+
+.resonanceEvolution__elementEmblemFallback {
+  display: block;
+  font-family: Georgia, serif;
+  font-size: min(50vw, 64vh);
+  font-weight: 900;
+  line-height: .8;
+  color: var(--resonance-color);
+  text-shadow:
+    0 0 22px color-mix(in srgb, var(--resonance-color) 38%, transparent),
+    0 0 54px color-mix(in srgb, var(--resonance-accent) 24%, transparent);
+}
+
+.resonanceEvolution__title {
+  position: absolute;
+  left: 50%;
+  top: 21%;
+  z-index: 5;
+  width: min(94vw, 1180px);
+  min-height: 1.15em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(.45rem, 2.2vw, 2rem);
+  transform: translateX(-50%);
+  opacity: 1;
+  overflow: visible;
+  color: #fff;
+  text-shadow: none;
+}
+
+.resonanceEvolution__titleWord {
+  display: inline-block;
+  opacity: 0;
+  will-change: transform, opacity, filter;
+  white-space: nowrap;
+  color: currentColor;
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, .42),
+    0 0 22px rgba(255, 255, 255, .2);
+}
+
+.resonanceEvolution--warningTransparent .resonanceEvolution__title,
+.resonanceEvolution--warningRed .resonanceEvolution__title,
+.resonanceEvolution--elementReveal .resonanceEvolution__title,
+.resonanceEvolution--fadeGameplay .resonanceEvolution__title {
+  animation: none;
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+.resonanceEvolution--warningTransparent .resonanceEvolution__lockPet {
+  animation: resonanceLockPetEnter 1.2s .38s cubic-bezier(.16,.78,.19,1) both;
+}
+
+.resonanceEvolution--warningTransparent .resonanceEvolution__titleWord--resonance {
+  animation: resonanceWordFromLeft 1.25s .14s cubic-bezier(.16,.8,.18,1) both;
+}
+
+.resonanceEvolution--warningTransparent .resonanceEvolution__titleWord--evolution {
+  animation: resonanceWordFromRight 1.25s .62s cubic-bezier(.16,.8,.18,1) both;
+}
+
+.resonanceEvolution--warningRed .resonanceEvolution__lockPet,
+.resonanceEvolution--elementReveal .resonanceEvolution__lockPet,
+.resonanceEvolution--fadeGameplay .resonanceEvolution__lockPet {
+  opacity: 1;
+}
+
+.resonanceEvolution--warningRed .resonanceEvolution__titleWord {
+  opacity: 1;
+  animation:
+    resonanceLockShake 92ms linear infinite,
+    resonanceLockWhiteGlow 620ms ease-in-out infinite alternate;
+}
+
+.resonanceEvolution--elementReveal .resonanceEvolution__titleWord,
+.resonanceEvolution--fadeGameplay .resonanceEvolution__titleWord {
+  opacity: 1;
+  color: var(--resonance-color);
+  text-shadow:
+    0 0 8px #fff,
+    0 0 18px var(--resonance-accent),
+    0 0 42px var(--resonance-color),
+    0 0 82px color-mix(in srgb, var(--resonance-color) 70%, transparent);
+}
+
+.resonanceEvolution--elementReveal .resonanceEvolution__titleWord {
+  animation:
+    resonanceElementLockShake 74ms linear infinite,
+    resonanceElementClaim 1.4s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.resonanceEvolution--fadeGameplay .resonanceEvolution__titleWord {
+  animation: resonanceElementHold 1.7s ease-in-out both;
+}
+
+.resonanceEvolution--warningRed .resonanceEvolution__elementEmblem--lock {
+  animation: resonanceEmblemWake 1.9s ease-in-out both;
+}
+
+.resonanceEvolution--elementReveal .resonanceEvolution__elementEmblem--lock {
+  animation: resonanceEmblemClaim 1.4s cubic-bezier(.16,.78,.19,1) both;
+}
+
+.resonanceEvolution--fadeGameplay .resonanceEvolution__elementEmblem--lock {
+  opacity: .5;
+  transform: translate(-50%, -50%) scale(1);
+  animation: resonanceEmblemBreathe 1.7s ease-in-out infinite alternate;
+}
+
+.resonanceEvolution--warningRed .resonanceEvolution__lockPet {
+  animation: resonancePetCharge 1.9s ease-in-out both;
+}
+
+.resonanceEvolution--elementReveal .resonanceEvolution__lockPet {
+  animation: resonancePetElementShake 86ms linear infinite;
+  filter:
+    brightness(1.08)
+    drop-shadow(0 16px 24px rgba(0,0,0,.7))
+    drop-shadow(0 0 20px var(--resonance-accent))
+    drop-shadow(0 0 42px color-mix(in srgb, var(--resonance-color) 62%, transparent));
+}
+
+.resonanceEvolution--fadeGameplay .resonanceEvolution__lockPet {
+  filter:
+    brightness(1.04)
+    drop-shadow(0 16px 24px rgba(0,0,0,.7))
+    drop-shadow(0 0 18px var(--resonance-accent));
+}
+
+@keyframes resonanceWordFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-68vw) scale(.96);
+    filter: blur(9px);
+  }
+  68% {
+    opacity: 1;
+    transform: translateX(18px) scale(1.02);
+    filter: blur(0);
+  }
+  84% {
+    transform: translateX(-7px) scale(.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes resonanceWordFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(68vw) scale(.96);
+    filter: blur(9px);
+  }
+  68% {
+    opacity: 1;
+    transform: translateX(-18px) scale(1.02);
+    filter: blur(0);
+  }
+  84% {
+    transform: translateX(7px) scale(.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes resonanceLockPetEnter {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -47%) scale(.94);
+    filter: blur(5px) brightness(1.45);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    filter:
+      blur(0)
+      brightness(1)
+      drop-shadow(0 16px 24px rgba(0,0,0,.72));
+  }
+}
+
+@keyframes resonanceLockShake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-2px, 1px) rotate(-.14deg); }
+  50% { transform: translate(2px, -1px) rotate(.12deg); }
+  75% { transform: translate(-1px, -1px) rotate(-.08deg); }
+}
+
+@keyframes resonanceLockWhiteGlow {
+  from {
+    text-shadow:
+      0 0 8px rgba(255,255,255,.42),
+      0 0 20px rgba(255,255,255,.2);
+    filter: brightness(1);
+  }
+  to {
+    text-shadow:
+      0 0 10px #fff,
+      0 0 26px rgba(255,255,255,.72),
+      0 0 58px rgba(196,238,255,.38);
+    filter: brightness(1.35);
+  }
+}
+
+@keyframes resonanceElementLockShake {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  20% { transform: translate(-3px,1px) scale(1.008); }
+  40% { transform: translate(3px,-2px) scale(1.012); }
+  60% { transform: translate(-2px,-1px) scale(1.006); }
+  80% { transform: translate(2px,2px) scale(1.01); }
+}
+
+@keyframes resonanceElementClaim {
+  0% {
+    color: #fff;
+    filter: brightness(1.1);
+  }
+  42% {
+    color: #fff;
+    filter: brightness(1.8);
+  }
+  100% {
+    color: var(--resonance-color);
+    filter: brightness(1.25);
+  }
+}
+
+@keyframes resonanceElementHold {
+  0% { opacity: 1; filter: brightness(1.25); }
+  74% { opacity: 1; filter: brightness(1.4); }
+  100% { opacity: .08; filter: blur(5px) brightness(1.9); }
+}
+
+@keyframes resonanceEmblemWake {
+  0%, 20% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.72);
+    filter: blur(9px);
+  }
+  72% {
+    opacity: .16;
+    transform: translate(-50%, -50%) scale(.92);
+    filter: blur(1px);
+  }
+  100% {
+    opacity: .22;
+    transform: translate(-50%, -50%) scale(.96);
+    filter: blur(0);
+  }
+}
+
+@keyframes resonanceEmblemClaim {
+  0% {
+    opacity: .18;
+    transform: translate(-50%, -50%) scale(.94);
+    filter: brightness(.8) blur(2px);
+  }
+  42% {
+    opacity: .38;
+    transform: translate(-50%, -50%) scale(1.04);
+    filter: brightness(1.45) blur(0);
+  }
+  100% {
+    opacity: .54;
+    transform: translate(-50%, -50%) scale(1);
+    filter: brightness(1.08) blur(0);
+  }
+}
+
+@keyframes resonanceEmblemBreathe {
+  from {
+    opacity: .42;
+    transform: translate(-50%, -50%) scale(.98);
+  }
+  to {
+    opacity: .58;
+    transform: translate(-50%, -50%) scale(1.025);
+  }
+}
+
+@keyframes resonancePetCharge {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.012);
+    filter:
+      brightness(1.08)
+      drop-shadow(0 16px 24px rgba(0,0,0,.72))
+      drop-shadow(0 0 18px rgba(255,255,255,.24));
+  }
+}
+
+@keyframes resonancePetElementShake {
+  0%, 100% { transform: translate(-50%, -50%) translate(0,0); }
+  25% { transform: translate(-50%, -50%) translate(-1px,1px); }
+  50% { transform: translate(-50%, -50%) translate(2px,-1px); }
+  75% { transform: translate(-50%, -50%) translate(-1px,-1px); }
+}
+
+@media (max-width: 640px) {
+  .resonanceEvolution__title {
+    top: 18%;
+    width: 98vw;
+    gap: .35rem;
+    font-size: clamp(1.45rem, 8.7vw, 3rem);
+    letter-spacing: .035em;
+  }
+
+  .resonanceEvolution__lockPet {
+    top: 55%;
+    max-width: 84vw;
+    max-height: 44vh;
+  }
+
+  .resonanceEvolution__elementEmblem--lock {
+    top: 54%;
+    width: min(86vw, 430px);
+  }
+
+  .resonanceEvolution__elementEmblem--scene {
+    top: 47%;
+    width: min(78vw, 430px);
+  }
+
+  .resonanceEvolution__elementEmblemFallback {
+    font-size: min(76vw, 52vh);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resonanceEvolution--warningTransparent .resonanceEvolution__titleWord,
+  .resonanceEvolution--warningRed .resonanceEvolution__titleWord,
+  .resonanceEvolution--elementReveal .resonanceEvolution__titleWord,
+  .resonanceEvolution--fadeGameplay .resonanceEvolution__titleWord,
+  .resonanceEvolution__lockPet,
+  .resonanceEvolution__elementEmblem--lock {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .resonanceEvolution__lockPet {
+    left: 50%;
+    top: 54%;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  .resonanceEvolution__elementEmblem--lock {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) !important;
+    opacity: .42;
+  }
+}
