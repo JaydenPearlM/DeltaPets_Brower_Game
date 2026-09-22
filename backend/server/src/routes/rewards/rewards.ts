@@ -3,6 +3,7 @@ import type { Response } from "express";
 
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
+import { awardXpToActivePet } from "../../pets/petProgression";
 
 export const rewardsRouter = Router();
 
@@ -106,53 +107,6 @@ async function giveItem(user_id: string, slug: string, qty: number) {
   if (e2) throw e2;
 }
 
-async function giveXPToActivePet(user_id: string, amount: number) {
-  const { data: pet, error } = await supabaseAdmin
-    .from("pets")
-    .select("id, level")
-    .eq("user_id", user_id)
-    .eq("is_active", true)
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!pet) return;
-
-  const { data: row, error: e1 } = await supabaseAdmin
-    .from("pet_stat_allocations")
-    .select("id, xp")
-    .eq("pet_id", pet.id)
-    .eq("level", pet.level)
-    .maybeSingle();
-
-  if (e1) throw e1;
-
-  if (!row) {
-    const { error: e2 } = await supabaseAdmin
-      .from("pet_stat_allocations")
-      .insert({
-        pet_id: pet.id,
-        level: pet.level,
-        xp: amount,
-        hp: 0,
-        atk: 0,
-        magi: 0,
-        def: 0,
-        spd: 0,
-        mana: 0,
-      });
-
-    if (e2) throw e2;
-    return;
-  }
-
-  const { error: e3 } = await supabaseAdmin
-    .from("pet_stat_allocations")
-    .update({ xp: (row.xp ?? 0) + amount })
-    .eq("id", row.id);
-
-  if (e3) throw e3;
-}
-
 async function awardAlphaTesterRibbon(user_id: string, earnedAtIso: string) {
   const { data: award, error: awardErr } = await supabaseAdmin
     .from("awards")
@@ -193,7 +147,7 @@ async function applyReward(user_id: string, reward: Reward) {
     case "item":
       return giveItem(user_id, reward.slug, reward.qty);
     case "xp":
-      return giveXPToActivePet(user_id, reward.amount);
+      return awardXpToActivePet(user_id, reward.amount);
     case "ribbon":
       return awardAlphaTesterRibbon(user_id, new Date().toISOString());
     default: {
