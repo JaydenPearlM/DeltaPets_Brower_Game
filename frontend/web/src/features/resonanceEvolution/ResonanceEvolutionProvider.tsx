@@ -44,10 +44,10 @@ const PHASES: readonly ResonanceEvolutionPhase[] = [
 ];
 
 const NORMAL_DURATIONS: Record<Exclude<ResonanceEvolutionPhase, "idle">, number> = {
-  warningTransparent: 1700,
-  warningRed: 1500,
-  elementReveal: 900,
-  fadeGameplay: 1500,
+  warningTransparent: 2400,
+  warningRed: 1900,
+  elementReveal: 1400,
+  fadeGameplay: 1700,
   environment: 700,
   summon: 1100,
   elementalBuild: 1600,
@@ -60,9 +60,9 @@ const NORMAL_DURATIONS: Record<Exclude<ResonanceEvolutionPhase, "idle">, number>
 };
 
 const REDUCED_DURATIONS: Record<Exclude<ResonanceEvolutionPhase, "idle">, number> = {
-  warningTransparent: 1300,
-  warningRed: 950,
-  elementReveal: 800,
+  warningTransparent: 1500,
+  warningRed: 1100,
+  elementReveal: 900,
   fadeGameplay: 1200,
   environment: 550,
   summon: 850,
