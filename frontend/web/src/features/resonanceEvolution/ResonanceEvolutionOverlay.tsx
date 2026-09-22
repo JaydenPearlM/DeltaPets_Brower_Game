@@ -59,6 +59,40 @@ function EffectParticles({
   );
 }
 
+function ElementEmblem({
+  iconPath,
+  rune,
+  className = "",
+}: {
+  iconPath: string;
+  rune: string;
+  className?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [iconPath]);
+
+  return (
+    <div
+      className={`resonanceEvolution__elementEmblem ${className}`}
+      aria-hidden="true"
+    >
+      {!failed ? (
+        <img
+          className="resonanceEvolution__elementEmblemImage"
+          src={iconPath}
+          alt=""
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <span className="resonanceEvolution__elementEmblemFallback">{rune}</span>
+      )}
+    </div>
+  );
+}
+
 export function ResonanceEvolutionOverlay({
   request,
   phase,
@@ -78,6 +112,9 @@ export function ResonanceEvolutionOverlay({
   );
 
   if (!request || !config || phase === "idle") return null;
+
+  const elements = (request.elements?.length ? request.elements : [request.element]).slice(0, 4);
+  const primaryElement = elements[0] ?? request.element;
 
   const sceneActive = ACTIVE_SCENE_PHASES.has(phase);
   const titleActive = TITLE_PHASES.has(phase);
@@ -106,10 +143,33 @@ export function ResonanceEvolutionOverlay({
       <div className="resonanceEvolution__takeover" aria-hidden="true" />
 
       {titleActive ? (
-        <div className="resonanceEvolution__warningLayer" aria-hidden="true">
-          <div className="resonanceEvolution__title">
-            <span>RESONANCE</span>
-            <span>EVOLUTION</span>
+        <div
+          className="resonanceEvolution__warningLayer"
+          data-primary-element={primaryElement}
+          data-element-count={elements.length}
+          aria-hidden="true"
+        >
+          <div className="resonanceEvolution__lockComposition">
+            <ElementEmblem
+              iconPath={config.iconPath}
+              rune={config.rune}
+              className="resonanceEvolution__elementEmblem--lock"
+            />
+
+            <img
+              className="resonanceEvolution__lockPet"
+              src={request.fromImage}
+              alt=""
+            />
+
+            <div className="resonanceEvolution__title">
+              <span className="resonanceEvolution__titleWord resonanceEvolution__titleWord--resonance">
+                RESONANCE
+              </span>
+              <span className="resonanceEvolution__titleWord resonanceEvolution__titleWord--evolution">
+                EVOLUTION
+              </span>
+            </div>
           </div>
         </div>
       ) : null}
@@ -120,9 +180,11 @@ export function ResonanceEvolutionOverlay({
           <div className="resonanceEvolution__floorGrid" aria-hidden="true" />
 
           <div className="resonanceEvolution__composition">
-            <div className="resonanceEvolution__rune" aria-hidden="true">
-              {config.rune}
-            </div>
+            <ElementEmblem
+              iconPath={config.iconPath}
+              rune={config.rune}
+              className="resonanceEvolution__elementEmblem--scene"
+            />
 
             <EffectParticles effect={request.element} />
 
