@@ -84,9 +84,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/resonance-preview",
-    element: import.meta.env.DEV
-      ? withSuspense(<ResonanceEvolutionPreview />)
-      : <Navigate to="/" replace />,
+    element: withSuspense(<ResonanceEvolutionPreview />),
   },
   {
     path: "authcallback",
