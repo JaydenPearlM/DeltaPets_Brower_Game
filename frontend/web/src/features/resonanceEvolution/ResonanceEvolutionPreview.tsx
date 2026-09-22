@@ -6,7 +6,7 @@ import type {
   ResonanceEvolutionRequest,
 } from "./resonanceEvolution.types";
 
-const PREVIEW_PHASES: readonly ResonanceEvolutionPhase[] = [
+const PREVIEW_PHASES: readonly Exclude<ResonanceEvolutionPhase, "idle">[] = [
   "warningTransparent",
   "warningRed",
   "elementReveal",
