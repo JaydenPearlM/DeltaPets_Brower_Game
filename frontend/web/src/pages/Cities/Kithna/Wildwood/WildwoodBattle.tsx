@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { BattleAction, BattleState } from "@shared/battle/wildwoodTypes";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
+import "./wildwood.css";
 
 type Props = {
   battle: BattleState;

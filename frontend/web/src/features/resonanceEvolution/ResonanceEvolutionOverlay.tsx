@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { ELEMENT_RESONANCE } from "./resonanceElements";
-import type {
-  ResonanceEvolutionPhase,
-  ResonanceEvolutionRequest,
-} from "./resonanceEvolution.types";
+import type { ResonanceEvolutionPhase, ResonanceEvolutionRequest } from "./resonanceEvolution.types";
+import { NORMAL_DURATIONS } from "./resonanceEvolution.timeline";
 import "./resonanceEvolution.css";
 
 type Props = {
@@ -13,280 +11,94 @@ type Props = {
   reducedMotion: boolean;
 };
 
-const ACTIVE_SCENE_PHASES = new Set<ResonanceEvolutionPhase>([
-  "environment",
-  "summon",
-  "elementalBuild",
-  "strain",
-  "hpDrain",
-  "transformation",
-  "reveal",
-  "celebration",
-  "complete",
-]);
-
 const TITLE_PHASES = new Set<ResonanceEvolutionPhase>([
-  "warningTransparent",
-  "warningRed",
-  "elementReveal",
-  "fadeGameplay",
+  "warningTransparent", "warningRed", "elementReveal",
+]);
+const HIDDEN_PET_PHASES = new Set<ResonanceEvolutionPhase>([
+  "fadeGameplay", "environment",
+]);
+const HP_PHASES = new Set<ResonanceEvolutionPhase>([
+  "hpDrain", "transformation", "reveal", "celebration", "complete",
 ]);
 
-function EffectParticles({
-  effect,
-}: {
-  effect: ResonanceEvolutionRequest["element"];
-}) {
-  return (
-    <div
-      className={`resonanceEvolution__elementFx resonanceEvolution__elementFx--${effect}`}
-      aria-hidden="true"
-    >
-      {Array.from({ length: 18 }, (_, index) => (
-        <span
-          key={index}
-          className="resonanceEvolution__particle"
-          style={
-            {
-              "--particle-index": index,
-              "--particle-delay": `${(index % 7) * 0.11}s`,
-              "--particle-x": `${((index * 37) % 100) - 50}%`,
-            } as React.CSSProperties
-          }
-        />
-      ))}
-    </div>
-  );
-}
+type CinematicStyle = CSSProperties & {
+  "--resonance-color": string;
+  "--resonance-accent": string;
+  "--phase-duration": string;
+};
 
-function ElementEmblem({
-  iconPath,
-  rune,
-  className = "",
-}: {
-  iconPath: string;
-  rune: string;
-  className?: string;
-}) {
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    setFailed(false);
-  }, [iconPath]);
-
-  return (
-    <div
-      className={`resonanceEvolution__elementEmblem ${className}`}
-      aria-hidden="true"
-    >
-      {!failed ? (
-        <img
-          className="resonanceEvolution__elementEmblemImage"
-          src={iconPath}
-          alt=""
-          onError={() => setFailed(true)}
-        />
-      ) : (
-        <span className="resonanceEvolution__elementEmblemFallback">{rune}</span>
-      )}
-    </div>
-  );
-}
-
-export function ResonanceEvolutionOverlay({
-  request,
-  phase,
-  displayedHp,
-  reducedMotion,
-}: Props) {
-  const [mirrorStorm, setMirrorStorm] = useState(false);
-
-  useEffect(() => {
-    if (!request || request.element !== "storm") return;
-    setMirrorStorm(request.petId.length % 2 === 0);
-  }, [request]);
-
-  const config = useMemo(
-    () => (request ? ELEMENT_RESONANCE[request.element] : null),
-    [request],
-  );
-
-  if (!request || !config || phase === "idle") return null;
-
-  const elements = (request.elements?.length ? request.elements : [request.element]).slice(0, 4);
-  const primaryElement = elements[0] ?? request.element;
-
-  const sceneActive = ACTIVE_SCENE_PHASES.has(phase);
+export function ResonanceEvolutionOverlay({ request, phase, displayedHp, reducedMotion }: Props) {
+  if (!request || phase === "idle") return null;
+  const config = ELEMENT_RESONANCE[request.element];
   const titleActive = TITLE_PHASES.has(phase);
-  const isStraining = phase === "strain" || phase === "hpDrain";
-  const isTransforming = phase === "transformation";
-  const isRevealed = phase === "reveal" || phase === "celebration" || phase === "complete";
-  const showFrom = sceneActive && !isTransforming && !isRevealed;
-  const showTo = sceneActive && isRevealed;
+  const evolved = phase === "reveal" || phase === "celebration" || phase === "complete";
+  const transforming = phase === "transformation";
   const hpMax = Math.max(1, request.maxHp ?? request.currentHp ?? 1);
-  const hpPercent = Math.max(1, Math.min(100, (displayedHp / hpMax) * 100));
+  const hp = transforming || phase === "reveal"
+    ? 0 : Math.max(0, Math.min(hpMax, displayedHp));
+  const style: CinematicStyle = {
+    "--resonance-color": config.color,
+    "--resonance-accent": config.accent,
+    "--phase-duration": `${NORMAL_DURATIONS[phase]}ms`,
+  };
 
   return (
-    <div
-      className={`resonanceEvolution resonanceEvolution--${phase}${
-        reducedMotion ? " resonanceEvolution--reduced" : ""
-      }`}
-      style={
-        {
-          "--resonance-color": config.color,
-          "--resonance-accent": config.accent,
-        } as React.CSSProperties
-      }
-      aria-live="assertive"
-      aria-atomic="true"
-    >
-      <div className="resonanceEvolution__takeover" aria-hidden="true" />
-
+    <div className={`resonanceEvolution resonanceEvolution--${phase}${reducedMotion ? " resonanceEvolution--reduced" : ""}`} style={style}>
       {titleActive ? (
-        <div
-          className="resonanceEvolution__warningLayer"
-          data-primary-element={primaryElement}
-          data-element-count={elements.length}
-          aria-hidden="true"
-        >
-          <div className="resonanceEvolution__lockComposition">
-            <ElementEmblem
-              iconPath={config.iconPath}
-              rune={config.rune}
-              className="resonanceEvolution__elementEmblem--lock"
-            />
-
-            <img
-              className="resonanceEvolution__lockPet"
-              src={request.fromImage}
-              alt=""
-            />
-
-            <div className="resonanceEvolution__title">
-              <span className="resonanceEvolution__titleWord resonanceEvolution__titleWord--resonance">
-                RESONANCE
-              </span>
-              <span className="resonanceEvolution__titleWord resonanceEvolution__titleWord--evolution">
-                EVOLUTION
-              </span>
-            </div>
+        <div className="resonanceEvolution__warningLayer" aria-label="Resonance Evolution">
+          <div className="resonanceEvolution__announcement">
+            <span className="resonanceEvolution__word resonanceEvolution__word--left">RESONANCE</span>
+            <span className="resonanceEvolution__word resonanceEvolution__word--right">EVOLUTION</span>
           </div>
+          <div className="resonanceEvolution__impactPulse" aria-hidden="true" />
         </div>
-      ) : null}
-
-      {sceneActive ? (
+      ) : (
         <div className="resonanceEvolution__scene">
           <div className="resonanceEvolution__wallGrid" aria-hidden="true" />
           <div className="resonanceEvolution__floorGrid" aria-hidden="true" />
-
           <div className="resonanceEvolution__composition">
-            <ElementEmblem
-              iconPath={config.iconPath}
-              rune={config.rune}
-              className="resonanceEvolution__elementEmblem--scene"
-            />
-
-            <EffectParticles effect={request.element} />
-
-            {request.element === "storm" &&
-            (phase === "elementalBuild" ||
-              phase === "strain" ||
-              phase === "hpDrain" ||
-              phase === "transformation") ? (
-              <div
-                className={`resonanceEvolution__stormStrike${
-                  mirrorStorm ? " resonanceEvolution__stormStrike--mirror" : ""
-                }`}
-                aria-hidden="true"
-              >
-                <span />
-                <span />
-                <span />
-              </div>
-            ) : null}
-
             <div className="resonanceEvolution__petStage">
               <div className="resonanceEvolution__platform" aria-hidden="true" />
-
-              {showFrom ? (
-                <img
-                  className={`resonanceEvolution__pet resonanceEvolution__pet--from${
-                    isStraining ? " resonanceEvolution__pet--strain" : ""
-                  }`}
-                  src={isStraining && request.strainImage ? request.strainImage : request.fromImage}
-                  alt=""
-                  aria-hidden="true"
-                />
-              ) : null}
-
-              {isTransforming ? (
-                <div className="resonanceEvolution__transformBody" aria-hidden="true">
+              <div className="resonanceEvolution__character">
+                {request.elementSymbol && <img className="resonanceEvolution__symbol" src={request.elementSymbol} alt="" aria-hidden="true" />}
+                {!HIDDEN_PET_PHASES.has(phase) && (
                   <img
-                    className="resonanceEvolution__pet resonanceEvolution__pet--silhouette resonanceEvolution__pet--silhouetteFrom"
-                    src={request.fromImage}
-                    alt=""
+                    key={evolved ? "evolved" : "hatchling"}
+                    className={`resonanceEvolution__pet ${evolved ? "resonanceEvolution__pet--to" : "resonanceEvolution__pet--from"}`}
+                    src={evolved ? request.toImage : request.fromImage}
+                    alt={evolved ? `${request.kithName}, evolved form` : request.kithName}
                   />
-                  <img
-                    className="resonanceEvolution__pet resonanceEvolution__pet--silhouette resonanceEvolution__pet--silhouetteTo"
-                    src={request.toImage}
-                    alt=""
-                  />
-                </div>
-              ) : null}
-
-              {showTo ? (
-                <img
-                  className="resonanceEvolution__pet resonanceEvolution__pet--to"
-                  src={request.toImage}
-                  alt=""
-                  aria-hidden="true"
-                />
-              ) : null}
+                )}
+                {(phase === "strain" || phase === "hpDrain") && (
+                  <div className="resonanceEvolution__shot" aria-hidden="true"><span /></div>
+                )}
+                {phase === "hpDrain" && <div className="resonanceEvolution__contact" aria-hidden="true" />}
+                {(transforming || phase === "reveal") && (
+                  <div className="resonanceEvolution__energy" aria-hidden="true">
+                    <svg className="resonanceEvolution__shellArcs" viewBox="0 0 200 200" fill="none">
+                      <circle cx="100" cy="100" r="94" />
+                      <ellipse cx="100" cy="100" rx="91" ry="32" transform="rotate(-32 100 100)" />
+                      <ellipse cx="100" cy="100" rx="35" ry="93" transform="rotate(-24 100 100)" />
+                      <path d="M28 48 40 53 33 66 47 72 38 87 48 103 40 116 53 129 49 148 65 158 M126 12 118 29 130 38 120 54 137 64 128 81 141 96 130 112 143 123 134 141 144 158 133 178 M177 57 162 69 173 82 159 94 169 109 154 121 162 138 147 151 M68 22 77 37 65 48 80 60 72 77 86 91 76 109 89 123 81 141 95 154 89 179" />
+                    </svg>
+                  </div>
+                )}
+              </div>
             </div>
-
-            {(phase === "strain" || phase === "hpDrain" || phase === "transformation") ? (
-              <div className="resonanceEvolution__hp" aria-label={`HP ${displayedHp} of ${hpMax}`}>
-                <div className="resonanceEvolution__hpLabel">
-                  <span>HP</span>
-                  <strong>{displayedHp}</strong>
-                </div>
+            {HP_PHASES.has(phase) && (
+              <div className="resonanceEvolution__hp" aria-label={`HP ${hp} of ${hpMax}`}>
+                <div className="resonanceEvolution__hpLabel"><span>HP</span><strong>{hp} / {hpMax}</strong></div>
                 <div className="resonanceEvolution__hpTrack">
-                  <div
-                    className="resonanceEvolution__hpFill"
-                    style={{ width: `${hpPercent}%` }}
-                  />
+                  <div className="resonanceEvolution__hpFill" style={{ transform: `scaleX(${hp / hpMax})` }} />
                 </div>
               </div>
-            ) : null}
-
-            {phase === "celebration" || phase === "complete" ? (
-              <>
-                <div className="resonanceEvolution__sparklers" aria-hidden="true">
-                  {Array.from({ length: 28 }, (_, index) => (
-                    <span
-                      key={index}
-                      style={
-                        {
-                          "--spark-index": index,
-                          "--spark-angle": `${index * (360 / 28)}deg`,
-                        } as React.CSSProperties
-                      }
-                    />
-                  ))}
-                </div>
-                <div className="resonanceEvolution__celebrationText">
-                  Your <strong>{request.kithName}</strong> has Evolved
-                </div>
-              </>
-            ) : null}
+            )}
+            {(phase === "celebration" || phase === "complete") && (
+              <div className="resonanceEvolution__celebrationText" role="status">Kith Has evolved into {request.evolvedName ?? request.kithName}</div>
+            )}
           </div>
-
-          <div
-            className="resonanceEvolution__flash"
-            aria-hidden="true"
-          />
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

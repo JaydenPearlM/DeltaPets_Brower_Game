@@ -1,86 +1,3 @@
-.resonanceEvolution {
-  position: fixed;
-  inset: 0;
-  z-index: 2147483000;
-  pointer-events: none;
-  overflow: hidden;
-  color: #fff;
-  font-family: var(--font-heading, system-ui, sans-serif);
-  isolation: isolate;
-}
-
-.resonanceEvolution__warningLayer {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-  z-index: 30;
-}
-
-.resonanceEvolution__title {
-  display: grid;
-  gap: 0.08em;
-  justify-items: center;
-  text-align: center;
-  font-size: clamp(2rem, 7vw, 6.25rem);
-  font-weight: 1000;
-  line-height: 0.92;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0;
-  color: #fff;
-  text-shadow:
-    0 0 8px rgba(255, 255, 255, 0.42),
-    0 0 22px rgba(255, 255, 255, 0.22);
-}
-
-.resonanceEvolution--warningTransparent .resonanceEvolution__title {
-  animation:
-    resonanceTitleArrive 1.05s ease-out forwards,
-    resonanceMicroVibrate 56ms steps(2, end) 0.72s infinite,
-    resonanceWhitePulse 520ms ease-in-out 0.7s infinite alternate;
-}
-
-.resonanceEvolution--warningRed .resonanceEvolution__title {
-  opacity: 1;
-  animation:
-    resonanceMicroVibrate 54ms steps(2, end) infinite,
-    resonanceWarningColor 1.5s linear forwards;
-}
-
-.resonanceEvolution--elementReveal .resonanceEvolution__title,
-.resonanceEvolution--fadeGameplay .resonanceEvolution__title {
-  opacity: 1;
-  color: var(--resonance-color);
-  text-shadow:
-    0 0 10px color-mix(in srgb, var(--resonance-color) 72%, transparent),
-    0 0 28px color-mix(in srgb, var(--resonance-color) 44%, transparent);
-}
-
-.resonanceEvolution__takeover {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  background: #000;
-  opacity: 0;
-}
-
-.resonanceEvolution--fadeGameplay .resonanceEvolution__takeover {
-  animation: resonanceTakeover 1.5s ease-in forwards;
-}
-
-.resonanceEvolution__scene {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 44%, rgba(20, 70, 40, 0.08), transparent 36%),
-    #000;
-  opacity: 1;
-}
-
 .resonanceEvolution__wallGrid {
   position: absolute;
   inset: 0;
@@ -115,21 +32,6 @@
   place-items: center;
 }
 
-.resonanceEvolution__rune {
-  position: absolute;
-  left: 50%;
-  top: 46%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  font-size: min(50vw, 64vh);
-  line-height: 0.8;
-  color: var(--resonance-color);
-  opacity: 0.14;
-  filter: blur(0.1px);
-  text-shadow: 0 0 22px color-mix(in srgb, var(--resonance-color) 28%, transparent);
-  user-select: none;
-}
-
 .resonanceEvolution__petStage {
   position: absolute;
   left: 50%;
@@ -159,880 +61,387 @@
     0 0 68px rgba(139, 57, 211, 0.24);
 }
 
-.resonanceEvolution__pet {
+.resonanceEvolution {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  overflow: hidden;
+  isolation: isolate;
+  color: #fff;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  pointer-events: auto;
+}
+.resonanceEvolution__warningLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  perspective: 700px;
+}
+.resonanceEvolution__announcement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .18em;
+  white-space: nowrap;
+  font-size: clamp(16px, 5.8vw, 88px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.025em;
+  transform-style: preserve-3d;
+  z-index: 2;
+}
+.resonanceEvolution__word {
+  display: block;
+  color: #fff;
+  text-shadow: 0 0 12px #ffffff70, 0 0 28px #bceaff38;
+  will-change: transform, opacity;
+}
+.resonanceEvolution__word--left { --entry: -100vw; --recoil: -12vw; }
+.resonanceEvolution__word--right { --entry: 100vw; --recoil: 12vw; }
+.resonanceEvolution--warningTransparent .resonanceEvolution__word {
+  animation: resonanceEntrance var(--phase-duration) cubic-bezier(.16,.72,.2,1) both;
+}
+.resonanceEvolution--warningRed .resonanceEvolution__word {
+  animation: resonanceRecoilImpact var(--phase-duration) linear both;
+}
+.resonanceEvolution--elementReveal .resonanceEvolution__word {
+  color: #ff263e;
+  text-shadow: 0 0 12px #ff233eb3, 0 0 32px #ff162b80;
+}
+.resonanceEvolution--elementReveal .resonanceEvolution__announcement {
+  animation: resonanceFlyForward var(--phase-duration) cubic-bezier(.55,.05,.8,.4) both;
+}
+.resonanceEvolution__impactPulse {
+  position: absolute;
+  width: min(66vw, 480px);
+  aspect-ratio: 1;
+  border: 2px solid #ff3850;
+  border-radius: 50%;
+  box-shadow: 0 0 30px #ff233e88, inset 0 0 20px #ff233e66;
+  opacity: 0;
+  pointer-events: none;
+}
+.resonanceEvolution--warningRed .resonanceEvolution__impactPulse {
+  animation: resonanceImpactPulse var(--phase-duration) linear both;
+}
+.resonanceEvolution__scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 44%, #14462814, transparent 36%), #000;
+  animation: resonanceSceneIn 600ms ease-out both;
+}
+.resonanceEvolution__character {
   position: absolute;
   left: 50%;
   bottom: 11%;
-  width: auto;
-  max-width: min(66vw, 620px);
-  max-height: min(52vh, 500px);
+  width: min(66vw, 46vh, 460px);
+  aspect-ratio: 1;
   transform: translateX(-50%);
-  transform-origin: 50% 82%;
-  object-fit: contain;
-  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.72));
+  isolation: isolate;
 }
-
-.resonanceEvolution--summon .resonanceEvolution__pet--from {
-  animation: resonanceSummon 1.05s ease-out both;
-}
-
-.resonanceEvolution__pet--strain {
-  animation: resonanceStrain 90ms steps(2, end) infinite;
-  filter:
-    brightness(0.94)
-    saturate(1.16)
-    drop-shadow(0 15px 25px rgba(0, 0, 0, 0.74));
-}
-
-.resonanceEvolution__transformBody {
+.resonanceEvolution__pet {
   position: absolute;
   inset: 0;
-  z-index: 8;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 24px #000b);
+  z-index: 2;
 }
-
-.resonanceEvolution__pet--silhouette {
-  filter:
-    brightness(0) invert(1)
-    drop-shadow(0 0 12px #fff)
-    drop-shadow(0 0 28px var(--resonance-accent));
+.resonanceEvolution--summon .resonanceEvolution__pet--from {
+  animation: resonanceSummon var(--phase-duration) cubic-bezier(.16,.8,.2,1) both;
 }
-
-.resonanceEvolution__pet--silhouetteFrom {
-  animation: resonanceFromShape 1.05s ease-in forwards;
+.resonanceEvolution--hpDrain .resonanceEvolution__pet--from {
+  animation: resonanceHit var(--phase-duration) ease-out both;
 }
-
-.resonanceEvolution__pet--silhouetteTo {
-  opacity: 0;
-  animation: resonanceToShape 1.05s ease-out 0.32s forwards;
+.resonanceEvolution--transformation .resonanceEvolution__pet--from {
+  animation: resonanceSealPet var(--phase-duration) linear both;
 }
-
-.resonanceEvolution__pet--to {
-  opacity: 0;
-  animation: resonanceReveal 1.05s cubic-bezier(.16,.78,.19,1) forwards;
+.resonanceEvolution__symbol {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: contain;
+  opacity: .3;
+  z-index: 0;
 }
-
+.resonanceEvolution__shot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.resonanceEvolution__shot > span {
+  position: absolute;
+  left: 0;
+  top: -5px;
+  width: clamp(160px, 26vw, 300px);
+  height: 10px;
+  border-radius: 60% 100% 100% 60%;
+  transform: rotate(-48deg);
+  transform-origin: left center;
+  background: linear-gradient(90deg, #fff 0 8%, var(--resonance-accent) 24%, transparent 100%);
+  filter: drop-shadow(0 0 8px var(--resonance-accent));
+}
+.resonanceEvolution__shot::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  left: -5px;
+  top: -5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 12px #fff, 0 0 28px var(--resonance-accent);
+}
+.resonanceEvolution--strain .resonanceEvolution__shot {
+  animation: resonanceShotTravel var(--phase-duration) cubic-bezier(.42,0,.85,.55) both;
+}
+.resonanceEvolution--hpDrain .resonanceEvolution__shot {
+  animation: resonanceLightningClear 240ms ease-out both;
+}
+@keyframes resonanceShotTravel {
+  from { transform: translate(48vw, -58vh); }
+  to { transform: translate(0, 0); }
+}
+.resonanceEvolution__contact {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff, var(--resonance-accent) 25%, transparent 70%);
+  transform: translate(-50%, -50%);
+  animation: resonanceContact 420ms ease-out both;
+  z-index: 5;
+}
+.resonanceEvolution__energy {
+  position: absolute;
+  inset: -23%;
+  z-index: 6;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 24%, color-mix(in srgb, var(--resonance-color) 18%, white) 52%, color-mix(in srgb, var(--resonance-color) 65%, white) 80%, #fff 96%, var(--resonance-color) 100%);
+  box-shadow: inset 0 0 32px #fff, 0 0 12px #fff, 0 0 30px var(--resonance-color), 0 0 65px color-mix(in srgb, var(--resonance-color) 65%, transparent);
+  transform-origin: center;
+  will-change: transform, opacity;
+  overflow: hidden;
+}
+.resonanceEvolution__energy::before,
+.resonanceEvolution__energy::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.resonanceEvolution__energy::before {
+  background: repeating-conic-gradient(from 20deg, transparent 0deg 26deg, var(--resonance-color) 29deg, #fff 31deg, transparent 34deg 60deg);
+  mask-image: radial-gradient(circle, transparent 8%, #000 35% 78%, transparent 100%);
+  filter: blur(1px);
+  animation: resonanceEnergyRotation 2400ms linear infinite;
+}
+.resonanceEvolution__shellArcs {
+  position: absolute;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  stroke: #fff;
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 2px var(--resonance-color)) drop-shadow(0 0 5px var(--resonance-color));
+  animation: resonanceEnergyRotation 1800ms linear infinite reverse;
+}
+.resonanceEvolution__shellArcs path {
+  stroke-dasharray: 24 5 9 3;
+  animation: resonancePlasmaFlow 700ms linear infinite;
+}
+.resonanceEvolution__energy::after {
+  background: radial-gradient(ellipse at center, #ffffffb3, transparent 62%);
+  opacity: .45;
+}
+.resonanceEvolution--transformation .resonanceEvolution__energy {
+  animation: resonanceEnergySeal var(--phase-duration) ease-in-out both;
+}
+.resonanceEvolution--reveal .resonanceEvolution__energy {
+  animation: resonanceEnergyPop var(--phase-duration) ease-out both;
+}
+.resonanceEvolution--reveal .resonanceEvolution__energy::after {
+  background: #fff;
+  animation: resonanceEnergyRelease var(--phase-duration) ease-out both;
+}
 .resonanceEvolution__hp {
   position: absolute;
   left: 50%;
-  bottom: 6.5%;
+  bottom: max(9%, 68px);
   width: min(72vw, 430px);
   transform: translateX(-50%);
   z-index: 12;
 }
-
 .resonanceEvolution__hpLabel {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 6px;
-  font-size: 0.86rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+  font-size: .85rem;
+  letter-spacing: .08em;
 }
-
-.resonanceEvolution__hpTrack {
-  height: 12px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.12);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.14);
-}
-
+.resonanceEvolution__hpTrack { height: 12px; border-radius: 999px; overflow: hidden; background: #ffffff24; }
 .resonanceEvolution__hpFill {
-  height: 100%;
+  width: 100%; height: 100%; transform-origin: left;
+  background: linear-gradient(90deg, #ffb83d, #69ed9e);
   border-radius: inherit;
-  background: linear-gradient(90deg, #ef3340 0 22%, #ff8f2f 42%, #ffd73d 62%, #4fd46d 82%);
-  transition: width 80ms linear;
 }
-
-.resonanceEvolution__elementFx {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  overflow: hidden;
-}
-
-.resonanceEvolution__particle {
-  position: absolute;
-  left: calc(50% + var(--particle-x));
-  top: 76%;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  opacity: 0;
-  background: var(--resonance-color);
-  box-shadow: 0 0 12px var(--resonance-accent);
-  animation: resonanceParticleRise 1.7s ease-out var(--particle-delay) infinite;
-}
-
-.resonanceEvolution__elementFx--fire .resonanceEvolution__particle {
-  border-radius: 70% 20% 70% 20%;
-  transform: rotate(45deg);
-}
-
-.resonanceEvolution__elementFx--water .resonanceEvolution__particle {
-  border-radius: 50% 50% 58% 42%;
-  box-shadow: 0 0 12px #7ee8ff;
-}
-
-.resonanceEvolution__elementFx--earth .resonanceEvolution__particle {
-  border-radius: 2px;
-  width: 9px;
-  height: 6px;
-  background: #9b8057;
-}
-
-.resonanceEvolution__elementFx--air .resonanceEvolution__particle {
-  width: 34px;
-  height: 2px;
-  border-radius: 999px;
-}
-
-.resonanceEvolution__elementFx--ice .resonanceEvolution__particle {
-  border-radius: 0;
-  transform: rotate(45deg);
-  background: #dff8ff;
-}
-
-.resonanceEvolution__elementFx--shadow .resonanceEvolution__particle {
-  width: 28px;
-  height: 10px;
-  filter: blur(5px);
-  background: #7b35c5;
-}
-
-.resonanceEvolution__elementFx--voidborne {
-  filter: blur(0.4px) contrast(1.18);
-  animation: resonanceVoidShift 620ms ease-in-out infinite alternate;
-}
-
-.resonanceEvolution__elementFx--light .resonanceEvolution__particle {
-  width: 4px;
-  height: 26px;
-  border-radius: 999px;
-  background: #fff9cf;
-}
-
-.resonanceEvolution__stormStrike {
-  position: absolute;
-  left: 50%;
-  top: 43%;
-  z-index: 10;
-  width: min(14vw, 92px);
-  height: 92vh;
-  transform: translate(-50%, -50%) rotate(-28deg);
-  transform-origin: 50% 50%;
-  opacity: 0;
-}
-
-.resonanceEvolution__stormStrike--mirror {
-  transform: translate(-50%, -50%) rotate(28deg) scaleX(-1);
-}
-
-.resonanceEvolution--elementalBuild .resonanceEvolution__stormStrike,
-.resonanceEvolution--strain .resonanceEvolution__stormStrike,
-.resonanceEvolution--hpDrain .resonanceEvolution__stormStrike {
-  animation: resonanceStormFlicker 1.2s ease-in-out infinite;
-}
-
-.resonanceEvolution--transformation .resonanceEvolution__stormStrike {
-  animation: resonanceStormImpact 620ms ease-out forwards;
-}
-
-.resonanceEvolution__stormStrike > span {
-  position: absolute;
-  left: 50%;
-  width: 10px;
-  height: 42%;
-  transform-origin: top center;
-  clip-path: polygon(46% 0, 100% 0, 62% 43%, 100% 42%, 20% 100%, 45% 56%, 8% 57%);
-  background: #fff;
-  box-shadow:
-    0 0 5px #fff,
-    0 0 13px #51dfff,
-    0 0 26px #2398ff;
-}
-
-.resonanceEvolution__stormStrike > span:nth-child(1) {
-  top: 0;
-  transform: translateX(-50%) scaleX(1.25);
-}
-
-.resonanceEvolution__stormStrike > span:nth-child(2) {
-  top: 31%;
-  left: 22%;
-  height: 28%;
-  transform: rotate(-17deg) scale(.58);
-}
-
-.resonanceEvolution__stormStrike > span:nth-child(3) {
-  top: 46%;
-  left: 76%;
-  height: 22%;
-  transform: rotate(22deg) scale(.48);
-}
-
-.resonanceEvolution__flash {
-  position: absolute;
-  inset: 0;
-  z-index: 22;
-  background: #fff;
-  opacity: 0;
-}
-
-.resonanceEvolution--transformation .resonanceEvolution__flash {
-  animation: resonanceWhiteout 1.4s ease-in-out forwards;
-}
-
-.resonanceEvolution__sparklers {
-  position: absolute;
-  left: 50%;
-  top: 49%;
-  width: min(56vw, 520px);
-  height: min(56vw, 520px);
-  transform: translate(-50%, -50%);
-  z-index: 11;
-}
-
-.resonanceEvolution__sparklers > span {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 5px;
-  height: 20px;
-  border-radius: 999px;
-  background: linear-gradient(#fff, var(--resonance-color));
-  box-shadow: 0 0 10px var(--resonance-accent);
-  transform:
-    translate(-50%, -50%)
-    rotate(var(--spark-angle))
-    translateY(-72px);
-  animation: resonanceSpark 1.5s ease-out calc(var(--spark-index) * 24ms) both;
-}
-
 .resonanceEvolution__celebrationText {
   position: absolute;
-  left: 50%;
-  bottom: 5.2%;
-  width: min(88vw, 780px);
-  transform: translateX(-50%);
-  z-index: 13;
+  top: max(7%, 28px);
+  width: 100%;
   text-align: center;
-  font-size: clamp(1.25rem, 3.4vw, 2.6rem);
-  font-weight: 950;
-  letter-spacing: 0.04em;
-  text-shadow:
-    0 2px 8px #000,
-    0 0 20px rgba(255,255,255,0.28);
-  animation: resonanceCelebrationText 700ms ease-out both;
+  font-size: clamp(20px, 4vw, 38px);
+  text-shadow: 0 0 18px var(--resonance-accent);
+  animation: resonanceSceneIn 450ms ease-out both;
 }
+.resonanceEvolution--complete { animation: resonanceFinish 1100ms ease-in both; }
 
-.resonanceEvolution__celebrationText strong {
-  color: var(--resonance-color);
+@keyframes resonanceEntrance {
+  from { opacity: 0; transform: translateX(var(--entry)); }
+  25% { opacity: .8; }
+  to { opacity: 1; transform: translateX(0); }
 }
-
-@keyframes resonanceTitleArrive {
-  0% { opacity: 0; filter: blur(5px); transform: scale(.985); }
-  62% { opacity: .65; filter: blur(1px); }
-  100% { opacity: 1; filter: blur(0); transform: scale(1); }
+@keyframes resonanceRecoilImpact {
+  0% { transform: translateX(0); color: #fff; animation-timing-function: cubic-bezier(.4,0,.6,1); }
+  32% { transform: translateX(var(--recoil)) scale(.94); color: #fff; animation-timing-function: cubic-bezier(.7,0,1,.5); }
+  57% { transform: translateX(0) scale(1); color: #ff263e; text-shadow: 0 0 20px #ff233e; }
+  66% { transform: translateY(1px); color: #ff263e; }
+  78% { transform: translateY(-.6px); color: #ff263e; }
+  100% { transform: translateY(0); color: #ff263e; text-shadow: 0 0 12px #ff233eb3, 0 0 32px #ff162b80; }
 }
-
-@keyframes resonanceMicroVibrate {
-  0% { transform: translate(0,0); }
-  25% { transform: translate(1px,-1px); }
-  50% { transform: translate(-1px,1px); }
-  75% { transform: translate(1px,1px); }
-  100% { transform: translate(-1px,-1px); }
+@keyframes resonanceImpactPulse {
+  0%, 56% { opacity: 0; transform: scale(.15); }
+  57% { opacity: .8; transform: scale(.15); }
+  100% { opacity: 0; transform: scale(2.1); }
 }
-
-@keyframes resonanceWhitePulse {
-  from { text-shadow: 0 0 8px rgba(255,255,255,.34), 0 0 18px rgba(255,255,255,.18); }
-  to { text-shadow: 0 0 13px rgba(255,255,255,.65), 0 0 32px rgba(255,255,255,.34); }
+@keyframes resonanceFlyForward {
+  0% { opacity: 1; transform: translateZ(0); }
+  65% { opacity: 1; }
+  100% { opacity: 0; transform: translateZ(640px); }
 }
-
-@keyframes resonanceWarningColor {
-  0%, 15% { color: #fff; }
-  24%, 36% { color: #ff2e3b; }
-  45%, 58% { color: #fff; }
-  69%, 79% { color: #ff2e3b; }
-  90%, 100% { color: #fff; }
+@keyframes resonanceSceneIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes resonanceSummon {
+  from { opacity: 0; transform: translateY(-12px) scale(.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
-
-@keyframes resonanceTakeover {
+@keyframes resonanceLightningTravel { from { clip-path: inset(0 0 100% 100%); } to { clip-path: inset(0); } }
+@keyframes resonanceLightningClear { from { opacity: 1; } to { opacity: 0; } }
+@keyframes resonanceContact {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(.25); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(1.35); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); }
+}
+@keyframes resonanceHit {
+  0%, 100% { transform: translate(0, 0); }
+  8% { transform: translate(-8px, 5px); }
+  20% { transform: translate(3px, -2px); }
+  32% { transform: translate(-2px, 1px); }
+  45% { transform: translate(0, 0); }
+}
+@keyframes resonanceSealPet {
+  0%, 49% { opacity: 1; visibility: visible; }
+  50%, 100% { opacity: 0; visibility: hidden; }
+}
+@keyframes resonanceEnergySeal {
+  0% { opacity: 0; transform: scale(.08); }
+  12% { opacity: 1; transform: scale(.24); }
+  45%, 100% { opacity: 1; transform: scale(1); }
+}
+@keyframes resonanceEnergyPop {
+  0% { opacity: 1; transform: scale(1); }
+  16% { opacity: 1; transform: scale(.88); }
+  44% { opacity: .8; transform: scale(1.12); }
+  70%, 100% { opacity: 0; transform: scale(1.25); }
+}
+@keyframes resonanceEnergyRotation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes resonanceEnergySweep {
+  from { opacity: 0; transform: translateX(-85%); }
+  35%, 60% { opacity: .65; }
+  to { opacity: 0; transform: translateX(85%); }
+}
+@keyframes resonanceEnergyRelease {
   0% { opacity: 0; }
-  100% { opacity: 1; }
+  20% { opacity: .6; }
+  70%, 100% { opacity: 0; }
 }
-
+@keyframes resonanceBeamDischarge {
+  0%, 15% { opacity: 1; }
+  35% { opacity: .65; }
+  50% { opacity: .85; }
+  100% { opacity: 0; }
+}
+@keyframes resonanceCorePressure {
+  from { opacity: .25; transform: scale(.8); }
+  to { opacity: .75; transform: scale(1.12); }
+}
+@keyframes resonancePlasmaFlow {
+  from { stroke-dashoffset: 0; opacity: .4; }
+  50% { opacity: .95; }
+  to { stroke-dashoffset: -52; opacity: .4; }
+}
+@keyframes resonanceFinish { 0%, 55% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes resonanceFloorMove {
   from { background-position: 0 0, 0 0; }
   to { background-position: 0 52px, 72px 0; }
 }
-
-@keyframes resonanceSummon {
-  from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(.94); filter: blur(5px) brightness(1.35); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); filter: blur(0) brightness(1); }
-}
-
-@keyframes resonanceStrain {
-  0% { transform: translateX(-50%) translate(0,0) scaleY(.96); }
-  50% { transform: translateX(-50%) translate(1px,1px) scaleY(.94); }
-  100% { transform: translateX(-50%) translate(-1px,0) scaleY(.96); }
-}
-
-@keyframes resonanceParticleRise {
-  0% { opacity: 0; transform: translateY(0) scale(.4); }
-  15% { opacity: .9; }
-  100% { opacity: 0; transform: translateY(-48vh) scale(1.15); }
-}
-
-@keyframes resonanceStormFlicker {
-  0%, 68%, 100% { opacity: 0; }
-  74% { opacity: .2; }
-  77% { opacity: .72; }
-  81% { opacity: .08; }
-}
-
-@keyframes resonanceStormImpact {
-  0% { opacity: 0; }
-  14% { opacity: .2; }
-  22% { opacity: 1; }
-  42% { opacity: .92; }
-  100% { opacity: 0; }
-}
-
-@keyframes resonanceWhiteout {
-  0%, 18% { opacity: 0; }
-  34% { opacity: .96; }
-  61% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-@keyframes resonanceFromShape {
-  0% { opacity: 1; transform: translateX(-50%) scale(1); }
-  72% { opacity: 1; transform: translateX(-50%) scale(1.16, .88); filter: brightness(0) invert(1) blur(3px) drop-shadow(0 0 32px #fff); }
-  100% { opacity: 0; transform: translateX(-50%) scale(.82, 1.28); }
-}
-
-@keyframes resonanceToShape {
-  0% { opacity: 0; transform: translateX(-50%) scale(.72, 1.22); filter: brightness(0) invert(1) blur(6px) drop-shadow(0 0 38px #fff); }
-  48% { opacity: 1; }
-  100% { opacity: 0; transform: translateX(-50%) scale(1.04); filter: brightness(0) invert(1) blur(1px) drop-shadow(0 0 24px #fff); }
-}
-
-@keyframes resonanceReveal {
-  from { opacity: 0; transform: translateX(-50%) scale(.92); filter: brightness(2.1) blur(4px) drop-shadow(0 0 34px var(--resonance-accent)); }
-  to { opacity: 1; transform: translateX(-50%) scale(1); filter: brightness(1) blur(0) drop-shadow(0 16px 24px rgba(0,0,0,.72)); }
-}
-
-@keyframes resonanceSpark {
-  0% { opacity: 0; transform: translate(-50%,-50%) rotate(var(--spark-angle)) translateY(-30px) scale(.3); }
-  25% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%,-50%) rotate(var(--spark-angle)) translateY(-210px) scale(1); }
-}
-
-@keyframes resonanceCelebrationText {
-  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-@keyframes resonanceVoidShift {
-  from { transform: scale(1) skewX(0deg); }
-  to { transform: scale(1.015) skewX(.6deg); }
-}
-
 @media (max-width: 640px) {
-  .resonanceEvolution__title {
-    font-size: clamp(2rem, 11vw, 4.2rem);
-    letter-spacing: .055em;
-  }
-
-  .resonanceEvolution__petStage {
-    top: 55%;
-    width: 94vw;
-    height: 52vh;
-  }
-
-  .resonanceEvolution__pet {
-    max-width: 88vw;
-    max-height: 45vh;
-  }
-
-  .resonanceEvolution__platform {
-    width: 78vw;
-    height: 18vw;
-  }
-
-  .resonanceEvolution__rune {
-    top: 45%;
-    font-size: min(76vw, 52vh);
-  }
-
-  .resonanceEvolution__hp {
-    bottom: 8%;
-    width: min(84vw, 430px);
-  }
-
-  .resonanceEvolution__celebrationText {
-    bottom: 6.5%;
-    font-size: clamp(1.2rem, 6vw, 2rem);
-  }
+  .resonanceEvolution__petStage { top: 55%; width: 94vw; height: 52vh; }
+  .resonanceEvolution__platform { width: 78vw; height: 18vw; }
+  .resonanceEvolution__character { width: min(70vw, 40vh); }
+  .resonanceEvolution__hp { width: 80vw; }
 }
-
+.resonanceEvolution--reduced .resonanceEvolution__word,
+.resonanceEvolution--reduced .resonanceEvolution__announcement,
+.resonanceEvolution--reduced .resonanceEvolution__pet,
+.resonanceEvolution--reduced .resonanceEvolution__floorGrid {
+  animation: none !important;
+}
+.resonanceEvolution--reduced .resonanceEvolution__impactPulse,
+.resonanceEvolution--reduced .resonanceEvolution__shellArcs,
+.resonanceEvolution--reduced .resonanceEvolution__energy::before,
+.resonanceEvolution--reduced .resonanceEvolution__energy::after,
+.resonanceEvolution--reduced .resonanceEvolution__plasma,
+.resonanceEvolution--reduced .resonanceEvolution__contact { display: none; }
+.resonanceEvolution--reduced.resonanceEvolution--warningRed .resonanceEvolution__word { color: #ff263e; }
+.resonanceEvolution--reduced.resonanceEvolution--elementReveal .resonanceEvolution__announcement { animation: resonanceLightningClear var(--phase-duration) ease both !important; }
+.resonanceEvolution--reduced.resonanceEvolution--transformation .resonanceEvolution__energy { animation: resonanceSceneIn 500ms both; }
+.resonanceEvolution--reduced.resonanceEvolution--reveal .resonanceEvolution__energy { animation: resonanceLightningClear 500ms both; }
+.resonanceEvolution--reduced.resonanceEvolution--transformation .resonanceEvolution__pet { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
-  .resonanceEvolution *,
-  .resonanceEvolution *::before,
-  .resonanceEvolution *::after {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-  }
-
-  .resonanceEvolution--warningTransparent .resonanceEvolution__title,
-  .resonanceEvolution--warningRed .resonanceEvolution__title {
-    transform: none !important;
-  }
-
-  .resonanceEvolution__floorGrid {
-    animation: none !important;
-  }
-
-  .resonanceEvolution__stormStrike {
-    display: none;
-  }
-
-  .resonanceEvolution--transformation .resonanceEvolution__flash {
-    opacity: .35;
-    transition: opacity .45s ease;
-  }
+  .resonanceEvolution__shellArcs { display: none; }
+  .resonanceEvolution__word, .resonanceEvolution__announcement, .resonanceEvolution__pet, .resonanceEvolution__floorGrid { animation: none !important; }
+  .resonanceEvolution__impactPulse, .resonanceEvolution__contact { display: none; }
+  .resonanceEvolution__energy::before, .resonanceEvolution__energy::after { display: none; }
+  .resonanceEvolution__plasma { display: none; }
+  .resonanceEvolution--warningRed .resonanceEvolution__word { color: #ff263e; }
+  .resonanceEvolution--elementReveal .resonanceEvolution__announcement { animation: resonanceLightningClear var(--phase-duration) ease both !important; }
+  .resonanceEvolution--transformation .resonanceEvolution__energy { animation: resonanceSceneIn 500ms both; }
+  .resonanceEvolution--reveal .resonanceEvolution__energy { animation: resonanceLightningClear 500ms both; }
+  .resonanceEvolution--transformation .resonanceEvolution__pet { opacity: 0; }
 }
 
-
-/* =========================================================
-   Resonance lock-in opening
-   Keeps the global overlay intact while giving the title room
-   to arrive from opposite sides around the centered Kith.
-========================================================= */
-
-.resonanceEvolution__lockComposition {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  isolation: isolate;
-}
-
-.resonanceEvolution__lockPet {
-  position: absolute;
-  left: 50%;
-  top: 54%;
-  z-index: 3;
-  width: auto;
-  max-width: min(58vw, 520px);
-  max-height: min(48vh, 460px);
-  transform: translate(-50%, -50%);
-  transform-origin: 50% 82%;
-  object-fit: contain;
-  opacity: 0;
-  filter:
-    drop-shadow(0 16px 24px rgba(0, 0, 0, 0.72))
-    drop-shadow(0 0 12px rgba(255, 255, 255, 0.14));
-}
-
-.resonanceEvolution__elementEmblem {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-  user-select: none;
-}
-
-.resonanceEvolution__elementEmblem--lock {
-  z-index: 1;
-  width: min(56vw, 520px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%) scale(.86);
-  opacity: 0;
-}
-
-.resonanceEvolution__elementEmblem--scene {
-  z-index: 1;
-  width: min(52vw, 560px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  opacity: .16;
-}
-
-.resonanceEvolution__elementEmblemImage {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-  filter:
-    drop-shadow(0 0 18px color-mix(in srgb, var(--resonance-color) 58%, transparent))
-    drop-shadow(0 0 42px color-mix(in srgb, var(--resonance-accent) 30%, transparent));
-}
-
-.resonanceEvolution__elementEmblemFallback {
-  display: block;
-  font-family: Georgia, serif;
-  font-size: min(50vw, 64vh);
-  font-weight: 900;
-  line-height: .8;
-  color: var(--resonance-color);
-  text-shadow:
-    0 0 22px color-mix(in srgb, var(--resonance-color) 38%, transparent),
-    0 0 54px color-mix(in srgb, var(--resonance-accent) 24%, transparent);
-}
-
-.resonanceEvolution__title {
-  position: absolute;
-  left: 50%;
-  top: 21%;
-  z-index: 5;
-  width: min(94vw, 1180px);
-  min-height: 1.15em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(.45rem, 2.2vw, 2rem);
-  transform: translateX(-50%);
-  opacity: 1;
-  overflow: visible;
-  color: #fff;
-  text-shadow: none;
-}
-
-.resonanceEvolution__titleWord {
-  display: inline-block;
-  opacity: 0;
-  will-change: transform, opacity, filter;
-  white-space: nowrap;
-  color: currentColor;
-  text-shadow:
-    0 0 8px rgba(255, 255, 255, .42),
-    0 0 22px rgba(255, 255, 255, .2);
-}
-
-.resonanceEvolution--warningTransparent .resonanceEvolution__title,
-.resonanceEvolution--warningRed .resonanceEvolution__title,
-.resonanceEvolution--elementReveal .resonanceEvolution__title,
-.resonanceEvolution--fadeGameplay .resonanceEvolution__title {
-  animation: none;
-  opacity: 1;
-  transform: translateX(-50%);
-}
-
-.resonanceEvolution--warningTransparent .resonanceEvolution__lockPet {
-  animation: resonanceLockPetEnter 1.2s .38s cubic-bezier(.16,.78,.19,1) both;
-}
-
-.resonanceEvolution--warningTransparent .resonanceEvolution__titleWord--resonance {
-  animation: resonanceWordFromLeft 1.25s .14s cubic-bezier(.16,.8,.18,1) both;
-}
-
-.resonanceEvolution--warningTransparent .resonanceEvolution__titleWord--evolution {
-  animation: resonanceWordFromRight 1.25s .62s cubic-bezier(.16,.8,.18,1) both;
-}
-
-.resonanceEvolution--warningRed .resonanceEvolution__lockPet,
-.resonanceEvolution--elementReveal .resonanceEvolution__lockPet,
-.resonanceEvolution--fadeGameplay .resonanceEvolution__lockPet {
-  opacity: 1;
-}
-
-.resonanceEvolution--warningRed .resonanceEvolution__titleWord {
-  opacity: 1;
-  animation:
-    resonanceLockShake 92ms linear infinite,
-    resonanceLockWhiteGlow 620ms ease-in-out infinite alternate;
-}
-
-.resonanceEvolution--elementReveal .resonanceEvolution__titleWord,
-.resonanceEvolution--fadeGameplay .resonanceEvolution__titleWord {
-  opacity: 1;
-  color: var(--resonance-color);
-  text-shadow:
-    0 0 8px #fff,
-    0 0 18px var(--resonance-accent),
-    0 0 42px var(--resonance-color),
-    0 0 82px color-mix(in srgb, var(--resonance-color) 70%, transparent);
-}
-
-.resonanceEvolution--elementReveal .resonanceEvolution__titleWord {
-  animation:
-    resonanceElementLockShake 74ms linear infinite,
-    resonanceElementClaim 1.4s cubic-bezier(.2,.8,.2,1) both;
-}
-
-.resonanceEvolution--fadeGameplay .resonanceEvolution__titleWord {
-  animation: resonanceElementHold 1.7s ease-in-out both;
-}
-
-.resonanceEvolution--warningRed .resonanceEvolution__elementEmblem--lock {
-  animation: resonanceEmblemWake 1.9s ease-in-out both;
-}
-
-.resonanceEvolution--elementReveal .resonanceEvolution__elementEmblem--lock {
-  animation: resonanceEmblemClaim 1.4s cubic-bezier(.16,.78,.19,1) both;
-}
-
-.resonanceEvolution--fadeGameplay .resonanceEvolution__elementEmblem--lock {
-  opacity: .5;
-  transform: translate(-50%, -50%) scale(1);
-  animation: resonanceEmblemBreathe 1.7s ease-in-out infinite alternate;
-}
-
-.resonanceEvolution--warningRed .resonanceEvolution__lockPet {
-  animation: resonancePetCharge 1.9s ease-in-out both;
-}
-
-.resonanceEvolution--elementReveal .resonanceEvolution__lockPet {
-  animation: resonancePetElementShake 86ms linear infinite;
-  filter:
-    brightness(1.08)
-    drop-shadow(0 16px 24px rgba(0,0,0,.7))
-    drop-shadow(0 0 20px var(--resonance-accent))
-    drop-shadow(0 0 42px color-mix(in srgb, var(--resonance-color) 62%, transparent));
-}
-
-.resonanceEvolution--fadeGameplay .resonanceEvolution__lockPet {
-  filter:
-    brightness(1.04)
-    drop-shadow(0 16px 24px rgba(0,0,0,.7))
-    drop-shadow(0 0 18px var(--resonance-accent));
-}
-
-@keyframes resonanceWordFromLeft {
-  0% {
-    opacity: 0;
-    transform: translateX(-68vw) scale(.96);
-    filter: blur(9px);
-  }
-  68% {
-    opacity: 1;
-    transform: translateX(18px) scale(1.02);
-    filter: blur(0);
-  }
-  84% {
-    transform: translateX(-7px) scale(.995);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-@keyframes resonanceWordFromRight {
-  0% {
-    opacity: 0;
-    transform: translateX(68vw) scale(.96);
-    filter: blur(9px);
-  }
-  68% {
-    opacity: 1;
-    transform: translateX(-18px) scale(1.02);
-    filter: blur(0);
-  }
-  84% {
-    transform: translateX(7px) scale(.995);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-@keyframes resonanceLockPetEnter {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -47%) scale(.94);
-    filter: blur(5px) brightness(1.45);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-    filter:
-      blur(0)
-      brightness(1)
-      drop-shadow(0 16px 24px rgba(0,0,0,.72));
-  }
-}
-
-@keyframes resonanceLockShake {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  25% { transform: translate(-2px, 1px) rotate(-.14deg); }
-  50% { transform: translate(2px, -1px) rotate(.12deg); }
-  75% { transform: translate(-1px, -1px) rotate(-.08deg); }
-}
-
-@keyframes resonanceLockWhiteGlow {
-  from {
-    text-shadow:
-      0 0 8px rgba(255,255,255,.42),
-      0 0 20px rgba(255,255,255,.2);
-    filter: brightness(1);
-  }
-  to {
-    text-shadow:
-      0 0 10px #fff,
-      0 0 26px rgba(255,255,255,.72),
-      0 0 58px rgba(196,238,255,.38);
-    filter: brightness(1.35);
-  }
-}
-
-@keyframes resonanceElementLockShake {
-  0%, 100% { transform: translate(0,0) scale(1); }
-  20% { transform: translate(-3px,1px) scale(1.008); }
-  40% { transform: translate(3px,-2px) scale(1.012); }
-  60% { transform: translate(-2px,-1px) scale(1.006); }
-  80% { transform: translate(2px,2px) scale(1.01); }
-}
-
-@keyframes resonanceElementClaim {
-  0% {
-    color: #fff;
-    filter: brightness(1.1);
-  }
-  42% {
-    color: #fff;
-    filter: brightness(1.8);
-  }
-  100% {
-    color: var(--resonance-color);
-    filter: brightness(1.25);
-  }
-}
-
-@keyframes resonanceElementHold {
-  0% { opacity: 1; filter: brightness(1.25); }
-  74% { opacity: 1; filter: brightness(1.4); }
-  100% { opacity: .08; filter: blur(5px) brightness(1.9); }
-}
-
-@keyframes resonanceEmblemWake {
-  0%, 20% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(.72);
-    filter: blur(9px);
-  }
-  72% {
-    opacity: .16;
-    transform: translate(-50%, -50%) scale(.92);
-    filter: blur(1px);
-  }
-  100% {
-    opacity: .22;
-    transform: translate(-50%, -50%) scale(.96);
-    filter: blur(0);
-  }
-}
-
-@keyframes resonanceEmblemClaim {
-  0% {
-    opacity: .18;
-    transform: translate(-50%, -50%) scale(.94);
-    filter: brightness(.8) blur(2px);
-  }
-  42% {
-    opacity: .38;
-    transform: translate(-50%, -50%) scale(1.04);
-    filter: brightness(1.45) blur(0);
-  }
-  100% {
-    opacity: .54;
-    transform: translate(-50%, -50%) scale(1);
-    filter: brightness(1.08) blur(0);
-  }
-}
-
-@keyframes resonanceEmblemBreathe {
-  from {
-    opacity: .42;
-    transform: translate(-50%, -50%) scale(.98);
-  }
-  to {
-    opacity: .58;
-    transform: translate(-50%, -50%) scale(1.025);
-  }
-}
-
-@keyframes resonancePetCharge {
-  0%, 100% {
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.012);
-    filter:
-      brightness(1.08)
-      drop-shadow(0 16px 24px rgba(0,0,0,.72))
-      drop-shadow(0 0 18px rgba(255,255,255,.24));
-  }
-}
-
-@keyframes resonancePetElementShake {
-  0%, 100% { transform: translate(-50%, -50%) translate(0,0); }
-  25% { transform: translate(-50%, -50%) translate(-1px,1px); }
-  50% { transform: translate(-50%, -50%) translate(2px,-1px); }
-  75% { transform: translate(-50%, -50%) translate(-1px,-1px); }
-}
-
-@media (max-width: 640px) {
-  .resonanceEvolution__title {
-    top: 18%;
-    width: 98vw;
-    gap: .35rem;
-    font-size: clamp(1.45rem, 8.7vw, 3rem);
-    letter-spacing: .035em;
-  }
-
-  .resonanceEvolution__lockPet {
-    top: 55%;
-    max-width: 84vw;
-    max-height: 44vh;
-  }
-
-  .resonanceEvolution__elementEmblem--lock {
-    top: 54%;
-    width: min(86vw, 430px);
-  }
-
-  .resonanceEvolution__elementEmblem--scene {
-    top: 47%;
-    width: min(78vw, 430px);
-  }
-
-  .resonanceEvolution__elementEmblemFallback {
-    font-size: min(76vw, 52vh);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .resonanceEvolution--warningTransparent .resonanceEvolution__titleWord,
-  .resonanceEvolution--warningRed .resonanceEvolution__titleWord,
-  .resonanceEvolution--elementReveal .resonanceEvolution__titleWord,
-  .resonanceEvolution--fadeGameplay .resonanceEvolution__titleWord,
-  .resonanceEvolution__lockPet,
-  .resonanceEvolution__elementEmblem--lock {
-    animation: none !important;
-    opacity: 1;
-    transform: none;
-  }
-
-  .resonanceEvolution__lockPet {
-    left: 50%;
-    top: 54%;
-    transform: translate(-50%, -50%) !important;
-  }
-
-  .resonanceEvolution__elementEmblem--lock {
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) !important;
-    opacity: .42;
-  }
-}
+.resonancePreview { box-sizing: border-box; min-height: 100vh; padding: 8vh 24px 100px; background: #080d17; color: #dce9ff; font: 16px/1.55 system-ui, sans-serif; }
+.resonancePreview__controls { max-width: 680px; margin: auto; }
+.resonancePreview h1 { font-size: clamp(26px, 5vw, 44px); line-height: 1.15; }
+.resonancePreview label { display: block; margin: 18px 0; }
+.resonancePreview select { margin-left: 12px; padding: 8px; }
+.resonancePreview input[type=file] { display: block; max-width: 100%; }
+.resonancePreview details { margin: 20px 0; }
+.resonancePreview small { opacity: .7; }
+.resonancePreview__playback { position: fixed; bottom: 16px; left: 0; right: 0; z-index: 2147483001; display: flex; justify-content: center; gap: 12px; }
+.resonancePreview button { padding: 10px 24px; border: 1px solid #7189ab; border-radius: 6px; color: #e5efff; background: #162337; font: inherit; cursor: pointer; }
+.resonancePreview button:disabled { opacity: .45; cursor: default; }

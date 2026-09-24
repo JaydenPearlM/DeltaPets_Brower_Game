@@ -30,6 +30,7 @@ export type ResonanceEvolutionPhase =
 export type ResonanceEvolutionRequest = {
   petId: string;
   kithName: string;
+  evolvedName?: string;
   fromStage: PetStage;
   toStage: PetStage;
   element: ResonanceElement;
@@ -37,6 +38,8 @@ export type ResonanceEvolutionRequest = {
   fromImage: string;
   strainImage?: string | null;
   toImage: string;
+  /** Optional original symbol; omit until the element artwork is approved. */
+  elementSymbol?: string;
   currentHp?: number;
   maxHp?: number;
   persist?: boolean;

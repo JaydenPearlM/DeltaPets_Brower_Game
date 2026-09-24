@@ -1,3 +1,4 @@
+import { PHASES, NORMAL_DURATIONS, REDUCED_DURATIONS } from "./resonanceEvolution.timeline";
 import {
   createContext,
   useCallback,
@@ -26,54 +27,6 @@ type ContextValue = {
 };
 
 const ResonanceEvolutionContext = createContext<ContextValue | null>(null);
-
-const PHASES: readonly ResonanceEvolutionPhase[] = [
-  "warningTransparent",
-  "warningRed",
-  "elementReveal",
-  "fadeGameplay",
-  "environment",
-  "summon",
-  "elementalBuild",
-  "strain",
-  "hpDrain",
-  "transformation",
-  "reveal",
-  "celebration",
-  "complete",
-];
-
-const NORMAL_DURATIONS: Record<Exclude<ResonanceEvolutionPhase, "idle">, number> = {
-  warningTransparent: 2400,
-  warningRed: 1900,
-  elementReveal: 1400,
-  fadeGameplay: 1700,
-  environment: 700,
-  summon: 1100,
-  elementalBuild: 1600,
-  strain: 900,
-  hpDrain: 1550,
-  transformation: 1450,
-  reveal: 1250,
-  celebration: 2600,
-  complete: 450,
-};
-
-const REDUCED_DURATIONS: Record<Exclude<ResonanceEvolutionPhase, "idle">, number> = {
-  warningTransparent: 1500,
-  warningRed: 1100,
-  elementReveal: 900,
-  fadeGameplay: 1200,
-  environment: 550,
-  summon: 850,
-  elementalBuild: 1000,
-  strain: 700,
-  hpDrain: 1050,
-  transformation: 950,
-  reveal: 1000,
-  celebration: 2200,
-  complete: 350,
-};
 
 export function ResonanceEvolutionProvider({
   children,

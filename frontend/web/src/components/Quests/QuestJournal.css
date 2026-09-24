@@ -1,0 +1,212 @@
+.questJournal {
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(760px, calc(100vh - 48px));
+  overflow-y: auto;
+  padding: 22px;
+  box-sizing: border-box;
+  color: var(--dp-text-primary);
+}
+
+.questJournalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.questJournalEyebrow {
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dp-cyber-cyan);
+}
+
+.questJournalHeader h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1;
+  color: var(--dp-title-gold-soft);
+}
+
+.questJournalClose {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.questJournalClose:hover,
+.questJournalClose:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.38);
+}
+
+.questJournalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.questJournalSectionHeading {
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dp-cyber-cyan);
+}
+
+.questJournalCard {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  background: rgba(8, 24, 54, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.questJournalCard--completed {
+  border-color: rgba(103, 240, 208, 0.42);
+}
+
+.questJournalCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.questJournalCardHeader h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+
+.questJournalLocation {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--dp-text-secondary);
+}
+
+.questJournalStatus {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.questJournalDescription {
+  margin: 14px 0 0;
+  line-height: 1.5;
+  color: var(--dp-text-secondary);
+}
+
+.questJournalProgress {
+  margin-top: 16px;
+}
+
+.questJournalProgressText {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  font-size: 0.84rem;
+}
+
+.questJournalProgressText span {
+  color: var(--dp-text-secondary);
+}
+
+.questJournalProgressText strong {
+  color: #ffffff;
+}
+
+.questJournalProgressTrack {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.questJournalProgressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--dp-cyber-cyan),
+    var(--dp-panel-purple-border)
+  );
+}
+
+.questJournalLocationButton {
+  margin-top: 16px;
+}
+
+.questJournalCompletedText {
+  margin: 14px 0 0;
+  font-weight: 700;
+  color: #67f0d0;
+}
+
+.questJournalEmpty,
+.questJournalCompletedEntry,
+.questJournalMessage {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--dp-text-secondary);
+}
+
+.questJournalCompletedEntry {
+  color: #67f0d0;
+  font-weight: 800;
+}
+
+.questJournalMessage--error {
+  color: #ffb4b4;
+}
+
+@media (max-width: 640px) {
+  .questJournal {
+    width: min(100%, calc(100vw - 20px));
+    max-height: calc(100vh - 24px);
+    padding: 16px;
+  }
+
+  .questJournalCard {
+    padding: 14px;
+  }
+
+  .questJournalCardHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .questJournalStatus {
+    width: fit-content;
+  }
+
+  .questJournalProgressText {
+    flex-direction: column;
+    gap: 3px;
+  }
+}
