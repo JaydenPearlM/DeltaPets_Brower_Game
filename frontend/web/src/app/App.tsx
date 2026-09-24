@@ -14,6 +14,7 @@ import { useRoamEncounter } from "../lib/kithna/useRoamEncounter";
 import { RoamEncounterToast } from "../components/RoamEncounterToast/RoamEncounterToast";
 import { useVeluneEncounter } from "../lib/kithna/useVeluneEncounter";
 import { VeluneSightingPopup } from "../components/VeluneSightingPopup/VeluneSightingPopup";
+import QuestJournal from "../components/Quests/QuestJournal";
 import "./App.css";
 
 const APP_VERSION = __APP_VERSION__;
@@ -49,7 +50,14 @@ export default function App() {
   const { phase } = useDeltaTime();
   const { signal } = useAliuneSignal();
   const { user, loading } = useAuth();
-  const { inventoryOpen, openInventory, closeInventory } = useUI();
+  const {
+    inventoryOpen,
+    questJournalOpen,
+    openInventory,
+    closeInventory,
+    openQuestJournal,
+    closeQuestJournal,
+  } = useUI();
 
   const [aliuneSignalUnlocked, setAliuneSignalUnlocked] = useState(false);
 
@@ -366,6 +374,20 @@ export default function App() {
                     </button>
                   )}
 
+                  {user && (
+                    <button
+                      type="button"
+                      className="exploreButton dp-btn dp-btn-yellow"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setExploreHintOpen(false);
+                        setExploreLockedOpen(false);
+                        openQuestJournal();
+                      }}
+                    >
+                      QUESTS
+                    </button>
+                  )}
                   <div className="exploreWrapper" ref={exploreWrapperRef}>
                     <button
                       type="button"
@@ -583,6 +605,21 @@ export default function App() {
       </footer>
 
       <LoginMenus forcedView={forcedAuthView} showLaunchers={false} />
+
+      {questJournalOpen && user && (
+        <div
+          className="dpPopupWindowBackdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Quest Journal"
+        >
+          <section className="dpPopupWindow dpPopupWindow--compact">
+            <div className="dpPopupWindowContent">
+              <QuestJournal onClose={closeQuestJournal} />
+            </div>
+          </section>
+        </div>
+      )}
 
       {inventoryOpen && user && (
         <div

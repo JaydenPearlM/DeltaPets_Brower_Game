@@ -125,6 +125,8 @@ const easeInCubic = (t: number) => t * t * t;
 const easeInOutCubic = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
+const GLITCH_UPDATE_MS = 1000 / 30;
+
 function glitchReveal(
   target: string,
   set: TextSetter,
@@ -132,33 +134,47 @@ function glitchReveal(
   alive: AliveCheck,
 ) {
   const start = performance.now();
+  let lastUpdate = start - GLITCH_UPDATE_MS;
+
   return new Promise<void>((resolve) => {
     function frame(now: number) {
       if (!alive()) {
         resolve();
         return;
       }
+
       const p = Math.min(1, (now - start) / totalMs);
-      const locked = Math.floor(p * target.length);
-      let out = "";
-      for (let i = 0; i < target.length; i++) {
-        const ch = target[i];
-        if (ch === " ") {
-          out += " ";
-        } else if (i < locked) {
-          out += ch;
-        } else {
-          out += GLITCH_CHARS[(Math.random() * GLITCH_CHARS.length) | 0];
-        }
-      }
-      set(out);
+
       if (p >= 1) {
         set(target);
         resolve();
         return;
       }
+
+      if (now - lastUpdate >= GLITCH_UPDATE_MS) {
+        lastUpdate = now;
+
+        const locked = Math.floor(p * target.length);
+        let out = "";
+
+        for (let i = 0; i < target.length; i++) {
+          const ch = target[i];
+
+          if (ch === " ") {
+            out += " ";
+          } else if (i < locked) {
+            out += ch;
+          } else {
+            out += GLITCH_CHARS[(Math.random() * GLITCH_CHARS.length) | 0];
+          }
+        }
+
+        set(out);
+      }
+
       requestAnimationFrame(frame);
     }
+
     requestAnimationFrame(frame);
   });
 }
@@ -531,6 +547,12 @@ export default function CreatePage() {
     let w = 0;
     let h = 0;
 
+    let gridBufferLength = 0;
+    let px = new Float32Array(0);
+    let py = new Float32Array(0);
+    let pa = new Float32Array(0);
+    let pg = new Float32Array(0);
+
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       w = canvasEl.clientWidth;
@@ -752,11 +774,16 @@ export default function CreatePage() {
         const rows = Math.ceil(h / sp) + 2;
         const x0 = (w - (cols - 1) * sp) / 2;
         const y0 = (h - (rows - 1) * sp) / 2;
+        const requiredGridBufferLength = cols * rows;
 
-        const px = new Float32Array(cols * rows);
-        const py = new Float32Array(cols * rows);
-        const pa = new Float32Array(cols * rows);
-        const pg = new Float32Array(cols * rows);
+        if (gridBufferLength !== requiredGridBufferLength) {
+          gridBufferLength = requiredGridBufferLength;
+
+          px = new Float32Array(gridBufferLength);
+          py = new Float32Array(gridBufferLength);
+          pa = new Float32Array(gridBufferLength);
+          pg = new Float32Array(gridBufferLength);
+        }
 
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
@@ -1027,9 +1054,11 @@ export default function CreatePage() {
         alive,
       );
       if (!alive()) return;
-      setGlitching(false);
+
       await sleep(2800);
       if (!alive()) return;
+
+      setGlitching(false);
       setCenterText("");
       await sleep(400);
       if (!alive()) return;
@@ -1094,9 +1123,11 @@ export default function CreatePage() {
         alive,
       );
       if (!alive()) return;
-      setGlitching(false);
+
       await sleep(2400);
       if (!alive()) return;
+
+      setGlitching(false);
       setCenterText("");
       if (!alive()) return;
 
@@ -1138,9 +1169,11 @@ export default function CreatePage() {
         alive,
       );
       if (!alive()) return;
-      setGlitching(false);
+
       await sleep(1800);
       if (!alive()) return;
+
+      setGlitching(false);
       setCenterText("");
       if (!alive()) return;
       await sleep(350);
@@ -1153,11 +1186,13 @@ export default function CreatePage() {
         alive,
       );
       if (!alive()) return;
-      setGlitching(false);
+
       setPhase("hold");
+
       await sleep(TIMING.holdMs);
       if (!alive()) return;
 
+      setGlitching(false);
       setPhase("fadeOut");
       await sleep(TIMING.fadeOutMs);
       if (!alive()) return;

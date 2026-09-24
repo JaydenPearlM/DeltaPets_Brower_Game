@@ -1,0 +1,447 @@
+.resonanceEvolution__wallGrid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image:
+    linear-gradient(rgba(63, 255, 124, 0.74) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 255, 124, 0.74) 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 68%, transparent 96%);
+}
+
+.resonanceEvolution__floorGrid {
+  position: absolute;
+  left: -25%;
+  right: -25%;
+  bottom: -30%;
+  height: 68%;
+  transform-origin: 50% 100%;
+  transform: perspective(520px) rotateX(64deg);
+  background-image:
+    linear-gradient(rgba(72, 255, 126, 0.66) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(72, 255, 126, 0.66) 1px, transparent 1px);
+  background-size: 72px 52px;
+  opacity: 0.48;
+  animation: resonanceFloorMove 1.35s linear infinite;
+}
+
+.resonanceEvolution__composition {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.resonanceEvolution__petStage {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: min(72vw, 740px);
+  height: min(58vh, 560px);
+  transform: translate(-50%, -50%);
+  z-index: 7;
+}
+
+.resonanceEvolution__platform {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: min(58vw, 520px);
+  height: min(12vw, 112px);
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at center,
+      rgba(198, 113, 255, 0.34) 0%,
+      rgba(132, 48, 204, 0.68) 42%,
+      rgba(78, 27, 124, 0.48) 68%,
+      transparent 74%);
+  box-shadow:
+    0 0 26px rgba(186, 94, 255, 0.38),
+    0 0 68px rgba(139, 57, 211, 0.24);
+}
+
+.resonanceEvolution {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  overflow: hidden;
+  isolation: isolate;
+  color: #fff;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  pointer-events: auto;
+}
+.resonanceEvolution__warningLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  perspective: 700px;
+}
+.resonanceEvolution__announcement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .18em;
+  white-space: nowrap;
+  font-size: clamp(16px, 5.8vw, 88px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.025em;
+  transform-style: preserve-3d;
+  z-index: 2;
+}
+.resonanceEvolution__word {
+  display: block;
+  color: #fff;
+  text-shadow: 0 0 12px #ffffff70, 0 0 28px #bceaff38;
+  will-change: transform, opacity;
+}
+.resonanceEvolution__word--left { --entry: -100vw; --recoil: -12vw; }
+.resonanceEvolution__word--right { --entry: 100vw; --recoil: 12vw; }
+.resonanceEvolution--warningTransparent .resonanceEvolution__word {
+  animation: resonanceEntrance var(--phase-duration) cubic-bezier(.16,.72,.2,1) both;
+}
+.resonanceEvolution--warningRed .resonanceEvolution__word {
+  animation: resonanceRecoilImpact var(--phase-duration) linear both;
+}
+.resonanceEvolution--elementReveal .resonanceEvolution__word {
+  color: #ff263e;
+  text-shadow: 0 0 12px #ff233eb3, 0 0 32px #ff162b80;
+}
+.resonanceEvolution--elementReveal .resonanceEvolution__announcement {
+  animation: resonanceFlyForward var(--phase-duration) cubic-bezier(.55,.05,.8,.4) both;
+}
+.resonanceEvolution__impactPulse {
+  position: absolute;
+  width: min(66vw, 480px);
+  aspect-ratio: 1;
+  border: 2px solid #ff3850;
+  border-radius: 50%;
+  box-shadow: 0 0 30px #ff233e88, inset 0 0 20px #ff233e66;
+  opacity: 0;
+  pointer-events: none;
+}
+.resonanceEvolution--warningRed .resonanceEvolution__impactPulse {
+  animation: resonanceImpactPulse var(--phase-duration) linear both;
+}
+.resonanceEvolution__scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 44%, #14462814, transparent 36%), #000;
+  animation: resonanceSceneIn 600ms ease-out both;
+}
+.resonanceEvolution__character {
+  position: absolute;
+  left: 50%;
+  bottom: 11%;
+  width: min(66vw, 46vh, 460px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  isolation: isolate;
+}
+.resonanceEvolution__pet {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 24px #000b);
+  z-index: 2;
+}
+.resonanceEvolution--summon .resonanceEvolution__pet--from {
+  animation: resonanceSummon var(--phase-duration) cubic-bezier(.16,.8,.2,1) both;
+}
+.resonanceEvolution--hpDrain .resonanceEvolution__pet--from {
+  animation: resonanceHit var(--phase-duration) ease-out both;
+}
+.resonanceEvolution--transformation .resonanceEvolution__pet--from {
+  animation: resonanceSealPet var(--phase-duration) linear both;
+}
+.resonanceEvolution__symbol {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: contain;
+  opacity: .3;
+  z-index: 0;
+}
+.resonanceEvolution__shot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.resonanceEvolution__shot > span {
+  position: absolute;
+  left: 0;
+  top: -5px;
+  width: clamp(160px, 26vw, 300px);
+  height: 10px;
+  border-radius: 60% 100% 100% 60%;
+  transform: rotate(-48deg);
+  transform-origin: left center;
+  background: linear-gradient(90deg, #fff 0 8%, var(--resonance-accent) 24%, transparent 100%);
+  filter: drop-shadow(0 0 8px var(--resonance-accent));
+}
+.resonanceEvolution__shot::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  left: -5px;
+  top: -5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 12px #fff, 0 0 28px var(--resonance-accent);
+}
+.resonanceEvolution--strain .resonanceEvolution__shot {
+  animation: resonanceShotTravel var(--phase-duration) cubic-bezier(.42,0,.85,.55) both;
+}
+.resonanceEvolution--hpDrain .resonanceEvolution__shot {
+  animation: resonanceLightningClear 240ms ease-out both;
+}
+@keyframes resonanceShotTravel {
+  from { transform: translate(48vw, -58vh); }
+  to { transform: translate(0, 0); }
+}
+.resonanceEvolution__contact {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff, var(--resonance-accent) 25%, transparent 70%);
+  transform: translate(-50%, -50%);
+  animation: resonanceContact 420ms ease-out both;
+  z-index: 5;
+}
+.resonanceEvolution__energy {
+  position: absolute;
+  inset: -23%;
+  z-index: 6;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 24%, color-mix(in srgb, var(--resonance-color) 18%, white) 52%, color-mix(in srgb, var(--resonance-color) 65%, white) 80%, #fff 96%, var(--resonance-color) 100%);
+  box-shadow: inset 0 0 32px #fff, 0 0 12px #fff, 0 0 30px var(--resonance-color), 0 0 65px color-mix(in srgb, var(--resonance-color) 65%, transparent);
+  transform-origin: center;
+  will-change: transform, opacity;
+  overflow: hidden;
+}
+.resonanceEvolution__energy::before,
+.resonanceEvolution__energy::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.resonanceEvolution__energy::before {
+  background: repeating-conic-gradient(from 20deg, transparent 0deg 26deg, var(--resonance-color) 29deg, #fff 31deg, transparent 34deg 60deg);
+  mask-image: radial-gradient(circle, transparent 8%, #000 35% 78%, transparent 100%);
+  filter: blur(1px);
+  animation: resonanceEnergyRotation 2400ms linear infinite;
+}
+.resonanceEvolution__shellArcs {
+  position: absolute;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  stroke: #fff;
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 2px var(--resonance-color)) drop-shadow(0 0 5px var(--resonance-color));
+  animation: resonanceEnergyRotation 1800ms linear infinite reverse;
+}
+.resonanceEvolution__shellArcs path {
+  stroke-dasharray: 24 5 9 3;
+  animation: resonancePlasmaFlow 700ms linear infinite;
+}
+.resonanceEvolution__energy::after {
+  background: radial-gradient(ellipse at center, #ffffffb3, transparent 62%);
+  opacity: .45;
+}
+.resonanceEvolution--transformation .resonanceEvolution__energy {
+  animation: resonanceEnergySeal var(--phase-duration) ease-in-out both;
+}
+.resonanceEvolution--reveal .resonanceEvolution__energy {
+  animation: resonanceEnergyPop var(--phase-duration) ease-out both;
+}
+.resonanceEvolution--reveal .resonanceEvolution__energy::after {
+  background: #fff;
+  animation: resonanceEnergyRelease var(--phase-duration) ease-out both;
+}
+.resonanceEvolution__hp {
+  position: absolute;
+  left: 50%;
+  bottom: max(9%, 68px);
+  width: min(72vw, 430px);
+  transform: translateX(-50%);
+  z-index: 12;
+}
+.resonanceEvolution__hpLabel {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: .85rem;
+  letter-spacing: .08em;
+}
+.resonanceEvolution__hpTrack { height: 12px; border-radius: 999px; overflow: hidden; background: #ffffff24; }
+.resonanceEvolution__hpFill {
+  width: 100%; height: 100%; transform-origin: left;
+  background: linear-gradient(90deg, #ffb83d, #69ed9e);
+  border-radius: inherit;
+}
+.resonanceEvolution__celebrationText {
+  position: absolute;
+  top: max(7%, 28px);
+  width: 100%;
+  text-align: center;
+  font-size: clamp(20px, 4vw, 38px);
+  text-shadow: 0 0 18px var(--resonance-accent);
+  animation: resonanceSceneIn 450ms ease-out both;
+}
+.resonanceEvolution--complete { animation: resonanceFinish 1100ms ease-in both; }
+
+@keyframes resonanceEntrance {
+  from { opacity: 0; transform: translateX(var(--entry)); }
+  25% { opacity: .8; }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes resonanceRecoilImpact {
+  0% { transform: translateX(0); color: #fff; animation-timing-function: cubic-bezier(.4,0,.6,1); }
+  32% { transform: translateX(var(--recoil)) scale(.94); color: #fff; animation-timing-function: cubic-bezier(.7,0,1,.5); }
+  57% { transform: translateX(0) scale(1); color: #ff263e; text-shadow: 0 0 20px #ff233e; }
+  66% { transform: translateY(1px); color: #ff263e; }
+  78% { transform: translateY(-.6px); color: #ff263e; }
+  100% { transform: translateY(0); color: #ff263e; text-shadow: 0 0 12px #ff233eb3, 0 0 32px #ff162b80; }
+}
+@keyframes resonanceImpactPulse {
+  0%, 56% { opacity: 0; transform: scale(.15); }
+  57% { opacity: .8; transform: scale(.15); }
+  100% { opacity: 0; transform: scale(2.1); }
+}
+@keyframes resonanceFlyForward {
+  0% { opacity: 1; transform: translateZ(0); }
+  65% { opacity: 1; }
+  100% { opacity: 0; transform: translateZ(640px); }
+}
+@keyframes resonanceSceneIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes resonanceSummon {
+  from { opacity: 0; transform: translateY(-12px) scale(.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes resonanceLightningTravel { from { clip-path: inset(0 0 100% 100%); } to { clip-path: inset(0); } }
+@keyframes resonanceLightningClear { from { opacity: 1; } to { opacity: 0; } }
+@keyframes resonanceContact {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(.25); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(1.35); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); }
+}
+@keyframes resonanceHit {
+  0%, 100% { transform: translate(0, 0); }
+  8% { transform: translate(-8px, 5px); }
+  20% { transform: translate(3px, -2px); }
+  32% { transform: translate(-2px, 1px); }
+  45% { transform: translate(0, 0); }
+}
+@keyframes resonanceSealPet {
+  0%, 49% { opacity: 1; visibility: visible; }
+  50%, 100% { opacity: 0; visibility: hidden; }
+}
+@keyframes resonanceEnergySeal {
+  0% { opacity: 0; transform: scale(.08); }
+  12% { opacity: 1; transform: scale(.24); }
+  45%, 100% { opacity: 1; transform: scale(1); }
+}
+@keyframes resonanceEnergyPop {
+  0% { opacity: 1; transform: scale(1); }
+  16% { opacity: 1; transform: scale(.88); }
+  44% { opacity: .8; transform: scale(1.12); }
+  70%, 100% { opacity: 0; transform: scale(1.25); }
+}
+@keyframes resonanceEnergyRotation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes resonanceEnergySweep {
+  from { opacity: 0; transform: translateX(-85%); }
+  35%, 60% { opacity: .65; }
+  to { opacity: 0; transform: translateX(85%); }
+}
+@keyframes resonanceEnergyRelease {
+  0% { opacity: 0; }
+  20% { opacity: .6; }
+  70%, 100% { opacity: 0; }
+}
+@keyframes resonanceBeamDischarge {
+  0%, 15% { opacity: 1; }
+  35% { opacity: .65; }
+  50% { opacity: .85; }
+  100% { opacity: 0; }
+}
+@keyframes resonanceCorePressure {
+  from { opacity: .25; transform: scale(.8); }
+  to { opacity: .75; transform: scale(1.12); }
+}
+@keyframes resonancePlasmaFlow {
+  from { stroke-dashoffset: 0; opacity: .4; }
+  50% { opacity: .95; }
+  to { stroke-dashoffset: -52; opacity: .4; }
+}
+@keyframes resonanceFinish { 0%, 55% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes resonanceFloorMove {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 0 52px, 72px 0; }
+}
+@media (max-width: 640px) {
+  .resonanceEvolution__petStage { top: 55%; width: 94vw; height: 52vh; }
+  .resonanceEvolution__platform { width: 78vw; height: 18vw; }
+  .resonanceEvolution__character { width: min(70vw, 40vh); }
+  .resonanceEvolution__hp { width: 80vw; }
+}
+.resonanceEvolution--reduced .resonanceEvolution__word,
+.resonanceEvolution--reduced .resonanceEvolution__announcement,
+.resonanceEvolution--reduced .resonanceEvolution__pet,
+.resonanceEvolution--reduced .resonanceEvolution__floorGrid {
+  animation: none !important;
+}
+.resonanceEvolution--reduced .resonanceEvolution__impactPulse,
+.resonanceEvolution--reduced .resonanceEvolution__shellArcs,
+.resonanceEvolution--reduced .resonanceEvolution__energy::before,
+.resonanceEvolution--reduced .resonanceEvolution__energy::after,
+.resonanceEvolution--reduced .resonanceEvolution__plasma,
+.resonanceEvolution--reduced .resonanceEvolution__contact { display: none; }
+.resonanceEvolution--reduced.resonanceEvolution--warningRed .resonanceEvolution__word { color: #ff263e; }
+.resonanceEvolution--reduced.resonanceEvolution--elementReveal .resonanceEvolution__announcement { animation: resonanceLightningClear var(--phase-duration) ease both !important; }
+.resonanceEvolution--reduced.resonanceEvolution--transformation .resonanceEvolution__energy { animation: resonanceSceneIn 500ms both; }
+.resonanceEvolution--reduced.resonanceEvolution--reveal .resonanceEvolution__energy { animation: resonanceLightningClear 500ms both; }
+.resonanceEvolution--reduced.resonanceEvolution--transformation .resonanceEvolution__pet { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .resonanceEvolution__shellArcs { display: none; }
+  .resonanceEvolution__word, .resonanceEvolution__announcement, .resonanceEvolution__pet, .resonanceEvolution__floorGrid { animation: none !important; }
+  .resonanceEvolution__impactPulse, .resonanceEvolution__contact { display: none; }
+  .resonanceEvolution__energy::before, .resonanceEvolution__energy::after { display: none; }
+  .resonanceEvolution__plasma { display: none; }
+  .resonanceEvolution--warningRed .resonanceEvolution__word { color: #ff263e; }
+  .resonanceEvolution--elementReveal .resonanceEvolution__announcement { animation: resonanceLightningClear var(--phase-duration) ease both !important; }
+  .resonanceEvolution--transformation .resonanceEvolution__energy { animation: resonanceSceneIn 500ms both; }
+  .resonanceEvolution--reveal .resonanceEvolution__energy { animation: resonanceLightningClear 500ms both; }
+  .resonanceEvolution--transformation .resonanceEvolution__pet { opacity: 0; }
+}
+
+.resonancePreview { box-sizing: border-box; min-height: 100vh; padding: 8vh 24px 100px; background: #080d17; color: #dce9ff; font: 16px/1.55 system-ui, sans-serif; }
+.resonancePreview__controls { max-width: 680px; margin: auto; }
+.resonancePreview h1 { font-size: clamp(26px, 5vw, 44px); line-height: 1.15; }
+.resonancePreview label { display: block; margin: 18px 0; }
+.resonancePreview select { margin-left: 12px; padding: 8px; }
+.resonancePreview input[type=file] { display: block; max-width: 100%; }
+.resonancePreview details { margin: 20px 0; }
+.resonancePreview small { opacity: .7; }
+.resonancePreview__playback { position: fixed; bottom: 16px; left: 0; right: 0; z-index: 2147483001; display: flex; justify-content: center; gap: 12px; }
+.resonancePreview button { padding: 10px 24px; border: 1px solid #7189ab; border-radius: 6px; color: #e5efff; background: #162337; font: inherit; cursor: pointer; }
+.resonancePreview button:disabled { opacity: .45; cursor: default; }

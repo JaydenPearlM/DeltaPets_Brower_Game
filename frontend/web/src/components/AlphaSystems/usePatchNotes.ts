@@ -20,11 +20,10 @@ export type PatchNoteSection = {
 };
 
 export const CURRENT_WEB_PATCH: PatchNoteItem = {
-  id: "bundled-v0.0.5-closed-alpha",
-  version: "v0.0.5 Closed Alpha",
-  title: "DeltaPets v0.0.5 Closed Alpha",
-  summary:
-    "This build continues strengthening DeltaPets for Open Alpha.",
+  id: "bundled-v0.1.0-closed-alpha",
+  version: "v0.1.0 Closed Alpha",
+  title: "DeltaPets v0.1.0 Closed Alpha",
+  summary: "This build continues strengthening DeltaPets for Open Alpha.",
   released_at: "2026-09-01T00:00:00-04:00",
   sections: [
     {

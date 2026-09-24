@@ -30,6 +30,12 @@ const GymPage = lazy(() => import("../../pages/gym/gym"));
 const FirstRevealTrailer = lazy(
   () => import("../../components/Video_hatch/FirstRevealTrailer"),
 );
+const ResonanceEvolutionPreview = lazy(
+  () =>
+    import(
+      "../../features/resonanceEvolution/ResonanceEvolutionPreview"
+    ),
+);
 
 const ComingSoonPage = lazy(() =>
   import("../../pages/Soon/ComingSoonPage").then((module) => ({
@@ -75,6 +81,10 @@ export const router = createBrowserRouter([
   {
     path: "/showcase",
     element: withSuspense(<FirstRevealTrailer />),
+  },
+  {
+    path: "/resonance-preview",
+    element: withSuspense(<ResonanceEvolutionPreview />),
   },
   {
     path: "authcallback",

@@ -10,6 +10,7 @@ import { requireUser, type AuthedRequest } from "../../../middleware/auth";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { logger } from "../../../lib/logger";
 import { getDeltaTime } from "../../../lib/deltaTime";
+import { awardXpToActivePet } from "../../../pets/petProgression";
 import { insertBaseStats, fetchTotalPoints } from "../../routePets/petsStats";
 import {
   getKithnaEggsForTime,
@@ -270,30 +271,6 @@ function pickRandomSpecies(
   return standardPool[standardPool.length - 1];
 }
 
-async function grantXpToActivePet(userId: string, amount: number) {
-  // Writes directly to pets.xp, the field every frontend XP bar actually
-  // reads. Do not write this to pet_stat_allocations.xp, that table is a
-  // known dead end for player-visible XP, see rewards.ts giveXPToActivePet.
-  const { data: pet, error } = await supabaseAdmin
-    .from("pets")
-    .select("id, xp")
-    .eq("user_id", userId)
-    .eq("is_active", true)
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!pet) return;
-
-  const { error: updateError } = await supabaseAdmin
-    .from("pets")
-    .update({
-      xp: (pet.xp ?? 0) + amount,
-    })
-    .eq("id", pet.id);
-
-  if (updateError) throw updateError;
-}
-
 // ============================================================
 // POST /api/kithna/roam
 //
@@ -491,7 +468,7 @@ kithnaRouter.post(
       }
 
       try {
-        await grantXpToActivePet(userId, species.findXpReward);
+        await awardXpToActivePet(userId, species.findXpReward);
       } catch (xpError) {
         logger.error("[kithna/roam/take] XP grant failed", xpError);
       }
