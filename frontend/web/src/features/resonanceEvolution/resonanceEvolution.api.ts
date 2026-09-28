@@ -2,7 +2,15 @@ import { apiFetch } from "@/lib/api/baseClient";
 import type {
   ResonanceEvolutionCommitResponse,
   ResonanceEvolutionRequest,
+  ResonanceEvolutionPending,
 } from "./resonanceEvolution.types";
+
+export async function getPendingResonanceEvolutions(): Promise<ResonanceEvolutionPending[]> {
+  const result = await apiFetch<{ pending: ResonanceEvolutionPending[] }>(
+    "/api/pets/resonance-evolution/pending",
+  );
+  return result.pending;
+}
 
 export async function commitResonanceEvolution(
   request: ResonanceEvolutionRequest,

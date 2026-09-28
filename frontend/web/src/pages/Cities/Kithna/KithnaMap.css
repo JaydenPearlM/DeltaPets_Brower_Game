@@ -146,15 +146,18 @@
   z-index: 1;
 }
 
+/*
+ * Quest markers are independent map controls.
+ * They intentionally sit outside their associated buildings.
+ */
 .kithnaQuestMarker {
   position: absolute;
-  z-index: 3;
-  top: -48%;
-  right: -14%;
+  z-index: 6;
   display: grid;
   place-items: center;
   width: 36px;
-  height: 30px;
+  height: 36px;
+  padding: 0;
   border: 3px solid #1b1a18;
   border-radius: 50%;
   background: #f4c84b;
@@ -162,20 +165,68 @@
   font-size: 22px;
   font-weight: 1000;
   line-height: 1;
+  cursor: pointer;
   box-shadow: 0 3px 0 rgba(27, 26, 24, 0.28);
+  transition:
+    transform 140ms ease,
+    filter 140ms ease,
+    outline-color 140ms ease;
 }
 
-.kithnaQuestMarker::after {
-  content: "";
+/*
+ * Assanti's side quest.
+ * Floats above the Food Shop.
+ */
+.kithnaQuestMarker--food {
+  left: 29%;
+  top: 66%;
+}
+
+/*
+ * Something's Afoot.
+ * Floats above Kithna Wildwood.
+ */
+.kithnaQuestMarker--wildwood {
+  left: 14%;
+  top: 39%;
+}
+
+/*
+ * Main quest distinction.
+ * The exclamation point stays the normal quest marker,
+ * while the small star identifies the main quest line.
+ */
+.kithnaQuestMarkerStar {
   position: absolute;
-  left: 4px;
-  bottom: -9px;
-  width: 10px;
-  height: 10px;
-  border-right: 3px solid #1b1a18;
-  border-bottom: 3px solid #1b1a18;
-  background: #f4c84b;
-  transform: rotate(35deg);
+  right: -12px;
+  top: -9px;
+  color: #f4c84b;
+  font-size: 18px;
+  line-height: 1;
+  text-shadow:
+    -1px -1px 0 #1b1a18,
+    1px -1px 0 #1b1a18,
+    -1px 1px 0 #1b1a18,
+    1px 1px 0 #1b1a18;
+  pointer-events: none;
+}
+
+.kithnaQuestMarker--turn-in {
+  background: #67e8f9;
+  background: #67e8f9;
+  color: #10243a;
+
+  box-shadow:
+    0 3px 0 rgba(27, 26, 24, 0.28),
+    0 0 16px rgba(103, 232, 249, 0.55);
+}
+
+.kithnaQuestMarker:hover,
+.kithnaQuestMarker:focus-visible {
+  outline: 3px solid var(--dp-cyan, #67e8f9);
+  outline-offset: 3px;
+  transform: translateY(-2px);
+  filter: brightness(1.08);
 }
 
 .kithnaBuildingIcon {
@@ -394,11 +445,29 @@
     font-size: 0.58rem;
   }
 
+  /*
+   * Keep the same map-relative quest positions on mobile.
+   * Only the marker itself becomes smaller.
+   */
   .kithnaQuestMarker {
-    top: -52%;
-    right: -18%;
     width: 30px;
-    height: 26px;
+    height: 30px;
     font-size: 18px;
+  }
+
+  .kithnaQuestMarker--food {
+    left: 29%;
+    top: 65%;
+  }
+
+  .kithnaQuestMarker--wildwood {
+    left: 14%;
+    top: 38%;
+  }
+
+  .kithnaQuestMarkerStar {
+    right: -10px;
+    top: -8px;
+    font-size: 15px;
   }
 }

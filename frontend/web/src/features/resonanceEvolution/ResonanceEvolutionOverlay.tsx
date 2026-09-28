@@ -83,19 +83,19 @@ export function ResonanceEvolutionOverlay({ request, phase, displayedHp, reduced
                     </svg>
                   </div>
                 )}
+                {HP_PHASES.has(phase) && (
+                  <div className="resonanceEvolution__hp" aria-label={`HP ${hp} of ${hpMax}`}>
+                    <div className="resonanceEvolution__hpLabel"><span>HP</span><strong>{hp} / {hpMax}</strong></div>
+                    <div className="resonanceEvolution__hpTrack">
+                      <div className="resonanceEvolution__hpFill" style={{ transform: `scaleX(${hp / hpMax})` }} />
+                    </div>
+                  </div>
+                )}
+                {(phase === "celebration" || phase === "complete") && (
+                  <div className="resonanceEvolution__celebrationText" role="status">{request.kithName} has evolved into {request.evolvedName ?? request.kithName}!</div>
+                )}
               </div>
             </div>
-            {HP_PHASES.has(phase) && (
-              <div className="resonanceEvolution__hp" aria-label={`HP ${hp} of ${hpMax}`}>
-                <div className="resonanceEvolution__hpLabel"><span>HP</span><strong>{hp} / {hpMax}</strong></div>
-                <div className="resonanceEvolution__hpTrack">
-                  <div className="resonanceEvolution__hpFill" style={{ transform: `scaleX(${hp / hpMax})` }} />
-                </div>
-              </div>
-            )}
-            {(phase === "celebration" || phase === "complete") && (
-              <div className="resonanceEvolution__celebrationText" role="status">Kith Has evolved into {request.evolvedName ?? request.kithName}</div>
-            )}
           </div>
         </div>
       )}

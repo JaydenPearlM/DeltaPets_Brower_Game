@@ -31,3 +31,7 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-store/
+
+# Local project backups
+output/backup/
+output/old_backup/

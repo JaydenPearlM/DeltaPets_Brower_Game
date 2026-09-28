@@ -278,7 +278,7 @@
 .resonanceEvolution__hp {
   position: absolute;
   left: 50%;
-  bottom: max(9%, 68px);
+  top: calc(100% + 16px);
   width: min(72vw, 430px);
   transform: translateX(-50%);
   z-index: 12;
@@ -298,8 +298,12 @@
 }
 .resonanceEvolution__celebrationText {
   position: absolute;
-  top: max(7%, 28px);
-  width: 100%;
+  bottom: calc(100% + 18px);
+  left: 50%;
+  translate: -50% 0;
+  width: min(calc(100vw - 32px), 740px);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
   text-align: center;
   font-size: clamp(20px, 4vw, 38px);
   text-shadow: 0 0 18px var(--resonance-accent);

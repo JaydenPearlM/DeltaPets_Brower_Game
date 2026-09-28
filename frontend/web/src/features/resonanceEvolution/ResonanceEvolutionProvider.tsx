@@ -1,4 +1,4 @@
-import { PHASES, NORMAL_DURATIONS, REDUCED_DURATIONS } from "./resonanceEvolution.timeline";
+import { PHASES, CINEMATIC_DURATIONS } from "./resonanceEvolution.timeline";
 import {
   createContext,
   useCallback,
@@ -9,12 +9,15 @@ import {
   useState,
 } from "react";
 import { useGame } from "@/app/providers/GameProvider";
-import { commitResonanceEvolution } from "./resonanceEvolution.api";
+import { useAuth } from "@/app/providers/useAuth";
+import { getStarterPortrait } from "@/kith/registry/starterPortraits";
+import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
+import { commitResonanceEvolution, getPendingResonanceEvolutions } from "./resonanceEvolution.api";
 import {
   RESONANCE_CONTROLLER_EVENTS,
   type ResonanceSafetyEvent,
 } from "./resonanceEvolution.controller";
-import { ResonanceEvolutionOverlay } from "./ResonanceEvolutionOverlay";
+import { ResonanceEvolutionCinematic } from "./ResonanceEvolutionCinematic";
 import type {
   ResonanceEvolutionPhase,
   ResonanceEvolutionRequest,
@@ -33,8 +36,10 @@ export function ResonanceEvolutionProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { bumpRefreshKey } = useGame();
+  const { bumpRefreshKey, refreshKey } = useGame();
+  const { user, loading } = useAuth();
   const [queue, setQueue] = useState<ResonanceEvolutionRequest[]>([]);
+  const [queueOwnerId, setQueueOwnerId] = useState(user?.id);
   const [active, setActive] = useState<ResonanceEvolutionRequest | null>(null);
   const [phase, setPhase] = useState<ResonanceEvolutionPhase>("idle");
   const [displayedHp, setDisplayedHp] = useState(1);
@@ -42,11 +47,17 @@ export function ResonanceEvolutionProvider({
   const [unsafeKeys, setUnsafeKeys] = useState<Set<string>>(() => new Set());
   const timerRef = useRef<number | null>(null);
   const drainFrameRef = useRef<number | null>(null);
-  const committedPetRef = useRef<string | null>(null);
+  const commitInFlightRef = useRef(false);
+  const [isCommitting, setIsCommitting] = useState(false);
+  const failedPetIdsRef = useRef(new Set<string>());
+  const userIdRef = useRef(user?.id);
+  userIdRef.current = user?.id;
 
   const isSafe = unsafeKeys.size === 0;
 
   const queueEvolution = useCallback((request: ResonanceEvolutionRequest) => {
+    // Gameplay never accepts preview requests or bypasses the server commit.
+    if (request.persist === false || failedPetIdsRef.current.has(request.petId)) return;
     setQueue((current) => {
       if (
         current.some((entry) => entry.petId === request.petId) ||
@@ -57,6 +68,60 @@ export function ResonanceEvolutionProvider({
       return [...current, request];
     });
   }, [active?.petId]);
+
+  useEffect(() => {
+    setQueue([]);
+    setQueueOwnerId(user?.id);
+    setActive(null);
+    setPhase("idle");
+    failedPetIdsRef.current.clear();
+  }, [user?.id]);
+
+  useEffect(() => {
+    failedPetIdsRef.current.clear();
+  }, [refreshKey]);
+
+  useEffect(() => {
+    if (loading || !user || active || isCommitting || !isSafe) return;
+    let cancelled = false;
+    let checking = false;
+    const check = async () => {
+      if (checking || document.visibilityState === "hidden") return;
+      checking = true;
+      try {
+        const pending = await getPendingResonanceEvolutions();
+        if (cancelled) return;
+        for (const pet of pending) {
+          const image = getStarterPortrait(pet.speciesId) ?? getKithnaPortrait(pet.speciesId);
+          if (!image) continue;
+          queueEvolution({
+            petId: pet.petId, kithName: pet.kithName, evolvedName: pet.evolvedName,
+            fromStage: pet.fromStage, toStage: pet.toStage, element: pet.element,
+            fromImage: image, toImage: image,
+            currentHp: pet.currentHp, maxHp: pet.maxHp,
+          });
+        }
+      } catch (error: unknown) {
+        if (!cancelled) console.error("[ResonanceEvolution] eligibility check failed", error);
+      } finally {
+        checking = false;
+      }
+    };
+    const requestCheck = (event?: Event) => {
+      if (event?.type === RESONANCE_CONTROLLER_EVENTS.check) failedPetIdsRef.current.clear();
+      void check();
+    };
+    void check();
+    const timer = window.setInterval(requestCheck, 30_000);
+    window.addEventListener(RESONANCE_CONTROLLER_EVENTS.check, requestCheck);
+    document.addEventListener("visibilitychange", requestCheck);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      window.removeEventListener(RESONANCE_CONTROLLER_EVENTS.check, requestCheck);
+      document.removeEventListener("visibilitychange", requestCheck);
+    };
+  }, [loading, user?.id, refreshKey, active, isCommitting, isSafe, queueEvolution]);
 
   const setEvolutionUnsafe = useCallback((key: string, unsafe: boolean) => {
     setUnsafeKeys((current) => {
@@ -96,38 +161,40 @@ export function ResonanceEvolutionProvider({
   }, [queueEvolution, setEvolutionUnsafe]);
 
   useEffect(() => {
-    if (active || !isSafe || queue.length === 0) return;
+    if (!user || queueOwnerId !== user.id || loading || active || !isSafe || queue.length === 0 || commitInFlightRef.current) return;
     const [next, ...rest] = queue;
+    const committingUserId = user.id;
+    commitInFlightRef.current = true;
+    setIsCommitting(true);
     setQueue(rest);
-    setActive(next);
-    setDisplayedHp(Math.max(1, next.currentHp ?? next.maxHp ?? 1));
-    committedPetRef.current = null;
-    setPhase("warningTransparent");
-  }, [active, isSafe, queue]);
+    // Only play a successful evolution. Insufficient Deltas or server failures
+    // must never reach the reveal/celebration phases.
+    void commitResonanceEvolution(next)
+      .then((result) => {
+        if (userIdRef.current !== committingUserId) return;
+        setActive({ ...next, currentHp: result.previous_hp, maxHp: result.previous_hp_max });
+        setDisplayedHp(Math.max(1, result.previous_hp));
+        setPhase("warningTransparent");
+      })
+      .catch((error: unknown) => {
+        if (userIdRef.current !== committingUserId) return;
+        failedPetIdsRef.current.add(next.petId);
+        setQueue([]);
+        console.error("[ResonanceEvolution] evolution commit failed", error);
+        window.alert(error instanceof Error ? error.message : "Resonance Evolution could not be saved.");
+      })
+      .finally(() => {
+        commitInFlightRef.current = false;
+        setIsCommitting(false);
+      });
+  }, [active, isSafe, queue, queueOwnerId, user?.id, loading, isCommitting]);
 
   useEffect(() => {
     if (!active || phase === "idle") return;
 
-    const durations = reducedMotion ? REDUCED_DURATIONS : NORMAL_DURATIONS;
+    const durations = CINEMATIC_DURATIONS;
     const currentIndex = PHASES.indexOf(phase);
     if (currentIndex < 0) return;
-
-    if (phase === "hpDrain" && committedPetRef.current !== active.petId) {
-      committedPetRef.current = active.petId;
-      if (active.persist !== false) {
-        void commitResonanceEvolution(active)
-          .then((result) => {
-            setDisplayedHp(1);
-            if (result.pet.hp_cur !== 1) {
-              console.error("[ResonanceEvolution] server did not persist HP=1", result.pet);
-            }
-          })
-          .catch((error) => {
-            committedPetRef.current = null;
-            console.error("[ResonanceEvolution] evolution commit failed", error);
-          });
-      }
-    }
 
     if (phase === "hpDrain") {
       const startedAt = performance.now();
@@ -169,15 +236,15 @@ export function ResonanceEvolutionProvider({
     () => ({
       queueResonanceEvolution: queueEvolution,
       setEvolutionUnsafe,
-      isEvolutionPlaying: active !== null,
+      isEvolutionPlaying: active !== null || isCommitting,
     }),
-    [active, queueEvolution, setEvolutionUnsafe],
+    [active, isCommitting, queueEvolution, setEvolutionUnsafe],
   );
 
   return (
     <ResonanceEvolutionContext.Provider value={value}>
       {children}
-      <ResonanceEvolutionOverlay
+      <ResonanceEvolutionCinematic
         request={active}
         phase={phase}
         displayedHp={displayedHp}

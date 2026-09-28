@@ -58,19 +58,23 @@ export type ResonanceEvolutionCommitResponse = {
   };
   previous_hp: number;
   previous_hp_max: number;
+  consumed_deltas: number;
+  delta_slug: string;
 };
 
 export type ResonanceEvolutionPending = {
   petId: string;
   kithName: string;
+  evolvedName: string;
   speciesId: string | null;
   fromStage: PetStage;
   toStage: PetStage;
   element: ResonanceElement;
   currentHp: number;
   maxHp: number;
-  xp: number;
-  requiredXp: number;
+  level: number;
+  requiredLevel: number;
+  requiredDeltas: number;
 };
 
 export type ResonanceElementConfig = {

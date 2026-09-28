@@ -972,3 +972,84 @@
     padding-right: 0;
   }
 }
+
+.headerSupportNav {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  width: max-content;
+  z-index: 3;
+}
+
+.headerPlayerNav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.headerPlayerNav--desktop {
+  transform: translate(var(--header-nav-offset, 20px), 12px);
+}
+
+.headerPlayerNav--mobile {
+  display: none;
+}
+
+.appJournalNav {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--dp-title-gold-soft);
+  font: inherit;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.appInventoryNav {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--dp-cyber-cyan);
+  font: inherit;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.appJournalNav:hover,
+.appJournalNav:focus-visible,
+.appInventoryNav:hover,
+.appInventoryNav:focus-visible {
+  text-decoration: underline;
+}
+
+.appJournalNav:focus-visible,
+.appInventoryNav:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+  .headerSupportNav {
+    display: contents;
+  }
+
+  .headerPlayerNav--desktop {
+    display: none;
+  }
+
+  .headerPlayerNav--mobile {
+    display: flex;
+  }
+}

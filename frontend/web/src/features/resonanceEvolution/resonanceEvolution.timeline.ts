@@ -25,6 +25,18 @@ export const NORMAL_DURATIONS: Record<Exclude<ResonanceEvolutionPhase, "idle">, 
 
 export const REDUCED_DURATIONS = NORMAL_DURATIONS;
 
+/** Timings of the approved center-impact bubble cinematic. */
+export const CINEMATIC_DURATIONS = {
+  ...NORMAL_DURATIONS,
+  summon: 550,
+  elementalBuild: 900,
+  strain: 520,
+  hpDrain: 690,
+  transformation: 1650,
+  reveal: 620,
+  celebration: 2200,
+};
+
 /** Visual-only recovery. This never changes a stored Kith's HP. */
 export function recoveredPreviewHp(maxHp: number): number {
   return Math.max(1, Math.ceil(maxHp / 2));

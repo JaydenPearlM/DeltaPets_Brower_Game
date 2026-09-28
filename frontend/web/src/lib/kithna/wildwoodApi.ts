@@ -1,18 +1,33 @@
 import { apiFetch } from "../api/baseClient";
-import type { BattleAction, WildwoodExploreRequest, WildwoodSession } from "@shared/battle/wildwoodTypes";
+import type {
+  BattleAction,
+  WildwoodExploreRequest,
+  WildwoodSession,
+} from "@shared/battle/wildwoodTypes";
 
-export type { BattleAction, BattleRow, BattleState, WildwoodSession } from "@shared/battle/wildwoodTypes";
+export type {
+  BattleAction,
+  BattleRow,
+  BattleState,
+  WildwoodSession,
+} from "@shared/battle/wildwoodTypes";
 
 export function fetchWildwoodSession() {
   return apiFetch<WildwoodSession>("/api/kithna/wildwood/session");
 }
 
 export function exploreWildwood(request: WildwoodExploreRequest) {
-  return apiFetch<WildwoodSession>("/api/kithna/wildwood/explore", { method: "POST", json: request });
+  return apiFetch<WildwoodSession>("/api/kithna/wildwood/explore", {
+    method: "POST",
+    json: request,
+  });
 }
 
 export function submitWildwoodAction(battleId: string, action: BattleAction) {
-  return apiFetch<WildwoodSession>(`/api/kithna/wildwood/battle/${encodeURIComponent(battleId)}/action`, { method: "POST", json: action });
+  return apiFetch<WildwoodSession>(
+    `/api/kithna/wildwood/battle/${encodeURIComponent(battleId)}/action`,
+    { method: "POST", json: action },
+  );
 }
 
 export type SomethingsAfootStatus =
@@ -28,8 +43,15 @@ export type WildwoodStatus = {
     progress: number;
     target: number;
   };
+  foodQuest: {
+    key: "assanti_food_trouble";
+    status: SomethingsAfootStatus;
+    progress: number;
+    target: number;
+  };
   wildwoodUnlocked: boolean;
   dailyFoodUnlocked: boolean;
+  aliuneSignalUnlocked: boolean;
   expedition: {
     id: string;
     status: "active";
@@ -51,6 +73,18 @@ export function acceptSomethingsAfoot() {
 
 export function turnInSomethingsAfoot() {
   return apiFetch<WildwoodStatus>("/api/kithna/wildwood/quest/turn-in", {
+    method: "POST",
+  });
+}
+
+export function acceptAssantiFoodQuest() {
+  return apiFetch<WildwoodStatus>("/api/kithna/wildwood/food-quest/accept", {
+    method: "POST",
+  });
+}
+
+export function turnInAssantiFoodQuest() {
+  return apiFetch<WildwoodStatus>("/api/kithna/wildwood/food-quest/turn-in", {
     method: "POST",
   });
 }

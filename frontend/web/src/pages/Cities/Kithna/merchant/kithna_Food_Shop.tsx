@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
 import {
@@ -248,8 +249,9 @@ export default function KithnaFoodShop() {
 
     if (!wildwoodStatus?.dailyFoodUnlocked) {
       setMerchantMessage(
-        "The corrupted Kith still control the meat tree farm. Clear Somethings Afoot in Wildwood first.",
+        "Daily Food is still locked. Help Assanti with the corrupted Kith and return to her when the job is done.",
       );
+
       return;
     }
 
@@ -317,6 +319,9 @@ export default function KithnaFoodShop() {
         <PoeTayToe locationKey="food-merchant" />
 
         <section className="dp-merchant-panel dp-standard-panel">
+          <Link className="kithna-food-back-link" to="/cities/kithna">
+            Back to Kithna
+          </Link>
           <header className="dp-merchant-header kithna-food-header">
             <div
               className="dp-merchant-foreground kithna-food-merchant-art"
@@ -384,7 +389,7 @@ export default function KithnaFoodShop() {
                 <p className="dp-merchant-daily-copy">
                   {wildwoodStatus?.dailyFoodUnlocked
                     ? "The farm is clear. Collect 10 Meat + 10 Vegetables once every 24 hours."
-                    : "Corrupted Kith have taken over the meat tree farm. Complete Somethings Afoot in Wildwood to reopen the daily collection."}
+                    : "Daily Food unlocks after you help Assanti with the corrupted Kith and turn her quest in."}
                 </p>
 
                 <button

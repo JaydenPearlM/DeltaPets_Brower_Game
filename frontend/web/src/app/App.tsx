@@ -36,7 +36,6 @@ const PET_LINKS: MenuLink[] = [
 const BATTLE_LINKS: MenuLink[] = [
   { label: "Battle Arena", to: "/battle-arena" },
   { label: "Expeditions", to: "/battle-dungeons" },
-  { label: "Wildwood", to: "/kithna/wildwood" },
 ];
 
 const CITY_LINKS: MenuLink[] = [
@@ -90,6 +89,35 @@ export default function App() {
   }
 
   const exploreWrapperRef = useRef<HTMLDivElement | null>(null);
+  const supportLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const desktopNavigationRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const support = supportLinkRef.current;
+    const explore = exploreWrapperRef.current;
+    const navigation = desktopNavigationRef.current;
+    if (!support || !explore || !navigation) return;
+
+    const centerNavigation = () => {
+      const gap =
+        explore.getBoundingClientRect().left -
+        support.getBoundingClientRect().right;
+      const offset = (gap - navigation.getBoundingClientRect().width) / 2;
+      navigation.style.setProperty("--header-nav-offset", `${offset}px`);
+    };
+
+    const observer = new ResizeObserver(centerNavigation);
+    observer.observe(support);
+    observer.observe(explore);
+    observer.observe(navigation);
+    window.addEventListener("resize", centerNavigation);
+    centerNavigation();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", centerNavigation);
+    };
+  }, [user, location.pathname]);
 
   const forcedAuthView = useMemo<"login" | "signup" | "none">(() => {
     if (location.pathname === "/signin") return "login";
@@ -309,6 +337,32 @@ export default function App() {
   }
 
   const hideHeader = location.pathname.startsWith("/create");
+  const headerNavigation = user && (
+    <>
+      <button
+        type="button"
+        className="appJournalNav"
+        onClick={() => {
+          setMenuOpen(false);
+          setExploreHintOpen(false);
+          setExploreLockedOpen(false);
+          openQuestJournal();
+        }}
+      >
+        JOURNAL
+      </button>
+      <button
+        type="button"
+        className="appInventoryNav"
+        onClick={() => {
+          setMenuOpen(false);
+          openInventory();
+        }}
+      >
+        INVENTORY
+      </button>
+    </>
+  );
 
   return (
     <div
@@ -332,14 +386,25 @@ export default function App() {
               <span className="logoText">DeltaPets</span>
             </button>
 
-            <a
-              className="mobileHeaderSupportBtn dp-btn btn-gold"
-              href="https://ko-fi.com/deltapets/tiers"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Support DeltaPets
-            </a>
+            <div className="headerSupportNav">
+              <a
+                ref={supportLinkRef}
+                className="mobileHeaderSupportBtn dp-btn btn-gold"
+                href="https://ko-fi.com/deltapets/tiers"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Support DeltaPets
+              </a>
+              {user && (
+                <div
+                  ref={desktopNavigationRef}
+                  className="headerPlayerNav headerPlayerNav--desktop"
+                >
+                  {headerNavigation}
+                </div>
+              )}
+            </div>
 
             <div className="headerStack">
               {aliuneSignalUnlocked ? (
@@ -375,18 +440,9 @@ export default function App() {
                   )}
 
                   {user && (
-                    <button
-                      type="button"
-                      className="exploreButton dp-btn dp-btn-yellow"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        setExploreHintOpen(false);
-                        setExploreLockedOpen(false);
-                        openQuestJournal();
-                      }}
-                    >
-                      QUESTS
-                    </button>
+                    <div className="headerPlayerNav headerPlayerNav--mobile">
+                      {headerNavigation}
+                    </div>
                   )}
                   <div className="exploreWrapper" ref={exploreWrapperRef}>
                     <button
@@ -469,19 +525,6 @@ export default function App() {
                             onClick={() => handleNavigate("/profile")}
                           >
                             <span>Profile</span>
-                          </button>
-                        </div>
-
-                        <div className="hamburgerMenuSection hamburgerMenuSection--profile">
-                          <button
-                            type="button"
-                            className="hamburgerMenuSectionStatic"
-                            onClick={() => {
-                              setMenuOpen(false);
-                              openInventory();
-                            }}
-                          >
-                            <span>Inventory</span>
                           </button>
                         </div>
 
@@ -613,8 +656,8 @@ export default function App() {
           aria-modal="true"
           aria-label="Quest Journal"
         >
-          <section className="dpPopupWindow dpPopupWindow--compact">
-            <div className="dpPopupWindowContent">
+          <section className="dpPopupWindow dpPopupWindow--large">
+            <div className="dpPopupWindowContent questJournalPopupContent">
               <QuestJournal onClose={closeQuestJournal} />
             </div>
           </section>

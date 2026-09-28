@@ -1186,13 +1186,11 @@ export default function CreatePage() {
         alive,
       );
       if (!alive()) return;
-
+      setGlitching(false);
       setPhase("hold");
-
       await sleep(TIMING.holdMs);
       if (!alive()) return;
 
-      setGlitching(false);
       setPhase("fadeOut");
       await sleep(TIMING.fadeOutMs);
       if (!alive()) return;
@@ -1286,8 +1284,13 @@ export default function CreatePage() {
 ========================================================= */
 const css = `
 .dpc-root{
-  position:relative; width:100%; height:100vh; min-height:560px;
-  background:${C.bg}; overflow:hidden;
+  position:relative;
+  width:min(1440px, 100vw);
+  height:min(900px, 100vh);
+  min-height:560px;
+  margin:0 auto;
+  background:${C.bg};
+  overflow:hidden;
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 .dpc-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }

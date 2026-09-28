@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   fetchWildwoodStatus,
   type WildwoodStatus,
@@ -8,15 +7,13 @@ import "./QuestJournal.css";
 
 type QuestStatus = "available" | "active" | "ready_to_turn_in" | "completed";
 
-type QuestCategory = "main" | "aliune";
+type QuestCategory = "main" | "side";
 
 type QuestJournalEntry = {
   key: string;
   title: string;
   description: string;
   category: QuestCategory;
-  location: string;
-  route: string;
   status: QuestStatus;
   progress?: number;
   target?: number;
@@ -33,7 +30,7 @@ function statusLabel(status: QuestStatus) {
       return "In progress";
 
     case "ready_to_turn_in":
-      return "Return to quest giver";
+      return "Objective complete";
 
     case "completed":
       return "Completed";
@@ -44,8 +41,6 @@ function statusLabel(status: QuestStatus) {
 }
 
 export default function QuestJournal({ onClose }: QuestJournalProps) {
-  const navigate = useNavigate();
-
   const [wildwood, setWildwood] = useState<WildwoodStatus | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -88,21 +83,37 @@ export default function QuestJournal({ onClose }: QuestJournalProps) {
       return [];
     }
 
-    return [
-      {
+    const quests: QuestJournalEntry[] = [];
+
+    if (wildwood.quest.status !== "available") {
+      quests.push({
         key: wildwood.quest.key,
         title: "Something’s Afoot",
         description:
-          "A researcher in Kithna is working on a mysterious design. He needs you to investigate the Wildwood and defeat five corrupted Kith before returning to him.",
-        category: "aliune",
-        location: "Kithna · Wildwood",
-        route: "/kithna/wildwood",
+          "A researcher in Kithna is working on a strange device he calls an Aliune Signal. He needs more information about the strange Kith appearing in the Wildwood.",
+        category: "main",
         status: wildwood.quest.status,
         progress: wildwood.quest.progress,
         target: wildwood.quest.target,
-        objectiveLabel: "Corrupted Kith defeated",
-      },
-    ];
+        objectiveLabel: "Strange Kith defeated",
+      });
+    }
+
+    if (wildwood.foodQuest.status !== "available") {
+      quests.push({
+        key: wildwood.foodQuest.key,
+        title: "A Merchant’s Trouble",
+        description:
+          "Strange Kith have been eating Assanti’s plants and attacking her meat tree. She asked you to defeat the three causing trouble for her food supply.",
+        category: "side",
+        status: wildwood.foodQuest.status,
+        progress: wildwood.foodQuest.progress,
+        target: wildwood.foodQuest.target,
+        objectiveLabel: "Strange Kith defeated",
+      });
+    }
+
+    return quests;
   }, [wildwood]);
 
   const active = entries.filter(
@@ -111,10 +122,11 @@ export default function QuestJournal({ onClose }: QuestJournalProps) {
 
   const completed = entries.filter((entry) => entry.status === "completed");
 
-  function goTo(entry: QuestJournalEntry) {
-    onClose();
-    navigate(entry.route);
-  }
+  const activeMain = active.filter((entry) => entry.category === "main");
+  const activeSide = active.filter((entry) => entry.category === "side");
+
+  const completedMain = completed.filter((entry) => entry.category === "main");
+  const completedSide = completed.filter((entry) => entry.category === "side");
 
   function renderEntry(entry: QuestJournalEntry) {
     const hasProgress =
@@ -128,15 +140,17 @@ export default function QuestJournal({ onClose }: QuestJournalProps) {
     return (
       <article
         key={entry.key}
-        className={`questJournalCard${
-          entry.status === "completed" ? " questJournalCard--completed" : ""
-        }`}
+        className={[
+          "questJournalCard",
+          entry.category === "main" ? "questJournalCard--main" : "questJournalCard--side",
+          entry.status === "completed" ? "questJournalCard--completed" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
         <div className="questJournalCardHeader">
-          <div>
+          <div className="questJournalTitleGroup">
             <h3>{entry.title}</h3>
-
-            <div className="questJournalLocation">{entry.location}</div>
           </div>
 
           <span className="questJournalStatus">
@@ -165,18 +179,56 @@ export default function QuestJournal({ onClose }: QuestJournalProps) {
           </div>
         ) : null}
 
+        {entry.status === "ready_to_turn_in" ? (
+          <div className="questJournalReturnNotice">
+            <strong>Objective complete</strong>
+            <span>Return to the quest giver.</span>
+          </div>
+        ) : null}
+
         {entry.status === "completed" ? (
           <p className="questJournalCompletedText">Quest complete.</p>
-        ) : (
-          <button
-            type="button"
-            className="dp-btn dp-btn--blue questJournalLocationButton"
-            onClick={() => goTo(entry)}
-          >
-            Go to quest location
-          </button>
-        )}
+        ) : null}
       </article>
+    );
+  }
+
+  function renderQuestGroups(
+    mainQuests: QuestJournalEntry[],
+    sideQuests: QuestJournalEntry[],
+    emptyMessage: string,
+  ) {
+    if (!mainQuests.length && !sideQuests.length) {
+      return <div className="questJournalEmpty">{emptyMessage}</div>;
+    }
+
+    return (
+      <div className="questJournalGroups">
+        {mainQuests.length ? (
+          <div className="questJournalGroup">
+            <div className="questJournalGroupHeading">
+              <span className="questJournalMainStar" aria-hidden="true">
+                ★
+              </span>
+              Main Quests
+            </div>
+
+            <div className="questJournalGroupEntries">
+              {mainQuests.map(renderEntry)}
+            </div>
+          </div>
+        ) : null}
+
+        {sideQuests.length ? (
+          <div className="questJournalGroup">
+            <div className="questJournalGroupHeading">Side Quests</div>
+
+            <div className="questJournalGroupEntries">
+              {sideQuests.map(renderEntry)}
+            </div>
+          </div>
+        ) : null}
+      </div>
     );
   }
 
@@ -184,8 +236,6 @@ export default function QuestJournal({ onClose }: QuestJournalProps) {
     <section className="questJournal" aria-label="Quest Journal">
       <header className="questJournalHeader">
         <div>
-          <p className="questJournalEyebrow">Keeper Log</p>
-
           <h2>Quest Journal</h2>
         </div>
 
@@ -195,7 +245,7 @@ export default function QuestJournal({ onClose }: QuestJournalProps) {
           aria-label="Close quest journal"
           onClick={onClose}
         >
-          ×
+          CLOSE
         </button>
       </header>
 
@@ -210,27 +260,23 @@ export default function QuestJournal({ onClose }: QuestJournalProps) {
       ) : null}
 
       {!loading && !error ? (
-        <>
+        <div className="questJournalScrollArea">
           <section className="questJournalSection">
             <div className="questJournalSectionHeading">Current Quests</div>
 
-            {active.length ? (
-              active.map(renderEntry)
-            ) : (
-              <div className="questJournalEmpty">No current quests.</div>
-            )}
+            {renderQuestGroups(activeMain, activeSide, "No current quests.")}
           </section>
 
           <section className="questJournalSection">
             <div className="questJournalSectionHeading">Completed</div>
 
-            {completed.length ? (
-              completed.map(renderEntry)
-            ) : (
-              <div className="questJournalEmpty">No completed quests yet.</div>
+            {renderQuestGroups(
+              completedMain,
+              completedSide,
+              "No completed quests yet.",
             )}
           </section>
-        </>
+        </div>
       ) : null}
     </section>
   );

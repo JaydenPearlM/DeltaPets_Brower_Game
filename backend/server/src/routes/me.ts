@@ -5,8 +5,92 @@ import type { Response } from "express";
 import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 import { logger } from "../lib/logger";
+import { z } from "zod";
+import { readAppearance, saveAppearanceSchema } from "../lib/profileAppearance";
 
 export const meRouter = Router();
+
+meRouter.get("/me/appearance", requireUser, async (req: AuthedRequest, res: Response) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .select("avatar_customization, default_avatar_customization")
+      .eq("user_id", req.user!.id)
+      .maybeSingle();
+    if (error) throw error;
+    return res.json({
+      appearance: readAppearance(data?.avatar_customization),
+      defaultAppearance: readAppearance(data?.default_avatar_customization),
+    });
+  } catch (error) {
+    logger.error("[GET /api/me/appearance] failed", error);
+    return res.status(500).json({ error: "Could not load your saved appearance." });
+  }
+});
+
+meRouter.put("/me/appearance", requireUser, async (req: AuthedRequest, res: Response) => {
+  const parsed = saveAppearanceSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Choose valid appearance options." });
+  }
+  try {
+    const column = parsed.data.target === "current"
+      ? "avatar_customization"
+      : "default_avatar_customization";
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .upsert({ user_id: req.user!.id, [column]: parsed.data.appearance }, { onConflict: "user_id" })
+      .select("avatar_customization, default_avatar_customization")
+      .single();
+    if (error) throw error;
+    return res.json({
+      appearance: readAppearance(data.avatar_customization),
+      defaultAppearance: readAppearance(data.default_avatar_customization),
+    });
+  } catch (error) {
+    logger.error("[PUT /api/me/appearance] failed", error);
+    return res.status(500).json({ error: "Could not save your appearance. Please try again." });
+  }
+});
+
+meRouter.get("/profiles/:playerId", requireUser, async (req: AuthedRequest, res: Response) => {
+  const playerId = z.string().uuid().safeParse(req.params.playerId);
+  if (!playerId.success) {
+    return res.status(400).json({ error: "Invalid player profile link." });
+  }
+  try {
+    const { data: profile, error } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, username, display_name, created_at, active_title, avatar_customization")
+      .eq("user_id", playerId.data)
+      .maybeSingle();
+    if (error) throw error;
+    if (!profile) return res.status(404).json({ error: "Player profile not found." });
+
+    const [progression, pets] = await Promise.all([
+      supabaseAdmin.from("trainer_progression").select("trainer_level")
+        .eq("user_id", playerId.data).maybeSingle(),
+      supabaseAdmin.from("pets").select("id", { count: "exact", head: true })
+        .eq("user_id", playerId.data),
+    ]);
+    if (progression.error) throw progression.error;
+    if (pets.error) throw pets.error;
+    // Explicit public fields only; never return the complete profile row.
+    return res.json({
+      playerId: profile.user_id,
+      displayName: profile.display_name || profile.username || "Traveler",
+      username: profile.username,
+      joinedAt: profile.created_at,
+      title: profile.active_title,
+      appearance: readAppearance(profile.avatar_customization),
+      trainerLevel: progression.data?.trainer_level ?? 1,
+      kithOwned: pets.count ?? 0,
+    });
+  } catch (error) {
+    logger.error("[GET /api/profiles/:playerId] failed", error);
+    return res.status(500).json({ error: "Could not load this player profile." });
+  }
+});
 
 meRouter.get(
   "/me/trainer-progression",

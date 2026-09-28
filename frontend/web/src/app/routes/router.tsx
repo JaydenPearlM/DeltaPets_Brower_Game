@@ -20,6 +20,7 @@ const HatcheryPage = lazy(
 );
 
 const ProfilePage = lazy(() => import("../../pages/profile/ProfilePage"));
+const PlayerProfilePage = lazy(() => import("../../pages/profile/PlayerProfilePage"));
 const BattleArenaPage = lazy(
   () => import("../../pages/battleArena/BattleArenaPage"),
 );
@@ -29,12 +30,6 @@ const BattleDungeonsPage = lazy(
 const GymPage = lazy(() => import("../../pages/gym/gym"));
 const FirstRevealTrailer = lazy(
   () => import("../../components/Video_hatch/FirstRevealTrailer"),
-);
-const ResonanceEvolutionPreview = lazy(
-  () =>
-    import(
-      "../../features/resonanceEvolution/ResonanceEvolutionPreview"
-    ),
 );
 
 const ComingSoonPage = lazy(() =>
@@ -81,10 +76,6 @@ export const router = createBrowserRouter([
   {
     path: "/showcase",
     element: withSuspense(<FirstRevealTrailer />),
-  },
-  {
-    path: "/resonance-preview",
-    element: withSuspense(<ResonanceEvolutionPreview />),
   },
   {
     path: "authcallback",
@@ -191,6 +182,15 @@ export const router = createBrowserRouter([
         element: withSuspense(
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>,
+        ),
+      },
+
+      {
+        path: "profile/:playerId",
+        element: withSuspense(
+          <ProtectedRoute>
+            <PlayerProfilePage />
           </ProtectedRoute>,
         ),
       },

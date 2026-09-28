@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import "./ProfilePage.css";
 import "../Homepage/homepage.css";
 import "../../mobile.css";
@@ -12,8 +13,14 @@ import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
 import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
 import type { BackendInventoryItem } from "@/components/inventory/inventory";
+import haikuScrollIcon from "@/kith/assets/Scroll/Haiku_Scrolls.png";
+import "@/components/inventory/inventory.css";
 import { AvatarPreview } from "@/components/Profile/Customization/AvatarPreview";
-import { createRandomAvatar } from "@/components/Profile/Customization/createRandomAvatar";
+import {
+  DEFAULT_AVATAR,
+  type AvatarCustomization,
+  type SavedAppearance,
+} from "@/components/Profile/Customization/avatarTypes";
 import {
   BODY_FRAMES,
   HAIR_STYLES,
@@ -198,6 +205,10 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [haikuScrollsFound, setHaikuScrollsFound] = useState<number | null>(
     null,
   );
+  const [haikuScrolls, setHaikuScrolls] = useState<BackendInventoryItem[]>([]);
+  const [haikuCollectionOpen, setHaikuCollectionOpen] = useState(false);
+  const [selectedHaikuScroll, setSelectedHaikuScroll] =
+    useState<BackendInventoryItem | null>(null);
   const [activeKithStats, setActiveKithStats] =
     useState<ActiveKithStats | null>(null);
   const [weeklyRewardsOpen, setWeeklyRewardsOpen] = useState(false);
@@ -210,9 +221,17 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [titlesOpen, setTitlesOpen] = useState(false);
   const [trainerLevel, setTrainerLevel] = useState(1);
   const [customizeOpen, setCustomizeOpen] = useState(false);
-  // Temporary per-mount preview; saved account customization comes in a later phase.
   const [avatarCustomization, setAvatarCustomization] =
-    useState(createRandomAvatar);
+    useState<AvatarCustomization>(DEFAULT_AVATAR);
+  const [savedAppearance, setSavedAppearance] = useState(DEFAULT_AVATAR);
+  const [defaultAppearance, setDefaultAppearance] = useState<AvatarCustomization | null>(null);
+  const [appearanceLoading, setAppearanceLoading] = useState(true);
+  const [appearanceLoaded, setAppearanceLoaded] = useState(false);
+  const [appearanceSaving, setAppearanceSaving] = useState(false);
+  const [appearanceError, setAppearanceError] = useState("");
+  const [appearanceMessage, setAppearanceMessage] = useState("");
+  const appearanceRequestVersion = useRef(0);
+  const appearanceSavePending = useRef(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
 
   const titleRequestVersion = useRef(0);
@@ -220,6 +239,68 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const titleDialogRef = useRef<HTMLElement>(null);
 
   const { user } = useAuth();
+
+  useEffect(() => {
+    const version = ++appearanceRequestVersion.current;
+    setAvatarCustomization(DEFAULT_AVATAR);
+    setSavedAppearance(DEFAULT_AVATAR);
+    setDefaultAppearance(null);
+    setCustomizeOpen(false);
+    setAppearanceError("");
+    setAppearanceMessage("");
+    setAppearanceSaving(false);
+    appearanceSavePending.current = false;
+    setAppearanceLoading(Boolean(user?.id));
+    setAppearanceLoaded(false);
+    if (!user?.id) return;
+
+    void apiFetch<SavedAppearance>("/api/me/appearance")
+      .then((result) => {
+        if (version !== appearanceRequestVersion.current) return;
+        const appearance = result.appearance ?? DEFAULT_AVATAR;
+        setAvatarCustomization(appearance);
+        setSavedAppearance(appearance);
+        setDefaultAppearance(result.defaultAppearance);
+        setAppearanceLoaded(true);
+      })
+      .catch((error: unknown) => {
+        if (version !== appearanceRequestVersion.current) return;
+        setAppearanceError(error instanceof Error ? error.message : "Could not load your appearance.");
+      })
+      .finally(() => {
+        if (version === appearanceRequestVersion.current) setAppearanceLoading(false);
+      });
+
+    return () => { appearanceRequestVersion.current += 1; };
+  }, [user?.id]);
+
+  async function saveAppearance(target: "current" | "default") {
+    if (!user?.id || !appearanceLoaded || appearanceSavePending.current) return;
+    const version = appearanceRequestVersion.current;
+    appearanceSavePending.current = true;
+    setAppearanceSaving(true);
+    setAppearanceMessage("");
+    setAppearanceError("");
+    try {
+      const result = await apiFetch<SavedAppearance>("/api/me/appearance", {
+        method: "PUT",
+        json: { appearance: avatarCustomization, target },
+      });
+      if (version !== appearanceRequestVersion.current) return;
+      setSavedAppearance(result.appearance ?? DEFAULT_AVATAR);
+      setDefaultAppearance(result.defaultAppearance);
+      setAppearanceMessage(target === "current" ? "Appearance saved." : "Default appearance saved.");
+    } catch (error: unknown) {
+      if (version === appearanceRequestVersion.current) {
+        setAppearanceError(error instanceof Error ? error.message : "Could not save your appearance.");
+      }
+    } finally {
+      if (version === appearanceRequestVersion.current) {
+        appearanceSavePending.current = false;
+        setAppearanceSaving(false);
+      }
+    }
+  }
   const { banner } = useHomepageBanner();
   const { allPets } = usePetStorage({
     userId: user?.id,
@@ -449,6 +530,9 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
   useEffect(() => {
     setHaikuScrollsFound(null);
+    setHaikuScrolls([]);
+    setHaikuCollectionOpen(false);
+    setSelectedHaikuScroll(null);
     if (!user?.id || weeklyRewardsOpen) return;
 
     let cancelled = false;
@@ -457,6 +541,11 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       .then(({ items }) => {
         if (cancelled) return;
 
+        setHaikuScrolls(
+          items.filter(
+            (item) => item.effects?.collection === "haiku" && item.qty > 0,
+          ),
+        );
         const collectedScrolls = new Set(
           items
             .filter(
@@ -560,7 +649,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   }, [user]);
 
   useEffect(() => {
-    if (!weeklyRewardsOpen && !titlesOpen) return;
+    if (!weeklyRewardsOpen && !titlesOpen && !haikuCollectionOpen) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -568,7 +657,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [weeklyRewardsOpen, titlesOpen]);
+  }, [weeklyRewardsOpen, titlesOpen, haikuCollectionOpen]);
 
   useEffect(() => {
     if (!titlesOpen) return;
@@ -649,13 +738,22 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
         <section className="dp-profile-trainer-panel dp-profile-star-panel">
           <div className="dp-profile-viewport" aria-label="Trainer viewport">
             <div className={`dp-profile-trainer-avatar ${starterElementClass}`}>
-              <AvatarPreview customization={avatarCustomization} />
+              {appearanceLoading ? (
+                <p role="status">Loading appearance...</p>
+              ) : (
+                <AvatarPreview customization={avatarCustomization} />
+              )}
             </div>
 
             <button
               type="button"
               className="btn btn-gold dp-profile-customize-button"
-              onClick={() => setCustomizeOpen((current) => !current)}
+              disabled={!appearanceLoaded || appearanceSaving}
+              onClick={() => {
+                setAvatarCustomization(savedAppearance);
+                setAppearanceMessage("");
+                setCustomizeOpen((current) => !current);
+              }}
               aria-expanded={customizeOpen}
             >
               Customize
@@ -688,8 +786,9 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                   type="button"
                   className="dp-profile-customizer-card"
                   disabled={
-                    key === "hairColor" &&
-                    avatarCustomization.hairStyle === "hair-bald"
+                    appearanceSaving ||
+                    (key === "hairColor" &&
+                    avatarCustomization.hairStyle === "hair-bald")
                   }
                   onClick={() =>
                     setAvatarCustomization((current) => {
@@ -712,7 +811,23 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                   <span>Click to change</span>
                 </button>
               ))}
-              <p>Preview only. Changes reset when you leave this page.</p>
+              <button type="button" className="btn btn-gold" disabled={appearanceSaving}
+                onClick={() => void saveAppearance("current")}>
+                {appearanceSaving ? "Saving..." : "Save Appearance"}
+              </button>
+              <button type="button" className="btn btn-gold" disabled={appearanceSaving}
+                onClick={() => void saveAppearance("default")}>
+                Set as Default
+              </button>
+              <button type="button" className="btn btn-gold"
+                disabled={appearanceSaving || !defaultAppearance}
+                onClick={() => {
+                  if (defaultAppearance) setAvatarCustomization(defaultAppearance);
+                  setAppearanceMessage("Default restored to preview. Save Appearance to apply it.");
+                }}>
+                Use Default
+              </button>
+              {appearanceMessage ? <p role="status">{appearanceMessage}</p> : null}
             </div>
           ) : (
             <div className="dp-profile-info">
@@ -798,14 +913,6 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                 </div>
 
                 <div>
-                  <dt>Haiku Scrolls Found</dt>
-                  <dd>
-                    {haikuScrollsFound === null
-                      ? "--"
-                      : haikuScrollsFound.toLocaleString()}
-                  </dd>
-                </div>
-                <div>
                   <dt>Corrupted Eggs Hatched</dt>
                   <dd>
                     {corruptedEggsLost === null
@@ -813,9 +920,44 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                       : corruptedEggsLost.toLocaleString()}
                   </dd>
                 </div>
+                <div>
+                  <dt>Kith Saved</dt>
+                  <dd>0</dd>
+                </div>
+                <div>
+                  <dt>Haiku Scrolls Found</dt>
+                  <dd>
+                    <span className="dp-profile-title-value">
+                      {haikuScrollsFound === null
+                        ? "--"
+                        : haikuScrollsFound.toLocaleString()}{" "}
+                      <button
+                        type="button"
+                        className="dp-profile-title-selector"
+                        aria-label="Read Haiku Scrolls"
+                        aria-haspopup="dialog"
+                        aria-expanded={haikuCollectionOpen}
+                        disabled={haikuScrollsFound === null}
+                        onClick={() => setHaikuCollectionOpen(true)}
+                      >
+                        <svg viewBox="0 0 20 16" aria-hidden="true">
+                          <path
+                            d="M2 2 H18 L10 14 Z"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </span>
+                  </dd>
+                </div>
               </dl>
             </div>
           )}
+          {appearanceError ? <p role="alert">{appearanceError}</p> : null}
+          {user?.id ? <Link to={`/profile/${user.id}`}>View shareable profile</Link> : null}
         </section>
 
         <section className="dp-profile-active-panel dp-profile-star-panel">
@@ -913,6 +1055,115 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
           </div>
         </div>
       </div>
+
+      {haikuCollectionOpen ? (
+        <div
+          className="inventoryHaikuBackdrop"
+          role="presentation"
+          onMouseDown={() => {
+            setHaikuCollectionOpen(false);
+            setSelectedHaikuScroll(null);
+          }}
+        >
+          <section
+            className="inventoryHaikuPopup dp-blue-grid-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Haiku Scrolls"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            {selectedHaikuScroll ? (
+              <>
+                <img
+                  className="inventoryHaikuIcon"
+                  src={haikuScrollIcon}
+                  alt=""
+                  aria-hidden="true"
+                />
+
+                <h2>{selectedHaikuScroll.name}</h2>
+
+                <p className="inventoryHaikuDescription">
+                  A tiny ribbon-bound scroll containing a piece of Aliune Lore.
+                </p>
+
+                <div className="inventoryHaikuText">
+                  {Array.isArray(selectedHaikuScroll.effects?.haiku)
+                    ? selectedHaikuScroll.effects.haiku.map((line) => (
+                        <p key={String(line)}>{String(line)}</p>
+                      ))
+                    : null}
+                </div>
+
+                <button
+                  type="button"
+                  className="dp-btn--close"
+                  onClick={() => setSelectedHaikuScroll(null)}
+                >
+                  Close
+                </button>
+              </>
+            ) : (
+              <>
+                <h2>Haiku Scrolls</h2>
+
+                <p className="inventoryHaikuDescription">
+                  A tiny ribbon-bound scroll containing a piece of Aliune Lore.
+                </p>
+
+                <div className="inventoryHaikuGrid">
+                  {Array.from({ length: 50 }, (_, index) => {
+                    const scrollNumber = index + 1;
+                    const collectedScroll = haikuScrolls.find(
+                      (item) =>
+                        Number(item.effects?.scrollNumber) === scrollNumber,
+                    );
+
+                    return (
+                      <button
+                        key={scrollNumber}
+                        type="button"
+                        className={
+                          collectedScroll
+                            ? "inventoryHaikuSlot inventoryHaikuSlot--collected"
+                            : "inventoryHaikuSlot"
+                        }
+                        disabled={!collectedScroll}
+                        onClick={() => {
+                          if (collectedScroll) {
+                            setSelectedHaikuScroll(collectedScroll);
+                          }
+                        }}
+                      >
+                        <img
+                          className="inventoryHaikuSlotIcon"
+                          src={haikuScrollIcon}
+                          alt=""
+                          aria-hidden="true"
+                        />
+
+                        <span>Haiku Scroll #{scrollNumber}</span>
+
+                        <span className="inventoryHaikuSlotState">
+                          {collectedScroll ? "Collected" : "Locked"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  className="dp-btn--close"
+                  onClick={() => setHaikuCollectionOpen(false)}
+                >
+                  Close
+                </button>
+              </>
+            )}
+          </section>
+        </div>
+      ) : null}
 
       {titlesOpen ? (
         <div

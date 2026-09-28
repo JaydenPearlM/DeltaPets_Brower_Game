@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
-import haikuScrollIcon from "@/kith/assets/Scroll/Haiku_Scrolls.png";
 import "./inventory.css";
 
 // Backend-tracked items (GET /api/inventory). Separate from the local
@@ -71,7 +70,7 @@ const INVENTORY_CHANGE_EVENT = "deltapets:care-inventory-change";
 // Fixed bag size for now. Later this becomes level-gated and expandable by
 // paying dots, but that leveling system doesn't exist yet, so for now this
 // is just the hard cap and the grid always renders this many slots.
-const MAX_INVENTORY_SLOTS = 10;
+const MAX_INVENTORY_SLOTS = 15;
 
 type InventoryFilter = "all" | "care" | "seed" | "armor" | "skill";
 
@@ -346,7 +345,6 @@ export default function Inventory({ onClose }: InventoryProps) {
   );
   const [filter, setFilter] = useState<InventoryFilter>("all");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
-  const [backendItems, setBackendItems] = useState<BackendInventoryItem[]>([]);
   const [backendLoading, setBackendLoading] = useState(true);
   const [backendError, setBackendError] = useState("");
   const [, setWallet] = useState<InventoryWallet>({
@@ -356,9 +354,6 @@ export default function Inventory({ onClose }: InventoryProps) {
   const [openingCarePackage, setOpeningCarePackage] = useState(false);
   const [showCarePackageNotice, setShowCarePackageNotice] = useState(false);
   const [carePackageMessage, setCarePackageMessage] = useState("");
-  const [haikuCollectionOpen, setHaikuCollectionOpen] = useState(false);
-  const [selectedHaikuScroll, setSelectedHaikuScroll] =
-    useState<BackendInventoryItem | null>(null);
 
   useEffect(() => {
     const handleInventoryChange = () => {
@@ -392,7 +387,6 @@ export default function Inventory({ onClose }: InventoryProps) {
         if (!cancelled) {
           const nextBackendItems = json.items ?? [];
 
-          setBackendItems(nextBackendItems);
           setWallet(
             json.wallet ?? {
               dots: 0,
@@ -409,7 +403,7 @@ export default function Inventory({ onClose }: InventoryProps) {
       } catch (err) {
         if (!cancelled) {
           setBackendError(
-            err instanceof Error ? err.message : "Failed to load rewards.",
+            err instanceof Error ? err.message : "Failed to load inventory.",
           );
         }
       } finally {
@@ -442,9 +436,6 @@ export default function Inventory({ onClose }: InventoryProps) {
         addInventoryItem(item, qty);
       });
 
-      setBackendItems((items) =>
-        items.filter((item) => item.slug !== "closed-alpha-care-package"),
-      );
       setShowCarePackageNotice(false);
 
       setCarePackageMessage(
@@ -472,7 +463,7 @@ export default function Inventory({ onClose }: InventoryProps) {
     [sortedInventoryItems, filter],
   );
 
-  // Fixed 10-slot bag display, WoW-style: filled slots hold an item, the
+  // Fixed 15-slot bag display, WoW-style: filled slots hold an item, the
   // rest render as empty placeholders up to MAX_INVENTORY_SLOTS. When the
   // level-based paid expansion exists later, this is where more slots get
   // added.
@@ -488,25 +479,6 @@ export default function Inventory({ onClose }: InventoryProps) {
       Math.max(MAX_INVENTORY_SLOTS, visibleInventoryItems.length),
     );
   }, [visibleInventoryItems]);
-
-  const sortedBackendItems = useMemo(
-    () =>
-      [...backendItems].sort((firstItem, secondItem) =>
-        firstItem.name.localeCompare(secondItem.name),
-      ),
-    [backendItems],
-  );
-
-  const haikuScrolls = useMemo(
-    () => backendItems.filter((item) => item.effects?.collection === "haiku"),
-    [backendItems],
-  );
-
-  const nonHaikuBackendItems = useMemo(
-    () =>
-      sortedBackendItems.filter((item) => item.effects?.collection !== "haiku"),
-    [sortedBackendItems],
-  );
 
   return (
     <section className="inventoryPanel" aria-label="Inventory">
@@ -584,27 +556,11 @@ export default function Inventory({ onClose }: InventoryProps) {
           </div>
         </div>
 
-        <p className="inventoryIntro">
-          Care items, seeds, armor, and skills live here before they move into
-          their specialty storage.
-        </p>
       </header>
 
       <div className="inventoryBody">
-        <button
-          type="button"
-          className="inventoryHaikuButton"
-          onClick={() => setHaikuCollectionOpen(true)}
-        >
-          <img
-            className="inventoryHaikuIcon"
-            src={haikuScrollIcon}
-            alt=""
-            aria-hidden="true"
-          />
-          <span>Haiku Scrolls</span>
-        </button>
-
+        {backendLoading ? <p role="status">Loading inventory...</p> : null}
+        {backendError ? <p role="alert">{backendError}</p> : null}
       <p className="inventorySectionLabel">
         Items ({visibleInventoryItems.length}/{MAX_INVENTORY_SLOTS})
       </p>
@@ -642,175 +598,6 @@ export default function Inventory({ onClose }: InventoryProps) {
           ),
         )}
       </div>
-
-      {(() => {
-        const nonPackageItems = nonHaikuBackendItems.filter(
-          (item) => item.slug !== "closed-alpha-care-package",
-        );
-
-        if (backendLoading) {
-          return (
-            <>
-              <p className="inventorySectionLabel">Rewards</p>
-              <div className="inventoryEmpty" role="status">
-                <p>Loading rewards...</p>
-              </div>
-            </>
-          );
-        }
-
-        if (backendError) {
-          return (
-            <>
-              <p className="inventorySectionLabel">Rewards</p>
-              <div className="inventoryEmpty" role="status">
-                <p className="inventoryEmptyTitle">Couldn't load rewards.</p>
-                <p>{backendError}</p>
-              </div>
-            </>
-          );
-        }
-
-        if (nonPackageItems.length === 0) return null;
-
-        return (
-          <>
-            <p className="inventorySectionLabel">Rewards</p>
-            <div
-              className="inventoryGrid inventoryGrid--rewards"
-              aria-label="Reward items"
-            >
-              {nonPackageItems.map((item) => (
-                <article className="inventoryItemCard" key={item.slug}>
-                  <div className="inventoryItemCardHeader">
-                    <div>
-                      <p className="inventoryItemType">{item.type}</p>
-                      <h3>{item.name}</h3>
-                    </div>
-
-                    <span className="inventoryItemQty">×{item.qty}</span>
-                  </div>
-
-                  {item.description ? (
-                    <p className="inventoryItemDescription">
-                      {item.description}
-                    </p>
-                  ) : null}
-                </article>
-              ))}
-            </div>
-          </>
-        );
-      })()}
-
-      {haikuCollectionOpen ? (
-        <div
-          className="inventoryHaikuBackdrop"
-          role="presentation"
-          onMouseDown={() => {
-            setHaikuCollectionOpen(false);
-            setSelectedHaikuScroll(null);
-          }}
-        >
-          <section
-            className="inventoryHaikuPopup dp-blue-grid-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Haiku Scrolls"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            {selectedHaikuScroll ? (
-              <>
-                <img
-                  className="inventoryHaikuIcon"
-                  src={haikuScrollIcon}
-                  alt=""
-                  aria-hidden="true"
-                />
-
-                <h2>{selectedHaikuScroll.name}</h2>
-
-                <p className="inventoryHaikuDescription">
-                  A tiny ribbon-bound scroll containing a piece of Aliune Lore.
-                </p>
-
-                <div className="inventoryHaikuText">
-                  {Array.isArray(selectedHaikuScroll.effects?.haiku)
-                    ? selectedHaikuScroll.effects.haiku.map((line) => (
-                        <p key={String(line)}>{String(line)}</p>
-                      ))
-                    : null}
-                </div>
-
-                <button
-                  type="button"
-                  className="dp-btn--close"
-                  onClick={() => setSelectedHaikuScroll(null)}
-                >
-                  Close
-                </button>
-              </>
-            ) : (
-              <>
-                <h2>Haiku Scrolls</h2>
-
-                <p className="inventoryHaikuDescription">
-                  A tiny ribbon-bound scroll containing a piece of Aliune Lore.
-                </p>
-
-                <div className="inventoryHaikuGrid">
-                  {Array.from({ length: 50 }, (_, index) => {
-                    const scrollNumber = index + 1;
-                    const collectedScroll = haikuScrolls.find(
-                      (item) =>
-                        Number(item.effects?.scrollNumber) === scrollNumber,
-                    );
-
-                    return (
-                      <button
-                        key={scrollNumber}
-                        type="button"
-                        className={
-                          collectedScroll
-                            ? "inventoryHaikuSlot inventoryHaikuSlot--collected"
-                            : "inventoryHaikuSlot"
-                        }
-                        disabled={!collectedScroll}
-                        onClick={() => {
-                          if (collectedScroll) {
-                            setSelectedHaikuScroll(collectedScroll);
-                          }
-                        }}
-                      >
-                        <img
-                          className="inventoryHaikuSlotIcon"
-                          src={haikuScrollIcon}
-                          alt=""
-                          aria-hidden="true"
-                        />
-
-                        <span>Haiku Scroll #{scrollNumber}</span>
-
-                        <span className="inventoryHaikuSlotState">
-                          {collectedScroll ? "Collected" : "Locked"}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  type="button"
-                  className="dp-btn--close"
-                  onClick={() => setHaikuCollectionOpen(false)}
-                >
-                  Close
-                </button>
-              </>
-            )}
-          </section>
-        </div>
-      ) : null}
 
         {carePackageMessage ? (
           <p className="inventoryCarePackageMessage" role="status">

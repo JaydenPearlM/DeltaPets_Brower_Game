@@ -2,6 +2,21 @@
   background: transparent;
 }
 
+.kithna-food-back-link {
+  display: block;
+  width: fit-content;
+  margin: 0 0 12px auto;
+  color: var(--merchant-gold);
+  font-family: var(--font-heading);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.kithna-food-back-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
 .kithna-food-shop .dp-merchant-foreground {
   min-height: 280px;
 }
