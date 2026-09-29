@@ -8,6 +8,7 @@ type Props = {
   battle: BattleState;
   images: Record<string, string | null>;
   turnOrder: string[];
+  corrupted: boolean;
   busy: boolean;
   onAction: (action: BattleAction) => void;
   onReturn: () => void;
@@ -46,6 +47,7 @@ export default function WildwoodBattle({
   battle,
   images,
   turnOrder,
+  corrupted,
   busy,
   onAction,
   onReturn,
@@ -126,7 +128,7 @@ export default function WildwoodBattle({
           : active
             ? `${actor?.name ?? "Enemy"}'s turn`
             : battle.status === "victory"
-              ? "The woodland path is clear."
+              ? ""
               : "Your encounter has ended. No permanent damage was applied."}
       </p>
       {active && (
@@ -172,11 +174,13 @@ export default function WildwoodBattle({
                           aria-label={`${pet.name}, ${pet.hpCur} of ${pet.hpMax} HP${legal(pet) ? ", select target" : ""}`}
                         >
                           <span className="ww-unit-name">{pet.name}</span>
+                          <span className={corrupted && side === "enemy" ? "ww-corrupted-portrait" : undefined}>
                           <KithPortrait
                             speciesId={pet.speciesId}
                             name={pet.name}
                             imageUrl={images[pet.id]}
                           />
+                          </span>
                           <span className="ww-hp">
                             <span
                               style={{

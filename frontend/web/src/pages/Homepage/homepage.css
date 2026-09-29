@@ -2148,109 +2148,109 @@
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--null) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--null) {
 
   color: var(--element-null);
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--water) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--water) {
 
   color: var(--element-water);
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--fire) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--fire) {
 
   color: var(--element-fire);
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--earth) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--earth) {
 
   color: var(--element-earth);
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--air) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--air) {
 
   color: var(--element-air);
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--ice) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--ice) {
 
   color: var(--element-ice);
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--storm) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--storm) {
 
   color: var(--element-storm);
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--light) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--light) {
 
   color: var(--element-light);
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--shadow) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--shadow) {
 
   color: var(--element-shadow);
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--null) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--null) {
 
   color: #9a9a9a;
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--water) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--water) {
 
   color: #3aa5e8;
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--fire) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--fire) {
 
   color: #d95a1a;
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--earth) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--earth) {
 
   color: #8d6f3e;
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--air) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--air) {
 
   color: #97cfff;
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--ice) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--ice) {
 
   color: #72d2ef;
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--storm) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--storm) {
 
   color: #7d63da;
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--light) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--light) {
 
   color: #dfbf52;
 
 }
 
-.hp-spotlightPetFrame\:has(.hp-spotlightPetFallback--shadow) {
+.hp-spotlightPetFrame:has(.hp-spotlightPetFallback--shadow) {
 
   color: #5c4a73;
 
@@ -2810,7 +2810,7 @@
 
   }
 
-  .hp-signalBannerStat\:nth-child(2) {
+  .hp-signalBannerStat:nth-child(2) {
 
     border-right: 0;
 
@@ -3324,7 +3324,7 @@
 
 }
 
-/\* Dev Log Launcher Button - Positioned Below Announcement Panel \*/
+/* Dev Log Launcher Button - Positioned Below Announcement Panel */
 
 .dev-log-launcher-btn {
 
@@ -3656,13 +3656,13 @@
 
 }
 
-/\* =========================================================
+/* =========================================================
 
    HERO FEATURE CARDS — DESKTOP
 
    Keep these compact/square like the Support Aliune cards.
 
-   ========================================================= \*/
+   ========================================================= */
 
 @media (min-width: 721px) {
 

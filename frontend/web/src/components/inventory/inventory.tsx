@@ -3,9 +3,8 @@ import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
 import "./inventory.css";
 
-// Backend-tracked items (GET /api/inventory). Separate from the local
-// care-item system above on purpose, see inventoryRouter for why. These
-// are real rows granted server-side, e.g. weekly reward items.
+// Authoritative quantities for care, merchant trades and new rewards.
+// Older browser-local items remain visible separately as legacy possessions.
 export type BackendInventoryItem = {
   slug: string;
   name: string;
@@ -18,16 +17,11 @@ export type BackendInventoryItem = {
   updatedAt: string;
 };
 
-type ClosedAlphaCarePackageItem = InventoryItemDefinition & {
-  qty: number;
-};
-
 type ClosedAlphaCarePackageResponse = {
   opened: true;
   wallet: {
     dots: number;
   };
-  careItems: ClosedAlphaCarePackageItem[];
 };
 
 export type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
@@ -242,6 +236,37 @@ export function getCareItemCount(category: CareInventoryCategory) {
   return getCareInventoryCounts()[category] ?? 0;
 }
 
+function backendCareCategory(item: BackendInventoryItem): CareInventoryCategory | undefined {
+  if (item.type !== "care") return undefined;
+  const category = item.effects.careCategory;
+  if (category === "food" || category === "soap" || category === "toy" || category === "bed") {
+    return category;
+  }
+  return undefined;
+}
+
+export async function getServerCareInventoryCounts(): Promise<CareInventoryCounts> {
+  const result = await apiFetch<{ items: BackendInventoryItem[] }>("/api/inventory");
+  return result.items.reduce<CareInventoryCounts>((counts, item) => {
+    const category = backendCareCategory(item);
+    if (category) counts[category] += item.qty;
+    return counts;
+  }, { ...EMPTY_CARE_INVENTORY });
+}
+
+type DisplayInventoryItem = InventoryItemRecord & { legacy: boolean };
+
+function serverDisplayItem(item: BackendInventoryItem): DisplayInventoryItem {
+  const category = backendCareCategory(item);
+  const type: InventoryItemType = category === "food" ? "food"
+    : item.type === "care" ? "care"
+    : item.type === "seed" || item.type === "armor" || item.type === "skill" ? item.type : "misc";
+  return {
+    slug: item.slug, name: item.name, type, description: item.description ?? "",
+    stackLimit: item.stackLimit, careCategory: category, qty: item.qty, legacy: false,
+  };
+}
+
 export function addInventoryItem(item: InventoryItemDefinition, amount = 1) {
   const nextAmount = Math.max(0, Math.floor(Number(amount)));
 
@@ -343,6 +368,7 @@ export default function Inventory({ onClose }: InventoryProps) {
   const [inventoryItems, setInventoryItems] = useState(() =>
     getInventoryItems(),
   );
+  const [serverItems, setServerItems] = useState<BackendInventoryItem[]>([]);
   const [filter, setFilter] = useState<InventoryFilter>("all");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [backendLoading, setBackendLoading] = useState(true);
@@ -373,8 +399,12 @@ export default function Inventory({ onClose }: InventoryProps) {
 
   useEffect(() => {
     let cancelled = false;
+    let latestRequest = 0;
+    setServerItems([]);
+    setShowCarePackageNotice(false);
 
     async function loadBackendInventory() {
+      const request = ++latestRequest;
       setBackendLoading(true);
       setBackendError("");
 
@@ -384,8 +414,9 @@ export default function Inventory({ onClose }: InventoryProps) {
           wallet: InventoryWallet;
         }>("/api/inventory");
 
-        if (!cancelled) {
+        if (!cancelled && request === latestRequest) {
           const nextBackendItems = json.items ?? [];
+          setServerItems(nextBackendItems);
 
           setWallet(
             json.wallet ?? {
@@ -401,24 +432,29 @@ export default function Inventory({ onClose }: InventoryProps) {
           );
         }
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelled && request === latestRequest) {
+          setServerItems([]);
+          setShowCarePackageNotice(false);
           setBackendError(
             err instanceof Error ? err.message : "Failed to load inventory.",
           );
         }
       } finally {
-        if (!cancelled) {
+        if (!cancelled && request === latestRequest) {
           setBackendLoading(false);
         }
       }
     }
 
     void loadBackendInventory();
+    const refresh = () => { void loadBackendInventory(); };
+    window.addEventListener(INVENTORY_CHANGE_EVENT, refresh);
 
     return () => {
       cancelled = true;
+      window.removeEventListener(INVENTORY_CHANGE_EVENT, refresh);
     };
-  }, []);
+  }, [user?.id]);
 
   async function openClosedAlphaCarePackage() {
     if (openingCarePackage) return;
@@ -432,16 +468,14 @@ export default function Inventory({ onClose }: InventoryProps) {
         { method: "POST" },
       );
 
-      result.careItems.forEach(({ qty, ...item }) => {
-        addInventoryItem(item, qty);
-      });
-
       setShowCarePackageNotice(false);
+      dispatchInventoryChange();
 
       setCarePackageMessage(
         `Care Package opened! You received 50 Meat, 50 Vegetables, 50 Clean, 50 Mood, 50 Comfort, and 1,000 Dots. Balance: ${result.wallet.dots.toLocaleString()} Dots.`,
       );
     } catch (err) {
+      dispatchInventoryChange();
       setCarePackageMessage(
         err instanceof Error ? err.message : "Failed to open care package.",
       );
@@ -452,10 +486,13 @@ export default function Inventory({ onClose }: InventoryProps) {
 
   const sortedInventoryItems = useMemo(
     () =>
-      [...inventoryItems].sort((firstItem, secondItem) =>
+      [
+        ...serverItems.filter((item) => item.qty > 0 && item.slug !== "closed-alpha-care-package").map(serverDisplayItem),
+        ...inventoryItems.map((item) => ({ ...item, legacy: true })),
+      ].sort((firstItem, secondItem) =>
         firstItem.name.localeCompare(secondItem.name),
       ),
-    [inventoryItems],
+    [inventoryItems, serverItems],
   );
 
   const visibleInventoryItems = useMemo(
@@ -468,7 +505,7 @@ export default function Inventory({ onClose }: InventoryProps) {
   // level-based paid expansion exists later, this is where more slots get
   // added.
   const inventorySlots = useMemo(() => {
-    const slots: (InventoryItemRecord | null)[] = [...visibleInventoryItems];
+    const slots: (DisplayInventoryItem | null)[] = [...visibleInventoryItems];
 
     while (slots.length < MAX_INVENTORY_SLOTS) {
       slots.push(null);
@@ -561,6 +598,9 @@ export default function Inventory({ onClose }: InventoryProps) {
       <div className="inventoryBody">
         {backendLoading ? <p role="status">Loading inventory...</p> : null}
         {backendError ? <p role="alert">{backendError}</p> : null}
+        {inventoryItems.length > 0 ? (
+          <p>Legacy local items are preserved below. They cannot be used for care or sold for Dots.</p>
+        ) : null}
       <p className="inventorySectionLabel">
         Items ({visibleInventoryItems.length}/{MAX_INVENTORY_SLOTS})
       </p>
@@ -571,10 +611,10 @@ export default function Inventory({ onClose }: InventoryProps) {
       >
         {inventorySlots.map((item, slotIndex) =>
           item ? (
-            <article className="inventoryItemCard" key={item.slug}>
+            <article className="inventoryItemCard" key={`${item.legacy ? "legacy" : "server"}:${item.slug}`}>
               <div className="inventoryItemCardHeader">
                 <div>
-                  <p className="inventoryItemType">{item.type}</p>
+                  <p className="inventoryItemType">{item.type}{item.legacy ? " · Legacy" : ""}</p>
                   <h3>{item.name}</h3>
                 </div>
 

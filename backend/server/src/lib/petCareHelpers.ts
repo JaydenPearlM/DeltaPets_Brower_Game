@@ -19,6 +19,15 @@ export type PetCareStatsUpdate = {
 const CARE_DEFAULT = 50;
 const ENERGY_DEFAULT = 100;
 
+// Raw database values, not normalized display values, form the concurrency check.
+export function careSnapshot(pet: Record<string, unknown>) {
+  return Object.fromEntries([
+    "hunger", "clean", "happy", "comfort", "rest", "energy", "bond",
+    "neglect_hours", "ran_away", "runaway_at", "last_care_decay_at",
+    "cd_feed_ends_at", "cd_clean_ends_at", "cd_play_ends_at", "cd_bond_ends_at",
+  ].map((key) => [key, pet[key] ?? null]));
+}
+
 function safeWhole(value: unknown, fallback: number, min = 0, max = 50) {
   const n = Number(value ?? fallback);
   if (!Number.isFinite(n)) return fallback;
@@ -55,12 +64,13 @@ export function normalizePetForClient<T extends Record<string, any>>(
 export async function updatePetCareStats(
   petId: string,
   updates: PetCareStatsUpdate,
+  expected?: Record<string, unknown>,
 ): Promise<void> {
   if (!petId?.trim()) {
     throw new Error("Cannot update pet care stats without a valid pet id.");
   }
 
-  const { error } = await supabaseAdmin
+  let query = supabaseAdmin
     .from("pets")
     .update({
       hunger: safeWhole(updates.hunger, CARE_DEFAULT),
@@ -79,7 +89,15 @@ export async function updatePetCareStats(
     })
     .eq("id", petId);
 
+  if (expected) {
+    for (const [key, value] of Object.entries(careSnapshot(expected))) {
+      query = value === null ? query.is(key, null) : query.eq(key, value);
+    }
+  }
+  const { data, error } = await query.select("id").maybeSingle();
+
   if (error) throw error;
+  if (!data) throw new Error("Pet changed during care refresh. Please retry.");
 
   // A runaway pet needs to actually vacate the party, not just get flagged.
   // party_slots has no ran_away awareness of its own, so without this the

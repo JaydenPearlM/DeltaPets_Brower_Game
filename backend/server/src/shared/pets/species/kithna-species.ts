@@ -318,6 +318,16 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
     hatchling: "Clodian",
     mythical_legendary: null,
 
+    eggBaseStats: {
+      hp: 2,
+      atk: 3,
+      magi: 1,
+      def: 1,
+      spd: 3,
+      mana: 0,
+      base_total: 10,
+    },
+
     rules: {
       xpMultiplier: 0.9,
     },
@@ -331,6 +341,16 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
 
     hatchling: "Pebelin",
     mythical_legendary: null,
+
+    eggBaseStats: {
+      hp: 3,
+      atk: 2,
+      magi: 0,
+      def: 4,
+      spd: 1,
+      mana: 0,
+      base_total: 10,
+    },
 
     rules: {
       xpMultiplier: 1,
@@ -346,6 +366,16 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
     hatchling: "Magmado",
     mythical_legendary: null,
 
+    eggBaseStats: {
+      hp: 3,
+      atk: 1,
+      magi: 3,
+      def: 1,
+      spd: 1,
+      mana: 1,
+      base_total: 10,
+    },
+
     rules: {
       xpMultiplier: 0.85,
     },
@@ -360,6 +390,16 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
     hatchling: "Shade",
     mythical_legendary: null,
 
+    eggBaseStats: {
+      hp: 1,
+      atk: 1,
+      magi: 4,
+      def: 0,
+      spd: 2,
+      mana: 2,
+      base_total: 10,
+    },
+
     rules: {
       xpMultiplier: 0.95,
     },
@@ -373,6 +413,16 @@ export const KITHNA_NON_STARTER_SPECIES: KithnaNonStarterSpecies[] = [
 
     hatchling: "Glimmer",
     mythical_legendary: null,
+
+    eggBaseStats: {
+      hp: 1,
+      atk: 2,
+      magi: 2,
+      def: 1,
+      spd: 3,
+      mana: 1,
+      base_total: 10,
+    },
 
     rules: {
       xpMultiplier: 0.8,

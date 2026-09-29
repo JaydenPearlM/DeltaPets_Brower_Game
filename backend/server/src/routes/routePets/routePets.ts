@@ -380,7 +380,7 @@ petsRouter.get(
           runaway_at: hydratedPet.runaway_at ?? null,
           last_care_update: hydratedPet.last_care_update,
           last_care_decay_at: hydratedPet.last_care_decay_at,
-        });
+        }, pet);
       }
 
       const points = await fetchTotalPoints(hydratedPet.id);

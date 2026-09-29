@@ -59,7 +59,7 @@
     margin: 16px auto !important;
   }
   .ww-page-heading h1 {
-    font-size: 1.4rem;
+    font-size: 2.2rem;
   }
   .ww-team {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -100,6 +100,29 @@
   }
   .ww-page .ww-affinity {
     font-size: 0.68rem;
+  }
+  .ww-page .ww-explore-viewport {
+    min-height: 0;
+    padding: 0;
+  }
+  .ww-page .ww-explore-result .dp-btn,
+  .ww-page .ww-team-summary .dp-btn {
+    min-width: 0;
+    max-width: 100%;
+    min-height: 44px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 760px) {
+  .ww-page .ww-exploration-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ww-page .ww-art-panel {
+    min-height: 200px;
+    border-left: 0;
+    border-top: 1px solid var(--dp-panel-border);
   }
 }
 

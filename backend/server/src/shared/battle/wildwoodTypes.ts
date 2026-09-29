@@ -1,7 +1,10 @@
 import type { BattleAction, BattleParticipantInput, BattleRow, BattleState } from "../../battle/battleTypes";
 
 export type { BattleAction, BattleRow, BattleState };
-export type WildwoodTeamMember = BattleParticipantInput & { imageUrl: string | null };
+export type WildwoodTeamMember = BattleParticipantInput & {
+  imageUrl: string | null;
+  displayHp: number | null;
+};
 export type WildwoodRoomView = {
   id: string;
   sequence: number;

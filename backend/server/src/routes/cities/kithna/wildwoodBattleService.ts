@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { getDeltaTime } from "../../../lib/deltaTime";
 import { rollIV } from "../../../lib/stats/individualValues";
+import { fetchTotalPoints } from "../../routePets/petsStats";
 import {
   createBattle,
   previewBattleOrder,
@@ -251,7 +252,7 @@ async function loadTeam(userId: string): Promise<WildwoodTeamMember[]> {
         403,
       );
   }
-  return ids.map((id, index) => {
+  return Promise.all(ids.map(async (id, index): Promise<WildwoodTeamMember> => {
     const pet = parsed.data.find((entry) => entry.id === id)!;
     const species = findPetSpeciesById(pet.species);
     if (!species || pet.stage === "egg" || pet.ran_away)
@@ -271,6 +272,7 @@ async function loadTeam(userId: string): Promise<WildwoodTeamMember[]> {
       .safeParse(pet.line);
     if (!element.success)
       throw new WildwoodError("A team member has an unsupported element.");
+    const points = await fetchTotalPoints(pet.id);
     return {
       id: pet.id,
       sourcePetId: pet.id,
@@ -291,8 +293,10 @@ async function loadTeam(userId: string): Promise<WildwoodTeamMember[]> {
       magi: pet.magi,
       spd: pet.spd,
       imageUrl: pet.portrait_url || pet.image_url || pet.sprite_url || null,
+      // Same HP stat shown by /pet's Stats Chamber; not battle health.
+      displayHp: points?.total.hp ?? null,
     };
-  });
+  }));
 }
 
 function corruptedEnemy(): BattleParticipantInput {
@@ -380,7 +384,7 @@ export async function exploreWildwood(
     .eq("user_id", userId)
     .maybeSingle();
   if (profile.error) throw profile.error;
-  const players = team.map(({ imageUrl: _image, ...pet }) => ({
+  const players = team.map(({ imageUrl: _image, displayHp: _displayHp, ...pet }) => ({
     ...pet,
     row: chosen.get(pet.id)!,
   }));

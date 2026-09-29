@@ -11,16 +11,11 @@ import { fetchActivePet } from "../routePets/petsRepo";
 import { applyCareDecay } from "../../shared/pets/care/CareDecay";
 import { findCharacterProfileBySpeciesId } from "../../shared/pets/characterProfiles/characterRegistry";
 import {
-  assertCooldownReady,
-  calcNewCooldownEndsAtIso,
-  colNameForKey,
-  type CooldownKey,
-} from "../../pets/cooldowns";
-import {
   normalizePetForClient,
   updatePetCareStats,
-  applyCarePatch,
 } from "../../lib/petCareHelpers";
+
+import { ownedCareHandler } from "./ownedCare";
 
 export const careRouter = Router();
 
@@ -345,27 +340,6 @@ async function hydratePassiveTrait(pet: Record<string, any>) {
     passive_trait_stat_key: data.stat_key,
   };
 }
-async function enforceCareCooldown(userId: string, action: CooldownKey) {
-  const nowMs = Date.now();
-  const { pet } = await fetchActivePet(userId);
-
-  if (!pet?.id) {
-    throw Object.assign(new Error("No active pet found"), { status: 404 });
-  }
-
-  assertCooldownReady(pet, action, nowMs);
-
-  const col = colNameForKey(action);
-  const { error } = await supabaseAdmin
-    .from("pets")
-    .update({
-      [col]: calcNewCooldownEndsAtIso(nowMs, action),
-    })
-    .eq("id", pet.id);
-
-  if (error) throw error;
-}
-
 careRouter.get("/spotlight", async (_req, res) => {
   try {
     const { data: slots, error: slotsError } = await supabaseAdmin
@@ -752,7 +726,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
           hydratedPet.last_care_update ?? new Date().toISOString(),
         last_care_decay_at:
           hydratedPet.last_care_decay_at ?? new Date().toISOString(),
-      });
+      }, activePetResult.pet);
 
       activePetResolved = {
         ...hydratedPet,
@@ -880,67 +854,10 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
   }
 });
 
-careRouter.post("/feed", requireUser, async (req: AuthedRequest, res) => {
-  try {
-    await enforceCareCooldown(req.user!.id, "feed");
-    const amount = Math.max(1, Math.min(50, safeNum(req.body?.amount, 20)));
-    const result = await applyCarePatch(req.user!.id, { hunger: amount });
-    return res.json({ success: true, ...result });
-  } catch (error: any) {
-    return res.status(error?.status ?? 500).json({
-      error: error instanceof Error ? error.message : "Failed to feed pet.",
-    });
-  }
-});
-
-careRouter.post("/clean", requireUser, async (req: AuthedRequest, res) => {
-  try {
-    await enforceCareCooldown(req.user!.id, "clean");
-    const amount = Math.max(1, Math.min(50, safeNum(req.body?.amount, 20)));
-    const result = await applyCarePatch(req.user!.id, { clean: amount });
-    return res.json({ success: true, ...result });
-  } catch (error: any) {
-    return res.status(error?.status ?? 500).json({
-      error: error instanceof Error ? error.message : "Failed to clean pet.",
-    });
-  }
-});
-
-careRouter.post("/play", requireUser, async (req: AuthedRequest, res) => {
-  try {
-    await enforceCareCooldown(req.user!.id, "play");
-    const amount = Math.max(1, Math.min(50, safeNum(req.body?.amount, 20)));
-    const result = await applyCarePatch(req.user!.id, { happy: amount });
-    return res.json({ success: true, ...result });
-  } catch (error: any) {
-    return res.status(error?.status ?? 500).json({
-      error:
-        error instanceof Error ? error.message : "Failed to play with pet.",
-    });
-  }
-});
-
-careRouter.post("/pet", requireUser, async (req: AuthedRequest, res) => {
-  try {
-    const comfortBoost = Math.max(
-      1,
-      Math.min(50, safeNum(req.body?.comfortAmount, 10)),
-    );
-    const moodBoost = Math.max(
-      1,
-      Math.min(50, safeNum(req.body?.moodAmount, 5)),
-    );
-    const result = await applyCarePatch(req.user!.id, {
-      comfort: comfortBoost,
-      happy: moodBoost,
-    });
-    return res.json({ success: true, ...result });
-  } catch (error: any) {
-    return res.status(error?.status ?? 500).json({
-      error: error instanceof Error ? error.message : "Failed to pet Delta.",
-    });
-  }
-});
+// Legacy URLs use the same ownership, item consumption and cooldown transaction.
+for (const action of ["feed", "clean", "play", "pet"] as const) {
+  careRouter.post(`/${action}`, requireUser, ownedCareHandler(action));
+}
 
 careRouter.post(
   "/dev/runaway",

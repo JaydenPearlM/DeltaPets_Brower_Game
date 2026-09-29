@@ -15,6 +15,51 @@
 
 .ww-page h1 {
   margin: 0;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  text-shadow: 0 0 12px var(--dp-panel-purple-glow);
+}
+
+.ww-warning {
+  margin: 12px 0 0;
+  color: var(--dp-title-gold, #ffdf75);
+  font-size: 0.85rem;
+}
+
+.ww-exploration-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+  border-top: 1px solid var(--dp-panel-border);
+  padding-top: 24px;
+}
+
+.ww-exploration-info {
+  min-width: 0;
+}
+
+.ww-art-panel {
+  min-height: 380px;
+  border-left: 1px solid var(--dp-panel-border);
+  background: rgba(3, 20, 38, 0.7);
+  border-radius: 8px;
+}
+
+.ww-exploration-layout > .ww-explore-control {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--dp-panel-border);
+}
+
+.ww-recent-finds {
+  margin: 24px 0;
+  overflow-wrap: anywhere;
+}
+
+.ww-recent-finds p {
+  color: var(--dp-panel-muted);
+  font-size: 0.85rem;
 }
 
 .ww-page h2 {
@@ -62,6 +107,86 @@
   padding: 16px;
   border: 2px solid #f6a77d;
   border-radius: 8px;
+}
+
+.ww-team-summary {
+  margin-top: 0;
+}
+
+.ww-team-summary ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.ww-team-summary li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px 12px;
+  border-left: 2px solid var(--dp-panel-border);
+  overflow-wrap: anywhere;
+}
+
+.ww-team-summary .ww-portrait {
+  width: 54px;
+  height: 54px;
+}
+
+.ww-team-summary li span,
+.ww-placeholder-note {
+  color: var(--dp-panel-muted);
+  font-size: 0.8rem;
+}
+
+.ww-explore-viewport {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  margin-top: 24px;
+}
+
+.ww-explore-result {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.ww-found-item {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+.ww-encounter-portraits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  margin: 24px 0;
+}
+
+/* Only explicitly marked Wildwood enemy portraits receive the aura.
+   The artwork itself has no filters, tint, or replacement asset. */
+.ww-page .ww-corrupted-portrait {
+  display: inline-grid;
+  position: relative;
+  isolation: isolate;
+}
+
+.ww-page .ww-corrupted-portrait::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 7% 2% 3% 6%;
+  border-radius: 43% 57% 61% 39% / 62% 38% 58% 42%;
+  background: radial-gradient(ellipse, rgba(79, 28, 19, 0.5), rgba(147, 71, 35, 0.3) 55%, transparent 73%);
+  box-shadow: -5px 3px 13px rgba(153, 76, 38, 0.5), 4px -3px 9px rgba(101, 41, 26, 0.6);
+  pointer-events: none;
 }
 
 .ww-formation {
@@ -126,6 +251,12 @@
   display: flex;
   justify-content: center;
   margin: 24px 0 8px;
+}
+
+.ww-explore-control .dp-btn {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
 }
 
 .ww-discovery {

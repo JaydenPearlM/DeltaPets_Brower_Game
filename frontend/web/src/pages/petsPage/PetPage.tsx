@@ -27,10 +27,7 @@ import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
 import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import {
   type CareInventoryCategory,
-  addCareItem,
-  consumeCareItem,
-  ensureStarterCareInventory,
-  getCareInventoryCounts,
+  getServerCareInventoryCounts,
   getInventoryChangeEventName,
 } from "@/components/inventory/inventory";
 import { SHARED_SPECIES } from "@shared/pets/species";
@@ -270,13 +267,26 @@ export default function PetPage() {
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [showNicknameEditor, setShowNicknameEditor] = useState(false);
-  const [careInventoryCounts, setCareInventoryCounts] = useState(() =>
-    getCareInventoryCounts(),
-  );
+  const [careInventoryCounts, setCareInventoryCounts] = useState<Record<CareInventoryCategory, number>>({
+    food: 0, soap: 0, toy: 0, bed: 0,
+  });
 
-  const syncCareInventoryCounts = useCallback(() => {
-    setCareInventoryCounts(getCareInventoryCounts());
-  }, []);
+  const careInventoryRequest = useRef(0);
+  const syncCareInventoryCounts = useCallback(async () => {
+    const request = ++careInventoryRequest.current;
+    if (!user) {
+      setCareInventoryCounts({ food: 0, soap: 0, toy: 0, bed: 0 });
+      return;
+    }
+    try {
+      const counts = await getServerCareInventoryCounts();
+      if (request === careInventoryRequest.current) setCareInventoryCounts(counts);
+    } catch {
+      if (request === careInventoryRequest.current) {
+        setCareInventoryCounts({ food: 0, soap: 0, toy: 0, bed: 0 });
+      }
+    }
+  }, [user]);
 
   const hasLoadedOnceRef = useRef(false);
   const hasLoggedRunawayLockRef = useRef(false);
@@ -287,10 +297,6 @@ export default function PetPage() {
       navigate("/", { replace: true });
     }
   }, [authLoading, user, navigate]);
-
-  useEffect(() => {
-    ensureStarterCareInventory();
-  }, []);
 
   const loadPetPage = useCallback(
     async (showSpinner: boolean) => {
@@ -400,39 +406,6 @@ export default function PetPage() {
 
       careActionPendingRef.current = true;
 
-      const inventoryCategoryByAction: Partial<
-        Record<CareAction, CareInventoryCategory>
-      > = {
-        feed: "food",
-        clean: "soap",
-        play: "toy",
-        pet: "bed",
-      };
-
-      const inventoryCategory = inventoryCategoryByAction[action] ?? null;
-
-      if (inventoryCategory) {
-        const didConsume = consumeCareItem(inventoryCategory, 1);
-
-        if (!didConsume) {
-          const missingLabel =
-            inventoryCategory === "food"
-              ? "food"
-              : inventoryCategory === "soap"
-                ? "soap"
-                : inventoryCategory === "toy"
-                  ? "toy"
-                  : "pillow";
-
-          setActionMsg(`You need ${missingLabel} in your inventory first.`);
-          syncCareInventoryCounts();
-          careActionPendingRef.current = false;
-          return;
-        }
-
-        syncCareInventoryCounts();
-      }
-
       setBusy(true);
       setActionMsg(null);
 
@@ -456,19 +429,14 @@ export default function PetPage() {
 
         setActionMsg(json?.message || defaultMessageMap[action]);
         await loadPetPage(false);
-        syncCareInventoryCounts();
       } catch (error) {
-        if (inventoryCategory) {
-          addCareItem(inventoryCategory, 1);
-          syncCareInventoryCounts();
-        }
-
         setActionMsg(
           error instanceof Error
             ? error.message
             : `Failed to ${action} your pet.`,
         );
       } finally {
+        await syncCareInventoryCounts();
         careActionPendingRef.current = false;
         setBusy(false);
       }

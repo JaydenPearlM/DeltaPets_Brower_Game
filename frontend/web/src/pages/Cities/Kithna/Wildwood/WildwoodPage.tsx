@@ -11,6 +11,7 @@ import {
   type WildwoodStatus,
 } from "@/lib/kithna/wildwoodApi";
 import WildwoodBattle, { KithPortrait } from "./WildwoodBattle";
+import WildwoodExploreResult from "./WildwoodExploreResult";
 import "./wildwood.css";
 
 export default function WildwoodPage() {
@@ -20,6 +21,11 @@ export default function WildwoodPage() {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [showBattle, setShowBattle] = useState(true);
+  const [prepared, setPrepared] = useState(false);
+  const [visitSteps, setVisitSteps] = useState(0);
+  const [visitRoomId, setVisitRoomId] = useState<string | null>(null);
+  const [recentFinds, setRecentFinds] = useState<string[]>([]);
+  const [collecting, setCollecting] = useState(false);
 
   const [questProgressFlash, setQuestProgressFlash] = useState<{
     progress: number;
@@ -87,6 +93,20 @@ export default function WildwoodPage() {
     };
   }, []);
 
+  useEffect(() => {
+    function refreshTeam() {
+      if (document.visibilityState === "visible" && session?.room?.battle?.status !== "active") {
+        void run(reload);
+      }
+    }
+    window.addEventListener("focus", refreshTeam);
+    document.addEventListener("visibilitychange", refreshTeam);
+    return () => {
+      window.removeEventListener("focus", refreshTeam);
+      document.removeEventListener("visibilitychange", refreshTeam);
+    };
+  }, [session?.room?.battle?.status]);
+
   function showQuestProgress(
     progress: number,
     target: number,
@@ -115,6 +135,7 @@ export default function WildwoodPage() {
   }
 
   function explore() {
+    if (!canExplore) return;
     void run(async () => {
       if (!session) return;
 
@@ -130,7 +151,9 @@ export default function WildwoodPage() {
       if (!mounted.current) return;
 
       setSession(next);
-      setShowBattle(true);
+      setVisitSteps((steps) => steps + 1);
+      setVisitRoomId(next.room?.id ?? null);
+      setShowBattle(false);
       setStatus(await fetchWildwoodStatus());
     });
   }
@@ -177,6 +200,8 @@ export default function WildwoodPage() {
   }
 
   const room = session?.room;
+  const canExplore = !busy && !collecting && !error && Boolean(status?.wildwoodUnlocked) &&
+    Boolean(session?.team.some((pet) => pet.hpCur > 0)) && room?.battle?.status !== "active";
 
   return (
     <main className="ww-page dp-standard-panel">
@@ -210,8 +235,8 @@ export default function WildwoodPage() {
       ) : null}
       <header className="ww-page-heading">
         <div>
-          <p className="ww-eyebrow">Explore Kithna</p>
           <h1>Wildwood</h1>
+          <p className="ww-warning">Warning: corrupted Kith have been sighted nearby.</p>
         </div>
 
         <Link to="/cities/kithna">Back to Kithna</Link>
@@ -237,33 +262,62 @@ export default function WildwoodPage() {
           battle={room.battle}
           images={room.images}
           turnOrder={room.turnOrder}
+          corrupted={room.corrupted}
           busy={busy || Boolean(error)}
           onAction={action}
           onReturn={() =>
             void run(async () => {
               await reload();
               setShowBattle(false);
+              setPrepared(true);
             })
           }
         />
       ) : (
         <>
-          <section className="ww-explore">
-            <h2>Follow the woodland path</h2>
-
-            <p>
-              Choose your formation, then explore. Each step may reveal a
-              corrupted Kith. Battles use your current team.
-            </p>
-
-            {room && (
-              <p className="ww-discovery" role="status">
-                Step {room.sequence} · {room.message}
-              </p>
-            )}
-          </section>
-
+          {prepared ? (
+            <div className="ww-exploration-layout">
+              <div className="ww-exploration-info">
+              <section className="ww-team-summary" aria-label="Your Team">
+                <div className="ww-page-heading">
+                  <h2>Your Team</h2>
+                  <button className="dp-btn dp-btn--yellow" disabled={busy || collecting || room?.battle?.status === "active"} onClick={() => setPrepared(false)}>Edit formation</button>
+                </div>
+                <ul>
+                  {session?.team.map((pet) => (
+                    <li key={pet.id}>
+                      <KithPortrait name={pet.name} speciesId={pet.speciesId} imageUrl={pet.imageUrl} />
+                      <strong>{pet.name}</strong>
+                      <span>{formation[pet.id] ?? pet.row} · HP {pet.displayHp ?? "Unavailable"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+              <section className="ww-recent-finds" aria-label="Recent Finds">
+                <h2>Recent Finds</h2>
+                {recentFinds.length ? (
+                  <ul>{recentFinds.map((name, index) => <li key={`${index}-${name}`}>{name}</li>)}</ul>
+                ) : <p>No items collected this visit.</p>}
+              </section>
+              <section className="ww-explore-viewport" aria-label="Wildwood exploration" aria-busy={busy}>
+                {room && room.id === visitRoomId ? (
+                  <WildwoodExploreResult key={room.id} room={room} busy={busy || Boolean(error)} step={visitSteps} onBattle={() => setShowBattle(true)} onCollected={(name) => setRecentFinds((finds) => [...finds, name])} onCollectingChange={setCollecting} />
+                ) : (
+                  <p className="ww-eyebrow">Steps this visit: {visitSteps}</p>
+                )}
+              </section>
+              </div>
+              <section className="ww-art-panel" aria-label="Wildwood art area" />
+              <div className="ww-explore-control">
+                <button className="dp-btn dp-btn--yellow" disabled={!canExplore} onClick={explore}>
+                  {busy ? "Exploring…" : "Explore Wildwood"}
+                </button>
+              </div>
+            </div>
+          ) : (
+          <>
           <section className="ww-formation">
+            <p className="ww-eyebrow">Prepare</p>
             <h2>Your formation</h2>
 
             <p>
@@ -282,7 +336,7 @@ export default function WildwoodPage() {
                   <strong>{pet.name}</strong>
 
                   <span>
-                    {pet.hpCur} / {pet.hpMax} HP · SPD {pet.spd}
+                    HP {pet.displayHp ?? "Unavailable"} · SPD {pet.spd}
                   </span>
 
                   <label>
@@ -290,12 +344,14 @@ export default function WildwoodPage() {
                     <select
                       disabled={busy}
                       value={formation[pet.id] ?? pet.row}
-                      onChange={(event) =>
+                      onChange={(event) => {
+                        const row = event.target.value;
+                        if (row !== "front" && row !== "middle" && row !== "back") return;
                         setFormation((current) => ({
                           ...current,
-                          [pet.id]: event.target.value as BattleRow,
-                        }))
-                      }
+                          [pet.id]: row,
+                        }));
+                      }}
                     >
                       <option value="front">Front</option>
                       <option value="middle">Middle</option>
@@ -317,17 +373,14 @@ export default function WildwoodPage() {
           <div className="ww-explore-control">
             <button
               className="dp-btn dp-btn--yellow"
-              disabled={
-                busy ||
-                Boolean(error) ||
-                !status?.wildwoodUnlocked ||
-                !session?.team.length
-              }
-              onClick={explore}
+              disabled={!canExplore}
+              onClick={() => setPrepared(true)}
             >
-              {busy ? "Loading…" : "Explore Wildwood"}
+              {busy ? "Loading…" : "Confirm formation"}
             </button>
           </div>
+          </>
+          )}
         </>
       )}
     </main>
