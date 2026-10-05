@@ -202,7 +202,7 @@ function getPetPageDescription(pet: PetRecord | null) {
   return `${displayName} is a ${trait} ${element} Delta in the ${stage} stage. Its bond is still forming, but the spark is there.`;
 }
 
-function getPetGrowthTraits(pet: PetRecord | null, stats: PetStatsRow | null) {
+function getPetGrowthTraits(pet: PetRecord | null) {
   const rawStrong =
     pet?.growth_strong_stats ??
     pet?.growthStrongStats ??
@@ -228,19 +228,9 @@ function getPetGrowthTraits(pet: PetRecord | null, stats: PetStatsRow | null) {
       ? (rawWeak as StatKey)
       : null;
 
-  if (strongStats.length || weakStat) {
-    return { strongStats, weakStat };
-  }
-
-  if (!stats) return { strongStats: [], weakStat: null };
-
-  const sortedStats = [...STAT_ORDER].sort(
-    (a, b) => safeNum((stats as any)[b]) - safeNum((stats as any)[a]),
-  );
-
   return {
-    strongStats: sortedStats.slice(0, 2),
-    weakStat: sortedStats.at(-1) ?? null,
+    strongStats,
+    weakStat,
   };
 }
 
@@ -267,8 +257,13 @@ export default function PetPage() {
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [showNicknameEditor, setShowNicknameEditor] = useState(false);
-  const [careInventoryCounts, setCareInventoryCounts] = useState<Record<CareInventoryCategory, number>>({
-    food: 0, soap: 0, toy: 0, bed: 0,
+  const [careInventoryCounts, setCareInventoryCounts] = useState<
+    Record<CareInventoryCategory, number>
+  >({
+    food: 0,
+    soap: 0,
+    toy: 0,
+    bed: 0,
   });
 
   const careInventoryRequest = useRef(0);
@@ -280,7 +275,8 @@ export default function PetPage() {
     }
     try {
       const counts = await getServerCareInventoryCounts();
-      if (request === careInventoryRequest.current) setCareInventoryCounts(counts);
+      if (request === careInventoryRequest.current)
+        setCareInventoryCounts(counts);
     } catch {
       if (request === careInventoryRequest.current) {
         setCareInventoryCounts({ food: 0, soap: 0, toy: 0, bed: 0 });
@@ -565,10 +561,7 @@ export default function PetPage() {
   );
 
   const petDescription = useMemo(() => getPetPageDescription(pet), [pet]);
-  const growthTraits = useMemo(
-    () => getPetGrowthTraits(pet, stats),
-    [pet, stats],
-  );
+  const growthTraits = useMemo(() => getPetGrowthTraits(pet), [pet]);
   const kithTeamSlots = useMemo<PartySlotView[]>(() => {
     const teamBySlot = new Map<number, TeamCardPet>();
 

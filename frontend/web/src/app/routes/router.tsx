@@ -3,24 +3,30 @@ import { createBrowserRouter, Navigate, useLocation } from "react-router-dom";
 import App from "../App";
 import { useAuth } from "../providers/useAuth";
 import AuthCallback from "./AuthCallback";
+import FirstEntry from "./FirstEntry";
 import { AlphaAccessGate } from "../../components/AlphaAccess_temp/AlphaAccessGate";
 
 const ParkPage = lazy(() => import("../../pages/park/park"));
 const KithnaMap = lazy(() => import("../../pages/Cities/Kithna/KithnaMap"));
-const WildwoodPage = lazy(() => import("../../pages/Cities/Kithna/Wildwood/WildwoodPage"));
+const WildwoodPage = lazy(
+  () => import("../../pages/Cities/Kithna/Wildwood/WildwoodPage"),
+);
 const Homepage = lazy(() => import("../../pages/Homepage/homepage"));
 const CreatePage = lazy(() => import("../../pages/cutscene/create"));
 const RescueEggReveal = lazy(
   () => import("../../pages/cutscene/rescueEggReveal"),
 );
 const PetPage = lazy(() => import("../../pages/petsPage/PetPage"));
+const PetPlayTest = lazy(() => import("../../pages/dev/PetPlayTest"));
 const FarmPage = lazy(() => import("../../pages/farm/petFarmFood"));
 const HatcheryPage = lazy(
   () => import("../../components/Hatchery/pages/HatcheryPage"),
 );
 
 const ProfilePage = lazy(() => import("../../pages/profile/ProfilePage"));
-const PlayerProfilePage = lazy(() => import("../../pages/profile/PlayerProfilePage"));
+const PlayerProfilePage = lazy(
+  () => import("../../pages/profile/PlayerProfilePage"),
+);
 const BattleArenaPage = lazy(
   () => import("../../pages/battleArena/BattleArenaPage"),
 );
@@ -96,6 +102,14 @@ export const router = createBrowserRouter([
       { path: "signin", element: withSuspense(<Homepage />) },
 
       {
+        path: "first-entry",
+        element: (
+          <ProtectedRoute>
+            <FirstEntry />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "create",
         element: withSuspense(
           <ProtectedRoute>
@@ -111,11 +125,20 @@ export const router = createBrowserRouter([
           </ProtectedRoute>,
         ),
       },
+
       {
         path: "pet",
         element: withSuspense(
           <ProtectedRoute>
             <PetPage />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "dev/pet-play-test",
+        element: withSuspense(
+          <ProtectedRoute>
+            <PetPlayTest />
           </ProtectedRoute>,
         ),
       },

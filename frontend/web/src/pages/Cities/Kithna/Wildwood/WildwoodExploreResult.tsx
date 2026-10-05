@@ -124,7 +124,7 @@ export default function WildwoodExploreResult({
             {result.battle.participants.filter((pet) => pet.side === "enemy").map((pet) => (
               <div key={pet.id}>
                 <span className={room.corrupted ? "ww-corrupted-portrait" : undefined}>
-                  <KithPortrait name={pet.name} speciesId={pet.speciesId} imageUrl={room.images[pet.id]} />
+                  <KithPortrait name={pet.name} speciesId={pet.speciesId} imageUrl={room.images[pet.id]} enemy={room.corrupted} />
                 </span>
                 <h3>{pet.name}</h3>
               </div>

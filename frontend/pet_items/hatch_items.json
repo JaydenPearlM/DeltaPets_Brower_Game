@@ -1,15 +1,327 @@
 [
   {
-    "slug": "item-slug",
-    "name": "Item Name",
+    "slug": "warm-nest-lining",
+    "name": "Warm Nest Lining",
     "type": "consumable",
-    "category": "hatch",
-    "description": "What the hatch item does.",
+    "category": "hatch_item",
+    "description": "Soft heated lining that helps an egg hatch a little sooner.",
     "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 30
+    },
+    "image": "warm_nest_lining.png"
+  },
+  {
+    "slug": "heated-nest-pad",
+    "name": "Heated Nest Pad",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A gently heated pad that speeds up incubation.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 45
+    },
+    "image": "heated_nest_pad.png"
+  },
+  {
+    "slug": "incubation-blanket",
+    "name": "Incubation Blanket",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A warm blanket designed to keep an egg at a comfortable temperature.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 45
+    },
+    "image": "incubation_blanket.png"
+  },
+  {
+    "slug": "heat-stone",
+    "name": "Heat Stone",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A naturally warm stone that helps speed up incubation.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 60
+    },
+    "image": "heat_stone.png"
+  },
+  {
+    "slug": "warming-crystal",
+    "name": "Warming Crystal",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A small crystal that radiates gentle warmth around an egg.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 60
+    },
+    "image": "warming_crystal.png"
+  },
+  {
+    "slug": "nest-comfort-pack",
+    "name": "Nest Comfort Pack",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A bundle of soft nesting material that improves incubation conditions.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 30
+    },
+    "image": "nest_comfort_pack.png"
+  },
+  {
+    "slug": "hatchling-lamp",
+    "name": "Hatchling Lamp",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A small warming lamp made specifically for incubating eggs.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 75
+    },
+    "image": "hatchling_lamp.png"
+  },
+  {
+    "slug": "thermal-egg-wrap",
+    "name": "Thermal Egg Wrap",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "An insulated wrap that keeps an egg steadily warm.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 75
+    },
+    "image": "thermal_egg_wrap.png"
+  },
+  {
+    "slug": "cozy-nest-bundle",
+    "name": "Cozy Nest Bundle",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A comfortable bundle of nesting materials that gently encourages incubation.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 45
+    },
+    "image": "cozy_nest_bundle.png"
+  },
+  {
+    "slug": "incubation-gel",
+    "name": "Incubation Gel",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A warming gel applied around an incubator to improve heat transfer.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 90
+    },
+    "image": "incubation_gel.png"
+  },
+  {
+    "slug": "rapid-warming-gel",
+    "name": "Rapid Warming Gel",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A stronger incubation gel that rapidly improves egg warmth.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 120
+    },
+    "image": "rapid_warming_gel.png"
+  },
+  {
+    "slug": "incubation-charm",
+    "name": "Incubation Charm",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A small charm that accelerates the natural incubation process.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 150
+    },
+    "image": "incubation_charm.png"
+  },
+  {
+    "slug": "hatch-boost-tonic",
+    "name": "Hatch Boost Tonic",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A special incubation tonic used around an egg to encourage faster development.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 180
+    },
+    "image": "hatch_boost_tonic.png"
+  },
+  {
+    "slug": "warmth-rune",
+    "name": "Warmth Rune",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A small engraved rune that gives off steady incubation warmth.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 180
+    },
+    "image": "warmth_rune.png"
+  },
+  {
+    "slug": "nestkeeper-charm",
+    "name": "Nestkeeper Charm",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A traditional charm used by nestkeepers to support healthy incubation.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 240
+    },
+    "image": "nestkeeper_charm.png"
+  },
+  {
+    "slug": "prismatic-heat-stone",
+    "name": "Prismatic Heat Stone",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A colorful heat stone that radiates unusually strong incubation warmth.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 240
+    },
+    "image": "prismatic_heat_stone.png"
+  },
+  {
+    "slug": "accelerated-incubation-kit",
+    "name": "Accelerated Incubation Kit",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A compact kit containing everything needed to significantly speed up incubation.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_seconds": 300
+    },
+    "image": "accelerated_incubation_kit.png"
+  },
+  {
+    "slug": "ancient-hatching-charm",
+    "name": "Ancient Hatching Charm",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "An old charm once used to encourage difficult eggs to hatch.",
+    "rarity": 3,
     "stack_limit": 99,
     "effects": {
       "hatch_time_reduction_percent": 10
     },
-    "image": "item_image.png"
+    "image": "ancient_hatching_charm.png"
+  },
+  {
+    "slug": "prismatic-incubator-core",
+    "name": "Prismatic Incubator Core",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A powerful incubator core that substantially accelerates an egg's remaining incubation.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_percent": 15
+    },
+    "image": "prismatic_incubator_core.png"
+  },
+  {
+    "slug": "hatchkeeper-sigil",
+    "name": "Hatchkeeper Sigil",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A rare sigil associated with experienced Kithna hatchkeepers.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_percent": 20
+    },
+    "image": "hatchkeeper_sigil.png"
+  },
+  {
+    "slug": "resonant-egg-warmer",
+    "name": "Resonant Egg Warmer",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A specialized warmer that gently resonates around an egg to accelerate incubation.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_percent": 20
+    },
+    "image": "resonant_egg_warmer.png"
+  },
+  {
+    "slug": "golden-incubation-core",
+    "name": "Golden Incubation Core",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A rare golden core that dramatically shortens an egg's remaining incubation.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_percent": 25
+    },
+    "image": "golden_incubation_core.png"
+  },
+  {
+    "slug": "emergency-hatch-kit",
+    "name": "Emergency Hatch Kit",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "A powerful incubation kit intended for eggs that are already close to hatching.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_percent": 40
+    },
+    "image": "emergency_hatch_kit.png"
+  },
+  {
+    "slug": "ancient-nest-relic",
+    "name": "Ancient Nest Relic",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "An exceptionally rare nesting artifact that greatly accelerates incubation.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_percent": 50
+    },
+    "image": "ancient_nest_relic.png"
+  },
+  {
+    "slug": "celestial-hatch-core",
+    "name": "Celestial Hatch Core",
+    "type": "consumable",
+    "category": "hatch_item",
+    "description": "An extraordinarily rare incubation core capable of removing most of an egg's remaining hatch time.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hatch_time_reduction_percent": 75
+    },
+    "image": "celestial_hatch_core.png"
   }
 ]

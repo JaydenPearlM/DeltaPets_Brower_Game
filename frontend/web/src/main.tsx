@@ -1,11 +1,29 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider } from "react-router-dom";
-import { router } from "./app/routes/router";
-import { AppProviders } from "./app/providers/AppProviders";
 import { ErrorBoundary } from "./app/ErrorBoundary";
 import "./global.css";
 import "./mobile.css";
+
+const isResonancePreview = import.meta.env.DEV &&
+  window.location.pathname === "/resonance-preview";
+
+const ResonancePreview = import.meta.env.DEV
+  ? React.lazy(() => import("./preview_testing/resonanceEvolution/ResonanceEvolutionPreview"))
+  : null;
+
+// Load gameplay modules only when opening the game, never for the isolated preview.
+const GameApplication = React.lazy(async () => {
+  const [{ RouterProvider }, { router }, { AppProviders }] = await Promise.all([
+    import("react-router-dom"),
+    import("./app/routes/router"),
+    import("./app/providers/AppProviders"),
+  ]);
+  return {
+    default: function GameApplicationRoot() {
+      return <AppProviders><RouterProvider router={router} /></AppProviders>;
+    },
+  };
+});
 
 const authHash = new URLSearchParams(
   window.location.hash.startsWith("#")
@@ -14,6 +32,7 @@ const authHash = new URLSearchParams(
 );
 
 if (
+  !isResonancePreview &&
   authHash.get("type") === "signup" &&
   authHash.has("access_token") &&
   window.location.pathname !== "/authcallback"
@@ -28,9 +47,11 @@ if (
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <AppProviders>
-        <RouterProvider router={router} />
-      </AppProviders>
+      <React.Suspense fallback={<div style={{ padding: 16 }}>Loading...</div>}>
+        {isResonancePreview && ResonancePreview
+          ? <ResonancePreview />
+          : <GameApplication />}
+      </React.Suspense>
     </ErrorBoundary>
   </React.StrictMode>,
 );

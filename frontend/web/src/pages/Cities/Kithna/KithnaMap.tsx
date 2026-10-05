@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useGame } from "../../../app/providers/GameProvider";
 import PoeTayToe from "../../../components/PoeTayToe/PoeTayToe";
 import {
   acceptAssantiFoodQuest,
@@ -109,6 +110,7 @@ const KITHNA_TOOLBAR = [
 
 export default function KithnaMap() {
   const navigate = useNavigate();
+  const { bumpRefreshKey } = useGame();
 
   const [wildwood, setWildwood] = useState<WildwoodStatus | null>(null);
   const [wildwoodMessageOpen, setWildwoodMessageOpen] = useState(false);
@@ -116,9 +118,13 @@ export default function KithnaMap() {
     null,
   );
   const [questBusy, setQuestBusy] = useState(false);
+  const [statusError, setStatusError] = useState("");
+  const [statusAttempt, setStatusAttempt] = useState(0);
+  const [questError, setQuestError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
+    setStatusError("");
 
     void fetchWildwoodStatus()
       .then((result) => {
@@ -126,16 +132,16 @@ export default function KithnaMap() {
           setWildwood(result);
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!cancelled) {
-          setWildwood(null);
+          setStatusError(error instanceof Error ? error.message : "Quest status could not be loaded.");
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [statusAttempt]);
 
   function activateTarget(target: KithnaTarget) {
     if (target.requiresWildwoodUnlock && !wildwood?.wildwoodUnlocked) {
@@ -148,6 +154,14 @@ export default function KithnaMap() {
 
   return (
     <main className="kithnaMapPage">
+      {statusError ? (
+        <div role="alert">
+          <p>{statusError}</p>
+          <button type="button" className="kithnaToolbarButton" onClick={() => setStatusAttempt((attempt) => attempt + 1)}>
+            Retry quest status
+          </button>
+        </div>
+      ) : null}
       <section className="kithnaMapFrame" aria-label="Kithna town map">
         <div className="kithnaIsland">
           <div className="kithnaWater" />
@@ -208,7 +222,7 @@ export default function KithnaMap() {
                   ? "Quest ready to turn in at Food Shop"
                   : "Quest available at Food Shop"
               }
-              onClick={() => setQuestDialogue("food")}
+              onClick={() => { setQuestError(""); setQuestDialogue("food"); }}
             >
               {wildwood.foodQuest.status === "ready_to_turn_in" ? "?" : "!"}
             </button>
@@ -233,7 +247,7 @@ export default function KithnaMap() {
                   ? "Main quest ready to turn in"
                   : "Main quest available at Kithna Wildwood"
               }
-              onClick={() => setQuestDialogue("main")}
+              onClick={() => { setQuestError(""); setQuestDialogue("main"); }}
             >
               {wildwood.quest.status === "ready_to_turn_in" ? "?" : "!"}
 
@@ -278,9 +292,12 @@ export default function KithnaMap() {
                   : "offer"
               }
               busy={questBusy}
+              error={questError}
               onClose={() => setQuestDialogue(null)}
               onAccept={() => {
+                if (questBusy) return;
                 setQuestBusy(true);
+                setQuestError("");
 
                 const request =
                   wildwood.foodQuest.status === "ready_to_turn_in"
@@ -291,6 +308,10 @@ export default function KithnaMap() {
                   .then((next) => {
                     setWildwood(next);
                     setQuestDialogue(null);
+                    bumpRefreshKey();
+                  })
+                  .catch((error: unknown) => {
+                    setQuestError(error instanceof Error ? error.message : "Quest could not be updated. Try again.");
                   })
                   .finally(() => setQuestBusy(false));
               }}
@@ -317,9 +338,12 @@ export default function KithnaMap() {
                   : "offer"
               }
               busy={questBusy}
+              error={questError}
               onClose={() => setQuestDialogue(null)}
               onAccept={() => {
+                if (questBusy) return;
                 setQuestBusy(true);
+                setQuestError("");
 
                 const request =
                   wildwood.quest.status === "ready_to_turn_in"
@@ -330,6 +354,10 @@ export default function KithnaMap() {
                   .then((next) => {
                     setWildwood(next);
                     setQuestDialogue(null);
+                    bumpRefreshKey();
+                  })
+                  .catch((error: unknown) => {
+                    setQuestError(error instanceof Error ? error.message : "Quest could not be updated. Try again.");
                   })
                   .finally(() => setQuestBusy(false));
               }}

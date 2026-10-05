@@ -54,7 +54,7 @@ async function main() {
       for (const quantity of [-1, 0, 1.5, "2", null, 429496730]) {
         assert.equal((await send(direction, { slug: "alpha-meat", quantity })).status, 400);
       }
-      for (const slug of ["unknown", "closed-alpha-care-package", "", null, {}, "ALPHA-MEAT"]) {
+      for (const slug of ["unknown", "", null, {}, "ALPHA-MEAT"]) {
         assert.equal((await send(direction, { slug, quantity: 1 })).status, 400);
       }
       for (const extra of [{ price: 9999 }, { total: 0 }, { user_id: "account-B" }, { owned: 999 }]) {
@@ -91,7 +91,7 @@ async function main() {
     throwRpc = true;
     assert.equal((await send("sell", { slug: "alpha-meat", quantity: 1 })).status, 500);
     console.log(`PASS: ${checked} real-router requests; validation, authenticated identity, single RPC, safe errors.`);
-    console.log("Database ownership, atomicity, concurrency, RLS and package replay require a disposable PostgreSQL database.");
+    console.log("Database ownership, atomicity, concurrency and RLS require a disposable PostgreSQL database.");
   } finally {
     await new Promise(resolve => server.close(resolve));
   }

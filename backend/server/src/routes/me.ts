@@ -164,32 +164,22 @@ async function getOrCreateWallet(userId: string): Promise<WalletView> {
 }
 
 async function spendDotsFromWallet(userId: string, dots: number) {
-  const wallet = await getOrCreateWallet(userId);
+  await getOrCreateWallet(userId);
 
-  if (wallet.dots < dots) {
-    return {
-      ok: false,
-      wallet,
-    };
-  }
-
-  const { data, error } = await supabaseAdmin
-    .from("wallets")
-    .update({
-      dots: wallet.dots - dots,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", userId)
-    .select("dots")
-    .maybeSingle();
+  // Let the existing database function lock and debit the current balance.
+  const { data, error } = await supabaseAdmin.rpc("spend_wallet", {
+    p_user_id: userId,
+    p_dots: dots,
+    p_crystals: 0,
+  });
 
   if (error) {
     throw error;
   }
 
   return {
-    ok: true,
-    wallet: normalizeWallet(data),
+    ok: data === true,
+    wallet: await getOrCreateWallet(userId),
   };
 }
 
@@ -557,15 +547,15 @@ meRouter.post(
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const dots = normalizeDots(req.body?.dots);
+      const dots = z.number().int().positive().max(2147483647).safeParse(req.body?.dots);
 
-      if (dots <= 0) {
+      if (!dots.success) {
         return res.status(400).json({
-          error: "Dots amount must be positive.",
+          error: "Dots amount must be a positive integer within the supported range.",
         });
       }
 
-      const result = await spendDotsFromWallet(userId, dots);
+      const result = await spendDotsFromWallet(userId, dots.data);
 
       if (!result.ok) {
         return res.status(400).json({

@@ -7,6 +7,7 @@ import { useAliuneSignal } from "../pages/Homepage/useAliuneSignal";
 import { DeltaClock } from "../lib/timers/deltaClock";
 import { useDeltaTime } from "../lib/timers/useDeltaTime";
 import { useAuth } from "./providers/useAuth";
+import { useGame } from "./providers/GameProvider";
 import { useUI } from "./providers/UIProvider";
 import { apiFetch } from "../lib/api/baseClient";
 import { fetchWildwoodStatus } from "../lib/kithna/wildwoodApi";
@@ -49,6 +50,7 @@ export default function App() {
   const { phase } = useDeltaTime();
   const { signal } = useAliuneSignal();
   const { user, loading } = useAuth();
+  const { refreshKey } = useGame();
   const {
     inventoryOpen,
     questJournalOpen,
@@ -245,7 +247,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [loading, user, location.pathname]);
+  }, [loading, user, location.pathname, refreshKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -494,7 +496,7 @@ export default function App() {
 
                         <p className="exploreThoughtBubbleText">
                           "You see a leaf gently blow past you... you should
-                          probably close that window, theres a chill in the
+                          probably close that window, there's a chill in the
                           air."
                         </p>
                       </div>

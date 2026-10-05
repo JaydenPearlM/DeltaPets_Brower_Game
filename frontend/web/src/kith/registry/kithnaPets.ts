@@ -1,4 +1,4 @@
-import magmadoPortrait from "@/kith/kithna_pets/hatchling_magmoda.png";
+import magmadoPortrait from "@/kith/assets/Kithna_pets/hatchlings/hatchling_magmado.png";
 
 const KITH_PORTRAITS: Readonly<Record<string, string>> = {
   kithna_magmado: magmadoPortrait,

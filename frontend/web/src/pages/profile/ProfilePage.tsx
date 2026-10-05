@@ -571,7 +571,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
   const activePet = allPets.find((pet) => pet.is_active) ?? null;
   const activePetImage =
-    getStarterPortrait(activePet?.species) ||
+    getStarterPortrait(activePet?.species, activePet?.stage) ||
     getKithnaPortrait(activePet?.species) ||
     getKithnaPortrait(activePet?.name) ||
     getStarterPortrait(activePet?.name) ||

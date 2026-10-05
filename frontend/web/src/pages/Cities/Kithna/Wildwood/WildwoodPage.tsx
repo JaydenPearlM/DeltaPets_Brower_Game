@@ -20,7 +20,7 @@ export default function WildwoodPage() {
   const [formation, setFormation] = useState<Record<string, BattleRow>>({});
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
-  const [showBattle, setShowBattle] = useState(true);
+  const [showBattle, setShowBattle] = useState(false);
   const [prepared, setPrepared] = useState(false);
   const [visitSteps, setVisitSteps] = useState(0);
   const [visitRoomId, setVisitRoomId] = useState<string | null>(null);
@@ -45,15 +45,25 @@ export default function WildwoodPage() {
 
     setSession(next);
     setStatus(quest);
+    setShowBattle((current) =>
+      next.room?.battle?.status === "active" ||
+      (current && next.room?.id === session?.room?.id),
+    );
 
-    setFormation((current) =>
+    if (next.team.length) setFormation((current) =>
       Object.fromEntries(
-        next.team.map((pet) => [pet.id, current[pet.id] ?? pet.row]),
+        next.team.map((pet) => [
+          pet.id,
+          current[pet.id] ??
+            next.room?.battle?.participants.find((unit) => unit.sourcePetId === pet.id)?.row ??
+            pet.row,
+        ]),
       ),
     );
+    return next;
   }
 
-  async function run(work: () => Promise<void>) {
+  async function run(work: () => Promise<unknown>) {
     if (inFlight.current) return;
 
     inFlight.current = true;
@@ -154,7 +164,8 @@ export default function WildwoodPage() {
       setVisitSteps((steps) => steps + 1);
       setVisitRoomId(next.room?.id ?? null);
       setShowBattle(false);
-      setStatus(await fetchWildwoodStatus());
+      const nextStatus = await fetchWildwoodStatus();
+      if (mounted.current) setStatus(nextStatus);
     });
   }
 
@@ -267,8 +278,9 @@ export default function WildwoodPage() {
           onAction={action}
           onReturn={() =>
             void run(async () => {
-              await reload();
-              setShowBattle(false);
+              const next = await reload();
+              if (!mounted.current || !next) return;
+              setShowBattle(next.room?.battle?.status === "active");
               setPrepared(true);
             })
           }

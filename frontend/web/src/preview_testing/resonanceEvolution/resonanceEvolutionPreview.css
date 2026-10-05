@@ -1,0 +1,37 @@
+.resonanceTestPreview {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 80px 24px 40px;
+  background: #080d17;
+  color: #dce9ff;
+  font: 16px/1.55 system-ui, sans-serif;
+}
+
+.resonanceTestPreview__badge {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 2147483002;
+  padding: 6px 12px;
+  border: 1px solid #ffd06a;
+  border-radius: 6px;
+  background: #162337;
+  color: #ffd06a;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.resonanceTestPreview__controls { max-width: 680px; margin: auto; }
+.resonanceTestPreview__controls h1 { font-size: clamp(26px, 5vw, 44px); line-height: 1.15; }
+.resonanceTestPreview__controls > img { width: 240px; max-width: 100%; height: 240px; object-fit: contain; }
+.resonanceTestPreview__controls label { display: block; margin: 20px 0; }
+.resonanceTestPreview__controls button {
+  padding: 10px 24px;
+  border: 1px solid #7189ab;
+  border-radius: 6px;
+  color: #e5efff;
+  background: #162337;
+  font: inherit;
+  cursor: pointer;
+}
+.resonanceTestPreview__controls button:disabled { opacity: .45; cursor: default; }

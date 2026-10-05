@@ -11,6 +11,7 @@ type QuestDialogueProps = {
   onAccept?: () => void;
   onClose: () => void;
   busy?: boolean;
+  error?: string;
   mode?: "offer" | "turn-in";
 };
 
@@ -25,6 +26,7 @@ export default function QuestDialogue({
   onAccept,
   onClose,
   busy = false,
+  error,
   mode = "offer",
 }: QuestDialogueProps) {
   return (
@@ -40,6 +42,7 @@ export default function QuestDialogue({
           className="questDialogueClose"
           aria-label="Close quest dialogue"
           onClick={onClose}
+          disabled={busy}
         >
           ×
         </button>
@@ -73,6 +76,8 @@ export default function QuestDialogue({
 
             <strong>{objective}</strong>
           </div>
+
+          {error ? <p role="alert">{error}</p> : null}
 
           <div className="questDialogueActions">
             <button

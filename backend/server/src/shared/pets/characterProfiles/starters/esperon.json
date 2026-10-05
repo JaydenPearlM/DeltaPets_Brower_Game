@@ -37,7 +37,7 @@
 
       "evolution": {
         "hatchling": "Esperon",
-        "lowform": "Noctimp",
+        "lowform": "Esperion",
         "highform": "Nightmareimp",
         "legion": "Espereonite",
         "mythical_legendary": null
@@ -63,7 +63,7 @@
 
       "evolution": {
         "hatchling": "Esperon",
-        "lowform": "Flareclaw",
+        "lowform": "Esperion",
         "highform": "Shadeclaw",
         "legion": "Nightvielclaw",
         "mythical_legendary": null
@@ -886,12 +886,12 @@
     "path_facts": {
       "shadow_night_bad": {
         "preferred_time": "night",
-        "evolution": ["Esperon", "Noctimp", "Nightmareimp", "Espereonite"]
+        "evolution": ["Esperon", "Esperion", "Nightmareimp", "Espereonite"]
       },
 
       "shadow_day_good": {
         "preferred_time": "day",
-        "evolution": ["Esperon", "Flareclaw", "Shadeclaw", "Nightvielclaw"]
+        "evolution": ["Esperon", "Esperion", "Shadeclaw", "Nightvielclaw"]
       }
     },
 

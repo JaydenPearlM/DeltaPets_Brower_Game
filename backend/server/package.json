@@ -16,6 +16,7 @@
     "express-slow-down": "^3.0.1",
     "helmet": "^8.1.0",
     "luxon": "^3.7.2",
+    "resend": "^6.32.0",
     "zod": "^4.4.2"
   },
   "devDependencies": {

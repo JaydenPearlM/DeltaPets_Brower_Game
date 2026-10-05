@@ -71,8 +71,8 @@ export function useEnterGame() {
       debugLog("[enterGame] hasHatchedPet:", hasHatchedPet);
 
       if (!introSeen) {
-        debugLog("[enterGame] routing -> /create");
-        navigate("/create", { replace: true });
+        debugLog("[enterGame] routing -> /first-entry");
+        navigate("/first-entry", { replace: true });
         return;
       }
 

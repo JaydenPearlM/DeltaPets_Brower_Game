@@ -1,15 +1,1302 @@
 [
   {
-    "slug": "item-slug",
-    "name": "Item Name",
+    "slug": "apple",
+    "name": "Apple",
     "type": "food",
     "category": "food",
-    "description": "What the food is and what it does.",
+    "description": "A crisp everyday fruit that fills a little hunger.",
     "rarity": 1,
     "stack_limit": 99,
     "effects": {
-      "hunger": 25
+      "hunger": 10
     },
-    "image": "item_image.png"
+    "image": "apple.png"
+  },
+  {
+    "slug": "wild-berries",
+    "name": "Wild Berries",
+    "type": "food",
+    "category": "food",
+    "description": "A small handful of sweet berries.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 8
+    },
+    "image": "wild_berries.png"
+  },
+  {
+    "slug": "carrot",
+    "name": "Carrot",
+    "type": "food",
+    "category": "food",
+    "description": "A crunchy root vegetable and simple snack.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 9
+    },
+    "image": "carrot.png"
+  },
+  {
+    "slug": "potato",
+    "name": "Potato",
+    "type": "food",
+    "category": "food",
+    "description": "A filling staple vegetable.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 12
+    },
+    "image": "potato.png"
+  },
+  {
+    "slug": "tomato",
+    "name": "Tomato",
+    "type": "food",
+    "category": "food",
+    "description": "A juicy red vegetable with a fresh bite.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 8
+    },
+    "image": "tomato.png"
+  },
+  {
+    "slug": "corn",
+    "name": "Corn",
+    "type": "food",
+    "category": "food",
+    "description": "Sweet kernels that make an easy everyday meal.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 11
+    },
+    "image": "corn.png"
+  },
+  {
+    "slug": "lettuce",
+    "name": "Lettuce",
+    "type": "food",
+    "category": "food",
+    "description": "Fresh leafy greens for a light snack.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 7
+    },
+    "image": "lettuce.png"
+  },
+  {
+    "slug": "broccoli",
+    "name": "Broccoli",
+    "type": "food",
+    "category": "food",
+    "description": "A healthy green vegetable.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 10
+    },
+    "image": "broccoli.png"
+  },
+  {
+    "slug": "green-peas",
+    "name": "Green Peas",
+    "type": "food",
+    "category": "food",
+    "description": "A small serving of fresh green peas.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 9
+    },
+    "image": "green_peas.png"
+  },
+  {
+    "slug": "green-beans",
+    "name": "Green Beans",
+    "type": "food",
+    "category": "food",
+    "description": "Crisp green beans with a mild flavor.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 9
+    },
+    "image": "green_beans.png"
+  },
+  {
+    "slug": "pumpkin",
+    "name": "Pumpkin",
+    "type": "food",
+    "category": "food",
+    "description": "A thick slice of sweet, filling pumpkin.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 13
+    },
+    "image": "pumpkin.png"
+  },
+  {
+    "slug": "mushroom",
+    "name": "Mushroom",
+    "type": "food",
+    "category": "food",
+    "description": "A simple earthy mushroom.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 8
+    },
+    "image": "mushroom.png"
+  },
+  {
+    "slug": "cucumber",
+    "name": "Cucumber",
+    "type": "food",
+    "category": "food",
+    "description": "A cool and refreshing vegetable snack.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 7
+    },
+    "image": "cucumber.png"
+  },
+  {
+    "slug": "bell-pepper",
+    "name": "Bell Pepper",
+    "type": "food",
+    "category": "food",
+    "description": "A crunchy, colorful pepper with a sweet bite.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 8
+    },
+    "image": "bell_pepper.png"
+  },
+  {
+    "slug": "sweet-potato",
+    "name": "Sweet Potato",
+    "type": "food",
+    "category": "food",
+    "description": "A naturally sweet and filling root vegetable.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 14
+    },
+    "image": "sweet_potato.png"
+  },
+  {
+    "slug": "raw-beef",
+    "name": "Raw Beef",
+    "type": "food",
+    "category": "food",
+    "description": "A basic cut of beef sold as inexpensive pet food.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 16
+    },
+    "image": "raw_beef.png"
+  },
+  {
+    "slug": "raw-chicken",
+    "name": "Raw Chicken",
+    "type": "food",
+    "category": "food",
+    "description": "A basic portion of chicken sold as inexpensive pet food.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 15
+    },
+    "image": "raw_chicken.png"
+  },
+  {
+    "slug": "raw-fish",
+    "name": "Raw Fish",
+    "type": "food",
+    "category": "food",
+    "description": "A fresh whole fish for hungry Kith.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 15
+    },
+    "image": "raw_fish.png"
+  },
+  {
+    "slug": "turkey",
+    "name": "Turkey",
+    "type": "food",
+    "category": "food",
+    "description": "A basic portion of turkey meat.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 15
+    },
+    "image": "turkey.png"
+  },
+  {
+    "slug": "pork",
+    "name": "Pork",
+    "type": "food",
+    "category": "food",
+    "description": "A basic cut of pork.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 16
+    },
+    "image": "pork.png"
+  },
+  {
+    "slug": "egg",
+    "name": "Egg",
+    "type": "food",
+    "category": "food",
+    "description": "A simple egg that makes a quick snack.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 9
+    },
+    "image": "egg.png"
+  },
+  {
+    "slug": "milk",
+    "name": "Milk",
+    "type": "food",
+    "category": "food",
+    "description": "A small bottle of fresh milk.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 8
+    },
+    "image": "milk.png"
+  },
+  {
+    "slug": "cheese",
+    "name": "Cheese",
+    "type": "food",
+    "category": "food",
+    "description": "A small wedge of creamy cheese.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 11
+    },
+    "image": "cheese.png"
+  },
+  {
+    "slug": "rice",
+    "name": "Rice",
+    "type": "food",
+    "category": "food",
+    "description": "A plain bowl of cooked rice.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 13
+    },
+    "image": "rice.png"
+  },
+  {
+    "slug": "bread",
+    "name": "Bread",
+    "type": "food",
+    "category": "food",
+    "description": "A simple loaf slice that settles hunger.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 12
+    },
+    "image": "bread.png"
+  },
+  {
+    "slug": "spaghetti",
+    "name": "Spaghetti",
+    "type": "food",
+    "category": "food",
+    "description": "A warm bowl of spaghetti with tomato sauce.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 30
+    },
+    "image": "spaghetti.png"
+  },
+  {
+    "slug": "grilled-chicken",
+    "name": "Grilled Chicken",
+    "type": "food",
+    "category": "food",
+    "description": "Juicy grilled chicken served hot.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 32
+    },
+    "image": "grilled_chicken.png"
+  },
+  {
+    "slug": "steak-dinner",
+    "name": "Steak Dinner",
+    "type": "food",
+    "category": "food",
+    "description": "A hearty steak dinner made for a very hungry Kith.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 38
+    },
+    "image": "steak_dinner.png"
+  },
+  {
+    "slug": "vegetable-soup",
+    "name": "Vegetable Soup",
+    "type": "food",
+    "category": "food",
+    "description": "A warm soup packed with vegetables.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 27
+    },
+    "image": "vegetable_soup.png"
+  },
+  {
+    "slug": "beef-stew",
+    "name": "Beef Stew",
+    "type": "food",
+    "category": "food",
+    "description": "Slow-cooked beef and vegetables in a rich broth.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 35
+    },
+    "image": "beef_stew.png"
+  },
+  {
+    "slug": "fish-rice-bowl",
+    "name": "Fish Rice Bowl",
+    "type": "food",
+    "category": "food",
+    "description": "Grilled fish served over a filling bowl of rice.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 33
+    },
+    "image": "fish_rice_bowl.png"
+  },
+  {
+    "slug": "chicken-rice-bowl",
+    "name": "Chicken Rice Bowl",
+    "type": "food",
+    "category": "food",
+    "description": "Seasoned chicken served over warm rice.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 32
+    },
+    "image": "chicken_rice_bowl.png"
+  },
+  {
+    "slug": "vegetable-stir-fry",
+    "name": "Vegetable Stir Fry",
+    "type": "food",
+    "category": "food",
+    "description": "A colorful mix of vegetables cooked together.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 28
+    },
+    "image": "vegetable_stir_fry.png"
+  },
+  {
+    "slug": "meat-skewers",
+    "name": "Meat Skewers",
+    "type": "food",
+    "category": "food",
+    "description": "Savory pieces of grilled meat served on skewers.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 31
+    },
+    "image": "meat_skewers.png"
+  },
+  {
+    "slug": "fish-sandwich",
+    "name": "Fish Sandwich",
+    "type": "food",
+    "category": "food",
+    "description": "A crispy fish fillet tucked into fresh bread.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 29
+    },
+    "image": "fish_sandwich.png"
+  },
+  {
+    "slug": "grilled-fish",
+    "name": "Grilled Fish",
+    "type": "food",
+    "category": "food",
+    "description": "A whole fish grilled until tender.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 31
+    },
+    "image": "grilled_fish.png"
+  },
+  {
+    "slug": "baked-potato",
+    "name": "Baked Potato",
+    "type": "food",
+    "category": "food",
+    "description": "A fluffy baked potato served piping hot.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 24
+    },
+    "image": "baked_potato.png"
+  },
+  {
+    "slug": "mashed-potatoes",
+    "name": "Mashed Potatoes",
+    "type": "food",
+    "category": "food",
+    "description": "Creamy mashed potatoes with a comforting texture.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 23
+    },
+    "image": "mashed_potatoes.png"
+  },
+  {
+    "slug": "cheese-omelet",
+    "name": "Cheese Omelet",
+    "type": "food",
+    "category": "food",
+    "description": "A fluffy omelet folded around melted cheese.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 27
+    },
+    "image": "cheese_omelet.png"
+  },
+  {
+    "slug": "tomato-pasta",
+    "name": "Tomato Pasta",
+    "type": "food",
+    "category": "food",
+    "description": "Simple pasta tossed in a bright tomato sauce.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 28
+    },
+    "image": "tomato_pasta.png"
+  },
+  {
+    "slug": "mushroom-pasta",
+    "name": "Mushroom Pasta",
+    "type": "food",
+    "category": "food",
+    "description": "Pasta mixed with savory cooked mushrooms.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 29
+    },
+    "image": "mushroom_pasta.png"
+  },
+  {
+    "slug": "chicken-noodle-soup",
+    "name": "Chicken Noodle Soup",
+    "type": "food",
+    "category": "food",
+    "description": "Chicken, noodles, and vegetables in warm broth.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 30
+    },
+    "image": "chicken_noodle_soup.png"
+  },
+  {
+    "slug": "corn-chowder",
+    "name": "Corn Chowder",
+    "type": "food",
+    "category": "food",
+    "description": "A thick and creamy corn soup.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 29
+    },
+    "image": "corn_chowder.png"
+  },
+  {
+    "slug": "vegetable-curry",
+    "name": "Vegetable Curry",
+    "type": "food",
+    "category": "food",
+    "description": "Vegetables simmered in a fragrant curry sauce.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 31
+    },
+    "image": "vegetable_curry.png"
+  },
+  {
+    "slug": "chicken-curry",
+    "name": "Chicken Curry",
+    "type": "food",
+    "category": "food",
+    "description": "Tender chicken simmered in a rich curry sauce.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 34
+    },
+    "image": "chicken_curry.png"
+  },
+  {
+    "slug": "beef-curry",
+    "name": "Beef Curry",
+    "type": "food",
+    "category": "food",
+    "description": "Slow-cooked beef in a hearty curry sauce.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 36
+    },
+    "image": "beef_curry.png"
+  },
+  {
+    "slug": "fish-tacos",
+    "name": "Fish Tacos",
+    "type": "food",
+    "category": "food",
+    "description": "Soft tacos filled with seasoned fish and vegetables.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 30
+    },
+    "image": "fish_tacos.png"
+  },
+  {
+    "slug": "vegetable-tacos",
+    "name": "Vegetable Tacos",
+    "type": "food",
+    "category": "food",
+    "description": "Soft tacos stuffed with seasoned vegetables.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 27
+    },
+    "image": "vegetable_tacos.png"
+  },
+  {
+    "slug": "cheeseburger",
+    "name": "Cheeseburger",
+    "type": "food",
+    "category": "food",
+    "description": "A juicy burger topped with melted cheese.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 34
+    },
+    "image": "cheeseburger.png"
+  },
+  {
+    "slug": "vegetable-burger",
+    "name": "Vegetable Burger",
+    "type": "food",
+    "category": "food",
+    "description": "A hearty vegetable patty served on a soft bun.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 30
+    },
+    "image": "vegetable_burger.png"
+  },
+  {
+    "slug": "roast-chicken",
+    "name": "Roast Chicken",
+    "type": "food",
+    "category": "food",
+    "description": "Slow-roasted chicken with a crisp golden outside.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 36
+    },
+    "image": "roast_chicken.png"
+  },
+  {
+    "slug": "roast-beef",
+    "name": "Roast Beef",
+    "type": "food",
+    "category": "food",
+    "description": "Tender roasted beef sliced into a generous serving.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 38
+    },
+    "image": "roast_beef.png"
+  },
+  {
+    "slug": "pork-chop-plate",
+    "name": "Pork Chop Plate",
+    "type": "food",
+    "category": "food",
+    "description": "A seared pork chop served with simple sides.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 35
+    },
+    "image": "pork_chop_plate.png"
+  },
+  {
+    "slug": "turkey-dinner",
+    "name": "Turkey Dinner",
+    "type": "food",
+    "category": "food",
+    "description": "Roasted turkey served with vegetables and potatoes.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 37
+    },
+    "image": "turkey_dinner.png"
+  },
+  {
+    "slug": "stuffed-peppers",
+    "name": "Stuffed Peppers",
+    "type": "food",
+    "category": "food",
+    "description": "Bell peppers filled with rice and savory vegetables.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 29
+    },
+    "image": "stuffed_peppers.png"
+  },
+  {
+    "slug": "fried-rice",
+    "name": "Fried Rice",
+    "type": "food",
+    "category": "food",
+    "description": "Rice tossed with vegetables and seasonings.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 28
+    },
+    "image": "fried_rice.png"
+  },
+  {
+    "slug": "egg-fried-rice",
+    "name": "Egg Fried Rice",
+    "type": "food",
+    "category": "food",
+    "description": "Fried rice mixed with fluffy pieces of egg.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 30
+    },
+    "image": "egg_fried_rice.png"
+  },
+  {
+    "slug": "grilled-cheese",
+    "name": "Grilled Cheese",
+    "type": "food",
+    "category": "food",
+    "description": "Toasted bread filled with warm melted cheese.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 26
+    },
+    "image": "grilled_cheese.png"
+  },
+  {
+    "slug": "tomato-soup",
+    "name": "Tomato Soup",
+    "type": "food",
+    "category": "food",
+    "description": "A smooth and warming tomato soup.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 24
+    },
+    "image": "tomato_soup.png"
+  },
+  {
+    "slug": "meatball-sub",
+    "name": "Meatball Sub",
+    "type": "food",
+    "category": "food",
+    "description": "A toasted roll packed with meatballs and tomato sauce.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 35
+    },
+    "image": "meatball_sub.png"
+  },
+  {
+    "slug": "chicken-sandwich",
+    "name": "Chicken Sandwich",
+    "type": "food",
+    "category": "food",
+    "description": "Grilled chicken and vegetables between fresh bread.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 31
+    },
+    "image": "chicken_sandwich.png"
+  },
+  {
+    "slug": "baked-fish-plate",
+    "name": "Baked Fish Plate",
+    "type": "food",
+    "category": "food",
+    "description": "Seasoned baked fish served with vegetables.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 34
+    },
+    "image": "baked_fish_plate.png"
+  },
+  {
+    "slug": "shepherds-pie",
+    "name": "Shepherds Pie",
+    "type": "food",
+    "category": "food",
+    "description": "A baked meat and vegetable filling topped with mashed potatoes.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 37
+    },
+    "image": "shepherds_pie.png"
+  },
+  {
+    "slug": "vegetable-pie",
+    "name": "Vegetable Pie",
+    "type": "food",
+    "category": "food",
+    "description": "A savory baked pie filled with vegetables.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 31
+    },
+    "image": "vegetable_pie.png"
+  },
+  {
+    "slug": "cheese-pizza",
+    "name": "Cheese Pizza",
+    "type": "food",
+    "category": "food",
+    "description": "A warm pizza topped with tomato sauce and melted cheese.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 33
+    },
+    "image": "cheese_pizza.png"
+  },
+  {
+    "slug": "deluxe-spaghetti",
+    "name": "Deluxe Spaghetti",
+    "type": "food",
+    "category": "food",
+    "description": "A generous serving of spaghetti topped with seasoned meat and herbs.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 42
+    },
+    "image": "deluxe_spaghetti.png"
+  },
+  {
+    "slug": "prime-steak",
+    "name": "Prime Steak",
+    "type": "food",
+    "category": "food",
+    "description": "A thick premium steak cooked to perfection.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 48
+    },
+    "image": "prime_steak.png"
+  },
+  {
+    "slug": "seafood-platter",
+    "name": "Seafood Platter",
+    "type": "food",
+    "category": "food",
+    "description": "A large platter of fish and assorted seafood.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 45
+    },
+    "image": "seafood_platter.png"
+  },
+  {
+    "slug": "garden-feast",
+    "name": "Garden Feast",
+    "type": "food",
+    "category": "food",
+    "description": "A colorful feast made from the freshest vegetables.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 41
+    },
+    "image": "garden_feast.png"
+  },
+  {
+    "slug": "harvest-bowl",
+    "name": "Harvest Bowl",
+    "type": "food",
+    "category": "food",
+    "description": "Roasted vegetables, grains, and herbs packed into one hearty bowl.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 40
+    },
+    "image": "harvest_bowl.png"
+  },
+  {
+    "slug": "protein-platter",
+    "name": "Protein Platter",
+    "type": "food",
+    "category": "food",
+    "description": "A large plate of chicken, beef, egg, and cheese.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 47
+    },
+    "image": "protein_platter.png"
+  },
+  {
+    "slug": "power-salad",
+    "name": "Power Salad",
+    "type": "food",
+    "category": "food",
+    "description": "A loaded salad with vegetables, egg, cheese, and grains.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 38
+    },
+    "image": "power_salad.png"
+  },
+  {
+    "slug": "sunrise-breakfast",
+    "name": "Sunrise Breakfast",
+    "type": "food",
+    "category": "food",
+    "description": "Eggs, potatoes, toast, and fruit served as a complete breakfast.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 43
+    },
+    "image": "sunrise_breakfast.png"
+  },
+  {
+    "slug": "night-owl-noodles",
+    "name": "Night Owl Noodles",
+    "type": "food",
+    "category": "food",
+    "description": "A savory bowl of dark noodles made for late-night meals.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 40
+    },
+    "image": "night_owl_noodles.png"
+  },
+  {
+    "slug": "fire-pepper-curry",
+    "name": "Fire Pepper Curry",
+    "type": "food",
+    "category": "food",
+    "description": "A blazing hot curry made with bright fire peppers.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 42
+    },
+    "image": "fire_pepper_curry.png"
+  },
+  {
+    "slug": "iceberry-parfait",
+    "name": "Iceberry Parfait",
+    "type": "food",
+    "category": "food",
+    "description": "Layers of chilled cream and sweet blue iceberries.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 36
+    },
+    "image": "iceberry_parfait.png"
+  },
+  {
+    "slug": "storm-skewers",
+    "name": "Storm Skewers",
+    "type": "food",
+    "category": "food",
+    "description": "Crackling seasoned skewers with a sharp citrus glaze.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 41
+    },
+    "image": "storm_skewers.png"
+  },
+  {
+    "slug": "sunlit-salad",
+    "name": "Sunlit Salad",
+    "type": "food",
+    "category": "food",
+    "description": "Bright fruits and greens tossed in a golden dressing.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 37
+    },
+    "image": "sunlit_salad.png"
+  },
+  {
+    "slug": "shadow-truffle-pasta",
+    "name": "Shadow Truffle Pasta",
+    "type": "food",
+    "category": "food",
+    "description": "Rich pasta flavored with rare dark truffles.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 43
+    },
+    "image": "shadow_truffle_pasta.png"
+  },
+  {
+    "slug": "earthroot-stew",
+    "name": "Earthroot Stew",
+    "type": "food",
+    "category": "food",
+    "description": "A dense stew made with hearty roots and vegetables.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 44
+    },
+    "image": "earthroot_stew.png"
+  },
+  {
+    "slug": "breezeberry-tart",
+    "name": "Breezeberry Tart",
+    "type": "food",
+    "category": "food",
+    "description": "A light berry tart with a crisp, airy crust.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 35
+    },
+    "image": "breezeberry_tart.png"
+  },
+  {
+    "slug": "ocean-feast",
+    "name": "Ocean Feast",
+    "type": "food",
+    "category": "food",
+    "description": "A generous plate of grilled fish, rice, and sea vegetables.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 46
+    },
+    "image": "ocean_feast.png"
+  },
+  {
+    "slug": "golden-omelet",
+    "name": "Golden Omelet",
+    "type": "food",
+    "category": "food",
+    "description": "A rich omelet packed with cheese, vegetables, and herbs.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 40
+    },
+    "image": "golden_omelet.png"
+  },
+  {
+    "slug": "royal-roast",
+    "name": "Royal Roast",
+    "type": "food",
+    "category": "food",
+    "description": "A carefully prepared roast served with an extravagant spread of sides.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 49
+    },
+    "image": "royal_roast.png"
+  },
+  {
+    "slug": "chefs-special",
+    "name": "Chef’s Special",
+    "type": "food",
+    "category": "food",
+    "description": "A rotating signature dish prepared with the shop’s best ingredients.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 45
+    },
+    "image": "chefs_special.png"
+  },
+  {
+    "slug": "moonberry-tart",
+    "name": "Moonberry Tart",
+    "type": "food",
+    "category": "food",
+    "description": "A rare tart made with deep-purple moonberries.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 50
+    },
+    "image": "moonberry_tart.png"
+  },
+  {
+    "slug": "prism-parfait",
+    "name": "Prism Parfait",
+    "type": "food",
+    "category": "food",
+    "description": "A shimmering layered parfait made with several rare fruits.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 48
+    },
+    "image": "prism_parfait.png"
+  },
+  {
+    "slug": "ancient-stew",
+    "name": "Ancient Stew",
+    "type": "food",
+    "category": "food",
+    "description": "A heavy stew prepared from an old Kithna recipe.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 55
+    },
+    "image": "ancient_stew.png"
+  },
+  {
+    "slug": "festival-platter",
+    "name": "Festival Platter",
+    "type": "food",
+    "category": "food",
+    "description": "A huge celebratory platter filled with meats, vegetables, and sweets.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 58
+    },
+    "image": "festival_platter.png"
+  },
+  {
+    "slug": "starfruit-cake",
+    "name": "Starfruit Cake",
+    "type": "food",
+    "category": "food",
+    "description": "A soft cake topped with slices of luminous starfruit.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 47
+    },
+    "image": "starfruit_cake.png"
+  },
+  {
+    "slug": "crystal-fruit-bowl",
+    "name": "Crystal Fruit Bowl",
+    "type": "food",
+    "category": "food",
+    "description": "A beautiful bowl of chilled rare fruits with a glassy shine.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 46
+    },
+    "image": "crystal_fruit_bowl.png"
+  },
+  {
+    "slug": "grand-seafood-boil",
+    "name": "Grand Seafood Boil",
+    "type": "food",
+    "category": "food",
+    "description": "An enormous seafood meal seasoned and served family-style.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 60
+    },
+    "image": "grand_seafood_boil.png"
+  },
+  {
+    "slug": "royal-garden-pie",
+    "name": "Royal Garden Pie",
+    "type": "food",
+    "category": "food",
+    "description": "A premium vegetable pie made from carefully selected produce.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 52
+    },
+    "image": "royal_garden_pie.png"
+  },
+  {
+    "slug": "truffle-steak",
+    "name": "Truffle Steak",
+    "type": "food",
+    "category": "food",
+    "description": "Prime steak topped with rich truffle sauce.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 62
+    },
+    "image": "truffle_steak.png"
+  },
+  {
+    "slug": "golden-harvest-feast",
+    "name": "Golden Harvest Feast",
+    "type": "food",
+    "category": "food",
+    "description": "A lavish harvest meal overflowing with roasted vegetables and grains.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 57
+    },
+    "image": "golden_harvest_feast.png"
+  },
+  {
+    "slug": "celestial-banquet",
+    "name": "Celestial Banquet",
+    "type": "food",
+    "category": "food",
+    "description": "A legendary banquet plate rarely offered by the Food Shop.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 70
+    },
+    "image": "celestial_banquet.png"
+  },
+  {
+    "slug": "aurora-cake",
+    "name": "Aurora Cake",
+    "type": "food",
+    "category": "food",
+    "description": "A brilliant layered cake with shifting colors across the frosting.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 60
+    },
+    "image": "aurora_cake.png"
+  },
+  {
+    "slug": "kithna-feast",
+    "name": "Kithna Feast",
+    "type": "food",
+    "category": "food",
+    "description": "A massive traditional feast made to satisfy even the hungriest Kith.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 75
+    },
+    "image": "kithna_feast.png"
+  },
+  {
+    "slug": "nine-flavor-platter",
+    "name": "Nine-Flavor Platter",
+    "type": "food",
+    "category": "food",
+    "description": "A rare platter combining nine distinct flavors into one extravagant meal.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 68
+    },
+    "image": "nine_flavor_platter.png"
+  },
+  {
+    "slug": "mystery-chef-box",
+    "name": "Mystery Chef Box",
+    "type": "food",
+    "category": "food",
+    "description": "A sealed chef’s meal containing a surprise selection of premium food.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hunger": 65
+    },
+    "image": "mystery_chef_box.png"
   }
 ]

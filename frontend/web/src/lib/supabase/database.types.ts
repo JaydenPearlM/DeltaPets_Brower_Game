@@ -2750,13 +2750,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      open_closed_alpha_care_package: {
-        Args: { p_user_id: string }
-        Returns: {
-          dots: number
-          opened: boolean
-        }[]
-      }
       recover_runaway_pet_to_party: {
         Args: { p_pet_id: string; p_user_id: string }
         Returns: {

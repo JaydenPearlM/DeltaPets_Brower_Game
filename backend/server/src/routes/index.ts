@@ -6,6 +6,7 @@ import { meRouter } from "./me";
 
 import { petsRouter } from "./routePets/routePets";
 import { resonanceEvolutionRouter } from "./routePets/resonanceEvolution";
+import { storageActionsRouter } from "./pets/storageActions";
 import { petActionsRouter } from "./care/petActions";
 import { rewardsRouter } from "./rewards/rewards";
 
@@ -34,6 +35,7 @@ apiRouter.use(meRouter);
 
 apiRouter.use("/pets/actions", petActionsRouter);
 apiRouter.use("/pets", resonanceEvolutionRouter);
+apiRouter.use("/pets", storageActionsRouter);
 apiRouter.use("/pets", petsRouter);
 apiRouter.use("/battle", battleRouter);
 

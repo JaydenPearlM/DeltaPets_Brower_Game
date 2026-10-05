@@ -198,7 +198,8 @@ wildwoodRouter.post(
           reward_claimed_at: completedAt,
         })
         .eq("user_id", userId)
-        .eq("quest_key", SOMETHINGS_AFOOT_KEY);
+        .eq("quest_key", SOMETHINGS_AFOOT_KEY)
+        .eq("status", quest.status);
 
       if (updateError) {
         throw updateError;

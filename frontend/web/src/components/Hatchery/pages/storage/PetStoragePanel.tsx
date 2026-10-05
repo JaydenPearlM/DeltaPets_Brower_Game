@@ -205,7 +205,7 @@ function StoragePetCard(props: {
   const isVelune = pet.species === VELUNE.id;
 
   const petPortrait =
-    getStarterPortrait(pet.species) ||
+    getStarterPortrait(pet.species, pet.stage) ||
     getKithnaPortrait(pet.species) ||
     getKithnaPortrait(pet.name) ||
     getStarterPortrait(pet.name) ||

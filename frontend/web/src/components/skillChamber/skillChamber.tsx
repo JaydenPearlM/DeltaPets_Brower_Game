@@ -465,7 +465,7 @@ export default function SkillChamber({
   const petName = getPetName(pet);
   const petLevel = getPetLevel(pet);
   const petPreviewUrl =
-    getStarterPortrait(pet?.species) ||
+    getStarterPortrait(pet?.species, pet?.stage) ||
     getKithnaPortrait(pet?.species) ||
     getKithnaPortrait(pet?.name) ||
     getStarterPortrait(pet?.name) ||

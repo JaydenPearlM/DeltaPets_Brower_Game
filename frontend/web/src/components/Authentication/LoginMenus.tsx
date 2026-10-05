@@ -373,7 +373,7 @@ export function LoginMenus({
       setView("login");
       setMessage({
         type: "success",
-        text: "Account created! Check your email to verify before signing in.",
+        text: "Account created! Go to your email and activate your DeltaPets account before signing in.",
       });
     } finally {
       setLoading(false);

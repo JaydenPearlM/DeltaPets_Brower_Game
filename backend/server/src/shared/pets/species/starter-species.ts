@@ -275,7 +275,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     evolution: {
       egg: PRISMATIC_EGG_NAME,
       hatchling: "Espyr",
-      lowform: "Noctimp",
+      lowform: "Esperion",
       highform: "Nightmareimp",
       legion: "Espereonite",
       mythical_legendary: null,
@@ -299,7 +299,7 @@ export const SHARED_SPECIES: SharedSpecies[] = [
     evolution: {
       egg: PRISMATIC_EGG_NAME,
       hatchling: "Espyr",
-      lowform: "Flareclaw",
+      lowform: "Esperion",
       highform: "Shadeclaw",
       legion: "Nightvielclaw",
       mythical_legendary: null,

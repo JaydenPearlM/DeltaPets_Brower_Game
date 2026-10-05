@@ -9,6 +9,11 @@ import type { PetStage } from "../../shared/types/petStages";
 
 export const resonanceEvolutionRouter = Router();
 
+// Only enable a species once its real Lowform data AND stage-specific artwork
+// are connected to the gameplay provider. Hatchling aliases and preview art
+// are not supported evolutions. No current species meets that requirement.
+const supportedLowformSpecies: ReadonlySet<string> = new Set<string>();
+
 const evolutionRequestSchema = z.object({
   fromStage: z.literal("hatchling"),
   toStage: z.literal("lowform"),
@@ -54,7 +59,7 @@ function getEvolutionName(
     case "hatchling":
       return species.evolution.hatchling;
     case "lowform":
-      return species.evolution.lowform;
+      return supportedLowformSpecies.has(speciesId) ? species.evolution.lowform : null;
     case "highform":
       return species.evolution.highform;
     case "legion":
@@ -182,7 +187,7 @@ resonanceEvolutionRouter.post(
 
       if (!nextName) {
         return res.status(409).json({
-          error: "This Kith does not have a configured evolution for that stage.",
+          error: "This Kith does not yet have a supported evolution for that stage.",
         });
       }
 

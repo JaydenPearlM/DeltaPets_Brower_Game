@@ -139,6 +139,14 @@ async function markHatcheryInitialized(userId: string): Promise<void> {
  * Creates any missing hatchery slot rows (1-10) and wires the first egg
  * into slot 1 if it isn't already there.
  */
+
+/**
+ * Creates any missing hatchery slot rows (1-12) and wires the first egg
+ * into slot 1 if it isn't already there.
+ *
+ * Slot 1 stays unlocked.
+ * Slots 2-12 stay locked.
+ */
 async function runEnsureHatcherySlots(userId: string): Promise<void> {
   const { data: existingRows, error: existingError } = await supabaseAdmin
     .from("hatchery_slots")
@@ -151,11 +159,11 @@ async function runEnsureHatcherySlots(userId: string): Promise<void> {
   const existing = existingRows ?? [];
   const existingIndexes = new Set<number>(
     existing
-      .map((row: any) => Number(row.slot_index))
+      .map((row: { slot_index?: number | null }) => Number(row.slot_index))
       .filter((value) => Number.isFinite(value)),
   );
 
-  const missingRows = Array.from({ length: 10 }, (_, idx) => idx + 1)
+  const missingRows = Array.from({ length: 12 }, (_, idx) => idx + 1)
     .filter((slotIndex) => !existingIndexes.has(slotIndex))
     .map((slotIndex) => ({
       user_id: userId,
@@ -253,25 +261,32 @@ async function initializeHatcheryForUser(userId: string): Promise<void> {
   await markHatcheryInitialized(userId);
 }
 
-// ---------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------
 // Public fetch functions: what routes call
 // ---------------------------------------------------------------------------
 
 /**
  * Fetches all hatchery slots with their associated pet data.
  *
- * First visit:   flag=false -> runs both ensure functions -> flips flag -> fetches data
- * Repeat visits: flag=true  -> skips ensure entirely -> fetches data
+ * First visit:
+ * - creates the user's Hatchery rows
+ * - initializes the Shelf Rack
+ * - marks the Hatchery initialized
  *
- * Old cost every load:    2 ensure SELECTs + up to 20 INSERTs
- * New cost after setup:   1 flag SELECT + 1 slots SELECT + 1 optional pets SELECT
+ * Repeat visits:
+ * - checks the Egg Rack for any missing slots
+ * - this allows existing Alpha accounts to receive slots 11 and 12
+ * - Shelf Rack remains unchanged
  */
 async function ensureHatcheryInitialized(userId: string): Promise<void> {
   const initialized = await isHatcheryInitialized(userId);
 
   if (!initialized) {
     await initializeHatcheryForUser(userId);
+    return;
   }
+
+  await runEnsureHatcherySlots(userId);
 }
 
 export async function fetchHatcherySlots(userId: string) {

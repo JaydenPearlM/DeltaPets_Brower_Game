@@ -11,5 +11,642 @@
       "hp": 20
     },
     "image": "minor_healing_potion.png"
+  },
+  {
+    "slug": "healing-potion",
+    "name": "Healing Potion",
+    "type": "consumable",
+    "category": "potion",
+    "description": "Restores a moderate amount of health.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 35
+    },
+    "image": "healing_potion.png"
+  },
+  {
+    "slug": "greater-healing-potion",
+    "name": "Greater Healing Potion",
+    "type": "consumable",
+    "category": "potion",
+    "description": "Restores a large amount of health.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 55
+    },
+    "image": "greater_healing_potion.png"
+  },
+  {
+    "slug": "major-healing-potion",
+    "name": "Major Healing Potion",
+    "type": "consumable",
+    "category": "potion",
+    "description": "Restores a very large amount of health.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 75
+    },
+    "image": "major_healing_potion.png"
+  },
+  {
+    "slug": "supreme-healing-potion",
+    "name": "Supreme Healing Potion",
+    "type": "consumable",
+    "category": "potion",
+    "description": "Restores an exceptional amount of health.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 100
+    },
+    "image": "supreme_healing_potion.png"
+  },
+  {
+    "slug": "redberry-tonic",
+    "name": "Redberry Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A tart berry tonic that restores a little health.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 18
+    },
+    "image": "redberry_tonic.png"
+  },
+  {
+    "slug": "herbal-remedy",
+    "name": "Herbal Remedy",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A simple herbal blend used to patch up minor injuries.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 22
+    },
+    "image": "herbal_remedy.png"
+  },
+  {
+    "slug": "warmroot-tonic",
+    "name": "Warmroot Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A warming root-based potion that restores health.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 24
+    },
+    "image": "warmroot_tonic.png"
+  },
+  {
+    "slug": "honey-heal-draught",
+    "name": "Honey Heal Draught",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A sweet medicinal draught that restores health.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 26
+    },
+    "image": "honey_heal_draught.png"
+  },
+  {
+    "slug": "greenleaf-tonic",
+    "name": "Greenleaf Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A fresh green tonic that helps a Kith recover.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 25
+    },
+    "image": "greenleaf_tonic.png"
+  },
+  {
+    "slug": "mosswater-elixir",
+    "name": "Mosswater Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A cool woodland elixir that restores health.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 28
+    },
+    "image": "mosswater_elixir.png"
+  },
+  {
+    "slug": "sunfruit-tonic",
+    "name": "Sunfruit Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A bright citrus tonic with restorative properties.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 30
+    },
+    "image": "sunfruit_tonic.png"
+  },
+  {
+    "slug": "moonberry-remedy",
+    "name": "Moonberry Remedy",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A deep-purple berry remedy that restores health.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 38
+    },
+    "image": "moonberry_remedy.png"
+  },
+  {
+    "slug": "silverleaf-elixir",
+    "name": "Silverleaf Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A refined herbal elixir with stronger healing properties.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 42
+    },
+    "image": "silverleaf_elixir.png"
+  },
+  {
+    "slug": "crystalwater-tonic",
+    "name": "Crystalwater Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A clear mineral tonic that restores health quickly.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 40
+    },
+    "image": "crystalwater_tonic.png"
+  },
+  {
+    "slug": "ember-healing-tonic",
+    "name": "Ember Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A pleasantly warm tonic that restores health.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 44
+    },
+    "image": "ember_healing_tonic.png"
+  },
+  {
+    "slug": "tide-healing-tonic",
+    "name": "Tide Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A cool blue tonic that restores health.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 44
+    },
+    "image": "tide_healing_tonic.png"
+  },
+  {
+    "slug": "stone-healing-tonic",
+    "name": "Stone Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A dense mineral tonic that restores health.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 46
+    },
+    "image": "stone_healing_tonic.png"
+  },
+  {
+    "slug": "breeze-healing-tonic",
+    "name": "Breeze Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A light refreshing tonic that restores health.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 42
+    },
+    "image": "breeze_healing_tonic.png"
+  },
+  {
+    "slug": "frost-healing-tonic",
+    "name": "Frost Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A chilled tonic that numbs aches and restores health.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 45
+    },
+    "image": "frost_healing_tonic.png"
+  },
+  {
+    "slug": "storm-healing-tonic",
+    "name": "Storm Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A sharply flavored tonic that restores health.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 46
+    },
+    "image": "storm_healing_tonic.png"
+  },
+  {
+    "slug": "sun-healing-tonic",
+    "name": "Sun Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A luminous golden tonic that restores health.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 48
+    },
+    "image": "sun_healing_tonic.png"
+  },
+  {
+    "slug": "shade-healing-tonic",
+    "name": "Shade Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A dark herbal tonic with potent restorative properties.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 48
+    },
+    "image": "shade_healing_tonic.png"
+  },
+  {
+    "slug": "prismatic-healing-tonic",
+    "name": "Prismatic Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A shimmering restorative tonic made from several rare ingredients.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 65
+    },
+    "image": "prismatic_healing_tonic.png"
+  },
+  {
+    "slug": "wildwood-remedy",
+    "name": "Wildwood Remedy",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A strong medicinal blend made from Wildwood herbs.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 50
+    },
+    "image": "wildwood_remedy.png"
+  },
+  {
+    "slug": "kithna-restoration-draught",
+    "name": "Kithna Restoration Draught",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A traditional restorative draught used throughout Kithna.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 52
+    },
+    "image": "kithna_restoration_draught.png"
+  },
+  {
+    "slug": "deepwood-elixir",
+    "name": "Deepwood Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A concentrated woodland medicine that restores substantial health.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 60
+    },
+    "image": "deepwood_elixir.png"
+  },
+  {
+    "slug": "mountain-spring-elixir",
+    "name": "Mountain Spring Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A mineral-rich elixir drawn from a high mountain spring.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 62
+    },
+    "image": "mountain_spring_elixir.png"
+  },
+  {
+    "slug": "golden-restoration-tonic",
+    "name": "Golden Restoration Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A carefully refined tonic with powerful healing properties.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 64
+    },
+    "image": "golden_restoration_tonic.png"
+  },
+  {
+    "slug": "violet-restoration-tonic",
+    "name": "Violet Restoration Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A fragrant violet tonic that restores a large amount of health.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 63
+    },
+    "image": "violet_restoration_tonic.png"
+  },
+  {
+    "slug": "ruby-elixir",
+    "name": "Ruby Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A brilliant red elixir known for its powerful restorative effect.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 68
+    },
+    "image": "ruby_elixir.png"
+  },
+  {
+    "slug": "sapphire-elixir",
+    "name": "Sapphire Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A deep blue elixir that restores substantial health.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 68
+    },
+    "image": "sapphire_elixir.png"
+  },
+  {
+    "slug": "emerald-elixir",
+    "name": "Emerald Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A vivid green elixir brewed from rare medicinal plants.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 70
+    },
+    "image": "emerald_elixir.png"
+  },
+  {
+    "slug": "amber-elixir",
+    "name": "Amber Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A golden-brown elixir with strong restorative properties.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 70
+    },
+    "image": "amber_elixir.png"
+  },
+  {
+    "slug": "amethyst-elixir",
+    "name": "Amethyst Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A rich purple elixir that restores substantial health.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 72
+    },
+    "image": "amethyst_elixir.png"
+  },
+  {
+    "slug": "royal-healing-draught",
+    "name": "Royal Healing Draught",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A premium restorative draught made from high-quality ingredients.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 85
+    },
+    "image": "royal_healing_draught.png"
+  },
+  {
+    "slug": "ancient-restoration-elixir",
+    "name": "Ancient Restoration Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "An old restorative formula preserved from early Kithna settlements.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 90
+    },
+    "image": "ancient_restoration_elixir.png"
+  },
+  {
+    "slug": "starlight-tonic",
+    "name": "Starlight Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A luminous tonic with exceptional healing properties.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 88
+    },
+    "image": "starlight_tonic.png"
+  },
+  {
+    "slug": "moonlight-elixir",
+    "name": "Moonlight Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A silver-blue elixir that restores a great amount of health.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 90
+    },
+    "image": "moonlight_elixir.png"
+  },
+  {
+    "slug": "sunlight-elixir",
+    "name": "Sunlight Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A radiant golden elixir that restores a great amount of health.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 92
+    },
+    "image": "sunlight_elixir.png"
+  },
+  {
+    "slug": "prism-restoration-elixir",
+    "name": "Prism Restoration Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A rare multicolored elixir with exceptional restorative power.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 95
+    },
+    "image": "prism_restoration_elixir.png"
+  },
+  {
+    "slug": "grand-healing-elixir",
+    "name": "Grand Healing Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A masterfully brewed potion that restores tremendous health.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 100
+    },
+    "image": "grand_healing_elixir.png"
+  },
+  {
+    "slug": "legendary-healing-draught",
+    "name": "Legendary Healing Draught",
+    "type": "consumable",
+    "category": "potion",
+    "description": "An extraordinarily rare draught prized for its restorative strength.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 120
+    },
+    "image": "legendary_healing_draught.png"
+  },
+  {
+    "slug": "mythic-restoration-elixir",
+    "name": "Mythic Restoration Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A mythical restorative mixture made from exceptionally rare ingredients.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 130
+    },
+    "image": "mythic_restoration_elixir.png"
+  },
+  {
+    "slug": "celestial-healing-tonic",
+    "name": "Celestial Healing Tonic",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A radiant tonic said to carry the restorative warmth of the night sky.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 125
+    },
+    "image": "celestial_healing_tonic.png"
+  },
+  {
+    "slug": "aurora-elixir",
+    "name": "Aurora Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A shifting colorful elixir with extraordinary healing power.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 135
+    },
+    "image": "aurora_elixir.png"
+  },
+  {
+    "slug": "relic-restoration-draught",
+    "name": "Relic Restoration Draught",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A rare restorative formula inspired by ancient Relic traditions.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 140
+    },
+    "image": "relic_restoration_draught.png"
+  },
+  {
+    "slug": "kithna-grand-remedy",
+    "name": "Kithna Grand Remedy",
+    "type": "consumable",
+    "category": "potion",
+    "description": "One of Kithna's finest restorative medicines.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 145
+    },
+    "image": "kithna_grand_remedy.png"
+  },
+  {
+    "slug": "prismatic-grand-elixir",
+    "name": "Prismatic Grand Elixir",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A brilliant prismatic elixir brewed from exceptionally rare ingredients.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 150
+    },
+    "image": "prismatic_grand_elixir.png"
+  },
+  {
+    "slug": "master-healers-draught",
+    "name": "Master Healer's Draught",
+    "type": "consumable",
+    "category": "potion",
+    "description": "A master healer's prized restorative mixture.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "hp": 160
+    },
+    "image": "master_healers_draught.png"
   }
 ]

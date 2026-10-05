@@ -72,15 +72,19 @@ type UsePetStorageOptions = {
   refreshSignal?: number;
   onMutated?: () => void;
 };
+type StorageAction =
+  | "assign_party"
+  | "return_party"
+  | "store_pet"
+  | "set_active"
+  | "incubate_storage"
+  | "incubate_inventory"
+  | "store_inventory_egg"
+  | "store_hatchery_egg";
 export const PARTY_SLOT_COUNT = 4;
 const STORAGE_TOTAL_CAP = 50;
 const STORAGE_EGG_CAP = 20;
 const STORAGE_PET_CAP = 30;
-// Matches NON_STARTER_EGG_MIN_HATCH_MINUTES in eggQualityRoll.ts on the
-// backend. Only used as a fallback if an egg somehow has no
-// pending_hatch_minutes recorded (e.g. an older egg from before this
-// column existed).
-const FALLBACK_HATCH_MINUTES = 3;
 
 function normalizeStageInternal(stage?: string | null): StorageStageFilter {
   const raw = String(stage ?? "")
@@ -112,12 +116,6 @@ function isEggStage(stage?: string | null) {
 function isRunawayPet(pet?: StoragePet | null) {
   if (!pet) return false;
   return Boolean(pet.runaway_at ?? pet.ran_away);
-}
-
-function isUsableActivePet(pet?: StoragePet | null) {
-  if (!pet) return false;
-  if (isRunawayPet(pet)) return false;
-  return !isEggStage(pet.stage);
 }
 
 function isPartyEligible(pet?: StoragePet | null) {
@@ -382,647 +380,47 @@ export function usePetStorage(options: UsePetStorageOptions) {
     return base;
   }, [storedPets]);
 
-  function assertCanStorePet(pet: StoragePet) {
-    const nextTotal = storageCounts.total + 1;
-    const nextEggs = storageCounts.eggs + (isEggStage(pet.stage) ? 1 : 0);
-    const nextPets = storageCounts.pets + (isEggStage(pet.stage) ? 0 : 1);
-
-    if (nextTotal > STORAGE_TOTAL_CAP) {
-      throw new Error(
-        `Storage is full. Max ${STORAGE_TOTAL_CAP} stored creatures.`,
-      );
-    }
-
-    if (isEggStage(pet.stage) && nextEggs > STORAGE_EGG_CAP) {
-      throw new Error(
-        `Egg storage is full. Max ${STORAGE_EGG_CAP} stored eggs.`,
-      );
-    }
-
-    if (!isEggStage(pet.stage) && nextPets > STORAGE_PET_CAP) {
-      throw new Error(
-        `Pet storage is full. Max ${STORAGE_PET_CAP} stored pets.`,
-      );
-    }
-  }
-
-  async function setOnlyActivePet(nextPetId: string | null) {
-    if (!userId) throw new Error("Missing user.");
-
-    const { error: clearError } = await supabase
-      .from("pets")
-      .update({ is_active: false })
-      .eq("user_id", userId)
-      .eq("is_active", true);
-
-    if (clearError) throw clearError;
-
-    if (!nextPetId) return;
-
-    const { error: activateError } = await supabase
-      .from("pets")
-      .update({
-        location: "active",
-        is_active: true,
-      })
-      .eq("user_id", userId)
-      .eq("id", nextPetId);
-
-    if (activateError) throw activateError;
-  }
-
-  function chooseFallbackActivePetId(options?: {
-    preferredPetId?: string | null;
-    excludePetIds?: string[];
-    nextPartyRows?: PartySlotRow[];
-  }) {
-    const preferredPetId = options?.preferredPetId ?? null;
-    const excludePetIds = new Set(options?.excludePetIds ?? []);
-    const effectivePartyRows = options?.nextPartyRows ?? partyRows;
-
-    if (preferredPetId && !excludePetIds.has(preferredPetId)) {
-      const preferredPet = petsById.get(preferredPetId) ?? null;
-      if (isUsableActivePet(preferredPet)) {
-        return preferredPetId;
-      }
-    }
-
-    const sortedPartyRows = [...effectivePartyRows].sort(
-      (a, b) => a.slot_index - b.slot_index,
-    );
-
-    for (const row of sortedPartyRows) {
-      if (excludePetIds.has(row.pet_id)) continue;
-      const pet = petsById.get(row.pet_id) ?? null;
-      if (isUsableActivePet(pet)) return row.pet_id;
-    }
-
-    const storedUsablePets = pets
-      .filter((pet) => !excludePetIds.has(pet.id))
-      .filter((pet) => pet.location === "storage")
-      .filter(isUsableActivePet)
-      .sort(sortPetsNewestFirst);
-
-    if (storedUsablePets.length > 0) {
-      return storedUsablePets[0].id;
-    }
-
-    return null;
-  }
-
-  async function runMutation(
-    options: {
-      petId?: string | null;
-      slotIndex?: number | null;
-    },
-    fn: () => Promise<void>,
-  ) {
-    setWorkingPetId(options.petId ?? null);
-    setWorkingSlotIndex(options.slotIndex ?? null);
-    setError("");
-
-    try {
-      await fn();
-      await loadAll();
-      onMutated?.();
-    } catch (err: any) {
-      setError(err?.message ?? "Storage update failed.");
-    } finally {
-      setWorkingPetId(null);
-      setWorkingSlotIndex(null);
-    }
-  }
-
-  const assignPetToParty = useCallback(
-    async (petId: string, slotIndex: number) => {
-      await runMutation({ petId, slotIndex }, async () => {
-        if (!userId) throw new Error("Missing user.");
-        if (slotIndex < 1 || slotIndex > PARTY_SLOT_COUNT) {
-          throw new Error(
-            `Party slot must be between 1 and ${PARTY_SLOT_COUNT}.`,
-          );
-        }
-
-        const pet = pets.find((entry) => entry.id === petId) ?? null;
-        if (!pet) throw new Error("Pet not found.");
-        if (isEggStage(pet.stage)) {
-          throw new Error("Eggs cannot join the Main Team.");
-        }
-        if (isRunawayPet(pet)) {
-          throw new Error("Runaway pets cannot join the Main Team.");
-        }
-
-        // A solo pet always lives in slot 1. If this pet is already on the
-        // team and it's the only one there, ignore whatever slot it was
-        // dropped on and keep it pinned to slot 1.
-        const isOnlySoloPet =
-          partyRows.length === 1 && partyRows[0].pet_id === petId;
-        if (isOnlySoloPet) {
-          slotIndex = 1;
-        }
-
-        const currentSlotForPet =
-          partyRows.find((row) => row.pet_id === petId) ?? null;
-        const currentOccupant =
-          partyRows.find((row) => row.slot_index === slotIndex) ?? null;
-        const currentActivePet = pets.find((entry) => entry.is_active) ?? null;
-
-        if (currentSlotForPet?.slot_index === slotIndex) {
-          const { error: updatePetError } = await supabase
-            .from("pets")
-            .update({ location: "active" })
-            .eq("user_id", userId)
-            .eq("id", petId);
-
-          if (updatePetError) throw updatePetError;
-          return;
-        }
-
-        if (currentSlotForPet && currentOccupant) {
-          const { error: deleteRowsError } = await supabase
-            .from("party_slots")
-            .delete()
-            .eq("user_id", userId)
-            .in("id", [currentSlotForPet.id, currentOccupant.id]);
-
-          if (deleteRowsError) throw deleteRowsError;
-
-          const { error: insertSwapError } = await supabase
-            .from("party_slots")
-            .insert([
-              {
-                user_id: userId,
-                slot_index: slotIndex,
-                pet_id: petId,
-              },
-              {
-                user_id: userId,
-                slot_index: currentSlotForPet.slot_index,
-                pet_id: currentOccupant.pet_id,
-              },
-            ]);
-
-          if (insertSwapError) throw insertSwapError;
-
-          const { error: updatePetError } = await supabase
-            .from("pets")
-            .update({ location: "active" })
-            .eq("user_id", userId)
-            .in("id", [petId, currentOccupant.pet_id]);
-
-          if (updatePetError) throw updatePetError;
-
-          return;
-        }
-
-        if (currentSlotForPet && !currentOccupant) {
-          const { error: moveError } = await supabase
-            .from("party_slots")
-            .update({ slot_index: slotIndex })
-            .eq("user_id", userId)
-            .eq("id", currentSlotForPet.id);
-
-          if (moveError) throw moveError;
-
-          const { error: updatePetError } = await supabase
-            .from("pets")
-            .update({ location: "active" })
-            .eq("user_id", userId)
-            .eq("id", petId);
-
-          if (updatePetError) throw updatePetError;
-
-          return;
-        }
-
-        if (!currentSlotForPet && currentOccupant) {
-          const displacedPet = petsById.get(currentOccupant.pet_id) ?? null;
-          if (!displacedPet) throw new Error("Target slot pet not found.");
-
-          assertCanStorePet(displacedPet);
-
-          const { error: deleteTargetError } = await supabase
-            .from("party_slots")
-            .delete()
-            .eq("user_id", userId)
-            .eq("id", currentOccupant.id);
-
-          if (deleteTargetError) throw deleteTargetError;
-
-          const { error: insertNewError } = await supabase
-            .from("party_slots")
-            .insert({
-              user_id: userId,
-              slot_index: slotIndex,
-              pet_id: petId,
-            });
-
-          if (insertNewError) throw insertNewError;
-
-          const { error: petLocationError } = await supabase
-            .from("pets")
-            .update({ location: "active" })
-            .eq("user_id", userId)
-            .eq("id", petId);
-
-          if (petLocationError) throw petLocationError;
-
-          const { error: displacedStoreError } = await supabase
-            .from("pets")
-            .update({
-              location: "storage",
-              is_active: false,
-            })
-            .eq("user_id", userId)
-            .eq("id", displacedPet.id);
-
-          if (displacedStoreError) throw displacedStoreError;
-
-          const shouldPromoteNewPet =
-            !currentActivePet || currentActivePet.id === displacedPet.id;
-
-          if (shouldPromoteNewPet) {
-            await setOnlyActivePet(petId);
-          }
-
-          return;
-        }
-
-        const { error: insertError } = await supabase
-          .from("party_slots")
-          .insert({
-            user_id: userId,
-            slot_index: slotIndex,
-            pet_id: petId,
-          });
-
-        if (insertError) throw insertError;
-
-        const { error: activateLocationError } = await supabase
-          .from("pets")
-          .update({
-            location: "active",
-          })
-          .eq("user_id", userId)
-          .eq("id", petId);
-
-        if (activateLocationError) throw activateLocationError;
-
-        if (!currentActivePet) {
-          await setOnlyActivePet(petId);
-        }
-      });
-    },
-    [partyRows, pets, petsById, storageCounts, userId],
-  );
-
-  const returnPartyPetToStorage = useCallback(
-    async (slotIndex: number) => {
-      await runMutation({ slotIndex }, async () => {
-        if (!userId) throw new Error("Missing user.");
-
-        const slot = partySlots.find((entry) => entry.slotIndex === slotIndex);
-        if (!slot?.petId || !slot.pet) return;
-
-        const filledPartyCount = partySlots.filter(
-          (entry) => entry.petId,
-        ).length;
-        if (filledPartyCount <= 1) {
-          throw new Error("Your Main Team must always keep at least 1 Delta.");
-        }
-
-        assertCanStorePet(slot.pet);
-
-        const wasActive = Boolean(slot.pet.is_active);
-        const nextPartyRows = partyRows.filter(
-          (row) => row.slot_index !== slotIndex,
-        );
-
-        const { error: deleteError } = await supabase
-          .from("party_slots")
-          .delete()
-          .eq("user_id", userId)
-          .eq("slot_index", slotIndex);
-
-        if (deleteError) throw deleteError;
-
-        const { error: updatePetError } = await supabase
-          .from("pets")
-          .update({
-            location: "storage",
-            is_active: false,
-          })
-          .eq("user_id", userId)
-          .eq("id", slot.petId);
-
-        if (updatePetError) throw updatePetError;
-
-        if (wasActive) {
-          const fallbackPetId = chooseFallbackActivePetId({
-            excludePetIds: [slot.petId],
-            nextPartyRows,
-          });
-          await setOnlyActivePet(fallbackPetId);
-        }
-      });
-    },
-    [partyRows, partySlots, userId],
-  );
-
-  const setActivePet = useCallback(
-    async (petId: string) => {
-      await runMutation({ petId }, async () => {
-        if (!userId) throw new Error("Missing user.");
-
-        const pet = pets.find((entry) => entry.id === petId) ?? null;
-        if (!pet) throw new Error("Pet not found.");
-        if (isEggStage(pet.stage)) {
-          throw new Error("Eggs cannot become the active Delta.");
-        }
-
-        await setOnlyActivePet(petId);
-      });
-    },
-    [pets, userId],
-  );
-
-  const moveEggToIncubator = useCallback(
-    async (petId: string) => {
-      await runMutation({ petId }, async () => {
-        if (!userId) throw new Error("Missing user.");
-
-        const pet = pets.find((entry) => entry.id === petId) ?? null;
-        if (!pet) throw new Error("Pet not found.");
-        if (!isEggStage(pet.stage)) {
-          throw new Error("Only eggs can go into the incubator.");
-        }
-
-        const existingIncubatingEgg = pets.find(
-          (entry) =>
-            entry.location === "hatchery" &&
-            isEggStage(entry.stage) &&
-            entry.id !== petId,
-        );
-
-        if (existingIncubatingEgg) {
-          throw new Error("Only one egg can be in the incubator at a time.");
-        }
-
-        const { data: openSlot, error: openSlotError } = await supabase
-          .from("hatchery_slots")
-          .select("id, slot_index")
-          .eq("user_id", userId)
-          .eq("unlocked", true)
-          .is("pet_id", null)
-          .order("slot_index", { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (openSlotError) throw openSlotError;
-
-        if (!openSlot) {
-          throw new Error("No open hatchery slot is available right now.");
-        }
-
-        const hatchMinutes =
-          pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
-        const hatchEndsAt = new Date(
-          Date.now() + hatchMinutes * 60 * 1000,
-        ).toISOString();
-
-        const { error } = await supabase
-          .from("pets")
-          .update({
-            location: "hatchery",
-            is_active: false,
-            hatch_ends_at: hatchEndsAt,
-            pending_hatch_minutes: null,
-          })
-          .eq("user_id", userId)
-          .eq("id", petId);
-
-        if (error) throw error;
-
-        const { error: slotError } = await supabase
-          .from("hatchery_slots")
-          .update({ pet_id: petId })
-          .eq("id", openSlot.id)
-          .eq("user_id", userId);
-
-        if (slotError) {
-          await supabase
-            .from("pets")
-            .update({
-              location: "storage",
-              hatch_ends_at: null,
-              pending_hatch_minutes: hatchMinutes,
-            })
-            .eq("user_id", userId)
-            .eq("id", petId);
-
-          throw slotError;
-        }
-      });
-    },
-    [pets, userId],
-  );
-  // Kithna roam eggs land in "inventory" first. These two moves take an
-  // egg from there to Storage (a holding spot, no timer started) or
-  // straight into an open Hatchery slot (timer starts now).
-  const moveEggFromInventoryToStorage = useCallback(
-    async (petId: string) => {
-      await runMutation({ petId }, async () => {
-        if (!userId) throw new Error("Missing user.");
-
-        const pet = pets.find((entry) => entry.id === petId) ?? null;
-        if (!pet) throw new Error("Pet not found.");
-        if (pet.location !== "inventory" || !isEggStage(pet.stage)) {
-          throw new Error("That egg is not in your inventory right now.");
-        }
-
-        assertCanStorePet(pet);
-
-        const { error } = await supabase
-          .from("pets")
-          .update({
-            location: "storage",
-            is_active: false,
-          })
-          .eq("user_id", userId)
-          .eq("id", petId);
-
-        if (error) throw error;
-      });
-    },
-    [pets, storageCounts, userId],
-  );
-
-  const moveEggFromInventoryToHatchery = useCallback(
-    async (petId: string) => {
-      await runMutation({ petId }, async () => {
-        if (!userId) throw new Error("Missing user.");
-
-        const pet = pets.find((entry) => entry.id === petId) ?? null;
-        if (!pet) throw new Error("Pet not found.");
-        if (pet.location !== "inventory" || !isEggStage(pet.stage)) {
-          throw new Error("That egg is not in your inventory right now.");
-        }
-
-        const existingIncubatingEgg = pets.find(
-          (entry) =>
-            entry.location === "hatchery" &&
-            isEggStage(entry.stage) &&
-            entry.id !== petId,
-        );
-
-        if (existingIncubatingEgg) {
-          throw new Error(
-            "Your current backend only supports 1 incubating egg right now. Multi-incubator wiring is the next pass.",
-          );
-        }
-
-        const { data: openSlot, error: openSlotError } = await supabase
-          .from("hatchery_slots")
-          .select("id, slot_index")
-          .eq("user_id", userId)
-          .eq("unlocked", true)
-          .is("pet_id", null)
-          .order("slot_index", { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (openSlotError) throw openSlotError;
-
-        if (!openSlot) {
-          throw new Error("No open hatchery slot is available right now.");
-        }
-
-        const hatchMinutes =
-          pet.pending_hatch_minutes ?? FALLBACK_HATCH_MINUTES;
-        const hatchEndsAt = new Date(
-          Date.now() + hatchMinutes * 60 * 1000,
-        ).toISOString();
-
-        const { error } = await supabase
-          .from("pets")
-          .update({
-            location: "hatchery",
-            is_active: false,
-            hatch_ends_at: hatchEndsAt,
-            pending_hatch_minutes: null,
-          })
-          .eq("user_id", userId)
-          .eq("id", petId);
-
-        if (error) throw error;
-
-        const { error: slotError } = await supabase
-          .from("hatchery_slots")
-          .update({ pet_id: petId })
-          .eq("id", openSlot.id)
-          .eq("user_id", userId);
-
-        if (slotError) {
-          // Roll back so we don't leave an orphaned egg with a timer
-          // running but no slot, better to fail the whole move.
-          await supabase
-            .from("pets")
-            .update({
-              location: "inventory",
-              hatch_ends_at: null,
-              pending_hatch_minutes: hatchMinutes,
-            })
-            .eq("user_id", userId)
-            .eq("id", petId);
-          throw slotError;
-        }
-      });
-    },
-    [pets, userId],
-  );
-
-  const moveEggToStorage = useCallback(
-    async (petId: string) => {
-      await runMutation({ petId }, async () => {
-        if (!userId) throw new Error("Missing user.");
-
-        const pet = pets.find((entry) => entry.id === petId) ?? null;
-        if (!pet) throw new Error("Pet not found.");
-        if (!isEggStage(pet.stage)) {
-          throw new Error(
-            "Only eggs can be sent from the incubator back to storage.",
-          );
-        }
-
-        assertCanStorePet(pet);
-
-        await apiFetch("/api/pets/hatchery/move-to-storage", {
+  // The API validates ownership and applies the entire move in one transaction.
+  // Reads stay here so the existing storage presentation remains unchanged.
+  const runStorageAction = useCallback(
+    async (action: StorageAction, petId?: string, slotIndex?: number) => {
+      setWorkingPetId(petId ?? null);
+      setWorkingSlotIndex(slotIndex ?? null);
+      setError("");
+      try {
+        await apiFetch("/api/pets/storage/action", {
           method: "POST",
-          json: { petId },
+          json: {
+            action,
+            ...(petId ? { petId } : {}),
+            ...(slotIndex !== undefined ? { slotIndex } : {}),
+          },
         });
-      });
+        await loadAll();
+        onMutated?.();
+      } catch (problem: unknown) {
+        setError(problem instanceof Error ? problem.message : "Storage update failed.");
+      } finally {
+        setWorkingPetId(null);
+        setWorkingSlotIndex(null);
+      }
     },
-    [pets, storageCounts, userId],
+    [loadAll, onMutated],
   );
 
-  const storePet = useCallback(
-    async (petId: string) => {
-      await runMutation({ petId }, async () => {
-        if (!userId) throw new Error("Missing user.");
-
-        const pet = pets.find((entry) => entry.id === petId) ?? null;
-        if (!pet) throw new Error("Pet not found.");
-
-        const existingPartyRow = partyRows.find((row) => row.pet_id === petId);
-        if (existingPartyRow) {
-          const filledPartyCount = partySlots.filter(
-            (entry) => entry.petId,
-          ).length;
-          if (filledPartyCount <= 1) {
-            throw new Error(
-              "Your Main Team must always keep at least 1 Delta.",
-            );
-          }
-        }
-
-        assertCanStorePet(pet);
-
-        const wasActive = Boolean(pet.is_active);
-        const nextPartyRows = partyRows.filter((row) => row.pet_id !== petId);
-
-        if (existingPartyRow) {
-          const { error: deleteSlotError } = await supabase
-            .from("party_slots")
-            .delete()
-            .eq("user_id", userId)
-            .eq("pet_id", petId);
-
-          if (deleteSlotError) throw deleteSlotError;
-        }
-
-        const { error } = await supabase
-          .from("pets")
-          .update({
-            location: "storage",
-            is_active: false,
-          })
-          .eq("id", petId)
-          .eq("user_id", userId);
-
-        if (error) throw error;
-
-        if (wasActive) {
-          const fallbackPetId = chooseFallbackActivePetId({
-            excludePetIds: [petId],
-            nextPartyRows,
-          });
-          await setOnlyActivePet(fallbackPetId);
-        }
-      });
-    },
-    [partyRows, partySlots, pets, userId],
-  );
-
+  const assignPetToParty = (petId: string, slotIndex: number) =>
+    runStorageAction("assign_party", petId, slotIndex);
+  const returnPartyPetToStorage = (slotIndex: number) =>
+    runStorageAction("return_party", undefined, slotIndex);
+  const storePet = (petId: string) => runStorageAction("store_pet", petId);
+  const setActivePet = (petId: string) => runStorageAction("set_active", petId);
+  const moveEggToIncubator = (petId: string) => runStorageAction("incubate_storage", petId);
+  const moveEggFromInventoryToHatchery = (petId: string) =>
+    runStorageAction("incubate_inventory", petId);
+  const moveEggFromInventoryToStorage = (petId: string) =>
+    runStorageAction("store_inventory_egg", petId);
+  const moveEggToStorage = (petId: string) =>
+    runStorageAction("store_hatchery_egg", petId);
   return {
     pets: storedPets,
     allPets: pets,

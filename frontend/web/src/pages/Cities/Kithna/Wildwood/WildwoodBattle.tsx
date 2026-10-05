@@ -2,7 +2,20 @@ import { useState } from "react";
 import type { BattleAction, BattleState } from "@shared/battle/wildwoodTypes";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
+import corruptClodion from "@/kith/assets/Kithna_pets/corrupt/hatchling_clodion_corrupt.png";
+import corruptGlimmer from "@/kith/assets/Kithna_pets/corrupt/hathcling_glimmer_corrupt.png";
+import corruptMagmado from "@/kith/assets/Kithna_pets/corrupt/hatchling_magmoda_corrupt.png";
+import corruptPebelin from "@/kith/assets/Kithna_pets/corrupt/hatchling_pebelin_corrupt.png";
+import corruptShade from "@/kith/assets/Kithna_pets/corrupt/hatchling_shade_corrupt.png";
 import "./wildwood.css";
+
+const CORRUPT_PORTRAITS: Readonly<Record<string, string>> = {
+  kithna_clodian: corruptClodion,
+  kithna_glimmer: corruptGlimmer,
+  kithna_magmado: corruptMagmado,
+  kithna_pebelin: corruptPebelin,
+  kithna_shade: corruptShade,
+};
 
 type Props = {
   battle: BattleState;
@@ -17,19 +30,22 @@ export function KithPortrait({
   speciesId,
   imageUrl,
   name,
+  enemy = false,
 }: {
   speciesId: string;
   imageUrl?: string | null;
   name: string;
+  enemy?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
 
-  const source =
+  const source = enemy ? CORRUPT_PORTRAITS[speciesId] : (
     imageUrl ||
     getStarterPortrait(speciesId) ||
     getKithnaPortrait(speciesId) ||
     getKithnaPortrait(name) ||
-    getStarterPortrait(name);
+    getStarterPortrait(name)
+  );
 
   return source && !failed ? (
     <img
@@ -179,6 +195,7 @@ export default function WildwoodBattle({
                             speciesId={pet.speciesId}
                             name={pet.name}
                             imageUrl={images[pet.id]}
+                            enemy={side === "enemy"}
                           />
                           </span>
                           <span className="ww-hp">

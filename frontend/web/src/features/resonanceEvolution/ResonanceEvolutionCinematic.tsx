@@ -8,8 +8,13 @@ type Props = { request: ResonanceEvolutionRequest | null; phase: ResonanceEvolut
 export function ResonanceEvolutionCinematic({ request, phase, displayedHp, reducedMotion }: Props) {
   const playing = phase !== "idle";
   if (!playing || !request) return null;
-  // Until Lowform artwork exists, preserve this pet's own hatchling PNG.
-  const visualRequest = { ...request, toImage: request.fromImage };
+  // Development previews may supply Lowform art; preserve gameplay's current artwork.
+  const visualRequest = {
+    ...request,
+    toImage: import.meta.env.DEV && request.persist === false
+      ? request.toImage
+      : request.fromImage,
+  };
   const config = ELEMENT_RESONANCE[request.element];
   const style: CSSProperties & Record<"--resonance-color" | "--resonance-accent", string> = {
     "--resonance-color": config.color, "--resonance-accent": config.accent,

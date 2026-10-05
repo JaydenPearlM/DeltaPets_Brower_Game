@@ -3,7 +3,8 @@ import type { Response } from "express";
 
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
-import { awardXpToActivePet } from "../../pets/petProgression";
+import { z } from "zod";
+import { logger } from "../../lib/logger";
 
 export const rewardsRouter = Router();
 
@@ -55,106 +56,6 @@ function daysBetweenUTC(a: Date, b: Date): number {
   const aDay = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate());
   const bDay = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
   return Math.floor((bDay - aDay) / 86_400_000);
-}
-
-/** ---- Supabase write helpers -------------------------------------------- */
-
-async function ensureWalletRow(user_id: string) {
-  const { error } = await supabaseAdmin
-    .from("wallets")
-    .upsert({ user_id }, { onConflict: "user_id" });
-  if (error) throw error;
-}
-
-async function addWallet(
-  user_id: string,
-  currency: "dots" | "crystals",
-  delta: number,
-) {
-  const { error } = await supabaseAdmin.rpc("increment_wallet", {
-    p_user_id: user_id,
-    p_dots: currency === "dots" ? delta : 0,
-    p_crystals: currency === "crystals" ? delta : 0,
-  });
-
-  if (error) throw error;
-}
-
-async function giveItem(user_id: string, slug: string, qty: number) {
-  const { data: item, error } = await supabaseAdmin
-    .from("item_defs")
-    .select("id")
-    .eq("slug", slug)
-    .single();
-  if (error || !item) throw new Error(`Missing item_defs slug: ${slug}`);
-
-  const { data: inv, error: e1 } = await supabaseAdmin
-    .from("inventory")
-    .select("qty")
-    .eq("user_id", user_id)
-    .eq("item_id", item.id)
-    .maybeSingle();
-  if (e1) throw e1;
-
-  const nextQty = (inv?.qty ?? 0) + qty;
-
-  const { error: e2 } = await supabaseAdmin
-    .from("inventory")
-    .upsert(
-      { user_id, item_id: item.id, qty: nextQty },
-      { onConflict: "user_id,item_id" },
-    );
-  if (e2) throw e2;
-}
-
-async function awardAlphaTesterRibbon(user_id: string, earnedAtIso: string) {
-  const { data: award, error: awardErr } = await supabaseAdmin
-    .from("awards")
-    .upsert(
-      {
-        key: "alpha_tester",
-        name: "Alpha Tester",
-        type: "ribbon",
-        rarity: "special",
-        description:
-          "Awarded for participating in the Alpha deployment testing.",
-      },
-      { onConflict: "key" },
-    )
-    .select("id")
-    .single();
-
-  if (awardErr) throw new Error(awardErr.message);
-  if (!award?.id) throw new Error("Failed to resolve award id.");
-
-  const { error: taErr } = await supabaseAdmin.from("trainer_awards").upsert(
-    {
-      user_id,
-      award_id: award.id,
-      earned_at: earnedAtIso,
-      context: { source: "daily_login_rewards", deployment: "alpha" },
-    },
-    { onConflict: "user_id,award_id" },
-  );
-
-  if (taErr) throw new Error(taErr.message);
-}
-
-async function applyReward(user_id: string, reward: Reward) {
-  switch (reward.kind) {
-    case "dots":
-      return addWallet(user_id, "dots", reward.amount);
-    case "item":
-      return giveItem(user_id, reward.slug, reward.qty);
-    case "xp":
-      return awardXpToActivePet(user_id, reward.amount);
-    case "ribbon":
-      return awardAlphaTesterRibbon(user_id, new Date().toISOString());
-    default: {
-      const _never: never = reward;
-      return _never;
-    }
-  }
 }
 
 /** ---- Reward selection --------------------------------------------------- */
@@ -240,66 +141,47 @@ rewardsRouter.get(
   },
 );
 
+const claimBodySchema = z.object({}).strict();
+const claimResultSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(false), error: z.literal("Already claimed today.") }),
+  z.object({
+    ok: z.literal(true),
+    reward: z.discriminatedUnion("kind", [
+      z.object({ kind: z.literal("dots"), amount: z.number().int(), label: z.string() }),
+      z.object({ kind: z.literal("item"), slug: z.string(), qty: z.number().int(), label: z.string() }),
+      z.object({ kind: z.literal("xp"), amount: z.number().int(), label: z.string() }),
+      z.object({ kind: z.literal("ribbon"), label: z.string() }),
+    ]),
+    streak: z.number().int().positive(),
+    dayIndex: z.number().int().min(0).max(6),
+    reset: z.boolean(),
+  }),
+]);
+
 rewardsRouter.post(
   "/claim",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
-    const user_id = req.user!.id;
-    const now = new Date();
-
-    const { data: row, error } = await supabaseAdmin
-      .from("daily_login_rewards")
-      .select("id, streak, last_claimed_at, potato_received")
-      .eq("id", user_id)
-      .maybeSingle();
-
-    if (error) return res.status(500).json({ error: error.message });
-
-    const streak = row?.streak ?? 0;
-    const last = row?.last_claimed_at ? new Date(row.last_claimed_at) : null;
-
-    const diffDays = last ? daysBetweenUTC(last, now) : 999;
-
-    if (diffDays === 0)
-      return res.status(400).json({ error: "Already claimed today." });
-
-    const reset = diffDays >= 4;
-    const baseStreak = reset ? 0 : streak;
-    const nextStreak = baseStreak + 1;
-    const dayIndex = (nextStreak - 1) % 7;
-
-    const reward = rewardForStreak(nextStreak);
-
-    try {
-      await applyReward(user_id, reward);
-    } catch (e) {
-      const err = e as any;
-
-      return res
-        .status(500)
-        .json({ error: err?.message ?? "Failed to apply reward" });
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+    if (!claimBodySchema.safeParse(req.body ?? {}).success) {
+      return res.status(400).json({ error: "Daily reward claims do not accept client reward data." });
     }
 
-    const { error: e2 } = await supabaseAdmin
-      .from("daily_login_rewards")
-      .upsert(
-        {
-          id: user_id,
-          streak: nextStreak,
-          last_claimed_at: now.toISOString(),
-          potato_received: row?.potato_received ?? false,
-        },
-        { onConflict: "id" },
-      );
-
-    if (e2) return res.status(500).json({ error: e2.message });
-
-    return res.json({
-      ok: true,
-      reward,
-      streak: nextStreak,
-      dayIndex,
-      reset,
-    });
+    try {
+      // Eligibility, reward and claim marker commit together under a database lock.
+      const { data, error } = await supabaseAdmin.rpc("claim_daily_login_reward", {
+        p_user_id: userId,
+      });
+      if (error) throw error;
+      const result = claimResultSchema.parse(data);
+      if (!result.ok) {
+        return res.status(400).json({ error: result.error });
+      }
+      return res.json(result);
+    } catch (error) {
+      logger.error("[rewards/claim] failed", error);
+      return res.status(500).json({ error: "Failed to claim daily reward." });
+    }
   },
 );

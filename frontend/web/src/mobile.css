@@ -1149,6 +1149,11 @@
       padding-right: 0 !important;
     }
 
+    .hatcheryPage .hp-banner {
+      position: relative !important;
+      top: -10px !important;
+    }
+
     .appHeaderInner {
       grid-template-columns: minmax(0, 1fr) !important;
       grid-template-rows: auto auto auto !important;
@@ -1965,7 +1970,8 @@
     }
 
     .skillsPanel {
-      max-height: min(88vh, 700px) !important;
+      /* Learned slots are in this panel; only the separate inventory scrolls. */
+      max-height: none !important;
       overflow: hidden !important;
       display: flex !important;
       flex-direction: column !important;
@@ -3253,13 +3259,124 @@
   }
 }
 
+/* Mobile QA: care feedback, portrait framing, navigation, and Assanti's shop. */
+@media (max-width: 640px) {
+  .petRepoCareStatusPanel
+    .petRepoCareActionMessageSlot:has(.petRepoInlineMessage) {
+    margin-top: 16px !important;
+  }
+
+  .petRepoCareStatusPanel .petRepoInlineMessage {
+    margin-top: 0 !important;
+    padding-top: 0;
+  }
+
+  .skillsPanel .skillChamberCommandOrbImage {
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transform: none;
+  }
+  /* Preserve horizontal containment on mobile routes.
+     Hatchery intentionally uses normal page scrolling for the App header. */
+  body:has(.appHeader .headerPlayerNav):not(
+      :has(.hp-root, .dp-profile-page, .ww-battle)
+    ),
+  #root:has(.appHeader .headerPlayerNav):not(
+      :has(.hp-root, .dp-profile-page, .ww-battle)
+    ) {
+    overflow-x: clip !important;
+  }
+
+  body:has(.hatcheryPage) .appHeader {
+    position: relative !important;
+    top: auto !important;
+  }
+
+  .appHeader:has(.headerPlayerNav) .appHeaderInner {
+    overflow: visible !important;
+  }
+
+  .appHeader:has(.headerPlayerNav) .appHeaderInner {
+    overflow: visible !important;
+  }
+
+  .appHeader:has(.headerPlayerNav) .headerCenterRow {
+    position: relative;
+  }
+
+  .appHeader:has(.headerPlayerNav) .exploreWrapper:has(.hamburgerMenuModal) {
+    position: static !important;
+  }
+
+  .appHeader:has(.headerPlayerNav) .hamburgerMenuModal {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    box-sizing: border-box;
+    max-height: 50dvh;
+    overflow-y: auto;
+  }
+
+  /* appContent already contributes 5px per side on phones up to 430px. */
+  .appContent:has(> .kithna-food-shop) {
+    padding-inline: 0 !important;
+  }
+
+  .kithna-food-shop .dp-merchant-shell {
+    width: calc(100% - 20px);
+    max-width: calc(100vw - 20px);
+    margin-inline: auto;
+  }
+
+  .kithna-food-shop .kithna-food-header,
+  .kithna-food-shop .kithna-food-main-layout,
+  .kithna-food-shop .kithna-food-trade-columns,
+  .kithna-food-shop .dp-merchant-wallets {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kithna-food-shop .kithna-food-merchant-summary,
+  .kithna-food-shop .dp-merchant-foreground,
+  .kithna-food-shop .dp-merchant-section {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+  }
+
+  .kithna-food-shop .kithna-food-trade-summary {
+    flex-wrap: wrap;
+  }
+
+  .kithna-food-shop .kithna-food-trade-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .kithna-food-shop .kithna-food-trade-name {
+    grid-column: 1 / -1;
+  }
+
+  .kithna-food-shop .kithna-food-trade-button,
+  .kithna-food-shop button {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
 /* The same phone turned sideways: use the available height for the scene. */
 @media (orientation: landscape) and (max-width: 960px) and (max-height: 500px) {
-  body:has(.resonanceCinematic .resonanceEvolution) { overflow: hidden; }
+  body:has(.resonanceCinematic .resonanceEvolution) {
+    overflow: hidden;
+  }
 
   .resonanceCinematic .resonanceEvolution,
   .resonanceCinematic .resonanceCinematic__bubbleLayer,
-  .resonanceCinematic .resonanceCinematic__floorSparkles { height: 100dvh; }
+  .resonanceCinematic .resonanceCinematic__floorSparkles {
+    height: 100dvh;
+  }
 
   .resonanceCinematic .resonanceEvolution__petStage {
     top: 49%;
@@ -3267,7 +3384,9 @@
     height: 60svh;
   }
 
-  .resonanceCinematic .resonanceEvolution__character { width: 36svh; }
+  .resonanceCinematic .resonanceEvolution__character {
+    width: 36svh;
+  }
 
   .resonanceCinematic .resonanceEvolution__platform,
   .resonanceCinematic .resonanceCinematic__sparkOrigin {
@@ -3289,5 +3408,155 @@
     font-size: 18px;
     line-height: 1.25;
     overflow-wrap: anywhere;
+  }
+}
+/* existing last mobile.css code above here */
+
+@media (orientation: landscape) and (max-width: 960px) and (max-height: 500px) {
+  /* your existing landscape rules */
+}
+
+/* =========================================================
+   HOMEPAGE MOBILE EDGE / SCROLL FIX
+   Homepage only. Do not change other pages.
+   ========================================================= */
+@media (max-width: 430px) {
+  body:has(.hp-root) .appHeader {
+    position: relative !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  body:has(.hp-root) .appHeaderInner {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .appContent:has(> .hp-root) {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    box-sizing: border-box !important;
+    overflow-x: clip !important;
+  }
+
+  .hp-root {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .hp-root > .hp-banner,
+  .hp-mainShell,
+  .hp-lowerGrid,
+  .hp-newsColumn,
+  .hp-spotlightColumn,
+  .hp-newsColumn .anp-panel,
+  .hp-spotlightPanel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  html:has(.hp-root),
+  body:has(.hp-root),
+  #root:has(.hp-root) {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  html:has(.hp-root)::-webkit-scrollbar,
+  body:has(.hp-root)::-webkit-scrollbar,
+  #root:has(.hp-root)::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+  }
+}
+/* =========================================================
+   HOMEPAGE MOBILE FOOTER
+   Existing footer only.
+   Do not change any other Homepage code.
+   ========================================================= */
+@media (max-width: 430px) {
+  body:has(.hp-root) .appCopyright {
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin-top: 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(.hp-root) .appCopyrightInner {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(.hp-root) .appCopyrightLegal,
+  body:has(.hp-root) .appCopyrightLinks {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
+/* =========================================================
+   /CREATE MOBILE GRID EDGE SPACING
+   Grid only. Do not alter the cutscene contents.
+   ========================================================= */
+@media (max-width: 430px) {
+  .appContent:has(> .dpc-root) {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    box-sizing: border-box !important;
+  }
+
+  .dpc-root {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+/* /create has no footer */
+body:has(.dpc-root) .appCopyright {
+  display: none !important;
+}
+/* Hatchery mobile footer spacing only */
+@media (max-width: 430px) {
+  body:has(.hatcheryPage) .appCopyright {
+    margin-top: 0 !important;
+    transform: translateY(-0px);
+  }
+}
+/* =========================================================
+   PET PAGE MOBILE HEADER
+   Normal page flow. Banner scrolls with the whole page.
+   Pets page only.
+   ========================================================= */
+@media (max-width: 430px) {
+  body:has(.petRepoPage) .appHeader {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    z-index: 9999 !important;
+  }
+
+  body:has(.petRepoPage) .appContent {
+    padding-top: 0 !important;
   }
 }

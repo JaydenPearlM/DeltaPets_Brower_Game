@@ -8,7 +8,7 @@ import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage
 import { useHomepageBanner } from "./useHomepageBanner";
 import { useHomepageSpotlightPet } from "./useHomepageSpotlightPet";
 import EggHatchShowcase from "@/components/Video_hatch/EggHatchShowcase";
-import solenHatchling from "@/kith/assets/startepets/hatchling_solen.png";
+import solenHatchling from "@/kith/assets/startepets/hatchlings/hatchling_solen.png";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
 import FreeToPlayBadge from "@/pages/Homepage/FreeToPlayBadge";
@@ -79,7 +79,7 @@ export default function Homepage() {
     : "";
 
   const spotlightPreviewUrl = spotlightPet
-    ? getStarterPortrait(spotlightPet.species) ||
+    ? getStarterPortrait(spotlightPet.species, spotlightPet.stage) ||
       getKithnaPortrait(spotlightPet.species) ||
       spotlightPet.previewUrl
     : null;

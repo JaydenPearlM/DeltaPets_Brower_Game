@@ -1,6 +1,7 @@
 .hp-supportPanel {
   width: 100%;
   min-width: 0;
+  margin-bottom: -30px;
   border: 3px solid var(--dp-panel-purple-border);
   --dp-standard-panel-inset-gap: 10px;
   --dp-standard-panel-inner-size: 3px;

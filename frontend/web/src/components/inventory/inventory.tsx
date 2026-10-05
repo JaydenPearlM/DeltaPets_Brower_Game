@@ -17,13 +17,6 @@ export type BackendInventoryItem = {
   updatedAt: string;
 };
 
-type ClosedAlphaCarePackageResponse = {
-  opened: true;
-  wallet: {
-    dots: number;
-  };
-};
-
 export type CareInventoryCategory = "food" | "soap" | "toy" | "bed";
 export type InventoryItemType =
   | "food"
@@ -337,33 +330,12 @@ export function consumeCareItem(category: CareInventoryCategory, amount = 1) {
   return consumeInventoryItem(item.slug, amount);
 }
 
-function getPlayerName(user: any) {
-  const meta = user?.user_metadata ?? {};
-  const fromMeta =
-    meta.username || meta.display_name || meta.displayName || meta.name;
-
-  if (typeof fromMeta === "string" && fromMeta.trim()) return fromMeta.trim();
-
-  const email = user?.email;
-  if (typeof email === "string" && email.includes("@")) {
-    return email.split("@")[0];
-  }
-
-  return "Traveler";
-}
-
-type InventoryWallet = {
-  dots: number;
-  crystals: number;
-};
-
 type InventoryProps = {
   onClose: () => void;
 };
 
 export default function Inventory({ onClose }: InventoryProps) {
   const { user } = useAuth();
-  const playerName = useMemo(() => getPlayerName(user), [user]);
 
   const [inventoryItems, setInventoryItems] = useState(() =>
     getInventoryItems(),
@@ -373,13 +345,6 @@ export default function Inventory({ onClose }: InventoryProps) {
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [backendLoading, setBackendLoading] = useState(true);
   const [backendError, setBackendError] = useState("");
-  const [, setWallet] = useState<InventoryWallet>({
-    dots: 0,
-    crystals: 0,
-  });
-  const [openingCarePackage, setOpeningCarePackage] = useState(false);
-  const [showCarePackageNotice, setShowCarePackageNotice] = useState(false);
-  const [carePackageMessage, setCarePackageMessage] = useState("");
 
   useEffect(() => {
     const handleInventoryChange = () => {
@@ -401,7 +366,6 @@ export default function Inventory({ onClose }: InventoryProps) {
     let cancelled = false;
     let latestRequest = 0;
     setServerItems([]);
-    setShowCarePackageNotice(false);
 
     async function loadBackendInventory() {
       const request = ++latestRequest;
@@ -411,30 +375,15 @@ export default function Inventory({ onClose }: InventoryProps) {
       try {
         const json = await apiFetch<{
           items: BackendInventoryItem[];
-          wallet: InventoryWallet;
         }>("/api/inventory");
 
         if (!cancelled && request === latestRequest) {
           const nextBackendItems = json.items ?? [];
           setServerItems(nextBackendItems);
-
-          setWallet(
-            json.wallet ?? {
-              dots: 0,
-              crystals: 0,
-            },
-          );
-
-          setShowCarePackageNotice(
-            nextBackendItems.some(
-              (item) => item.slug === "closed-alpha-care-package",
-            ),
-          );
         }
       } catch (err) {
         if (!cancelled && request === latestRequest) {
           setServerItems([]);
-          setShowCarePackageNotice(false);
           setBackendError(
             err instanceof Error ? err.message : "Failed to load inventory.",
           );
@@ -456,38 +405,10 @@ export default function Inventory({ onClose }: InventoryProps) {
     };
   }, [user?.id]);
 
-  async function openClosedAlphaCarePackage() {
-    if (openingCarePackage) return;
-
-    setOpeningCarePackage(true);
-    setCarePackageMessage("");
-
-    try {
-      const result = await apiFetch<ClosedAlphaCarePackageResponse>(
-        "/api/inventory/open-closed-alpha-care-package",
-        { method: "POST" },
-      );
-
-      setShowCarePackageNotice(false);
-      dispatchInventoryChange();
-
-      setCarePackageMessage(
-        `Care Package opened! You received 50 Meat, 50 Vegetables, 50 Clean, 50 Mood, 50 Comfort, and 1,000 Dots. Balance: ${result.wallet.dots.toLocaleString()} Dots.`,
-      );
-    } catch (err) {
-      dispatchInventoryChange();
-      setCarePackageMessage(
-        err instanceof Error ? err.message : "Failed to open care package.",
-      );
-    } finally {
-      setOpeningCarePackage(false);
-    }
-  }
-
   const sortedInventoryItems = useMemo(
     () =>
       [
-        ...serverItems.filter((item) => item.qty > 0 && item.slug !== "closed-alpha-care-package").map(serverDisplayItem),
+        ...serverItems.filter((item) => item.qty > 0).map(serverDisplayItem),
         ...inventoryItems.map((item) => ({ ...item, legacy: true })),
       ].sort((firstItem, secondItem) =>
         firstItem.name.localeCompare(secondItem.name),
@@ -519,38 +440,6 @@ export default function Inventory({ onClose }: InventoryProps) {
 
   return (
     <section className="inventoryPanel" aria-label="Inventory">
-      {showCarePackageNotice ? (
-        <div
-          className="inventoryCarePackageNotice"
-          role="alertdialog"
-          aria-modal="true"
-          aria-label="Closed Alpha Care Package"
-        >
-          <div className="inventoryCarePackageNoticeCard">
-            <p className="inventoryCarePackageStillHere">
-              This is for all of you who are actively testing.
-            </p>
-
-            <h2 className="inventoryCarePackageThankYou">
-              Thank you for joining this journey with me, {playerName}!
-            </h2>
-
-            <p className="inventoryCarePackageJourney">
-              Can not wait to see what lies ahead.
-            </p>
-
-            <button
-              type="button"
-              className="dp-btn--close"
-              disabled={openingCarePackage}
-              onClick={() => void openClosedAlphaCarePackage()}
-            >
-              {openingCarePackage ? "Opening..." : "Get Gift"}
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       <header className="inventoryHeader">
         <div className="inventoryHeaderRow">
           <h2>Inventory</h2>
@@ -638,12 +527,6 @@ export default function Inventory({ onClose }: InventoryProps) {
           ),
         )}
       </div>
-
-        {carePackageMessage ? (
-          <p className="inventoryCarePackageMessage" role="status">
-            {carePackageMessage}
-          </p>
-        ) : null}
 
         <div className="inventoryFooter">
           <button

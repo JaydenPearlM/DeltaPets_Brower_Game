@@ -13,6 +13,318 @@
     "image": "soft_cleaning_brush.png"
   },
   {
+    "slug": "gentle-grooming-brush",
+    "name": "Gentle Grooming Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A gentle brush that removes dust and loose fur.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 28
+    },
+    "image": "gentle_grooming_brush.png"
+  },
+  {
+    "slug": "wooden-bristle-brush",
+    "name": "Wooden Bristle Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A simple wooden brush with firm natural bristles.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 30
+    },
+    "image": "wooden_bristle_brush.png"
+  },
+  {
+    "slug": "mini-care-brush",
+    "name": "Mini Care Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A compact grooming brush made for smaller Kith.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 22
+    },
+    "image": "mini_care_brush.png"
+  },
+  {
+    "slug": "wide-grooming-brush",
+    "name": "Wide Grooming Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A wide brush that cleans a larger area with each pass.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 32
+    },
+    "image": "wide_grooming_brush.png"
+  },
+  {
+    "slug": "soft-cloth-pad",
+    "name": "Soft Cloth Pad",
+    "type": "care",
+    "category": "brushes",
+    "description": "A soft cleaning pad for delicate fur, scales, and feathers.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 24
+    },
+    "image": "soft_cloth_pad.png"
+  },
+  {
+    "slug": "polishing-cloth",
+    "name": "Polishing Cloth",
+    "type": "care",
+    "category": "brushes",
+    "description": "A smooth cloth used to polish coats, scales, and shells.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 27
+    },
+    "image": "polishing_cloth.png"
+  },
+  {
+    "slug": "bamboo-grooming-brush",
+    "name": "Bamboo Grooming Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A lightweight bamboo brush made for daily care.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 29
+    },
+    "image": "bamboo_grooming_brush.png"
+  },
+  {
+    "slug": "fine-tooth-groomer",
+    "name": "Fine-Tooth Groomer",
+    "type": "care",
+    "category": "brushes",
+    "description": "A fine grooming tool for removing small bits of dirt.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 31
+    },
+    "image": "fine_tooth_groomer.png"
+  },
+  {
+    "slug": "care-sponge",
+    "name": "Care Sponge",
+    "type": "care",
+    "category": "brushes",
+    "description": "A soft sponge that makes cleanup quick and easy.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 26
+    },
+    "image": "care_sponge.png"
+  },
+  {
+    "slug": "silver-bristle-brush",
+    "name": "Silver Bristle Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A refined grooming brush with smooth silver-toned bristles.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 38
+    },
+    "image": "silver_bristle_brush.png"
+  },
+  {
+    "slug": "deep-clean-brush",
+    "name": "Deep Clean Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A sturdy brush designed for more thorough cleaning.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 42
+    },
+    "image": "deep_clean_brush.png"
+  },
+  {
+    "slug": "velvet-grooming-pad",
+    "name": "Velvet Grooming Pad",
+    "type": "care",
+    "category": "brushes",
+    "description": "A plush grooming pad that gently cleans and smooths.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 36
+    },
+    "image": "velvet_grooming_pad.png"
+  },
+  {
+    "slug": "crystal-comb",
+    "name": "Crystal Comb",
+    "type": "care",
+    "category": "brushes",
+    "description": "A polished comb that glides cleanly through fur and feathers.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 40
+    },
+    "image": "crystal_comb.png"
+  },
+  {
+    "slug": "wildwood-brush",
+    "name": "Wildwood Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A durable grooming brush made with sturdy woodland fibers.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 41
+    },
+    "image": "wildwood_brush.png"
+  },
+  {
+    "slug": "moonfiber-cloth",
+    "name": "Moonfiber Cloth",
+    "type": "care",
+    "category": "brushes",
+    "description": "A silky cloth that leaves coats and scales looking spotless.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 44
+    },
+    "image": "moonfiber_cloth.png"
+  },
+  {
+    "slug": "sunwoven-groomer",
+    "name": "Sunwoven Groomer",
+    "type": "care",
+    "category": "brushes",
+    "description": "A bright woven grooming tool made for careful cleaning.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 43
+    },
+    "image": "sunwoven_groomer.png"
+  },
+  {
+    "slug": "prism-bristle-brush",
+    "name": "Prism Bristle Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A colorful grooming brush with unusually smooth bristles.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 52
+    },
+    "image": "prism_bristle_brush.png"
+  },
+  {
+    "slug": "royal-grooming-brush",
+    "name": "Royal Grooming Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A premium grooming brush made for meticulous care.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 58
+    },
+    "image": "royal_grooming_brush.png"
+  },
+  {
+    "slug": "artisan-cleaning-kit",
+    "name": "Artisan Cleaning Kit",
+    "type": "care",
+    "category": "brushes",
+    "description": "A carefully assembled set of brushes and cloths for thorough grooming.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 60
+    },
+    "image": "artisan_cleaning_kit.png"
+  },
+  {
+    "slug": "starlight-grooming-brush",
+    "name": "Starlight Grooming Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "A shimmering brush that leaves a Kith exceptionally clean.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 72
+    },
+    "image": "starlight_grooming_brush.png"
+  },
+  {
+    "slug": "ancient-care-brush",
+    "name": "Ancient Care Brush",
+    "type": "care",
+    "category": "brushes",
+    "description": "An old-fashioned grooming brush built to last for generations.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 75
+    },
+    "image": "ancient_care_brush.png"
+  },
+  {
+    "slug": "golden-grooming-kit",
+    "name": "Golden Grooming Kit",
+    "type": "care",
+    "category": "brushes",
+    "description": "A luxurious grooming set made with premium materials.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 80
+    },
+    "image": "golden_grooming_kit.png"
+  },
+  {
+    "slug": "prismatic-care-kit",
+    "name": "Prismatic Care Kit",
+    "type": "care",
+    "category": "brushes",
+    "description": "A rare care set containing several beautifully crafted grooming tools.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 90
+    },
+    "image": "prismatic_care_kit.png"
+  },
+  {
+    "slug": "master-groomers-kit",
+    "name": "Master Groomer's Kit",
+    "type": "care",
+    "category": "brushes",
+    "description": "An exceptional grooming kit used for the finest Kith care.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "clean": 100
+    },
+    "image": "master_groomers_kit.png"
+  },
+  {
     "slug": "spark-toy",
     "name": "Spark Toy",
     "type": "care",
@@ -24,5 +336,317 @@
       "happy": 25
     },
     "image": "spark_toy.png"
+  },
+  {
+    "slug": "bouncy-ball",
+    "name": "Bouncy Ball",
+    "type": "care",
+    "category": "toys",
+    "description": "A simple ball that bounces unpredictably and keeps a Kith busy.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 24
+    },
+    "image": "bouncy_ball.png"
+  },
+  {
+    "slug": "rope-toy",
+    "name": "Rope Toy",
+    "type": "care",
+    "category": "toys",
+    "description": "A sturdy rope toy made for tugging and chewing.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 28
+    },
+    "image": "rope_toy.png"
+  },
+  {
+    "slug": "rattle-orb",
+    "name": "Rattle Orb",
+    "type": "care",
+    "category": "toys",
+    "description": "A small orb that rattles whenever it rolls.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 23
+    },
+    "image": "rattle_orb.png"
+  },
+  {
+    "slug": "feather-wand",
+    "name": "Feather Wand",
+    "type": "care",
+    "category": "toys",
+    "description": "A lightweight wand with fluttering feathers for playful chasing.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 27
+    },
+    "image": "feather_wand.png"
+  },
+  {
+    "slug": "squeaky-star",
+    "name": "Squeaky Star",
+    "type": "care",
+    "category": "toys",
+    "description": "A soft star-shaped toy that squeaks when squeezed.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 26
+    },
+    "image": "squeaky_star.png"
+  },
+  {
+    "slug": "rolling-bell",
+    "name": "Rolling Bell",
+    "type": "care",
+    "category": "toys",
+    "description": "A little rolling toy with a cheerful bell inside.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 25
+    },
+    "image": "rolling_bell.png"
+  },
+  {
+    "slug": "soft-plush-kith",
+    "name": "Soft Plush Kith",
+    "type": "care",
+    "category": "toys",
+    "description": "A cuddly plush toy shaped like a tiny Kith.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 30
+    },
+    "image": "soft_plush_kith.png"
+  },
+  {
+    "slug": "chew-ring",
+    "name": "Chew Ring",
+    "type": "care",
+    "category": "toys",
+    "description": "A durable ring made for chewing and playful tossing.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 29
+    },
+    "image": "chew_ring.png"
+  },
+  {
+    "slug": "flutter-ribbon",
+    "name": "Flutter Ribbon",
+    "type": "care",
+    "category": "toys",
+    "description": "A colorful ribbon toy that dances through the air.",
+    "rarity": 1,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 27
+    },
+    "image": "flutter_ribbon.png"
+  },
+  {
+    "slug": "glow-ball",
+    "name": "Glow Ball",
+    "type": "care",
+    "category": "toys",
+    "description": "A softly glowing ball that is especially fun in darker rooms.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 38
+    },
+    "image": "glow_ball.png"
+  },
+  {
+    "slug": "wind-up-critter",
+    "name": "Wind-Up Critter",
+    "type": "care",
+    "category": "toys",
+    "description": "A tiny mechanical critter that scurries around when wound up.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 42
+    },
+    "image": "wind_up_critter.png"
+  },
+  {
+    "slug": "puzzle-cube",
+    "name": "Puzzle Cube",
+    "type": "care",
+    "category": "toys",
+    "description": "A small interactive cube that rewards curious Kith.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 44
+    },
+    "image": "puzzle_cube.png"
+  },
+  {
+    "slug": "treat-spinner",
+    "name": "Treat Spinner",
+    "type": "care",
+    "category": "toys",
+    "description": "A spinning toy that keeps a Kith occupied and curious.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 41
+    },
+    "image": "treat_spinner.png"
+  },
+  {
+    "slug": "wildwood-plush",
+    "name": "Wildwood Plush",
+    "type": "care",
+    "category": "toys",
+    "description": "A soft plush inspired by creatures found near the Wildwood.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 40
+    },
+    "image": "wildwood_plush.png"
+  },
+  {
+    "slug": "moon-orb-toy",
+    "name": "Moon Orb Toy",
+    "type": "care",
+    "category": "toys",
+    "description": "A silver orb that gently glows while it rolls.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 43
+    },
+    "image": "moon_orb_toy.png"
+  },
+  {
+    "slug": "sun-disc-toy",
+    "name": "Sun Disc Toy",
+    "type": "care",
+    "category": "toys",
+    "description": "A bright flying disc made for energetic play.",
+    "rarity": 2,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 45
+    },
+    "image": "sun_disc_toy.png"
+  },
+  {
+    "slug": "storm-spinner",
+    "name": "Storm Spinner",
+    "type": "care",
+    "category": "toys",
+    "description": "A fast-spinning toy that flickers with decorative sparks.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 52
+    },
+    "image": "storm_spinner.png"
+  },
+  {
+    "slug": "prism-puzzle-box",
+    "name": "Prism Puzzle Box",
+    "type": "care",
+    "category": "toys",
+    "description": "A colorful puzzle toy with shifting panels and hidden surprises.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 58
+    },
+    "image": "prism_puzzle_box.png"
+  },
+  {
+    "slug": "deluxe-play-set",
+    "name": "Deluxe Play Set",
+    "type": "care",
+    "category": "toys",
+    "description": "A premium collection of toys for long play sessions.",
+    "rarity": 3,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 60
+    },
+    "image": "deluxe_play_set.png"
+  },
+  {
+    "slug": "starlight-mobile",
+    "name": "Starlight Mobile",
+    "type": "care",
+    "category": "toys",
+    "description": "A hanging toy with tiny lights that drift and shimmer overhead.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 72
+    },
+    "image": "starlight_mobile.png"
+  },
+  {
+    "slug": "royal-play-chest",
+    "name": "Royal Play Chest",
+    "type": "care",
+    "category": "toys",
+    "description": "A decorated chest filled with high-quality toys.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 78
+    },
+    "image": "royal_play_chest.png"
+  },
+  {
+    "slug": "ancient-riddle-box",
+    "name": "Ancient Riddle Box",
+    "type": "care",
+    "category": "toys",
+    "description": "An old puzzle toy filled with sliding panels and curious mechanisms.",
+    "rarity": 4,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 80
+    },
+    "image": "ancient_riddle_box.png"
+  },
+  {
+    "slug": "prismatic-play-chest",
+    "name": "Prismatic Play Chest",
+    "type": "care",
+    "category": "toys",
+    "description": "A rare chest packed with colorful and unusual toys.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 90
+    },
+    "image": "prismatic_play_chest.png"
+  },
+  {
+    "slug": "master-entertainment-kit",
+    "name": "Master Entertainment Kit",
+    "type": "care",
+    "category": "toys",
+    "description": "An exceptional collection made to keep even the most restless Kith happy.",
+    "rarity": 5,
+    "stack_limit": 99,
+    "effects": {
+      "happy": 100
+    },
+    "image": "master_entertainment_kit.png"
   }
 ]
