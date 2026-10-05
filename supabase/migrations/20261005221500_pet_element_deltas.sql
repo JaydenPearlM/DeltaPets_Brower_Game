@@ -107,10 +107,10 @@ BEGIN
   END IF;
 
   /*
-   * A Delta only stays if the Kith has already developed
-   * that element through its natural element or future Gym training.
+   * A Delta only stays if the Kith already has that element
+   * through its natural element or future Gym training.
    */
-  IF
+  IF (
     CASE p_element
       WHEN 'null_element' THEN v_elements.null_element
       WHEN 'voidborne' THEN v_elements.null_element
@@ -124,8 +124,8 @@ BEGIN
       WHEN 'light' THEN v_elements.light
       WHEN 'shadow' THEN v_elements.shadow
       ELSE 0
-    END <= 0
-  THEN
+    END
+  ) <= 0 THEN
     RETURN jsonb_build_object(
       'success', true,
       'absorbed', false,
@@ -139,7 +139,23 @@ BEGIN
   ON CONFLICT (pet_id) DO NOTHING;
 
   CASE p_element
-    WHEN 'null_element', 'voidborne', 'null' THEN
+    WHEN 'null_element' THEN
+      UPDATE public.pet_element_deltas
+      SET
+        null_element = null_element + p_quantity,
+        updated_at = now()
+      WHERE pet_id = p_pet_id
+      RETURNING null_element INTO v_current;
+
+    WHEN 'voidborne' THEN
+      UPDATE public.pet_element_deltas
+      SET
+        null_element = null_element + p_quantity,
+        updated_at = now()
+      WHERE pet_id = p_pet_id
+      RETURNING null_element INTO v_current;
+
+    WHEN 'null' THEN
       UPDATE public.pet_element_deltas
       SET
         null_element = null_element + p_quantity,
@@ -149,49 +165,65 @@ BEGIN
 
     WHEN 'water' THEN
       UPDATE public.pet_element_deltas
-      SET water = water + p_quantity, updated_at = now()
+      SET
+        water = water + p_quantity,
+        updated_at = now()
       WHERE pet_id = p_pet_id
       RETURNING water INTO v_current;
 
     WHEN 'fire' THEN
       UPDATE public.pet_element_deltas
-      SET fire = fire + p_quantity, updated_at = now()
+      SET
+        fire = fire + p_quantity,
+        updated_at = now()
       WHERE pet_id = p_pet_id
       RETURNING fire INTO v_current;
 
     WHEN 'earth' THEN
       UPDATE public.pet_element_deltas
-      SET earth = earth + p_quantity, updated_at = now()
+      SET
+        earth = earth + p_quantity,
+        updated_at = now()
       WHERE pet_id = p_pet_id
       RETURNING earth INTO v_current;
 
     WHEN 'air' THEN
       UPDATE public.pet_element_deltas
-      SET air = air + p_quantity, updated_at = now()
+      SET
+        air = air + p_quantity,
+        updated_at = now()
       WHERE pet_id = p_pet_id
       RETURNING air INTO v_current;
 
     WHEN 'ice' THEN
       UPDATE public.pet_element_deltas
-      SET ice = ice + p_quantity, updated_at = now()
+      SET
+        ice = ice + p_quantity,
+        updated_at = now()
       WHERE pet_id = p_pet_id
       RETURNING ice INTO v_current;
 
     WHEN 'storm' THEN
       UPDATE public.pet_element_deltas
-      SET storm = storm + p_quantity, updated_at = now()
+      SET
+        storm = storm + p_quantity,
+        updated_at = now()
       WHERE pet_id = p_pet_id
       RETURNING storm INTO v_current;
 
     WHEN 'light' THEN
       UPDATE public.pet_element_deltas
-      SET light = light + p_quantity, updated_at = now()
+      SET
+        light = light + p_quantity,
+        updated_at = now()
       WHERE pet_id = p_pet_id
       RETURNING light INTO v_current;
 
     WHEN 'shadow' THEN
       UPDATE public.pet_element_deltas
-      SET shadow = shadow + p_quantity, updated_at = now()
+      SET
+        shadow = shadow + p_quantity,
+        updated_at = now()
       WHERE pet_id = p_pet_id
       RETURNING shadow INTO v_current;
 
