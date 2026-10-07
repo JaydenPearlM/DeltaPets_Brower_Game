@@ -1053,3 +1053,32 @@
     display: flex;
   }
 }
+/* =========================================================
+   EXPLORE MENU ONLY
+   ========================================================= */
+
+/* Outer Explore menu frame */
+.hamburgerMenuModal {
+  border: 2.5px solid var(--dp-cyber-cyan) !important;
+  padding: 17.5px !important;
+}
+
+/* Purple inset frame */
+.hamburgerMenuGlow {
+  inset: 5px !important;
+  border: 2.5px solid var(--dp-panel-purple-border) !important;
+}
+
+/*
+ * Mobile Explore menu:
+ * let Pets / Battle / Cities expand the entire menu
+ * instead of cutting the lower sections off.
+ */
+@media (max-width: 640px) {
+  .appHeader:has(.headerPlayerNav) .hamburgerMenuModal {
+    max-height: none !important;
+    height: auto !important;
+    overflow-y: visible !important;
+    padding: 17.5px !important;
+  }
+}

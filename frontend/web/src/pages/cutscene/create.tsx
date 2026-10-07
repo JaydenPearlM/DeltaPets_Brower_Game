@@ -242,7 +242,18 @@ export default function CreatePage() {
   const crackRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [playerName, setPlayerName] = useState("Traveler");
+  useEffect(() => {
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
 
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, []);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -1284,11 +1295,12 @@ export default function CreatePage() {
 ========================================================= */
 const css = `
 .dpc-root{
-  position:relative;
-  width:min(1440px, 100vw);
-  height:min(900px, 100vh);
-  min-height:560px;
-  margin:0 auto;
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  min-height:0;
+  margin:0;
   background:${C.bg};
   overflow:hidden;
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;

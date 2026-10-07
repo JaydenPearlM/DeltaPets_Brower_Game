@@ -639,7 +639,7 @@
 }
 .statsChamberPetLabel {
   font-family: var(--font-display);
-  font-size: calc(var(--stats-chamber-title-size, 3rem) - 2px);
+  font-size: calc(var(--stats-chamber-title-size, 2.5rem) - 2px);
   margin: -0.25rem 0 1rem 0;
   padding-left: 1ch;
   text-align: left;

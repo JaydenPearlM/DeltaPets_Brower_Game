@@ -36,7 +36,6 @@ const PET_LINKS: MenuLink[] = [
 
 const BATTLE_LINKS: MenuLink[] = [
   { label: "Battle Arena", to: "/battle-arena" },
-  { label: "Expeditions", to: "/battle-dungeons" },
 ];
 
 const CITY_LINKS: MenuLink[] = [
@@ -512,8 +511,6 @@ export default function App() {
                         <div className="hamburgerMenuGlow" aria-hidden="true" />
 
                         <div className="hamburgerMenuHeader">
-                          <h3 className="hamburgerMenuTitle">Menu</h3>
-
                           <p className="hamburgerMenuIntro">
                             Explore the world of{" "}
                             <span className="hamburgerMenuAliune">Aliune</span>
@@ -630,25 +627,26 @@ export default function App() {
         <Outlet />
       </main>
 
-      <footer className="appCopyright">
-        <div className="appCopyrightInner">
-          <div className="appCopyrightTitle">△ DELTAPETS</div>
+      {!hideHeader && (
+        <footer className="appCopyright">
+          <div className="appCopyrightInner">
+            <div className="appCopyrightTitle">△ DELTAPETS</div>
 
-          <div className="appCopyrightLegal">
-            <span>© 2026 DeltaPets. All rights reserved.</span>
-            <span>Independent game project.</span>
+            <div className="appCopyrightLegal">
+              <span>© 2026 DeltaPets. All rights reserved.</span>
+              <span>Independent game project.</span>
+            </div>
+
+            <div className="appCopyrightLinks">
+              <span>Privacy & Account Support</span>
+
+              <a href="mailto:deltapets.support@gmail.com">
+                deltapets.support@gmail.com
+              </a>
+            </div>
           </div>
-
-          <div className="appCopyrightLinks">
-            <span>Privacy & Account Support</span>
-
-            <a href="mailto:deltapets.support@gmail.com">
-              deltapets.support@gmail.com
-            </a>
-          </div>
-        </div>
-      </footer>
-
+        </footer>
+      )}
       <LoginMenus forcedView={forcedAuthView} showLaunchers={false} />
 
       {questJournalOpen && user && (
