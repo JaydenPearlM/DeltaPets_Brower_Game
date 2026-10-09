@@ -23,6 +23,7 @@ export async function getWildwoodState(userId: string) {
     { data: quest, error: questError },
     { data: foodQuest, error: foodQuestError },
     { data: expedition, error: runError },
+    { data: trainerProgression, error: trainerProgressionError },
   ] = await Promise.all([
     supabaseAdmin
       .from("player_quests")
@@ -48,17 +49,27 @@ export async function getWildwoodState(userId: string) {
       .eq("user_id", userId)
       .eq("status", "active")
       .maybeSingle(),
+
+    supabaseAdmin
+      .from("trainer_progression")
+      .select("trainer_level")
+      .eq("user_id", userId)
+      .maybeSingle(),
   ]);
 
   if (questError) throw questError;
   if (foodQuestError) throw foodQuestError;
   if (runError) throw runError;
+  if (trainerProgressionError) throw trainerProgressionError;
 
   const status: WildwoodQuestStatus =
     (quest?.status as WildwoodQuestStatus | undefined) ?? "available";
 
   const foodQuestStatus: WildwoodQuestStatus =
     (foodQuest?.status as WildwoodQuestStatus | undefined) ?? "available";
+
+  const trainerLevel = Number(trainerProgression?.trainer_level ?? 1);
+  const expeditionUnlocked = trainerLevel >= 5;
 
   return {
     quest: {
@@ -74,8 +85,11 @@ export async function getWildwoodState(userId: string) {
       progress: Number(foodQuest?.progress ?? 0),
       target: Number(foodQuest?.target ?? ASSANTI_FOOD_QUEST_TARGET),
     },
-
     wildwoodUnlocked: status !== "available",
+
+    trainerLevel,
+
+    expeditionUnlocked,
 
     dailyFoodUnlocked: foodQuestStatus === "completed",
 

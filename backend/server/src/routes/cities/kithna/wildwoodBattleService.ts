@@ -103,30 +103,50 @@ async function activeExpedition(
   create: boolean,
 ): Promise<string | null> {
   const state = await getWildwoodState(userId);
+
   if (!state.wildwoodUnlocked) {
-    if (create)
+    if (create) {
       throw new WildwoodError(
         "Accept Somethings Afoot before exploring Wildwood.",
         403,
       );
+    }
+
+    return null;
+  }
+
+  if (!state.expeditionUnlocked) {
+    if (create) {
+      throw new WildwoodError(
+        "Trainer Level 5 is required to begin a Wildwood expedition.",
+        403,
+      );
+    }
+
     return null;
   }
   if (state.expedition) return state.expedition.id;
   if (!create) return null;
+
   const inserted = await supabaseAdmin
     .from("wildwood_expeditions")
     .insert({ user_id: userId })
     .select("id")
     .single();
+
   if (!inserted.error) return inserted.data.id;
+
   // The unique active-expedition index handles simultaneous first visits.
   if (inserted.error.code !== "23505") throw inserted.error;
+
   const refreshed = await getWildwoodState(userId);
-  if (!refreshed.expedition)
+
+  if (!refreshed.expedition) {
     throw new WildwoodError("Expedition changed. Reload Wildwood.");
+  }
+
   return refreshed.expedition.id;
 }
-
 async function latestRoom(expeditionId: string): Promise<Room | null> {
   const result = await supabaseAdmin
     .from("wildwood_rooms")
@@ -252,51 +272,55 @@ async function loadTeam(userId: string): Promise<WildwoodTeamMember[]> {
         403,
       );
   }
-  return Promise.all(ids.map(async (id, index): Promise<WildwoodTeamMember> => {
-    const pet = parsed.data.find((entry) => entry.id === id)!;
-    const species = findPetSpeciesById(pet.species);
-    if (!species || pet.stage === "egg" || pet.ran_away)
-      throw new WildwoodError("Only hatched, available Kith can enter battle.");
-    const element = z
-      .enum([
-        "null_element",
-        "fire",
-        "water",
-        "earth",
-        "air",
-        "ice",
-        "storm",
-        "light",
-        "shadow",
-      ])
-      .safeParse(pet.line);
-    if (!element.success)
-      throw new WildwoodError("A team member has an unsupported element.");
-    const points = await fetchTotalPoints(pet.id);
-    return {
-      id: pet.id,
-      sourcePetId: pet.id,
-      speciesId: pet.species,
-      name:
-        pet.name ||
-        ("displayName" in species
-          ? species.displayName
-          : species.evolution.hatchling),
-      side: "player",
-      row: index === 0 ? "front" : index === 3 ? "back" : "middle",
-      element: element.data,
-      level: pet.level,
-      hpMax: pet.hp_max,
-      hpCur: Math.min(pet.hp_cur, pet.hp_max),
-      atk: pet.atk,
-      def: pet.def,
-      magi: pet.magi,
-      spd: pet.spd,
-      imageUrl: pet.portrait_url || pet.image_url || pet.sprite_url || null,
-      // Same HP stat shown by /pet's Stats Chamber; not battle health.
-      displayHp: points?.total.hp ?? null,
-    };
-  }));
+  return Promise.all(
+    ids.map(async (id, index): Promise<WildwoodTeamMember> => {
+      const pet = parsed.data.find((entry) => entry.id === id)!;
+      const species = findPetSpeciesById(pet.species);
+      if (!species || pet.stage === "egg" || pet.ran_away)
+        throw new WildwoodError(
+          "Only hatched, available Kith can enter battle.",
+        );
+      const element = z
+        .enum([
+          "null_element",
+          "fire",
+          "water",
+          "earth",
+          "air",
+          "ice",
+          "storm",
+          "light",
+          "shadow",
+        ])
+        .safeParse(pet.line);
+      if (!element.success)
+        throw new WildwoodError("A team member has an unsupported element.");
+      const points = await fetchTotalPoints(pet.id);
+      return {
+        id: pet.id,
+        sourcePetId: pet.id,
+        speciesId: pet.species,
+        name:
+          pet.name ||
+          ("displayName" in species
+            ? species.displayName
+            : species.evolution.hatchling),
+        side: "player",
+        row: index === 0 ? "front" : index === 3 ? "back" : "middle",
+        element: element.data,
+        level: pet.level,
+        hpMax: pet.hp_max,
+        hpCur: Math.min(pet.hp_cur, pet.hp_max),
+        atk: pet.atk,
+        def: pet.def,
+        magi: pet.magi,
+        spd: pet.spd,
+        imageUrl: pet.portrait_url || pet.image_url || pet.sprite_url || null,
+        // Same HP stat shown by /pet's Stats Chamber; not battle health.
+        displayHp: points?.total.hp ?? null,
+      };
+    }),
+  );
 }
 
 function corruptedEnemy(): BattleParticipantInput {
@@ -384,10 +408,12 @@ export async function exploreWildwood(
     .eq("user_id", userId)
     .maybeSingle();
   if (profile.error) throw profile.error;
-  const players = team.map(({ imageUrl: _image, displayHp: _displayHp, ...pet }) => ({
-    ...pet,
-    row: chosen.get(pet.id)!,
-  }));
+  const players = team.map(
+    ({ imageUrl: _image, displayHp: _displayHp, ...pet }) => ({
+      ...pet,
+      row: chosen.get(pet.id)!,
+    }),
+  );
   const battle =
     event === "corrupted_battle"
       ? createBattle(

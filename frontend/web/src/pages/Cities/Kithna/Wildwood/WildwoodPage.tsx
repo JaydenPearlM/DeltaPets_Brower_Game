@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { apiFetch } from "@/lib/api/baseClient";
+import type { RoamEncounterResult } from "@/lib/kithna/useRoamEncounter";
+import { RoamEncounterToast } from "@/components/RoamEncounterToast/RoamEncounterToast";
 import {
   exploreWildwood,
   fetchWildwoodSession,
@@ -27,6 +30,14 @@ export default function WildwoodPage() {
   const [recentFinds, setRecentFinds] = useState<string[]>([]);
   const [collecting, setCollecting] = useState(false);
 
+  const [eggEncounter, setEggEncounter] = useState<RoamEncounterResult | null>(
+    null,
+  );
+
+  const [eggEncounterRoomId, setEggEncounterRoomId] = useState<string | null>(
+    null,
+  );
+
   const [questProgressFlash, setQuestProgressFlash] = useState<{
     progress: number;
     target: number;
@@ -45,21 +56,28 @@ export default function WildwoodPage() {
 
     setSession(next);
     setStatus(quest);
-    setShowBattle((current) =>
-      next.room?.battle?.status === "active" ||
-      (current && next.room?.id === session?.room?.id),
+
+    setShowBattle(
+      (current) =>
+        next.room?.battle?.status === "active" ||
+        (current && next.room?.id === session?.room?.id),
     );
 
-    if (next.team.length) setFormation((current) =>
-      Object.fromEntries(
-        next.team.map((pet) => [
-          pet.id,
-          current[pet.id] ??
-            next.room?.battle?.participants.find((unit) => unit.sourcePetId === pet.id)?.row ??
-            pet.row,
-        ]),
-      ),
-    );
+    if (next.team.length) {
+      setFormation((current) =>
+        Object.fromEntries(
+          next.team.map((pet) => [
+            pet.id,
+            current[pet.id] ??
+              next.room?.battle?.participants.find(
+                (unit) => unit.sourcePetId === pet.id,
+              )?.row ??
+              pet.row,
+          ]),
+        ),
+      );
+    }
+
     return next;
   }
 
@@ -105,12 +123,17 @@ export default function WildwoodPage() {
 
   useEffect(() => {
     function refreshTeam() {
-      if (document.visibilityState === "visible" && session?.room?.battle?.status !== "active") {
+      if (
+        document.visibilityState === "visible" &&
+        session?.room?.battle?.status !== "active"
+      ) {
         void run(reload);
       }
     }
+
     window.addEventListener("focus", refreshTeam);
     document.addEventListener("visibilitychange", refreshTeam);
+
     return () => {
       window.removeEventListener("focus", refreshTeam);
       document.removeEventListener("visibilitychange", refreshTeam);
@@ -146,6 +169,7 @@ export default function WildwoodPage() {
 
   function explore() {
     if (!canExplore) return;
+
     void run(async () => {
       if (!session) return;
 
@@ -164,8 +188,31 @@ export default function WildwoodPage() {
       setVisitSteps((steps) => steps + 1);
       setVisitRoomId(next.room?.id ?? null);
       setShowBattle(false);
+
+      setEggEncounter(null);
+      setEggEncounterRoomId(null);
+
+      if (next.room && !next.room.battle) {
+        const eggResult = await apiFetch<RoamEncounterResult>(
+          "/api/kithna/roam",
+          {
+            method: "POST",
+          },
+        );
+
+        if (!mounted.current) return;
+
+        if (eggResult.found) {
+          setEggEncounter(eggResult);
+          setEggEncounterRoomId(next.room.id);
+        }
+      }
+
       const nextStatus = await fetchWildwoodStatus();
-      if (mounted.current) setStatus(nextStatus);
+
+      if (mounted.current) {
+        setStatus(nextStatus);
+      }
     });
   }
 
@@ -211,8 +258,15 @@ export default function WildwoodPage() {
   }
 
   const room = session?.room;
-  const canExplore = !busy && !collecting && !error && Boolean(status?.wildwoodUnlocked) &&
-    Boolean(session?.team.some((pet) => pet.hpCur > 0)) && room?.battle?.status !== "active";
+
+  const canExplore =
+    !busy &&
+    !collecting &&
+    !error &&
+    Boolean(status?.wildwoodUnlocked) &&
+    Boolean(status?.expeditionUnlocked) &&
+    Boolean(session?.team.some((pet) => pet.hpCur > 0)) &&
+    room?.battle?.status !== "active";
 
   return (
     <main className="ww-page dp-standard-panel">
@@ -244,10 +298,14 @@ export default function WildwoodPage() {
           ) : null}
         </div>
       ) : null}
+
       <header className="ww-page-heading">
         <div>
           <h1>Wildwood</h1>
-          <p className="ww-warning">Warning: corrupted Kith have been sighted nearby.</p>
+
+          <p className="ww-warning">
+            Warning: corrupted Kith have been sighted nearby.
+          </p>
         </div>
 
         <Link to="/cities/kithna">Back to Kithna</Link>
@@ -279,7 +337,9 @@ export default function WildwoodPage() {
           onReturn={() =>
             void run(async () => {
               const next = await reload();
+
               if (!mounted.current || !next) return;
+
               setShowBattle(next.room?.battle?.status === "active");
               setPrepared(true);
             })
@@ -290,111 +350,204 @@ export default function WildwoodPage() {
           {prepared ? (
             <div className="ww-exploration-layout">
               <div className="ww-exploration-info">
-              <section className="ww-team-summary" aria-label="Your Team">
-                <div className="ww-page-heading">
-                  <h2>Your Team</h2>
-                  <button className="dp-btn dp-btn--yellow" disabled={busy || collecting || room?.battle?.status === "active"} onClick={() => setPrepared(false)}>Edit formation</button>
-                </div>
-                <ul>
-                  {session?.team.map((pet) => (
-                    <li key={pet.id}>
-                      <KithPortrait name={pet.name} speciesId={pet.speciesId} imageUrl={pet.imageUrl} />
-                      <strong>{pet.name}</strong>
-                      <span>{formation[pet.id] ?? pet.row} · HP {pet.displayHp ?? "Unavailable"}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-              <section className="ww-recent-finds" aria-label="Recent Finds">
-                <h2>Recent Finds</h2>
-                {recentFinds.length ? (
-                  <ul>{recentFinds.map((name, index) => <li key={`${index}-${name}`}>{name}</li>)}</ul>
-                ) : <p>No items collected this visit.</p>}
-              </section>
-              <section className="ww-explore-viewport" aria-label="Wildwood exploration" aria-busy={busy}>
-                {room && room.id === visitRoomId ? (
-                  <WildwoodExploreResult key={room.id} room={room} busy={busy || Boolean(error)} step={visitSteps} onBattle={() => setShowBattle(true)} onCollected={(name) => setRecentFinds((finds) => [...finds, name])} onCollectingChange={setCollecting} />
-                ) : (
-                  <p className="ww-eyebrow">Steps this visit: {visitSteps}</p>
-                )}
-              </section>
+                <section className="ww-team-summary" aria-label="Your Team">
+                  <div className="ww-page-heading">
+                    <h2>Your Team</h2>
+
+                    <button
+                      className="dp-btn dp-btn--yellow"
+                      disabled={
+                        busy || collecting || room?.battle?.status === "active"
+                      }
+                      onClick={() => setPrepared(false)}
+                    >
+                      Edit formation
+                    </button>
+                  </div>
+
+                  <ul>
+                    {session?.team.map((pet) => (
+                      <li key={pet.id}>
+                        <KithPortrait
+                          name={pet.name}
+                          speciesId={pet.speciesId}
+                          imageUrl={pet.imageUrl}
+                        />
+
+                        <strong>{pet.name}</strong>
+
+                        <span>
+                          {formation[pet.id] ?? pet.row} · HP{" "}
+                          {pet.displayHp ?? "Unavailable"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <section className="ww-recent-finds" aria-label="Recent Finds">
+                  <h2>Recent Finds</h2>
+
+                  {recentFinds.length ? (
+                    <ul>
+                      {recentFinds.map((name, index) => (
+                        <li key={`${index}-${name}`}>{name}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No items collected this visit.</p>
+                  )}
+                </section>
+
+                <section
+                  className="ww-explore-viewport"
+                  aria-label="Wildwood exploration"
+                  aria-busy={busy}
+                >
+                  {room && room.id === visitRoomId ? (
+                    eggEncounterRoomId === room.id ? (
+                      <div className="ww-explore-result">
+                        <p className="ww-eyebrow">Step {visitSteps}</p>
+
+                        <h2>Something found</h2>
+
+                        <p>You discovered an egg along the Wildwood path.</p>
+                      </div>
+                    ) : (
+                      <WildwoodExploreResult
+                        key={room.id}
+                        room={room}
+                        busy={busy || Boolean(error)}
+                        step={visitSteps}
+                        onBattle={() => setShowBattle(true)}
+                        onCollected={(name) =>
+                          setRecentFinds((finds) => [...finds, name])
+                        }
+                        onCollectingChange={setCollecting}
+                      />
+                    )
+                  ) : (
+                    <p className="ww-eyebrow">Steps this visit: {visitSteps}</p>
+                  )}
+                </section>
               </div>
-              <section className="ww-art-panel" aria-label="Wildwood art area" />
+
+              <section
+                className="ww-art-panel"
+                aria-label="Wildwood art area"
+              />
+
               <div className="ww-explore-control">
-                <button className="dp-btn dp-btn--yellow" disabled={!canExplore} onClick={explore}>
+                <button
+                  className="dp-btn dp-btn--yellow"
+                  disabled={!canExplore}
+                  onClick={explore}
+                >
                   {busy ? "Exploring…" : "Explore Wildwood"}
                 </button>
               </div>
             </div>
           ) : (
-          <>
-          <section className="ww-formation">
-            <p className="ww-eyebrow">Prepare</p>
-            <h2>Your formation</h2>
+            <>
+              <section className="ww-formation">
+                <p className="ww-eyebrow">Prepare</p>
 
-            <p>
-              Rows set your position. They do not change stats in this version.
-            </p>
+                <h2>Your formation</h2>
 
-            <div className="ww-team">
-              {session?.team.map((pet) => (
-                <article key={pet.id}>
-                  <KithPortrait
-                    name={pet.name}
-                    speciesId={pet.speciesId}
-                    imageUrl={pet.imageUrl}
-                  />
+                <p>
+                  Rows set your position. They do not change stats in this
+                  version.
+                </p>
 
-                  <strong>{pet.name}</strong>
+                {status?.wildwoodUnlocked && !status.expeditionUnlocked ? (
+                  <p role="status">
+                    Wildwood Expeditions unlock at Trainer Level 5. Current
+                    Level: {status.trainerLevel}
+                  </p>
+                ) : null}
 
-                  <span>
-                    HP {pet.displayHp ?? "Unavailable"} · SPD {pet.spd}
-                  </span>
+                <div className="ww-team">
+                  {session?.team.map((pet) => (
+                    <article key={pet.id}>
+                      <KithPortrait
+                        name={pet.name}
+                        speciesId={pet.speciesId}
+                        imageUrl={pet.imageUrl}
+                      />
 
-                  <label>
-                    Row
-                    <select
-                      disabled={busy}
-                      value={formation[pet.id] ?? pet.row}
-                      onChange={(event) => {
-                        const row = event.target.value;
-                        if (row !== "front" && row !== "middle" && row !== "back") return;
-                        setFormation((current) => ({
-                          ...current,
-                          [pet.id]: row,
-                        }));
-                      }}
-                    >
-                      <option value="front">Front</option>
-                      <option value="middle">Middle</option>
-                      <option value="back">Back</option>
-                    </select>
-                  </label>
-                </article>
-              ))}
-            </div>
+                      <strong>{pet.name}</strong>
 
-            {session && !session.team.length && (
-              <p>
-                Add hatched Kith to your team in the{" "}
-                <Link to="/hatchery">Hatchery</Link> before exploring.
-              </p>
-            )}
-          </section>
+                      <span>
+                        HP {pet.displayHp ?? "Unavailable"} · SPD {pet.spd}
+                      </span>
 
-          <div className="ww-explore-control">
-            <button
-              className="dp-btn dp-btn--yellow"
-              disabled={!canExplore}
-              onClick={() => setPrepared(true)}
-            >
-              {busy ? "Loading…" : "Confirm formation"}
-            </button>
-          </div>
-          </>
+                      <label>
+                        Row
+                        <select
+                          disabled={busy}
+                          value={formation[pet.id] ?? pet.row}
+                          onChange={(event) => {
+                            const row = event.target.value;
+
+                            if (
+                              row !== "front" &&
+                              row !== "middle" &&
+                              row !== "back"
+                            ) {
+                              return;
+                            }
+
+                            setFormation((current) => ({
+                              ...current,
+                              [pet.id]: row,
+                            }));
+                          }}
+                        >
+                          <option value="front">Front</option>
+                          <option value="middle">Middle</option>
+                          <option value="back">Back</option>
+                        </select>
+                      </label>
+                    </article>
+                  ))}
+                </div>
+
+                {session && !session.team.length && (
+                  <p>
+                    Add hatched Kith to your team in the{" "}
+                    <Link to="/hatchery">Hatchery</Link> before exploring.
+                  </p>
+                )}
+              </section>
+
+              <div className="ww-explore-control">
+                <button
+                  className="dp-btn dp-btn--yellow"
+                  disabled={!canExplore}
+                  onClick={() => setPrepared(true)}
+                >
+                  {busy ? "Loading…" : "Confirm formation"}
+                </button>
+              </div>
+            </>
           )}
         </>
       )}
+
+      <RoamEncounterToast
+        result={eggEncounter}
+        onDismiss={() => {
+          if (eggEncounter?.egg_name) {
+            const eggName = eggEncounter.egg_name;
+
+            if (eggName) {
+              setRecentFinds((finds) => [...finds, eggName]);
+            }
+          }
+
+          setEggEncounter(null);
+        }}
+      />
     </main>
   );
 }

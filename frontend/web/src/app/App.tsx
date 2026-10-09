@@ -11,8 +11,6 @@ import { useGame } from "./providers/GameProvider";
 import { useUI } from "./providers/UIProvider";
 import { apiFetch } from "../lib/api/baseClient";
 import { fetchWildwoodStatus } from "../lib/kithna/wildwoodApi";
-import { useRoamEncounter } from "../lib/kithna/useRoamEncounter";
-import { RoamEncounterToast } from "../components/RoamEncounterToast/RoamEncounterToast";
 import { useVeluneEncounter } from "../lib/kithna/useVeluneEncounter";
 import { VeluneSightingPopup } from "../components/VeluneSightingPopup/VeluneSightingPopup";
 import QuestJournal from "../components/Quests/QuestJournal";
@@ -60,10 +58,6 @@ export default function App() {
   } = useUI();
 
   const [aliuneSignalUnlocked, setAliuneSignalUnlocked] = useState(false);
-
-  const { result: roamResult, clearResult: clearRoamResult } = useRoamEncounter(
-    Boolean(user) && !loading && location.pathname === "/cities/kithna",
-  );
 
   const { result: veluneResult, clearResult: clearVeluneResult } =
     useVeluneEncounter(Boolean(user) && !loading);
@@ -612,11 +606,6 @@ export default function App() {
           </div>
         </header>
       )}
-
-      <RoamEncounterToast
-        result={veluneResult ? null : roamResult}
-        onDismiss={clearRoamResult}
-      />
 
       <VeluneSightingPopup
         result={veluneResult}

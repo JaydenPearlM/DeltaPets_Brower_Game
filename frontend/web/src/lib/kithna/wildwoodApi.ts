@@ -50,6 +50,8 @@ export type WildwoodStatus = {
     target: number;
   };
   wildwoodUnlocked: boolean;
+  trainerLevel: number;
+  expeditionUnlocked: boolean;
   dailyFoodUnlocked: boolean;
   aliuneSignalUnlocked: boolean;
   expedition: {

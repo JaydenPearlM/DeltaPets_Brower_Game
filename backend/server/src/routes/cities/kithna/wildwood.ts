@@ -97,6 +97,150 @@ wildwoodRouter.get(
   },
 );
 
+const WILDWOOD_ITEM_POOL = [
+  "potion_small",
+  "haiku_scroll_50",
+  "water-delta",
+  "fire-delta",
+  "earth-delta",
+  "air-delta",
+  "ice-delta",
+  "storm-delta",
+  "light-delta",
+  "shadow-delta",
+] as const;
+
+wildwoodRouter.post(
+  "/collect-item",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+
+      const roomId =
+        typeof req.body?.roomId === "string" ? req.body.roomId : "";
+
+      if (!roomId) {
+        return res.status(400).json({
+          error: "Wildwood room is required.",
+        });
+      }
+
+      const { data: room, error: roomError } = await supabaseAdmin
+        .from("wildwood_rooms")
+        .select(
+          `
+          id,
+          event_kind,
+          expedition_id,
+          wildwood_expeditions!inner (
+            user_id
+          )
+          `,
+        )
+        .eq("id", roomId)
+        .eq("wildwood_expeditions.user_id", userId)
+        .maybeSingle();
+
+      if (roomError) {
+        throw roomError;
+      }
+
+      if (!room) {
+        return res.status(404).json({
+          error: "Wildwood discovery not found.",
+        });
+      }
+
+      if (room.event_kind !== "flavor") {
+        return res.status(409).json({
+          error: "This Wildwood step does not contain an item.",
+        });
+      }
+
+      const itemSlug =
+        WILDWOOD_ITEM_POOL[
+          Math.floor(Math.random() * WILDWOOD_ITEM_POOL.length)
+        ];
+
+      const { data: item, error: itemError } = await supabaseAdmin
+        .from("item_defs")
+        .select(
+          "id, slug, name, type, description, rarity, stack_limit, effects",
+        )
+        .eq("slug", itemSlug)
+        .maybeSingle();
+
+      if (itemError) {
+        throw itemError;
+      }
+
+      if (!item) {
+        return res.status(500).json({
+          error: "Wildwood item definition is missing.",
+        });
+      }
+
+      const { data: existing, error: existingError } = await supabaseAdmin
+        .from("inventory")
+        .select("qty")
+        .eq("user_id", userId)
+        .eq("item_id", item.id)
+        .maybeSingle();
+
+      if (existingError) {
+        throw existingError;
+      }
+
+      const currentQty = Number(existing?.qty ?? 0);
+
+      if (currentQty >= item.stack_limit) {
+        return res.status(409).json({
+          error: "That item stack is full.",
+        });
+      }
+
+      const nextQty = currentQty + 1;
+
+      const { error: inventoryError } = await supabaseAdmin
+        .from("inventory")
+        .upsert(
+          {
+            user_id: userId,
+            item_id: item.id,
+            qty: nextQty,
+          },
+          {
+            onConflict: "user_id,item_id",
+          },
+        );
+
+      if (inventoryError) {
+        throw inventoryError;
+      }
+
+      return res.json({
+        item: {
+          slug: item.slug,
+          name: item.name,
+          type: item.type,
+          description: item.description,
+          rarity: item.rarity,
+          stackLimit: item.stack_limit,
+          effects: item.effects,
+        },
+        qty: nextQty,
+      });
+    } catch (error) {
+      logger.error("[POST /api/kithna/wildwood/collect-item] failed", error);
+
+      return res.status(500).json({
+        error: "Failed to collect the Wildwood item.",
+      });
+    }
+  },
+);
+
 /*
  * Something's Afoot
  *

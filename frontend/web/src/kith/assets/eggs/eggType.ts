@@ -2,7 +2,7 @@
 
 import type { ElementLine } from "../../registry/creationTypes";
 import { ELEMENT_EGG_NAMES, VOIDBORNE_EGG_NAME } from "@shared/pets/species";
-import prismaticEgg from "./prismatic_egg.png";
+import prismaticEgg from "./eggs/prismatic_egg/prismatic_egg.png";
 
 export type EggType = {
   id: string;
