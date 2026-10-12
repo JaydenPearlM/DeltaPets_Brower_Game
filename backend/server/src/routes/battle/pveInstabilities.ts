@@ -170,88 +170,91 @@ pveInstabilitiesRouter.post(
     const runId = req.params.id;
 
     try {
-      // Verify run ownership and status
-      const { data: run, error: runError } = await supabaseAdmin
-        .from("pve_instability_runs")
-        .select("*, instability:pve_instabilities(*)")
-        .eq("id", runId)
-        .eq("user_id", userId)
-        .eq("status", "in_progress")
-        .single();
-
-      if (runError || !run) {
-        return res
-          .status(404)
-          .json({ error: "Run not found or already completed" });
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
       }
 
-      // Verify all fights are completed
-      const instability = run.instability as any;
-      const totalFights = instability.total_fights;
+      if (!runId) {
+        return res.status(400).json({ error: "Invalid run ID" });
+      }
 
-      const { count: completedFights = 0 } = await supabaseAdmin
-        .from("pve_instability_fights")
-        .select("*", { count: "exact", head: true })
-        .eq("run_id", runId)
-        .eq("result", "victory");
+      // Complete the run and apply rewards atomically.
+      // The server-only database function must be installed first.
+      const { data, error } = await supabaseAdmin.rpc(
+        "complete_pve_instability_run",
+        {
+          p_user_id: userId,
+          p_run_id: runId,
+        },
+      );
 
-      if (completedFights !== totalFights) {
-        return res.status(400).json({
-          error: "Not all fights completed",
-          completed: completedFights,
-          total: totalFights,
+      if (error) {
+        logger.error("[pve-complete-run] completion RPC failed", error);
+        return res.status(500).json({
+          error: "Failed to complete run",
         });
       }
 
-      // Mark run as completed
-      const { error: updateError } = await supabaseAdmin
-        .from("pve_instability_runs")
-        .update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", runId);
+      // Validate the database response before processing it.
+      if (
+        !data ||
+        typeof data !== "object" ||
+        Array.isArray(data) ||
+        typeof data.outcome !== "string"
+      ) {
+        logger.error("[pve-complete-run] invalid completion response", data);
 
-      if (updateError) {
-        logger.error("[pve-complete-run] update failed", updateError);
-        return res.status(500).json({ error: "Failed to complete run" });
+        return res.status(500).json({
+          error: "Invalid completion response",
+        });
       }
 
-      // Update research stats
-      await supabaseAdmin.rpc("increment_pve_research_stats", {
-        p_user_id: userId,
-        p_instabilities_cleared: 1,
-        p_fights_won: totalFights,
-        p_bosses_defeated: instability.has_boss ? 1 : 0,
-      });
-
-      // Apply buffs if any
-      const rewardBuffs = instability.reward_buffs || [];
-      if (Array.isArray(rewardBuffs) && rewardBuffs.length > 0) {
-        const buffInserts = rewardBuffs.map((buff: any) => ({
-          user_id: userId,
-          buff_type: buff.type,
-          strength: buff.strength || 1.0,
-          description: buff.description,
-          expires_at: new Date(
-            Date.now() + (buff.duration_hours || 2) * 60 * 60 * 1000,
-          ).toISOString(),
-        }));
-
-        await supabaseAdmin.from("pve_active_buffs").insert(buffInserts);
+      // Run does not exist, belongs to another player,
+      // or is no longer eligible for completion.
+      if (data.outcome === "not_found") {
+        return res.status(404).json({
+          error: "Run not found or already completed",
+        });
       }
 
+      // The required fights have not all been won.
+      if (data.outcome === "incomplete") {
+        return res.status(400).json({
+          error: "Not all fights completed",
+          completed: data.completed,
+          total: data.total,
+        });
+      }
+
+      // Safe retry: rewards were already applied.
+      // Do not grant research or buffs again.
+      if (data.outcome === "already_completed") {
+        return res.status(200).json({
+          success: true,
+          alreadyCompleted: true,
+        });
+      }
+
+      // Reject unexpected results instead of reporting success.
+      if (data.outcome !== "completed") {
+        logger.error("[pve-complete-run] unexpected completion outcome", data);
+
+        return res.status(500).json({
+          error: "Unexpected completion result",
+        });
+      }
+
+      // Preserve the existing successful response structure.
       return res.json({
         success: true,
-        rewards: {
-          xp: instability.reward_xp,
-          materials: instability.reward_materials,
-          buffs: rewardBuffs,
-        },
+        rewards: data.rewards,
       });
     } catch (err) {
       logger.error("[pve-complete-run] unexpected error", err);
-      return res.status(500).json({ error: "Internal server error" });
+
+      return res.status(500).json({
+        error: "Internal server error",
+      });
     }
   },
 );
