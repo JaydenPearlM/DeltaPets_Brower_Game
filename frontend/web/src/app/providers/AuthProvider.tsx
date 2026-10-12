@@ -132,8 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
 
       // Username OR Email sign in
-      // Supabase password auth requires email, so we resolve username -> email
-      // using the backend helper route.
+      // Username authentication keeps the email lookup on the server.
       signIn: async ({ identifier, password, captchaToken }) => {
         const raw = identifier.trim();
 
@@ -144,44 +143,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         const normalized = raw.toLowerCase();
-        let emailToUse = normalized;
 
         // If it does not look like an email, treat it as a username
-        // and resolve it through the backend.
+        // and authenticate it through the backend.
         if (!normalized.includes("@")) {
-          const username = normalized;
+          try {
+            const response = await fetch("/api/auth/login-username", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username: normalized, password, captchaToken }),
+              cache: "no-store",
+            });
 
-          const response = await fetch("/api/auth/resolve-username", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username }),
-          });
+            if (!response.ok) {
+              return {
+                error: new Error(
+                  response.status === 401
+                    ? "Incorrect Username and/or password."
+                    : "Could not sign in. Try again later.",
+                ),
+              };
+            }
 
-          if (!response.ok) {
-            return {
-              error: new Error(
-                "Could not look up that username right now. Try again in a sec.",
-              ),
-            };
+            const data: unknown = await response.json();
+            if (
+              typeof data !== "object" || data === null ||
+              !("access_token" in data) || typeof data.access_token !== "string" || !data.access_token ||
+              !("refresh_token" in data) || typeof data.refresh_token !== "string" || !data.refresh_token
+            ) {
+              return {
+                error: new Error("Could not sign in. Try again later."),
+              };
+            }
+
+            const { error } = await supabase.auth.setSession({
+              access_token: data.access_token,
+              refresh_token: data.refresh_token,
+            });
+            return { error: error ?? null };
+          } catch {
+            return { error: new Error("Could not sign in. Try again later.") };
           }
-
-          const data = (await response.json()) as {
-            email?: string | null;
-          };
-
-          if (!data.email) {
-            return {
-              error: new Error("Incorrect Username and/or password."),
-            };
-          }
-
-          emailToUse = data.email.trim().toLowerCase();
         }
 
         const { error } = await supabase.auth.signInWithPassword({
-          email: emailToUse,
+          email: normalized,
           password,
           options: captchaToken ? { captchaToken } : undefined,
         });
