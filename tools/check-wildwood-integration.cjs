@@ -7,10 +7,11 @@ const user = "11111111-1111-4111-8111-111111111111";
 const petId = "22222222-2222-4222-8222-222222222222";
 const tables = {
   player_quests: [{ user_id: user, quest_key: "somethings_afoot", status: "active", progress: 0, target: 5 }],
-  wildwood_expeditions: [], wildwood_rooms: [],
+  wildwood_expeditions: [], wildwood_rooms: [], pet_battle_results: [],
   party_slots: [{ user_id: user, pet_id: petId, slot_index: 1 }],
   pets: [{ id: petId, user_id: user, name: "Kindlekin", species: "fire_starter", line: "fire", level: 1, stage: "hatchling", ran_away: false, hp_max: 100, hp_cur: 100, atk: 30, def: 10, magi: 10, spd: 20 }],
-  profiles: [{ user_id: user, active_title: null }], trainer_progression: [],
+  profiles: [{ user_id: user, active_title: null }],
+  trainer_progression: [{ user_id: user, trainer_level: 5 }],
   pet_stats: [{ pet_id: petId, base_hp: 3 }],
   pet_stat_allocations: [
     { pet_id: petId, level: 0, hp: 100 },
@@ -18,6 +19,7 @@ const tables = {
   ],
 };
 let failQuestWrite = false;
+let failResultWrite = false;
 let encounterRoll = 0;
 let completionWrites = 0;
 class Query {
@@ -41,11 +43,19 @@ class Query {
     if (!table) throw Error(`Unexpected table ${this.table}`);
     let rows = table.filter(row => this.filters.every(filter => filter(row)));
     if (this.operation === "upsert") {
+      if (this.table === "pet_battle_results" && failResultWrite)
+        return { data: null, error: Error("Injected result write failure") };
       assert.equal(this.options.ignoreDuplicates, true);
       const keys = this.options.onConflict.split(",");
-      const exists = table.some(row => keys.every(key => row[key] === this.value[key]));
-      rows = exists ? [] : [structuredClone(this.value)];
-      table.push(...rows);
+      const values = Array.isArray(this.value) ? this.value : [this.value];
+      rows = [];
+      for (const value of values) {
+        const exists = table.some(row => keys.every(key => row[key] === value[key]));
+        if (!exists) {
+          const record = structuredClone(value);
+          rows.push(record); table.push(record);
+        }
+      }
     }
     if (this.operation === "insert") {
       if (this.table === "wildwood_expeditions" && table.some(row => row.user_id === this.value.user_id && row.status === "active")) return { data: null, error: { code: "23505" } };
@@ -90,6 +100,10 @@ async function main() {
   assert.equal(initial.team.length, 1);
   assert.equal(initial.team[0].displayHp, 5, "HP display includes level-one allocations, excluding level zero");
   const requestFor = previousRoomId => ({ requestId: crypto.randomUUID(), previousRoomId, formation: [{ petId, row: "back" }] });
+  tables.trainer_progression[0].trainer_level = 1;
+  await assert.rejects(service.exploreWildwood(user, requestFor(null)), /Trainer Level 5 is required/);
+  assert.equal(tables.wildwood_expeditions.length, 0);
+  tables.trainer_progression[0].trainer_level = 5;
   await assert.rejects(service.exploreWildwood("locked-user", requestFor(null)), /Accept Somethings Afoot/);
   assert.equal(tables.wildwood_expeditions.length, 0);
   assert.equal((await post("/quest/turn-in")).statusCode, 409);
@@ -114,6 +128,13 @@ async function main() {
       await assert.rejects(service.actInWildwood(user, room.battle.id, action), /Injected/);
       assert.equal(tables.player_quests[0].progress, 1);
       assert.equal(tables.wildwood_rooms[1].event_payload.battle.status, "victory");
+    } else if (win === 3) {
+      failResultWrite = true;
+      await assert.rejects(service.actInWildwood(user, room.battle.id, action), /Injected result write failure/);
+      assert.equal(tables.player_quests[0].progress, 2, "Failed statistics must not settle quest credit");
+      await assert.rejects(service.exploreWildwood(user, requestFor(room.id)), /Injected result write failure/);
+      assert.equal(tables.wildwood_rooms.length, win, "Cannot advance past unsettled statistics");
+      failResultWrite = false;
     } else await service.actInWildwood(user, room.battle.id, action);
     const recovered = await service.getWildwoodSession(user);
     assert.equal(recovered.room.battle.status, "victory");
@@ -124,6 +145,8 @@ async function main() {
     previousRoomId = room.id;
   }
   assert.equal(tables.player_quests[0].status, "ready_to_turn_in");
+  assert.equal(tables.pet_battle_results.length, 5, "Quest recovery must not duplicate battle results");
+  assert.ok(tables.pet_battle_results.every(row => row.user_id === user && row.pet_id === petId && row.result === "victory"));
   assert.deepEqual(tables.pets, petBefore);
   await assert.rejects(service.exploreWildwood(user, { requestId: crypto.randomUUID(), previousRoomId, formation: [{ petId: crypto.randomUUID(), row: "front" }] }), /team changed/);
   const ready = structuredClone(tables.player_quests[0]);

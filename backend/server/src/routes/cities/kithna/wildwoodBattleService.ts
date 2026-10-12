@@ -62,17 +62,20 @@ type RoomPayload = {
   message: string;
   battle: BattleState | null;
   images: Record<string, string | null>;
+  recordBattleStats?: boolean;
 
   questProgressTarget: number | null;
 
   foodQuestProgressTarget?: number | null;
 };
+
 type Room = {
   id: string;
   sequence_number: number;
   event_payload: RoomPayload;
   status: string;
 };
+
 const roomColumns = "id, sequence_number, event_payload, status";
 
 // The room payload is server-written, versioned state. Never accept it in a request.
@@ -83,6 +86,7 @@ function payload(room: Room): RoomPayload {
     );
   return room.event_payload;
 }
+
 function view(room: Room | null): WildwoodRoomView | null {
   if (!room) return null;
   const data = payload(room);
@@ -115,16 +119,6 @@ async function activeExpedition(
     return null;
   }
 
-  if (!state.expeditionUnlocked) {
-    if (create) {
-      throw new WildwoodError(
-        "Trainer Level 5 is required to begin a Wildwood expedition.",
-        403,
-      );
-    }
-
-    return null;
-  }
   if (state.expedition) return state.expedition.id;
   if (!create) return null;
 
@@ -147,6 +141,7 @@ async function activeExpedition(
 
   return refreshed.expedition.id;
 }
+
 async function latestRoom(expeditionId: string): Promise<Room | null> {
   const result = await supabaseAdmin
     .from("wildwood_rooms")
@@ -156,11 +151,63 @@ async function latestRoom(expeditionId: string): Promise<Room | null> {
     .limit(1)
     .returns<Room[]>()
     .maybeSingle();
+
   if (result.error) throw result.error;
   return result.data;
 }
 
-/** A persisted victory carries an absolute target, never a repeatable +1 request. */
+async function settleBattleResults(userId: string, room: Room | null) {
+  if (!room) return;
+  const data = payload(room);
+  const battle = data.battle;
+
+  // Older snapshots deliberately remain uncounted.
+  if (
+    data.recordBattleStats !== true ||
+    !battle ||
+    (battle.status !== "victory" && battle.status !== "defeat")
+  )
+    return;
+
+  const petIds = battle.participants
+    .filter((pet) => pet.side === "player")
+    .map((pet) => pet.sourcePetId ?? pet.id);
+
+  if (
+    !petIds.length ||
+    petIds.length > 4 ||
+    new Set(petIds).size !== petIds.length
+  )
+    throw new WildwoodError("Invalid battle participants.");
+
+  const owned = await supabaseAdmin
+    .from("pets")
+    .select("id")
+    .eq("user_id", userId)
+    .in("id", petIds);
+
+  if (owned.error) throw owned.error;
+
+  const ownedIds = new Set((owned.data ?? []).map((pet) => pet.id));
+
+  if (petIds.some((id) => !ownedIds.has(id)))
+    throw new WildwoodError("Battle participant ownership changed.", 403);
+
+  // One database statement: all participants or none. The migration also
+  // checks ownership under a row lock, closing the read/write race above.
+  const result = await supabaseAdmin.from("pet_battle_results").upsert(
+    petIds.map((petId) => ({
+      battle_id: battle.id,
+      pet_id: petId,
+      user_id: userId,
+      result: battle.status,
+    })),
+    { onConflict: "battle_id,pet_id", ignoreDuplicates: true },
+  );
+
+  if (result.error) throw result.error;
+}
+
 /** A persisted victory carries absolute targets, never repeatable +1 requests. */
 async function settleQuest(userId: string, room: Room | null) {
   if (!room) return;
@@ -243,43 +290,56 @@ async function loadTeam(userId: string): Promise<WildwoodTeamMember[]> {
     .select("pet_id, slot_index")
     .eq("user_id", userId)
     .order("slot_index");
+
   if (slots.error) throw slots.error;
+
   const ids: string[] = (slots.data ?? []).map((slot) => slot.pet_id);
   if (!ids.length) return [];
+
   if (ids.length > 4 || new Set(ids).size !== ids.length)
     throw new WildwoodError("Your team has invalid slots. Check the Hatchery.");
+
   const result = await supabaseAdmin
     .from("pets")
     .select("*")
     .eq("user_id", userId)
     .in("id", ids);
+
   if (result.error) throw result.error;
+
   const parsed = z.array(petSchema).safeParse(result.data);
+
   if (!parsed.success || parsed.data.length !== ids.length)
     throw new WildwoodError(
       "A team member has incomplete battle stats. Check your team in the Hatchery.",
     );
+
   if (parsed.data.some((pet) => pet.species === VELUNE.id)) {
     const trainer = await supabaseAdmin
       .from("trainer_progression")
       .select("trainer_level")
       .eq("user_id", userId)
       .maybeSingle();
+
     if (trainer.error) throw trainer.error;
+
     if ((trainer.data?.trainer_level ?? 1) < VELUNE.requiredTrainerLevel)
       throw new WildwoodError(
         "Trainer Level 10 is required to battle with Velune.",
         403,
       );
   }
+
   return Promise.all(
     ids.map(async (id, index): Promise<WildwoodTeamMember> => {
       const pet = parsed.data.find((entry) => entry.id === id)!;
       const species = findPetSpeciesById(pet.species);
+
       if (!species || pet.stage === "egg" || pet.ran_away)
         throw new WildwoodError(
           "Only hatched, available Kith can enter battle.",
         );
+
       const element = z
         .enum([
           "null_element",
@@ -293,9 +353,12 @@ async function loadTeam(userId: string): Promise<WildwoodTeamMember[]> {
           "shadow",
         ])
         .safeParse(pet.line);
+
       if (!element.success)
         throw new WildwoodError("A team member has an unsupported element.");
+
       const points = await fetchTotalPoints(pet.id);
+
       return {
         id: pet.id,
         sourcePetId: pet.id,
@@ -325,17 +388,22 @@ async function loadTeam(userId: string): Promise<WildwoodTeamMember[]> {
 
 function corruptedEnemy(): BattleParticipantInput {
   const pool = getKithnaEggsForTime(getDeltaTime(new Date()).timeOfDay);
+
   if (!pool.length)
     throw new WildwoodError("No Wildwood encounters are available right now.");
+
   let roll = randomInt(
     pool.reduce((sum, species) => sum + species.rules.encounterWeight, 0),
   );
+
   const species = pool.find((entry) => {
     roll -= entry.rules.encounterWeight;
     return roll < 0;
   })!;
+
   const base = species.eggBaseStats;
   const iv = rollIV();
+
   // First slice: a normal level-one Kith roll, with corruption as encounter metadata.
   return {
     id: randomUUID(),
@@ -359,12 +427,16 @@ export async function getWildwoodSession(
 ): Promise<WildwoodSession> {
   const expeditionId = await activeExpedition(userId, false);
   const room = expeditionId ? await latestRoom(expeditionId) : null;
+
+  await settleBattleResults(userId, room);
   await settleQuest(userId, room);
+
   // An ongoing battle remains recoverable even if the party changed elsewhere.
   const team =
     room && payload(room).battle?.status === "active"
       ? []
       : await loadTeam(userId);
+
   return { team, room: view(room) };
 }
 
@@ -373,47 +445,63 @@ export async function exploreWildwood(
   request: WildwoodExploreRequest,
 ): Promise<WildwoodSession> {
   const expeditionId = await activeExpedition(userId, true);
+
   if (!expeditionId) throw new WildwoodError("No active expedition.");
+
   const previous = await latestRoom(expeditionId);
+
   if (previous && payload(previous).requestId === request.requestId)
     return getWildwoodSession(userId);
+
   if ((previous?.id ?? null) !== request.previousRoomId)
     throw new WildwoodError(
       "Wildwood changed in another tab. Reload before exploring.",
     );
+
   if (previous && payload(previous).battle?.status === "active")
     throw new WildwoodError("Finish your current battle before exploring.");
+
+  await settleBattleResults(userId, previous);
   await settleQuest(userId, previous);
+
   const team = await loadTeam(userId);
+
   if (!team.length || !team.some((pet) => pet.hpCur > 0))
     throw new WildwoodError("Your team needs a living Kith before exploring.");
+
   const chosen = new Map(
     request.formation.map((entry) => [entry.petId, entry.row]),
   );
+
   if (
     chosen.size !== team.length ||
     request.formation.length !== team.length ||
     team.some((pet) => !chosen.has(pet.id))
   )
     throw new WildwoodError("Your team changed. Reload your formation.");
+
   const wildwoodState = await getWildwoodState(userId);
 
   const quest = wildwoodState.quest;
   const foodQuest = wildwoodState.foodQuest;
 
   const event = selectProceduralEvent(0, true);
+
   const profile = await supabaseAdmin
     .from("profiles")
     .select("active_title")
     .eq("user_id", userId)
     .maybeSingle();
+
   if (profile.error) throw profile.error;
+
   const players = team.map(
     ({ imageUrl: _image, displayHp: _displayHp, ...pet }) => ({
       ...pet,
       row: chosen.get(pet.id)!,
     }),
   );
+
   const battle =
     event === "corrupted_battle"
       ? createBattle(
@@ -422,12 +510,15 @@ export async function exploreWildwood(
           profile.data?.active_title === "Alpha Pro" ? 1.05 : 1,
         )
       : null;
+
   const images = Object.fromEntries(team.map((pet) => [pet.id, pet.imageUrl]));
+
   const data: RoomPayload = {
     version: 1,
     revision: 0,
     requestId: request.requestId,
     battle,
+    recordBattleStats: battle !== null,
     images,
 
     message: battle
@@ -444,6 +535,7 @@ export async function exploreWildwood(
         ? Math.min(foodQuest.progress + 1, ASSANTI_FOOD_QUEST_TARGET)
         : null,
   };
+
   const inserted = await supabaseAdmin
     .from("wildwood_rooms")
     .insert({
@@ -459,14 +551,19 @@ export async function exploreWildwood(
     .select(roomColumns)
     .returns<Room[]>()
     .single();
+
   if (inserted.error) {
     if (inserted.error.code === "23505")
       throw new WildwoodError(
         "Another exploration was already processed. Reload Wildwood.",
       );
+
     throw inserted.error;
   }
+
+  await settleBattleResults(userId, inserted.data);
   await settleQuest(userId, inserted.data);
+
   return { team, room: view(inserted.data) };
 }
 
@@ -477,11 +574,16 @@ export async function actInWildwood(
 ): Promise<WildwoodSession> {
   const expeditionId = await activeExpedition(userId, false);
   const room = expeditionId ? await latestRoom(expeditionId) : null;
+
   if (!room || payload(room).battle?.id !== battleId)
     throw new WildwoodError("Battle not found.", 404);
+
   const data = payload(room);
+
   if (!data.battle) throw new WildwoodError("Battle not found.", 404);
+
   const next = resolveBattleAction(data.battle, input);
+
   const updated = await supabaseAdmin
     .from("wildwood_rooms")
     .update({
@@ -495,11 +597,16 @@ export async function actInWildwood(
     .select(roomColumns)
     .returns<Room[]>()
     .maybeSingle();
+
   if (updated.error) throw updated.error;
+
   if (!updated.data)
     throw new WildwoodError(
       "That turn was already processed. Reload the battle.",
     );
+
+  await settleBattleResults(userId, updated.data);
   await settleQuest(userId, updated.data);
+
   return { team: [], room: view(updated.data) };
 }

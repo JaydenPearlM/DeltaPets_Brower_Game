@@ -107,6 +107,7 @@ Module._load = function(request, parent, isMain) {
   if (request.endsWith("shared/pets/care/CareDecay")) return { applyCareDecay: pet => ({ ...pet }) };
   if (request.endsWith("wildwoodState")) return {
     getWildwoodState: async id => ({ wildwoodUnlocked: id === user,
+      expeditionUnlocked: id === user,
       expedition: id === user ? { id: expeditionId } : null,
       quest: { status: "completed" }, foodQuest: { status: "completed" } }),
     selectProceduralEvent: () => encounter ? "corrupted_battle" : "flavor",

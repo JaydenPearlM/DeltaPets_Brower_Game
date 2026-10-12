@@ -486,6 +486,19 @@ careRouter.get("/spotlight", async (_req, res) => {
   }
 });
 
+async function getBattleStats(userId: string, petId: string): Promise<{ wins: number; losses: number }> {
+  const [wins, losses] = await Promise.all(
+    (["victory", "defeat"] as const).map((result) =>
+      supabaseAdmin.from("pet_battle_results")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId).eq("pet_id", petId).eq("result", result),
+    ),
+  );
+  if (wins.error || losses.error || wins.count === null || losses.count === null)
+    throw new Error("Failed to load Kith battle statistics.");
+  return { wins: wins.count, losses: losses.count };
+}
+
 careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
   const userId = req.user!.id;
 
@@ -754,6 +767,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       return res.json(await buildNoPetCareResponse(userId, team));
     }
 
+    const battleStats = await getBattleStats(userId, activePetResolved.id);
     let stats: any = null;
     let total_points: number | null = null;
     let hp_display: number | null = null;
@@ -794,6 +808,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
       return res.json({
         pet: {
           ...activePetResolved,
+          ...battleStats,
           personality_name:
             activePetResolved.personality_name ??
             activePetResolved.personality ??
@@ -830,6 +845,7 @@ careRouter.get("/current", requireUser, async (req: AuthedRequest, res) => {
     return res.json({
       pet: {
         ...activePetResolved,
+        ...battleStats,
         personality_name:
           activePetResolved.personality_name ??
           activePetResolved.personality ??

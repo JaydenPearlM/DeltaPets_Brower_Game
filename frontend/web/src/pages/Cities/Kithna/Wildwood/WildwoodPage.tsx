@@ -264,7 +264,6 @@ export default function WildwoodPage() {
     !collecting &&
     !error &&
     Boolean(status?.wildwoodUnlocked) &&
-    Boolean(status?.expeditionUnlocked) &&
     Boolean(session?.team.some((pet) => pet.hpCur > 0)) &&
     room?.battle?.status !== "active";
 
@@ -458,13 +457,6 @@ export default function WildwoodPage() {
                   Rows set your position. They do not change stats in this
                   version.
                 </p>
-
-                {status?.wildwoodUnlocked && !status.expeditionUnlocked ? (
-                  <p role="status">
-                    Wildwood Expeditions unlock at Trainer Level 5. Current
-                    Level: {status.trainerLevel}
-                  </p>
-                ) : null}
 
                 <div className="ww-team">
                   {session?.team.map((pet) => (

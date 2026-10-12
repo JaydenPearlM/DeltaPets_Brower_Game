@@ -3560,3 +3560,15 @@ body:has(.dpc-root) .appCopyright {
     padding-top: 0 !important;
   }
 }
+/* =========================================================
+   KITHNA MAP — MOBILE HEADER
+   Normal page flow. Header scrolls away with the page.
+   Kithna only. Desktop and other pages remain unchanged.
+   ========================================================= */
+@media (max-width: 640px) {
+  body:has(.kithnaMapPage) .appHeader {
+    position: relative !important;
+    top: auto !important;
+    z-index: 9999 !important;
+  }
+}

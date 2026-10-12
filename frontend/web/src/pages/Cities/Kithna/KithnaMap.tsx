@@ -11,6 +11,7 @@ import {
   type WildwoodStatus,
 } from "../../../lib/kithna/wildwoodApi";
 import QuestDialogue from "../../../components/Quests/QuestDialogue";
+import kithnaMapImage from "../../../kith/assets/cities/Kithna.png";
 import "./KithnaMap.css";
 
 type KithnaTarget = {
@@ -96,18 +97,6 @@ const KITHNA_TARGETS: KithnaTarget[] = [
   },
 ];
 
-const KITHNA_TOOLBAR = [
-  { label: "Hatchery", route: "/hatchery" },
-  { label: "Relic Store", route: "/kithna/relics" },
-  { label: "Health", route: "/kithna/health" },
-  { label: "Food", route: "/kithna/food" },
-  { label: "Pet Care", route: "/pet" },
-  { label: "Gym", route: "/gym" },
-  { label: "Farm Merchant", route: "/farm" },
-  { label: "Expeditions", route: "/battle-dungeons" },
-  { label: "Profile", route: "/profile" },
-];
-
 export default function KithnaMap() {
   const navigate = useNavigate();
   const { bumpRefreshKey } = useGame();
@@ -134,7 +123,11 @@ export default function KithnaMap() {
       })
       .catch((error: unknown) => {
         if (!cancelled) {
-          setStatusError(error instanceof Error ? error.message : "Quest status could not be loaded.");
+          setStatusError(
+            error instanceof Error
+              ? error.message
+              : "Quest status could not be loaded.",
+          );
         }
       });
 
@@ -157,20 +150,148 @@ export default function KithnaMap() {
       {statusError ? (
         <div role="alert">
           <p>{statusError}</p>
-          <button type="button" className="kithnaToolbarButton" onClick={() => setStatusAttempt((attempt) => attempt + 1)}>
+          <button
+            type="button"
+            className="kithnaToolbarButton"
+            onClick={() => setStatusAttempt((attempt) => attempt + 1)}
+          >
             Retry quest status
           </button>
         </div>
       ) : null}
       <section className="kithnaMapFrame" aria-label="Kithna town map">
-        <div className="kithnaIsland">
+        <div
+          className="kithnaIsland"
+          style={{ backgroundImage: `url("${kithnaMapImage}")` }}
+        >
           <div className="kithnaWater" />
 
           <div className="kithnaPath kithnaPathMain" />
           <div className="kithnaPath kithnaPathLeft" />
           <div className="kithnaPath kithnaPathRight" />
           <div className="kithnaPath kithnaPathBottom" />
+          <svg
+            className="kithnaMapDistanceOverlay"
+            viewBox="0 0 1440 2559"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient
+                id="kithnaDistanceTopFade"
+                gradientUnits="userSpaceOnUse"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="760"
+              >
+                <stop offset="0%" stopColor="white" stopOpacity="1" />
+                <stop offset="48%" stopColor="white" stopOpacity="0.92" />
+                <stop offset="78%" stopColor="white" stopOpacity="0.42" />
+                <stop offset="100%" stopColor="white" stopOpacity="0" />
+              </linearGradient>
 
+              <radialGradient
+                id="kithnaDistanceVolcanoFade"
+                gradientUnits="userSpaceOnUse"
+                cx="165"
+                cy="245"
+                r="360"
+              >
+                <stop offset="0%" stopColor="white" stopOpacity="1" />
+                <stop offset="62%" stopColor="white" stopOpacity="0.85" />
+                <stop offset="100%" stopColor="white" stopOpacity="0" />
+              </radialGradient>
+
+              <radialGradient
+                id="kithnaDistanceCenterFade"
+                gradientUnits="userSpaceOnUse"
+                cx="740"
+                cy="315"
+                r="500"
+              >
+                <stop offset="0%" stopColor="white" stopOpacity="0.92" />
+                <stop offset="66%" stopColor="white" stopOpacity="0.62" />
+                <stop offset="100%" stopColor="white" stopOpacity="0" />
+              </radialGradient>
+
+              <radialGradient
+                id="kithnaDistanceRuinsFade"
+                gradientUnits="userSpaceOnUse"
+                cx="1165"
+                cy="265"
+                r="390"
+              >
+                <stop offset="0%" stopColor="white" stopOpacity="1" />
+                <stop offset="62%" stopColor="white" stopOpacity="0.84" />
+                <stop offset="100%" stopColor="white" stopOpacity="0" />
+              </radialGradient>
+
+              <mask
+                id="kithnaDistanceMask"
+                maskUnits="userSpaceOnUse"
+                x="0"
+                y="0"
+                width="1440"
+                height="2559"
+              >
+                <rect x="0" y="0" width="1440" height="2559" fill="black" />
+
+                <path
+                  d="
+                    M 0 0
+                    H 1440
+                    V 405
+                    C 1240 455, 1070 470, 900 452
+                    C 760 438, 630 430, 490 444
+                    C 315 462, 155 470, 0 440
+                    Z
+                  "
+                  fill="url(#kithnaDistanceTopFade)"
+                />
+
+                <ellipse
+                  cx="170"
+                  cy="255"
+                  rx="300"
+                  ry="340"
+                  fill="url(#kithnaDistanceVolcanoFade)"
+                />
+
+                <path
+                  d="
+                    M 330 150
+                    C 470 125, 610 118, 760 128
+                    C 930 140, 1080 175, 1215 235
+                    L 1180 510
+                    C 1035 468, 900 450, 760 448
+                    C 620 446, 495 455, 355 490
+                    Z
+                  "
+                  fill="url(#kithnaDistanceCenterFade)"
+                />
+
+                <ellipse
+                  cx="1170"
+                  cy="275"
+                  rx="315"
+                  ry="325"
+                  fill="url(#kithnaDistanceRuinsFade)"
+                />
+              </mask>
+            </defs>
+
+            <image
+              href={kithnaMapImage}
+              width="1440"
+              height="2559"
+              preserveAspectRatio="none"
+              mask="url(#kithnaDistanceMask)"
+              className="kithnaDistanceImage"
+            />
+          </svg>
+
+          <div className="kithnaMapFocusOverlay" aria-hidden="true" />
           {KITHNA_TARGETS.map((target) => (
             <button
               key={target.id}
@@ -222,7 +343,10 @@ export default function KithnaMap() {
                   ? "Quest ready to turn in at Food Shop"
                   : "Quest available at Food Shop"
               }
-              onClick={() => { setQuestError(""); setQuestDialogue("food"); }}
+              onClick={() => {
+                setQuestError("");
+                setQuestDialogue("food");
+              }}
             >
               {wildwood.foodQuest.status === "ready_to_turn_in" ? "?" : "!"}
             </button>
@@ -247,7 +371,10 @@ export default function KithnaMap() {
                   ? "Main quest ready to turn in"
                   : "Main quest available at Kithna Wildwood"
               }
-              onClick={() => { setQuestError(""); setQuestDialogue("main"); }}
+              onClick={() => {
+                setQuestError("");
+                setQuestDialogue("main");
+              }}
             >
               {wildwood.quest.status === "ready_to_turn_in" ? "?" : "!"}
 
@@ -279,7 +406,7 @@ export default function KithnaMap() {
               dialogue={
                 wildwood.foodQuest.status === "ready_to_turn_in"
                   ? "You actually did it! My plants are safe, the meat tree is still standing, and those Kith finally stopped tearing through my food supply. You helped me out, so I'll help you out too."
-                  : "Something strange has been getting into my plants and the meat tree. I don't know what's gotten into these Kith, but they're tearing through my food supply. If you can drive off all three of them, I'll make sure you can collect food here every day."
+                  : "Some strange Kith have been getting into my meat and vegetable farm lately. I don't know what's got them so riled up, but they're tearing through my food supply! If you can drive all three of them off, I'll make sure you stay fed. You've got my word!"
               }
               objective={
                 wildwood.foodQuest.status === "ready_to_turn_in"
@@ -311,7 +438,11 @@ export default function KithnaMap() {
                     bumpRefreshKey();
                   })
                   .catch((error: unknown) => {
-                    setQuestError(error instanceof Error ? error.message : "Quest could not be updated. Try again.");
+                    setQuestError(
+                      error instanceof Error
+                        ? error.message
+                        : "Quest could not be updated. Try again.",
+                    );
                   })
                   .finally(() => setQuestBusy(false));
               }}
@@ -357,7 +488,11 @@ export default function KithnaMap() {
                     bumpRefreshKey();
                   })
                   .catch((error: unknown) => {
-                    setQuestError(error instanceof Error ? error.message : "Quest could not be updated. Try again.");
+                    setQuestError(
+                      error instanceof Error
+                        ? error.message
+                        : "Quest could not be updated. Try again.",
+                    );
                   })
                   .finally(() => setQuestBusy(false));
               }}
@@ -371,19 +506,6 @@ export default function KithnaMap() {
 
           <PoeTayToe locationKey="hatchery-back" />
         </div>
-
-        <nav className="kithnaToolbar" aria-label="Kithna facilities">
-          {KITHNA_TOOLBAR.map((item) => (
-            <button
-              key={item.route}
-              type="button"
-              className="kithnaToolbarButton"
-              onClick={() => navigate(item.route)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
       </section>
     </main>
   );

@@ -3,10 +3,11 @@
   background: transparent;
   color: var(--dp-text, #f8f4df);
 }
-
 .kithnaMapFrame {
   position: relative;
-  max-width: 1120px;
+  width: 100%;
+  max-width: 507px;
+  box-sizing: border-box;
   margin: 0 auto;
   border: 3px solid var(--dp-cyan, #67e8f9);
   border-radius: 22px;
@@ -14,19 +15,51 @@
   background: rgba(18, 22, 38, 0.94);
   box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.18);
 }
-
 .kithnaIsland {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1440 / 2559;
   overflow: hidden;
   border-radius: 18px;
-  background:
-    radial-gradient(circle at 50% 48%, #d8c27b 0 9%, transparent 10%),
-    radial-gradient(circle at 50% 50%, #83b85a 0 58%, transparent 59%), #38a8d8;
-  border: 3px solid rgba(0, 0, 0, 0.55);
+  background-image: url("../../../kith/assets/cities/Kithna.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  border: 3px solid #000000;
+  box-sizing: border-box;
+  isolation: isolate;
 }
-
+.kithnaMapFocusOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.kithnaMapFocusOverlay::before,
+.kithnaMapFocusOverlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* =========================================================
+   KITHNA — SVG DISTANCE DESATURATION ONLY
+   The clipping path is defined in KithnaMap.tsx.
+   No gradient pseudo-elements or external mask file.
+   ========================================================= */
+.kithnaMapDistanceOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+.kithnaDistanceImage {
+  filter: saturate(0.65);
+}
+.kithnaIslandImage {
+  filter: brightness(1.12) saturate(1) contrast(1.02);
+}
 .kithnaWater {
   position: absolute;
   inset: 0;
@@ -44,14 +77,12 @@
     );
   pointer-events: none;
 }
-
 .kithnaPath {
   position: absolute;
   background: #d7bd7a;
   border: 2px solid rgba(104, 80, 35, 0.28);
   pointer-events: none;
 }
-
 .kithnaPathMain {
   left: 48%;
   top: 12%;
@@ -60,7 +91,6 @@
   border-radius: 999px;
   transform: rotate(2deg);
 }
-
 .kithnaPathLeft {
   left: 20%;
   top: 35%;
@@ -69,7 +99,6 @@
   border-radius: 999px;
   transform: rotate(-8deg);
 }
-
 .kithnaPathRight {
   left: 36%;
   top: 42%;
@@ -78,7 +107,6 @@
   border-radius: 999px;
   transform: rotate(18deg);
 }
-
 .kithnaPathBottom {
   left: 24%;
   top: 68%;
@@ -87,7 +115,6 @@
   border-radius: 999px;
   transform: rotate(-3deg);
 }
-
 .kithnaMapTarget {
   position: absolute;
   width: 16%;
@@ -107,7 +134,6 @@
     transform 140ms ease,
     filter 140ms ease;
 }
-
 .kithnaMapTarget::before {
   content: "";
   position: absolute;
@@ -120,7 +146,6 @@
   transform: skewX(-12deg);
   z-index: 0;
 }
-
 .kithnaMapTarget:hover,
 .kithnaMapTarget:focus-visible {
   outline: 4px solid var(--dp-cyan, #67e8f9);
@@ -128,24 +153,20 @@
   transform: translateY(-2px);
   filter: brightness(1.08);
 }
-
 .kithnaMapTarget--locked {
   cursor: not-allowed;
   filter: grayscale(0.8) brightness(0.72);
 }
-
 .kithnaMapTarget--locked:hover,
 .kithnaMapTarget--locked:focus-visible {
   transform: none;
   filter: grayscale(0.8) brightness(0.82);
 }
-
 .kithnaBuildingIcon,
 .kithnaBuildingLabel {
   position: relative;
   z-index: 1;
 }
-
 /*
  * Quest markers are independent map controls.
  * They intentionally sit outside their associated buildings.
@@ -172,7 +193,6 @@
     filter 140ms ease,
     outline-color 140ms ease;
 }
-
 /*
  * Assanti's side quest.
  * Floats above the Food Shop.
@@ -181,7 +201,6 @@
   left: 29%;
   top: 66%;
 }
-
 /*
  * Something's Afoot.
  * Floats above Kithna Wildwood.
@@ -190,7 +209,6 @@
   left: 14%;
   top: 39%;
 }
-
 /*
  * Main quest distinction.
  * The exclamation point stays the normal quest marker,
@@ -210,17 +228,13 @@
     1px 1px 0 #1b1a18;
   pointer-events: none;
 }
-
 .kithnaQuestMarker--turn-in {
   background: #67e8f9;
-  background: #67e8f9;
   color: #10243a;
-
   box-shadow:
     0 3px 0 rgba(27, 26, 24, 0.28),
     0 0 16px rgba(103, 232, 249, 0.55);
 }
-
 .kithnaQuestMarker:hover,
 .kithnaQuestMarker:focus-visible {
   outline: 3px solid var(--dp-cyan, #67e8f9);
@@ -228,7 +242,6 @@
   transform: translateY(-2px);
   filter: brightness(1.08);
 }
-
 .kithnaBuildingIcon {
   display: grid;
   place-items: center;
@@ -241,99 +254,79 @@
   font-size: 18px;
   line-height: 1;
 }
-
 .kithnaBuildingLabel {
   font-size: clamp(0.64rem, 1vw, 0.9rem);
   line-height: 1.05;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
 }
-
 .kithnaTargetDungeon {
   left: 72%;
   top: 8%;
   background: #6d6274;
   color: #fff4d6;
 }
-
 .kithnaTargetWildwood {
   left: 2%;
   top: 46%;
   background: #78966d;
   color: #fff4d6;
 }
-
 .kithnaTargetWildwood::before {
   background: #315d38;
 }
-
 .kithnaTargetDungeon::before {
   background: #34303a;
 }
-
 .kithnaTargetHealth {
   left: 16%;
   top: 21%;
 }
-
 .kithnaTargetHealth::before {
   background: #4b9a55;
 }
-
 .kithnaTargetHatchery {
   left: 42%;
   top: 13%;
 }
-
 .kithnaTargetHatchery::before {
   background: #2f78bf;
 }
-
 .kithnaTargetRelics {
   left: 66%;
   top: 23%;
   background: #d8c8ee;
 }
-
 .kithnaTargetRelics::before {
   background: #7652a8;
 }
-
 .kithnaTargetFoodShop {
   left: 17%;
   top: 73%;
 }
-
 .kithnaTargetFoodShop::before {
   background: #c8463d;
 }
-
 .kithnaTargetPetCare {
   left: 37%;
   top: 75%;
 }
-
 .kithnaTargetPetCare::before {
   background: #2f78bf;
 }
-
 .kithnaTargetGym {
   left: 57%;
   top: 70%;
 }
-
 .kithnaTargetGym::before {
   background: #df962c;
 }
-
 .kithnaTargetFarm {
   left: 77%;
   top: 69%;
 }
-
 .kithnaTargetFarm::before {
   background: #4b9a55;
 }
-
 .kithnaTargetProfile {
   left: 44%;
   top: 43%;
@@ -342,11 +335,9 @@
   border-radius: 999px;
   background: #c8e9f1;
 }
-
 .kithnaTargetProfile::before {
   display: none;
 }
-
 .kithnaWildwoodLockedNotice {
   position: absolute;
   z-index: 10;
@@ -361,15 +352,12 @@
   color: #fff4d6;
   text-align: center;
 }
-
 .kithnaWildwoodLockedNotice p {
   margin: 0 0 8px;
 }
-
 .kithnaWildwoodLockedNotice .kithnaToolbarButton {
   margin-top: 4px;
 }
-
 .kithnaEggFountain {
   position: absolute;
   left: 45%;
@@ -378,7 +366,6 @@
   height: 12%;
   pointer-events: none;
 }
-
 .kithnaFountainBowl {
   position: absolute;
   left: 8%;
@@ -389,7 +376,6 @@
   border-radius: 999px;
   background: #72c9df;
 }
-
 .kithnaFountainEgg {
   position: absolute;
   left: 34%;
@@ -400,7 +386,6 @@
   border-radius: 50% 50% 45% 45%;
   background: #d9c19a;
 }
-
 .kithnaToolbar {
   display: flex;
   flex-wrap: wrap;
@@ -408,7 +393,6 @@
   justify-content: center;
   margin-top: 14px;
 }
-
 .kithnaToolbarButton {
   border: 2px solid var(--dp-cyan, #67e8f9);
   border-radius: 999px;
@@ -418,33 +402,27 @@
   font-weight: 900;
   cursor: pointer;
 }
-
 .kithnaToolbarButton:hover,
 .kithnaToolbarButton:focus-visible {
   background: rgba(103, 232, 249, 0.18);
 }
-
 @media (max-width: 760px) {
   .kithnaMapPage {
     padding: 12px;
   }
-
   .kithnaMapTarget {
     width: 18%;
     height: 15%;
     padding: 4px;
   }
-
   .kithnaBuildingIcon {
     width: 26px;
     height: 24px;
     font-size: 14px;
   }
-
   .kithnaBuildingLabel {
     font-size: 0.58rem;
   }
-
   /*
    * Keep the same map-relative quest positions on mobile.
    * Only the marker itself becomes smaller.
@@ -454,20 +432,32 @@
     height: 30px;
     font-size: 18px;
   }
-
   .kithnaQuestMarker--food {
     left: 29%;
     top: 65%;
   }
-
   .kithnaQuestMarker--wildwood {
     left: 14%;
     top: 38%;
   }
-
   .kithnaQuestMarkerStar {
     right: -10px;
     top: -8px;
     font-size: 15px;
   }
+}
+/*
+ * Kithna artwork integration.
+ * Hide legacy placeholder scenery and map controls.
+ * Preserve their existing React code and behavior for future map markers.
+ *
+ * IMPORTANT:
+ * Keep this block at the end so it overrides earlier display rules.
+ */
+.kithnaWater,
+.kithnaPath,
+.kithnaEggFountain,
+.kithnaMapTarget,
+.kithnaQuestMarker {
+  display: none;
 }

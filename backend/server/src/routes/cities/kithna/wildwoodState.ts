@@ -69,7 +69,7 @@ export async function getWildwoodState(userId: string) {
     (foodQuest?.status as WildwoodQuestStatus | undefined) ?? "available";
 
   const trainerLevel = Number(trainerProgression?.trainer_level ?? 1);
-  const expeditionUnlocked = trainerLevel >= 5;
+  const expeditionUnlocked = status !== "available";
 
   return {
     quest: {
