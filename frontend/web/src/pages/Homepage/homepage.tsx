@@ -134,7 +134,7 @@ export default function Homepage() {
                 </div>
 
                 <p className="hp-heroSolenTagline">
-                  Your Kith remember, react, and grow with you.
+                  Your Kith remembers, reacts and grows with you.
                 </p>
               </div>
             </div>

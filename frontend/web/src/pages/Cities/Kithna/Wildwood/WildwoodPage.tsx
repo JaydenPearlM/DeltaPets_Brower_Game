@@ -50,12 +50,10 @@ export default function WildwoodPage() {
 
   async function reload() {
     const next = await fetchWildwoodSession();
-    const quest = await fetchWildwoodStatus();
 
     if (!mounted.current) return;
 
     setSession(next);
-    setStatus(quest);
 
     setShowBattle(
       (current) =>
@@ -77,6 +75,13 @@ export default function WildwoodPage() {
         ),
       );
     }
+
+    setStatus(null);
+    const quest = await fetchWildwoodStatus();
+
+    if (!mounted.current) return;
+
+    setStatus(quest);
 
     return next;
   }

@@ -16,6 +16,7 @@ const CreatePage = lazy(() => import("../../pages/cutscene/create"));
 const RescueEggReveal = lazy(
   () => import("../../pages/cutscene/rescueEggReveal"),
 );
+const KithnaRegistry = lazy(() => import("../../pages/Cities/Kithna/KithnaRegistry"));
 const PetPage = lazy(() => import("../../pages/petsPage/PetPage"));
 const PetPlayTest = lazy(() => import("../../pages/dev/PetPlayTest"));
 const FarmPage = lazy(() => import("../../pages/farm/petFarmFood"));
@@ -49,6 +50,9 @@ const FoodMerchantPage = lazy(
 );
 const MerchantClosedPage = lazy(
   () => import("../../pages/Cities/Kithna/Merchants/MerchantClosedPage"),
+);
+const KithnaThriftStore = lazy(
+  () => import("../../pages/Cities/Kithna/Merchants/KithnaThriftStore"),
 );
 
 function PageLoader() {
@@ -226,11 +230,29 @@ export const router = createBrowserRouter([
           </ProtectedRoute>,
         ),
       },
+
       {
         path: "kithna/food",
         element: withSuspense(
           <ProtectedRoute>
             <FoodMerchantPage />
+          </ProtectedRoute>,
+        ),
+      },
+
+      {
+        path: "kithna/registry",
+        element: withSuspense(
+          <ProtectedRoute>
+            <KithnaRegistry />
+          </ProtectedRoute>,
+        ),
+      },
+      {
+        path: "kithna/thriftstore",
+        element: withSuspense(
+          <ProtectedRoute>
+            <KithnaThriftStore />
           </ProtectedRoute>,
         ),
       },

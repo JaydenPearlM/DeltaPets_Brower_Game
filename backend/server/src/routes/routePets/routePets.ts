@@ -1237,7 +1237,12 @@ petsRouter.post(
       const finalIsActive = hatched.is_active;
       const storageResult = assignedPartySlot ? "party" : "storage";
       const postHatchDestination = assignedPartySlot && starter ? "/pet" : null;
-      const points = await fetchTotalPoints(egg.id);
+      let points: Awaited<ReturnType<typeof fetchTotalPoints>> = null;
+      try {
+        points = await fetchTotalPoints(egg.id);
+      } catch (error: unknown) {
+        logger.error("[hatch] points enrichment failed after successful hatch", error);
+      }
 
       logger.info("[hatch] pet hatched", {
         petId: egg.id,
@@ -1246,15 +1251,20 @@ petsRouter.post(
         storageResult,
       });
 
-      const hatchedPetForClient = await hydrateHatchedPassiveTrait({
-        ...hatched,
-        name: hatchlingName,
-        location: finalLocation,
-        is_active: finalIsActive,
-        description,
-        passive_trait_id: passiveTraitId,
-        passive_trait_key: passiveTraitKey,
-      });
+      let hatchedPetForClient = hatched;
+      try {
+        hatchedPetForClient = await hydrateHatchedPassiveTrait({
+          ...hatched,
+          name: hatchlingName,
+          location: finalLocation,
+          is_active: finalIsActive,
+          description,
+          passive_trait_id: passiveTraitId,
+          passive_trait_key: passiveTraitKey,
+        });
+      } catch (error: unknown) {
+        logger.error("[hatch] trait enrichment failed after successful hatch", error);
+      }
 
       return res.json({
         server_now: nowIso,

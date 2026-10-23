@@ -241,7 +241,10 @@ export default function CreatePage() {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const crackRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [playerName, setPlayerName] = useState("Traveler");
+  const playerNameRef = useRef("Traveler");
+  const retryCompletionRef = useRef<(() => Promise<void>) | null>(null);
+  const [completionError, setCompletionError] = useState("");
+  const [completionPending, setCompletionPending] = useState(false);
   useEffect(() => {
     const previousHtmlOverflow = document.documentElement.style.overflow;
     const previousBodyOverflow = document.body.style.overflow;
@@ -265,7 +268,7 @@ export default function CreatePage() {
           } | null;
         }>("/api/me");
         const name = me?.profile?.display_name || me?.profile?.username;
-        if (!cancelled && name) setPlayerName(name);
+        if (!cancelled && name) playerNameRef.current = name;
       } catch {
         // keep "Traveler" fallback
       }
@@ -923,6 +926,37 @@ export default function CreatePage() {
   useEffect(() => {
     const myRunId = ++runIdRef.current;
     const alive = () => runIdRef.current === myRunId;
+    let completionInFlight = false;
+    setCompletionError("");
+    setCompletionPending(false);
+
+    async function completeOnboarding() {
+      if (!alive() || completionInFlight) return;
+      completionInFlight = true;
+      setCompletionPending(true);
+
+      try {
+        await apiFetch("/api/pets/ensure-egg", {
+          method: "POST",
+          json: { line: "random" },
+        });
+        if (!alive()) return;
+
+        await apiFetch("/api/me/intro/seen", { method: "POST" });
+        if (!alive()) return;
+
+        setCompletionError("");
+        navigate("/hatchery", { replace: true });
+        setPhase("done");
+      } catch {
+        if (alive()) {
+          setCompletionError("Could not finish entering DeltaPets. Please retry.");
+        }
+      } finally {
+        completionInFlight = false;
+        if (alive()) setCompletionPending(false);
+      }
+    }
 
     setCenterText("");
     setGlitching(false);
@@ -956,7 +990,6 @@ export default function CreatePage() {
 
     async function run() {
       const TAKE_CARE = `"Take Care of it."`;
-      const GOODLUCK = `"Good luck, ${playerName}."`;
       const V = visualRef.current;
 
       setPhase("fadeInBlack");
@@ -1190,6 +1223,7 @@ export default function CreatePage() {
       await sleep(350);
       if (!alive()) return;
       setGlitching(true);
+      const GOODLUCK = `"Good luck, ${playerNameRef.current}."`;
       await glitchReveal(
         GOODLUCK,
         setCenterText,
@@ -1223,24 +1257,16 @@ export default function CreatePage() {
       }
       if (!alive()) return;
 
-      await apiFetch("/api/pets/ensure-egg", {
-        method: "POST",
-        json: { line: "random" },
-      });
-      if (!alive()) return;
-
-      await apiFetch("/api/me/intro/seen", { method: "POST" });
-      if (!alive()) return;
-
-      navigate("/hatchery", { replace: true });
-      setPhase("done");
+      retryCompletionRef.current = completeOnboarding;
+      await completeOnboarding();
     }
 
     run();
     return () => {
+      retryCompletionRef.current = null;
       if (runIdRef.current === myRunId) runIdRef.current++;
     };
-  }, [playerName, replayKey]);
+  }, [replayKey]);
 
   const blackOn = phase === "fadeInBlack" || phase === "done";
   const centerFadesOut = phase === "fadeOut" || phase === "done";
@@ -1286,6 +1312,21 @@ export default function CreatePage() {
           ) : null}
         </div>
       </div>
+      {completionError && (
+        <div className="dpc-center">
+          <div role="alert" style={{ color: C.text, textAlign: "center", padding: 20 }}>
+            <p>{completionError}</p>
+            <button
+              type="button"
+              className="dp-btn dp-btn--blue"
+              disabled={completionPending}
+              onClick={() => void retryCompletionRef.current?.()}
+            >
+              {completionPending ? "Retrying…" : "Retry"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

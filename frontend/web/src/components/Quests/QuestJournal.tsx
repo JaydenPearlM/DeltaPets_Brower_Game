@@ -4,27 +4,14 @@ import {
   type WildwoodStatus,
 } from "@/lib/kithna/wildwoodApi";
 import "./QuestJournal.css";
-
-type QuestStatus = "available" | "active" | "ready_to_turn_in" | "completed";
-
-type QuestCategory = "main" | "side";
-
-type QuestJournalEntry = {
-  key: string;
-  title: string;
-  description: string;
-  category: QuestCategory;
-  status: QuestStatus;
-  progress?: number;
-  target?: number;
-  objectiveLabel?: string;
-};
+import { kithnaJournalEntries, type QuestJournalEntry } from "../../pages/Cities/Kithna/KithnaQuest/kithnaJournalEntries";
+import { useGame } from "../../app/providers/GameProvider";
 
 type QuestJournalProps = {
   onClose: () => void;
 };
 
-function statusLabel(status: QuestStatus) {
+function statusLabel(status: QuestJournalEntry["status"]) {
   switch (status) {
     case "active":
       return "In progress";
@@ -41,6 +28,7 @@ function statusLabel(status: QuestStatus) {
 }
 
 export default function QuestJournal({ onClose }: QuestJournalProps) {
+  const { refreshKey } = useGame();
   const [wildwood, setWildwood] = useState<WildwoodStatus | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -76,44 +64,14 @@ export default function QuestJournal({ onClose }: QuestJournalProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshKey]);
 
   const entries = useMemo<QuestJournalEntry[]>(() => {
     if (!wildwood) {
       return [];
     }
 
-    const quests: QuestJournalEntry[] = [];
-
-    if (wildwood.quest.status !== "available") {
-      quests.push({
-        key: wildwood.quest.key,
-        title: "Something’s Afoot",
-        description:
-          "A researcher in Kithna is working on a strange device he calls an Aliune Signal. He needs more information about the strange Kith appearing in the Wildwood.",
-        category: "main",
-        status: wildwood.quest.status,
-        progress: wildwood.quest.progress,
-        target: wildwood.quest.target,
-        objectiveLabel: "Strange Kith defeated",
-      });
-    }
-
-    if (wildwood.foodQuest.status !== "available") {
-      quests.push({
-        key: wildwood.foodQuest.key,
-        title: "A Merchant’s Trouble",
-        description:
-          "Strange Kith have been eating Assanti’s plants and attacking her meat tree. She asked you to defeat the three causing trouble for her food supply.",
-        category: "side",
-        status: wildwood.foodQuest.status,
-        progress: wildwood.foodQuest.progress,
-        target: wildwood.foodQuest.target,
-        objectiveLabel: "Strange Kith defeated",
-      });
-    }
-
-    return quests;
+    return kithnaJournalEntries(wildwood);
   }, [wildwood]);
 
   const active = entries.filter(

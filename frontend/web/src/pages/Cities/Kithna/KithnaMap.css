@@ -1,176 +1,296 @@
 .kithnaMapPage {
   padding: 24px 0;
+
   background: transparent;
+
   color: var(--dp-text, #f8f4df);
 }
+
 .kithnaMapFrame {
   position: relative;
+
   width: 100%;
+
   max-width: 507px;
+
   box-sizing: border-box;
+
   margin: 0 auto;
+
   border: 3px solid var(--dp-cyan, #67e8f9);
+
   border-radius: 22px;
+
   padding: 16px;
+
   background: rgba(18, 22, 38, 0.94);
+
   box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.18);
 }
+
 .kithnaIsland {
   position: relative;
+
   width: 100%;
+
   aspect-ratio: 1440 / 2559;
+
   overflow: hidden;
+
   border-radius: 18px;
+
   background-image: url("../../../kith/assets/cities/Kithna.png");
+
   background-position: center;
+
   background-repeat: no-repeat;
+
   background-size: 100% 100%;
+
   border: 3px solid #000000;
+
   box-sizing: border-box;
+
   isolation: isolate;
 }
+
 .kithnaMapFocusOverlay {
   position: absolute;
+
   inset: 0;
+
   pointer-events: none;
 }
+
 .kithnaMapFocusOverlay::before,
 .kithnaMapFocusOverlay::after {
   content: "";
+
   position: absolute;
+
   inset: 0;
+
   pointer-events: none;
 }
+
 /* =========================================================
+
    KITHNA — SVG DISTANCE DESATURATION ONLY
+
    The clipping path is defined in KithnaMap.tsx.
+
    No gradient pseudo-elements or external mask file.
+
    ========================================================= */
+
 .kithnaMapDistanceOverlay {
   position: absolute;
+
   inset: 0;
+
   width: 100%;
+
   height: 100%;
+
   display: block;
+
   pointer-events: none;
 }
+
 .kithnaDistanceImage {
   filter: saturate(0.65);
 }
+
 .kithnaIslandImage {
   filter: brightness(1.12) saturate(1) contrast(1.02);
 }
+
 .kithnaWater {
   position: absolute;
+
   inset: 0;
+
   background:
     radial-gradient(
       circle at 50% 50%,
+
       transparent 0 60%,
+
       rgba(45, 172, 220, 0.9) 61%
     ),
     repeating-linear-gradient(
       -20deg,
+
       transparent 0 48px,
+
       rgba(255, 255, 255, 0.26) 49px 52px,
+
       transparent 53px 92px
     );
+
   pointer-events: none;
 }
+
 .kithnaPath {
   position: absolute;
+
   background: #d7bd7a;
+
   border: 2px solid rgba(104, 80, 35, 0.28);
+
   pointer-events: none;
 }
+
 .kithnaPathMain {
   left: 48%;
+
   top: 12%;
+
   width: 5%;
+
   height: 70%;
+
   border-radius: 999px;
+
   transform: rotate(2deg);
 }
+
 .kithnaPathLeft {
   left: 20%;
+
   top: 35%;
+
   width: 62%;
+
   height: 5%;
+
   border-radius: 999px;
+
   transform: rotate(-8deg);
 }
+
 .kithnaPathRight {
   left: 36%;
+
   top: 42%;
+
   width: 45%;
+
   height: 5%;
+
   border-radius: 999px;
+
   transform: rotate(18deg);
 }
+
 .kithnaPathBottom {
   left: 24%;
+
   top: 68%;
+
   width: 52%;
+
   height: 5%;
+
   border-radius: 999px;
+
   transform: rotate(-3deg);
 }
+
 .kithnaMapTarget {
   position: absolute;
+
   width: 16%;
+
   height: 16%;
+
   border: 3px solid #1b1a18;
+
   border-radius: 12px;
+
   color: #20160d;
+
   background: #ecd493;
+
   cursor: pointer;
+
   display: grid;
+
   place-items: center;
+
   padding: 8px;
+
   font-weight: 900;
+
   text-align: center;
+
   transition:
     outline-color 140ms ease,
     transform 140ms ease,
     filter 140ms ease;
 }
+
 .kithnaMapTarget::before {
   content: "";
+
   position: absolute;
+
   left: 10%;
+
   right: 10%;
+
   top: -26%;
+
   height: 42%;
+
   background: #2f6fae;
+
   border: 3px solid #1b1a18;
+
   transform: skewX(-12deg);
+
   z-index: 0;
 }
+
 .kithnaMapTarget:hover,
 .kithnaMapTarget:focus-visible {
   outline: 4px solid var(--dp-cyan, #67e8f9);
+
   outline-offset: 4px;
+
   transform: translateY(-2px);
+
   filter: brightness(1.08);
 }
+
 .kithnaMapTarget--locked {
   cursor: not-allowed;
+
   filter: grayscale(0.8) brightness(0.72);
 }
+
 .kithnaMapTarget--locked:hover,
 .kithnaMapTarget--locked:focus-visible {
   transform: none;
+
   filter: grayscale(0.8) brightness(0.82);
 }
+
 .kithnaBuildingIcon,
 .kithnaBuildingLabel {
   position: relative;
+
   z-index: 1;
 }
+
 /*
- * Quest markers are independent map controls.
+
+ * Quest markers are decorative indicators beside map controls.
+
  * They intentionally sit outside their associated buildings.
+
  */
+
 .kithnaQuestMarker {
   position: absolute;
   z-index: 6;
@@ -179,285 +299,750 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 3px solid #1b1a18;
-  border-radius: 50%;
-  background: #f4c84b;
-  color: #3c2505;
-  font-size: 22px;
+  border: none;
+  background: transparent;
+  color: #ff9500;
+  font-size: 34px;
   font-weight: 1000;
   line-height: 1;
-  cursor: pointer;
-  box-shadow: 0 3px 0 rgba(27, 26, 24, 0.28);
-  transition:
-    transform 140ms ease,
-    filter 140ms ease,
-    outline-color 140ms ease;
+  pointer-events: none;
+  text-shadow: 0 2px 3px #1b1a18, 0 0 4px #1b1a18;
 }
+
 /*
+
  * Assanti's side quest.
+
  * Floats above the Food Shop.
+
  */
+
 .kithnaQuestMarker--food {
   left: 29%;
+
   top: 66%;
 }
+
 /*
+
  * Something's Afoot.
+
  * Floats above Kithna Wildwood.
+
  */
+
 .kithnaQuestMarker--wildwood {
   left: 14%;
+
   top: 39%;
 }
+
 /*
+
  * Main quest distinction.
+
  * The exclamation point stays the normal quest marker,
+
  * while the small star identifies the main quest line.
+
  */
+
 .kithnaQuestMarkerStar {
   position: absolute;
-  right: -12px;
-  top: -9px;
-  color: #f4c84b;
+
+  right: 0;
+
+  top: -3px;
+
+  color: #ff9500;
+
   font-size: 18px;
+
   line-height: 1;
+
   text-shadow:
     -1px -1px 0 #1b1a18,
     1px -1px 0 #1b1a18,
     -1px 1px 0 #1b1a18,
     1px 1px 0 #1b1a18;
+
   pointer-events: none;
 }
+
 .kithnaQuestMarker--turn-in {
-  background: #67e8f9;
-  color: #10243a;
-  box-shadow:
-    0 3px 0 rgba(27, 26, 24, 0.28),
-    0 0 16px rgba(103, 232, 249, 0.55);
+  color: #67e8f9;
 }
-.kithnaQuestMarker:hover,
-.kithnaQuestMarker:focus-visible {
-  outline: 3px solid var(--dp-cyan, #67e8f9);
-  outline-offset: 3px;
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-}
+
 .kithnaBuildingIcon {
   display: grid;
+
   place-items: center;
+
   width: 34px;
+
   height: 30px;
+
   margin-bottom: 4px;
+
   border: 2px solid #1b1a18;
+
   border-radius: 8px;
+
   background: #f8f4df;
+
   font-size: 18px;
+
   line-height: 1;
 }
+
 .kithnaBuildingLabel {
   font-size: clamp(0.64rem, 1vw, 0.9rem);
+
   line-height: 1.05;
+
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
 }
+
 .kithnaTargetDungeon {
   left: 72%;
+
   top: 8%;
+
   background: #6d6274;
+
   color: #fff4d6;
 }
+
 .kithnaTargetWildwood {
   left: 2%;
+
   top: 46%;
+
   background: #78966d;
+
   color: #fff4d6;
 }
+
 .kithnaTargetWildwood::before {
   background: #315d38;
 }
+
 .kithnaTargetDungeon::before {
   background: #34303a;
 }
+
 .kithnaTargetHealth {
   left: 16%;
+
   top: 21%;
 }
+
 .kithnaTargetHealth::before {
   background: #4b9a55;
 }
+
 .kithnaTargetHatchery {
   left: 42%;
+
   top: 13%;
 }
+
 .kithnaTargetHatchery::before {
   background: #2f78bf;
 }
+
 .kithnaTargetRelics {
   left: 66%;
+
   top: 23%;
+
   background: #d8c8ee;
 }
+
 .kithnaTargetRelics::before {
   background: #7652a8;
 }
+
 .kithnaTargetFoodShop {
   left: 17%;
+
   top: 73%;
 }
+
 .kithnaTargetFoodShop::before {
   background: #c8463d;
 }
+
 .kithnaTargetPetCare {
   left: 37%;
+
   top: 75%;
 }
+
 .kithnaTargetPetCare::before {
   background: #2f78bf;
 }
+
 .kithnaTargetGym {
   left: 57%;
+
   top: 70%;
 }
+
 .kithnaTargetGym::before {
   background: #df962c;
 }
+
 .kithnaTargetFarm {
   left: 77%;
+
   top: 69%;
 }
+
 .kithnaTargetFarm::before {
   background: #4b9a55;
 }
+
 .kithnaTargetProfile {
   left: 44%;
+
   top: 43%;
+
   width: 12%;
+
   height: 12%;
+
   border-radius: 999px;
+
   background: #c8e9f1;
 }
+
 .kithnaTargetProfile::before {
   display: none;
 }
+
 .kithnaWildwoodLockedNotice {
   position: absolute;
+
   z-index: 10;
+
   left: 50%;
+
   bottom: 4%;
+
   width: min(90%, 26rem);
+
   transform: translateX(-50%);
+
   border: 2px solid var(--dp-cyan, #67e8f9);
+
   border-radius: 12px;
+
   padding: 12px;
+
   background: rgba(18, 22, 38, 0.96);
+
   color: #fff4d6;
+
   text-align: center;
 }
+
 .kithnaWildwoodLockedNotice p {
   margin: 0 0 8px;
 }
+
 .kithnaWildwoodLockedNotice .kithnaToolbarButton {
   margin-top: 4px;
 }
+
 .kithnaEggFountain {
   position: absolute;
+
   left: 45%;
+
   top: 43%;
+
   width: 10%;
+
   height: 12%;
+
   pointer-events: none;
 }
+
 .kithnaFountainBowl {
   position: absolute;
+
   left: 8%;
+
   right: 8%;
+
   bottom: 0;
+
   height: 38%;
+
   border: 3px solid #1b1a18;
+
   border-radius: 999px;
+
   background: #72c9df;
 }
+
 .kithnaFountainEgg {
   position: absolute;
+
   left: 34%;
+
   top: 0;
+
   width: 32%;
+
   height: 54%;
+
   border: 3px solid #1b1a18;
+
   border-radius: 50% 50% 45% 45%;
+
   background: #d9c19a;
 }
+
 .kithnaToolbar {
   display: flex;
+
   flex-wrap: wrap;
+
   gap: 8px;
+
   justify-content: center;
+
   margin-top: 14px;
 }
+
 .kithnaToolbarButton {
   border: 2px solid var(--dp-cyan, #67e8f9);
+
   border-radius: 999px;
+
   background: rgba(18, 22, 38, 0.88);
+
   color: var(--dp-gold, #f4d36b);
+
   padding: 8px 12px;
+
   font-weight: 900;
+
   cursor: pointer;
 }
+
 .kithnaToolbarButton:hover,
 .kithnaToolbarButton:focus-visible {
   background: rgba(103, 232, 249, 0.18);
 }
+
 @media (max-width: 760px) {
   .kithnaMapPage {
     padding: 12px;
   }
+
   .kithnaMapTarget {
     width: 18%;
+
     height: 15%;
+
     padding: 4px;
   }
+
   .kithnaBuildingIcon {
     width: 26px;
+
     height: 24px;
+
     font-size: 14px;
   }
+
   .kithnaBuildingLabel {
     font-size: 0.58rem;
   }
+
   /*
+
    * Keep the same map-relative quest positions on mobile.
+
    * Only the marker itself becomes smaller.
+
    */
+
   .kithnaQuestMarker {
     width: 30px;
+
     height: 30px;
-    font-size: 18px;
+
+    font-size: 30px;
   }
+
   .kithnaQuestMarker--food {
     left: 29%;
+
     top: 65%;
   }
+
   .kithnaQuestMarker--wildwood {
     left: 14%;
+
     top: 38%;
   }
+
   .kithnaQuestMarkerStar {
-    right: -10px;
-    top: -8px;
+    right: -1px;
+
+    top: -3px;
+
     font-size: 15px;
   }
 }
+
 /*
+
  * Kithna artwork integration.
+
  * Hide legacy placeholder scenery and map controls.
+
  * Preserve their existing React code and behavior for future map markers.
+
  *
+
  * IMPORTANT:
+
  * Keep this block at the end so it overrides earlier display rules.
+
  */
+
 .kithnaWater,
 .kithnaPath,
 .kithnaEggFountain,
-.kithnaMapTarget,
-.kithnaQuestMarker {
+.kithnaMapTarget {
   display: none;
+}
+
+/* Desktop map markers — one authoritative position per marker.
+
+ * Coordinates are relative to the Kithna artwork, not the viewport.
+
+ * Adjust left/top below to move an individual marker.
+
+ */
+
+.kithnaDesktopBuildingMarkers {
+  display: none;
+}
+
+@media (min-width: 901px) {
+  .kithnaDesktopBuildingMarkers {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 7;
+
+    display: block;
+
+    pointer-events: none;
+  }
+
+  .kithnaDesktopBuildingMarkerAnchor {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+  }
+
+  .kithnaDesktopBuildingMarker {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 34px;
+
+    height: 34px;
+
+    padding: 0;
+
+    border: 2px solid #e6c5ff;
+    background: #914ddf;
+    color: #fff4da;
+
+    border-radius: 50%;
+
+    background-image: none;
+
+    color: #ffffff;
+
+    box-shadow: 0 0 0 2px rgba(3, 20, 49, 0.8);
+
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    pointer-events: auto;
+
+    opacity: 1;
+  }
+
+  .kithnaDesktopBuildingMarker:hover,
+  .kithnaDesktopBuildingMarker:focus-visible {
+    outline: 2px solid var(--dp-cyan, #67e8f9);
+
+    outline-offset: 2px;
+
+    filter: brightness(1.2);
+  }
+
+  .kithnaDesktopBuildingMarker[aria-disabled="true"] {
+    opacity: 0.7;
+
+    cursor: not-allowed;
+  }
+
+  /* Button positions — change only these left/top values. */
+
+  .kithnaDesktopBuildingMarker--gym {
+    left: 38%;
+
+    top: 12%;
+  }
+
+  .kithnaDesktopBuildingMarker--fishing {
+    left: 56%;
+
+    top: 12%;
+  }
+
+  .kithnaDesktopBuildingMarker--boat {
+    left: 85%;
+
+    top: 17.5%;
+
+    .kithnaDesktopBuildingMarker {
+      background: #475569;
+      border-color: #94a3b8;
+      color: #cbd5e1;
+      opacity: 0.65;
+      cursor: pointer;
+    }
+
+    .kithnaDesktopBuildingMarker--boat .kithnaDesktopBuildingMarker:hover {
+      filter: brightness(1.15);
+    }
+  }
+
+  .kithnaDesktopBuildingMarker--farm {
+    left: 91%;
+
+    top: 26%;
+  }
+
+  .kithnaDesktopBuildingMarker--wardrobe {
+    left: 45%;
+
+    top: 31%;
+  }
+
+  .kithnaDesktopBuildingMarker--registry {
+    left: 65%;
+
+    top: 40%;
+  }
+
+  .kithnaDesktopBuildingMarker--pet-care {
+    left: 90%;
+
+    top: 51%;
+  }
+
+  .kithnaDesktopBuildingMarker--hatchery {
+    left: 81%;
+
+    top: 66%;
+  }
+
+  .kithnaDesktopBuildingMarker--park {
+    left: 9%;
+
+    top: 58%;
+  }
+
+  .kithnaDesktopBuildingMarker--wildwood {
+    left: 16.7%;
+
+    top: 80%;
+  }
+
+  /* UNKNOWN LOCATION — Lower-right sign */
+
+  .kithnaDesktopBuildingMarker--unknown {
+    left: 95.5%;
+
+    top: 87%;
+
+    cursor: not-allowed;
+  }
+
+  /* Closed Alpha previews keep their full-color marker appearance. */
+
+  .kithnaDesktopBuildingMarker--registry:disabled,
+  .kithnaDesktopBuildingMarker--boat:disabled,
+  .kithnaDesktopBuildingMarker--park:disabled {
+    opacity: 1;
+  }
+
+  .kithnaDesktopBuildingMarker--park {
+    cursor: not-allowed;
+  }
+}
+
+/* Preview markers remain blue and hoverable for Coming Soon tooltips. */
+@media (min-width: 901px) {
+  .kithnaDesktopBuildingMarker[aria-disabled="true"] {
+    opacity: 1;
+    cursor: not-allowed;
+  }
+}
+
+/* Quest indicators follow the existing desktop icon anchors. */
+@media (min-width: 901px) {
+  .kithnaQuestMobileMarkers { display: none; }
+
+  .kithnaQuestMarker--anchored {
+    left: 50%;
+    top: auto;
+    bottom: calc(100% + 4px);
+    transform: translateX(-50%);
+  }
+
+
+}
+
+/* Border colors apply only to the three Kithna location notices. */
+.dpPopupWindow.kithnaLocationPopup {
+  --dp-popup-border: var(--dp-cyber-cyan);
+  --dp-popup-inner-border: var(--dp-panel-purple-border);
+  width: min(100%, 480px);
+}
+
+.kithnaDirectoryHeading,
+.kithnaLocationDirectory {
+  display: none;
+}
+
+@media (min-width: 901px) {
+  .kithnaMapPage {
+    display: grid;
+    grid-template-columns:
+      minmax(0, calc((100% - var(--space-6)) / 3))
+      minmax(0, min(var(--kithna-aligned-map-width, 507px), calc((100% - var(--space-6)) * 2 / 3)));
+    justify-content: center;
+    align-items: start;
+    gap: var(--space-6);
+    width: min(100%, var(--dp-page-max));
+    max-width: var(--dp-page-max);
+    margin-inline: auto;
+  }
+
+  .kithnaMapPage > [role="status"],
+  .kithnaMapPage > [role="alert"],
+  .kithnaDirectoryHeading {
+    grid-column: 1 / -1;
+  }
+
+  .kithnaDirectoryHeading {
+    display: block;
+    margin: 0;
+    padding: var(--space-6);
+    text-align: center;
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 2.4vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+    color: var(--dp-title-gold);
+    box-shadow: none;
+    --dp-popup-border: var(--dp-cyber-cyan);
+    --dp-popup-inner-border: var(--dp-panel-purple-border);
+  }
+
+  .kithnaLocationDirectory {
+    display: grid;
+    align-self: start;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .kithnaMapFrame {
+    width: min(100%, var(--kithna-aligned-map-width, 507px));
+    max-width: none;
+    margin: 0 auto;
+    box-shadow: none;
+  }
+
+  .kithnaDirectoryEntry {
+    --dp-popup-border: var(--dp-cyber-cyan);
+    --dp-popup-inner-border: var(--dp-panel-purple-border);
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-6);
+    color: var(--dp-panel-text);
+    font: inherit;
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+  }
+
+  .kithnaDirectoryEntry::before {
+    background-image: none;
+  }
+
+  .kithnaDirectoryEntry::after {
+    content: "";
+    position: absolute;
+    inset: calc(var(--dp-popup-inset-gap) + var(--dp-popup-inner-border-width));
+    z-index: 0;
+    border-radius: var(--radius-md);
+    background-image: var(--dp-popup-grid-texture);
+    background-size:
+      var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+      var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+      520px 520px,
+      auto;
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  .kithnaDirectoryEntry svg {
+    flex-shrink: 0;
+    color: var(--dp-cyber-cyan);
+  }
+
+  .kithnaDirectoryEntry:hover,
+  .kithnaDirectoryEntry:focus-visible {
+    outline: 2px solid var(--dp-cyber-cyan);
+    outline-offset: 2px;
+  }
+
+  .kithnaDirectoryEntry[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  .kithnaDirectoryDescription {
+    display: block;
+    margin-top: var(--space-1);
+    color: var(--dp-panel-muted);
+  }
 }

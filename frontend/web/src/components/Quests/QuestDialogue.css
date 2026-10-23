@@ -1,6 +1,6 @@
 .questDialogueWindow {
   position: relative;
-  width: min(760px, calc(100vw - 32px));
+  width: min(700px, 100%);
   display: grid;
   grid-template-columns: minmax(180px, 240px) 1fr;
   gap: 22px;
@@ -140,7 +140,7 @@
 
 .questDialogueWindow {
   position: relative;
-  width: min(760px, calc(100vw - 32px));
+  width: min(700px, 100%);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 22px;
@@ -166,4 +166,71 @@
   .questDialogueActions {
     flex-direction: column-reverse;
   }
+
+/* Keep the dialogue inside the Kithna image and its clipping boundary. */
+.questDialogueBackdrop.dpPopupWindowBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  height: 100%;
+  padding: max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.questDialogueWindow.dpPopupWindow {
+  width: min(700px, 100%);
+  max-height: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 16px;
+}
+
+.questDialogueWindow .questDialoguePortraitFrame,
+.questDialogueWindow .questDialoguePortrait,
+.questDialogueWindow .questDialoguePortraitPlaceholder {
+  min-height: 0;
+  height: 150px;
+}
+
+.questDialogueBody {
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.questDialogueScroll {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  overscroll-behavior: contain;
+}
+
+.questDialogueActions {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px), (max-height: 600px) {
+  .questDialogueWindow .questDialoguePortraitFrame,
+  .questDialogueWindow .questDialoguePortrait,
+  .questDialogueWindow .questDialoguePortraitPlaceholder {
+    height: 80px;
+  }
+
+  .questDialogueWindow.dpPopupWindow {
+    gap: 10px;
+  }
+
+  .questDialogueActions {
+    margin-top: 10px;
+  }
+}
+
+.questDialogueActions .dp-btn {
+  font-family: var(--font-body);
+  font-size: var(--btn-gold-font-size);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
 }

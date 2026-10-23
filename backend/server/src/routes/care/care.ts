@@ -342,27 +342,39 @@ async function hydratePassiveTrait(pet: Record<string, any>) {
 }
 careRouter.get("/spotlight", async (_req, res) => {
   try {
-    const { data: slots, error: slotsError } = await supabaseAdmin
+    const { count: slotCount, error: countError } = await supabaseAdmin
       .from("party_slots")
-      .select("user_id,pet_id,slot_index")
-      .eq("slot_index", 1)
-      .order("user_id", { ascending: true });
+      .select("user_id", { count: "exact", head: true })
+      .eq("slot_index", 1);
 
-    if (slotsError) {
-      throw slotsError;
+    if (countError) {
+      throw countError;
     }
 
-    const candidates = Array.isArray(slots) ? slots : [];
-
-    if (!candidates.length) {
+    if (!slotCount) {
       return res.json({ pet: null });
     }
 
     const rotationWindowMs = 2 * 60 * 60 * 1000;
     const rotationIndex =
-      Math.floor(Date.now() / rotationWindowMs) % candidates.length;
+      Math.floor(Date.now() / rotationWindowMs) % slotCount;
 
-    const selectedSlot = candidates[rotationIndex];
+    const { data: selectedSlot, error: slotsError } = await supabaseAdmin
+      .from("party_slots")
+      .select("user_id,pet_id,slot_index")
+      .eq("slot_index", 1)
+      .order("user_id", { ascending: true })
+      .range(rotationIndex, rotationIndex)
+      .maybeSingle();
+
+    if (slotsError) {
+      throw slotsError;
+    }
+
+    // A slot can disappear between the count and selection queries.
+    if (!selectedSlot) {
+      return res.json({ pet: null });
+    }
 
     const [
       { data: pet, error: petError },

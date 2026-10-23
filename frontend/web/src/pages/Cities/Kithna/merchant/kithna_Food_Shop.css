@@ -135,3 +135,40 @@
   font-family: var(--font-heading);
   color: var(--merchant-cream);
 }
+
+.kithna-food-trade-name small {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.kithna-food-column-labels,
+.kithna-food-trade-help {
+  font-size: 0.8rem;
+}
+
+.kithna-food-trade-button {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1200px) {
+  .kithna-food-trade-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .kithna-food-header,
+  .kithna-food-main-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kithna-food-trade-row {
+    grid-template-columns: minmax(0, 1fr) 36px 48px 42px;
+    gap: 5px;
+    padding-inline: 4px;
+  }
+}

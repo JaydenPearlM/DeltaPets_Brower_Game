@@ -1,44 +1,44 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
 import {
   fetchWildwoodStatus,
+  acceptAssantiFoodQuest,
+  turnInAssantiFoodQuest,
   type WildwoodStatus,
 } from "@/lib/kithna/wildwoodApi";
 import {
-  type InventoryItemDefinition,
   type BackendInventoryItem,
 } from "@/components/inventory/inventory";
 import "../../Merchant_global_styles.css";
 import "./kithna_Food_Shop.css";
 import PoeTayToe from "../../../../components/PoeTayToe/PoeTayToe";
-const MEAT_ITEM: InventoryItemDefinition = {
-  slug: "alpha-meat",
-  name: "Meat",
-  type: "food",
-  description: "Fresh cuts harvested from Kithna's meat tree.",
-  rarity: "common",
-  stackLimit: 99,
-  careCategory: "food",
+type ShopFood = {
+  slug: string;
+  name: string;
+  description: string;
+  price: number;
+  hunger: number;
+  stackLimit: number;
+  permanent: boolean;
+  available: boolean;
 };
-const VEGETABLE_ITEM: InventoryItemDefinition = {
-  slug: "alpha-vegetables",
-  name: "Vegetables",
-  type: "food",
-  description: "Simple vegetables grown in Kithna's garden.",
-  rarity: "common",
-  stackLimit: 99,
-  careCategory: "food",
+type FoodShop = {
+  deltaDay: number;
+  nextRotationAt: string;
+  merchantDots: number;
+  catalog: ShopFood[];
+  dailyFood: { status: "locked" | "available" | "claimed"; nextClaimAt: string | null };
 };
+const quantityWithin = (value: number, limit: number) =>
+  Number.isFinite(value) ? Math.max(0, Math.min(limit, Math.floor(value))) : 0;
 const ALIUNE_NEWS = [
   "Ever since that purple mist popped up, everyone's been on edge.",
   "Have you heard? Alec over at the breeding station got an egg where nothing came out. That's crazy!",
   "I like to work alone, but this makes going to the bathroom hard and awkward.",
   "I was taking a little stroll through town the other day when I saw the most beautiful Kith I've ever seen. Absolutely stunning. Then it spotted me and took off so fast I started wondering if I'd imagined the whole thing. Rude, honestly.",
 ];
-const isMerchantFood = (slug: string) =>
-  slug === MEAT_ITEM.slug || slug === VEGETABLE_ITEM.slug;
 type InventoryWalletResponse = {
   items: BackendInventoryItem[];
   wallet: {
@@ -54,150 +54,191 @@ export default function KithnaFoodShop() {
     user?.user_metadata?.nickname ??
     "Your";
   const [userDots, setUserDots] = useState<number | null>(null);
-  const [wildwoodStatus, setWildwoodStatus] = useState<WildwoodStatus | null>(
-    null,
-  );
-  const [merchantDots, setMerchantDots] = useState(2000);
-  const [busyAction, setBusyAction] = useState<"trade" | "daily" | null>(null);
-  const [meatQuantity, setMeatQuantity] = useState(0);
-  const [vegetableQuantity, setVegetableQuantity] = useState(0);
-  const [meatStock, setMeatStock] = useState(50);
-  const [vegetableStock, setVegetableStock] = useState(50);
-  const [sellQuantities, setSellQuantities] = useState<Record<string, number>>(
-    {},
-  );
+  const [wildwoodStatus, setWildwoodStatus] = useState<WildwoodStatus | null>(null);
+  const [shop, setShop] = useState<FoodShop | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [busyAction, setBusyAction] = useState<"trade" | "daily" | "quest" | null>(null);
+  const [purchaseQuantities, setPurchaseQuantities] = useState<Record<string, number>>({});
+  const [sellQuantities, setSellQuantities] = useState<Record<string, number>>({});
   const [merchantMessage, setMerchantMessage] = useState("");
-  const [userInventory, setUserInventory] = useState<BackendInventoryItem[]>(
-    [],
-  );
-  const tradeInFlight = useRef(false);
+  const [userInventory, setUserInventory] = useState<BackendInventoryItem[]>([]);
+  const actionInFlight = useRef(false);
+  const greetedUser = useRef<string | null>(null);
+  const refreshVersion = useRef(0);
+  const displayedDay = useRef<number | null>(null);
   const [newsLine, setNewsLine] = useState(
     "Welcome in. The meat tree was generous this morning, and the garden behaved itself for once.",
   );
-  async function refreshWallet() {
-    const result = await apiFetch<InventoryWalletResponse>("/api/inventory");
-    setUserDots(result.wallet.dots);
-    setUserInventory(result.items);
-  }
-  useEffect(() => {
-    void refreshWallet().catch(() => setUserDots(null));
-    void fetchWildwoodStatus()
-      .then(setWildwoodStatus)
-      .catch(() => setWildwoodStatus(null));
+  const refreshShop = useCallback(async () => {
+    const version = ++refreshVersion.current;
+    setLoadState("loading");
+    try {
+      const [currentShop, inventory, quests] = await Promise.all([
+        apiFetch<FoodShop>("/api/merchants/kithna/food"),
+        apiFetch<InventoryWalletResponse>("/api/inventory"),
+        fetchWildwoodStatus(),
+      ]);
+      if (version === refreshVersion.current) {
+        if (displayedDay.current !== null && displayedDay.current !== currentShop.deltaDay) {
+          setPurchaseQuantities({});
+          if (!actionInFlight.current) setMerchantMessage("A new DeltaPets day! I've refreshed the selection. Please choose your purchases again.");
+        }
+        displayedDay.current = currentShop.deltaDay;
+        setShop(currentShop);
+        setUserDots(inventory.wallet.dots);
+        setUserInventory(inventory.items);
+        setWildwoodStatus(quests);
+        setLoadState("ready");
+      }
+      return currentShop;
+    } catch (error) {
+      if (version === refreshVersion.current) {
+        setShop(null);
+        setUserDots(null);
+        setUserInventory([]);
+        setWildwoodStatus(null);
+        setLoadState("error");
+      }
+      throw error;
+    }
   }, []);
+  useEffect(() => {
+    try {
+      if (user?.id && greetedUser.current !== user.id) {
+        greetedUser.current = user.id;
+        const key = "assanti-visited:" + user.id;
+        if (sessionStorage.getItem(key)) setNewsLine("Welcome back, Keeper. Let's keep your Kith fed.");
+        sessionStorage.setItem(key, "yes");
+      }
+    } catch { /* Visiting and trading also work when storage is unavailable. */ }
+    const refresh = () => {
+      if (actionInFlight.current) return;
+      void refreshShop().catch((error: unknown) => setMerchantMessage(
+        error instanceof Error ? error.message : "Could not refresh the shop. Please try again.",
+      ));
+    };
+    refresh();
+    const interval = window.setInterval(refresh, 30_000);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refresh);
+      refreshVersion.current += 1;
+    };
+  }, [refreshShop, user?.id]);
+  useEffect(() => {
+    if (!shop) return;
+    // This only refreshes the display; the server determines the Delta day.
+    const timer = window.setTimeout(() => {
+      if (!actionInFlight.current) void refreshShop().catch(() =>
+        setMerchantMessage("The day changed. Please refresh the shop before trading."));
+    }, Math.max(250, Date.parse(shop.nextRotationAt) - Date.now() + 100));
+    return () => window.clearTimeout(timer);
+  }, [shop?.nextRotationAt, refreshShop]);
+  const catalog = shop?.catalog ?? [];
+  const availableFoods = catalog.filter((food) => food.available);
+  const ownedQuantity = (slug: string) => userInventory.find((item) => item.slug === slug)?.qty ?? 0;
+  const buyLimit = (food: ShopFood) => Math.max(0, Math.min(50, food.stackLimit - ownedQuantity(food.slug)));
+  const tradeableUserInventory = userInventory.filter((item) => item.qty > 0 && catalog.some((food) => food.slug === item.slug));
+  const priceOf = (slug: string) => catalog.find((food) => food.slug === slug)?.price ?? 0;
+  const purchaseTotal = availableFoods.reduce((total, food) =>
+    total + quantityWithin(purchaseQuantities[food.slug] ?? 0, buyLimit(food)) * food.price, 0);
+  const sellTotal = tradeableUserInventory.reduce((total, item) =>
+    total + quantityWithin(sellQuantities[item.slug] ?? 0, item.qty) * priceOf(item.slug), 0);
+  const tradeBalance = sellTotal - purchaseTotal;
+  const quest = wildwoodStatus?.foodQuest;
+  const questLabel = !quest ? "Quest status unavailable" : quest.status === "available" ? "Quest available"
+    : quest.status === "completed" ? "Quest completed — Daily Food unlocked"
+    : quest.status === "ready_to_turn_in" ? "Ready to complete"
+    : quest.progress === 0 ? "Quest accepted" : "Quest in progress";
   async function completeTrade() {
-    if (busyAction || tradeInFlight.current || userDots === null) return;
-    const meat = Math.max(0, Math.min(50, meatStock, Math.floor(meatQuantity)));
-    const vegetables = Math.max(
-      0,
-      Math.min(50, vegetableStock, Math.floor(vegetableQuantity)),
-    );
-    const soldItems = userInventory
-      .filter((item) => isMerchantFood(item.slug))
-      .map((item) => ({
-        item,
-        quantity: Math.max(
-          0,
-          Math.min(item.qty, Math.floor(sellQuantities[item.slug] ?? 0)),
-        ),
-      }))
-      .filter(({ quantity }) => quantity > 0);
-    const purchaseTotal = (meat + vegetables) * 5;
-    const sellQuantityTotal = soldItems.reduce(
-      (total, { quantity }) => total + quantity,
-      0,
-    );
-    const sellTotal = sellQuantityTotal * 5;
-    if (purchaseTotal === 0 && sellTotal === 0) {
-      setMerchantMessage("Choose something to trade first.");
-      return;
-    }
-    if (sellTotal > merchantDots + purchaseTotal) {
-      setMerchantMessage("Assanti does not have enough Dots for that trade.");
-      return;
-    }
-    tradeInFlight.current = true;
+    if (actionInFlight.current || !shop || userDots === null) return;
+    const purchases = availableFoods.map((food) => ({ slug: food.slug,
+      quantity: quantityWithin(purchaseQuantities[food.slug] ?? 0, buyLimit(food)),
+    })).filter((line) => line.quantity > 0);
+    const sales = tradeableUserInventory.map((item) => ({ slug: item.slug,
+      quantity: quantityWithin(sellQuantities[item.slug] ?? 0, item.qty),
+    })).filter((line) => line.quantity > 0);
+    if (!purchases.length && !sales.length) return;
+    actionInFlight.current = true;
     setBusyAction("trade");
     setMerchantMessage("");
     let completed = 0;
+    let spent = 0;
+    let received = 0;
     try {
-      // Each line is atomic; a later failure does not undo completed lines.
-      for (const [slug, quantity] of [
-        [MEAT_ITEM.slug, meat],
-        [VEGETABLE_ITEM.slug, vegetables],
-      ] as const) {
-        if (quantity === 0) continue;
-        await apiFetch("/api/merchants/kithna/food/purchase", {
-          method: "POST",
-          json: { slug, quantity },
-        });
-        completed += 1;
-        setMerchantDots((current) => current + quantity * 5);
-        if (slug === MEAT_ITEM.slug)
-          setMeatStock((current) => current - quantity);
-        else setVegetableStock((current) => current - quantity);
+      const current = await refreshShop();
+      if (current.deltaDay !== shop.deltaDay) throw new Error("Today's selection has changed. Review your quantities and trade again.");
+      // Preserve safe line-by-line transactions. Purchases are processed first.
+      for (const [direction, lines] of [["purchase", purchases], ["sell", sales]] as const) {
+        for (const line of lines) {
+          const result = await apiFetch<{ cost: number; value: number }>(
+            "/api/merchants/kithna/food/" + direction, { method: "POST", json: line },
+          );
+          completed += 1;
+          spent += result.cost;
+          received += result.value;
+        }
       }
-      for (const { item, quantity } of soldItems) {
-        await apiFetch("/api/merchants/kithna/food/sell", {
-          method: "POST",
-          json: { slug: item.slug, quantity },
-        });
-        completed += 1;
-        setMerchantDots((current) => current - quantity * 5);
-        if (item.slug === MEAT_ITEM.slug)
-          setMeatStock((current) => current + quantity);
-        else setVegetableStock((current) => current + quantity);
-      }
-      await refreshWallet();
-      const balance = sellTotal - purchaseTotal;
-      setMerchantMessage(
-        balance > 0
-          ? `Trade complete. Assanti paid you ${balance} Dots.`
-          : balance < 0
-            ? `Trade complete. You paid Assanti ${Math.abs(balance)} Dots.`
-            : "Trade complete. Even trade.",
-      );
+      await refreshShop();
+      setMerchantMessage((sales.length && purchases.length ? "Trade complete. Thank you, Keeper!"
+        : purchases.length ? "All bought. A good meal makes a happy Kith!" : "All sold. Thanks for helping stock the farm shop!")
+        + ` Spent ${spent} Dots; received ${received} Dots.`);
     } catch (error) {
-      await refreshWallet().catch(() => {
-        setUserDots(null);
-        setUserInventory([]);
-      });
-      const message = error instanceof Error ? error.message : "Trade failed.";
-      setMerchantMessage(
-        (completed > 0 ? "Earlier trade lines completed. " : "") + message,
-      );
+      let refreshed = true;
+      await refreshShop().catch(() => { refreshed = false; });
+      const errorMessage = error instanceof Error ? error.message : "Trade failed.";
+      const dialogue = errorMessage === "Not enough Dots."
+        ? "You're short on Dots, Keeper. Try buying a little less."
+        : errorMessage === "Assanti does not have enough Dots."
+          ? "My purse won't stretch that far, Keeper. Try selling a little less."
+          : errorMessage;
+      setMerchantMessage((completed ? `${completed} of ${purchases.length + sales.length} trade lines completed; they were not undone. Spent ${spent} Dots; received ${received} Dots on those lines. ` : "")
+        + dialogue
+        + (refreshed ? "" : " Balances could not be refreshed. Trading is disabled until the shop reconnects."));
     } finally {
-      // Never leave successful lines selected after a partial failure.
-      setMeatQuantity(0);
-      setVegetableQuantity(0);
+      setPurchaseQuantities({});
       setSellQuantities({});
-      tradeInFlight.current = false;
+      actionInFlight.current = false;
       setBusyAction(null);
     }
   }
   async function claimDailyFood() {
-    if (busyAction) return;
-    if (!wildwoodStatus?.dailyFoodUnlocked) {
-      setMerchantMessage(
-        "Daily Food is still locked. Help Assanti with the corrupted Kith and return to her when the job is done.",
-      );
-      return;
-    }
+    if (actionInFlight.current || shop?.dailyFood.status !== "available") return;
+    actionInFlight.current = true;
     setBusyAction("daily");
-    setMerchantMessage("");
+    let message = "";
     try {
       await apiFetch("/api/merchants/kithna/food/daily", { method: "POST" });
-      setMerchantMessage("Assanti gave you 10 Meat and 10 Vegetables.");
-      await refreshWallet();
+      message = "Assanti gave you 5 Basic Meat and 5 Basic Vegetables. Keep those Kith well fed!";
     } catch (error) {
-      await refreshWallet().catch(() => {
-        setUserDots(null);
-        setUserInventory([]);
-      });
-      setMerchantMessage(
-        error instanceof Error ? error.message : "Daily Food claim failed.",
-      );
+      message = error instanceof Error ? error.message : "Daily Food claim failed.";
     } finally {
+      await refreshShop().catch(() => { message += " Could not refresh balances. Please reconnect."; });
+      setMerchantMessage(message);
+      actionInFlight.current = false;
+      setBusyAction(null);
+    }
+  }
+  async function interactWithQuest() {
+    if (actionInFlight.current || !quest || !["available", "ready_to_turn_in"].includes(quest.status)) return;
+    actionInFlight.current = true;
+    setBusyAction("quest");
+    let message = "";
+    try {
+      if (quest.status === "available") {
+        await acceptAssantiFoodQuest();
+        message = "Thank you, Keeper. Help with the corrupted Kith, then come back to me.";
+      } else {
+        await turnInAssantiFoodQuest();
+        message = "The farm is safe again. Thank you! Your Daily Food is now unlocked.";
+      }
+    } catch (error) {
+      message = error instanceof Error ? error.message : "Could not update the quest.";
+    } finally {
+      await refreshShop().catch(() => { message += " Could not refresh the shop. Please reconnect."; });
+      setMerchantMessage(message);
+      actionInFlight.current = false;
       setBusyAction(null);
     }
   }
@@ -209,21 +250,6 @@ export default function KithnaFoodShop() {
       "Kithna is a small, peaceful city and one of the safest places for new Keepers to begin exploring. Most wild Kith around town are lower level, and the old water fountain in the center of Kithna is a popular meeting place for residents, travelers, and Kith alike. Shops and homes have grown around it over the years, giving the city its quiet, close-knit feel. Most days are calm. Most days. Lately, strange Kith sightings, corrupted creatures, and rumors from around Aliune have started making their way into town.",
     );
   }
-  const purchaseTotal = (meatQuantity + vegetableQuantity) * 5;
-  const sellTotal = userInventory.reduce((total, item) => {
-    if (!isMerchantFood(item.slug)) {
-      return total;
-    }
-    const quantity = Math.max(
-      0,
-      Math.min(item.qty, Math.floor(sellQuantities[item.slug] ?? 0)),
-    );
-    return total + quantity * 5;
-  }, 0);
-  const tradeBalance = sellTotal - purchaseTotal;
-  const tradeableUserInventory = userInventory.filter((item) =>
-    isMerchantFood(item.slug),
-  );
   return (
     <main className="dp-merchant-page kithna-food-shop">
       <div className="dp-merchant-shell poeTayToeHost">
@@ -252,7 +278,7 @@ export default function KithnaFoodShop() {
                     Merchant Dots
                   </span>
                   <span className="dp-merchant-wallet-value">
-                    {merchantDots.toLocaleString()}
+                    {shop ? shop.merchantDots.toLocaleString() : "—"}
                   </span>
                 </div>
                 <div className="dp-merchant-wallet">
@@ -283,25 +309,42 @@ export default function KithnaFoodShop() {
                   About Kithna
                 </button>
               </div>
-              {wildwoodStatus?.dailyFoodUnlocked ? (
-                <div className="dp-merchant-daily">
-                  <h3 className="dp-merchant-daily-title">Daily Food</h3>
-                  <p className="dp-merchant-daily-copy">
-                    The farm is clear. Collect 10 Meat + 10 Vegetables once
-                    every 24 hours.
-                  </p>
-                  <button
-                    type="button"
-                    className="dp-btn btn-gold kithna-food-daily-button"
-                    disabled={busyAction !== null}
-                    onClick={claimDailyFood}
-                  >
-                    {busyAction === "daily"
-                      ? "Claiming..."
-                      : "Claim Daily Food"}
+              <p className="dp-merchant-daily-copy">
+                My farm is just to the right of the shop. Meat grows on the trees, and vegetables in the soil.
+                The basics are always here; the other foods change each DeltaPets day.
+              </p>
+              <div className="dp-merchant-daily">
+                <h3 className="dp-merchant-daily-title">Help Assanti</h3>
+                <p>{questLabel}</p>
+                {quest?.status === "available" && <p>Could you help with the strange Kith troubling my farm, Keeper?</p>}
+                {quest?.status === "ready_to_turn_in" && <p>You're back! Tell me how things went at the farm.</p>}
+                {quest?.status === "active" && <p>Corrupted Kith: {quest.progress} / {quest.target}. Keep going, Keeper!</p>}
+                {quest?.status === "available" || quest?.status === "ready_to_turn_in" ? (
+                  <button type="button" className="btn-pearl" disabled={busyAction !== null || !shop}
+                    onClick={() => void interactWithQuest()}>
+                    {busyAction === "quest" ? "Updating..." : quest.status === "available" ? "Accept quest" : "Complete quest"}
                   </button>
-                </div>
-              ) : null}
+                ) : null}
+                {quest?.status === "active" && <Link to="/cities/kithna">Return to Kithna</Link>}
+              </div>
+              <div className="dp-merchant-daily">
+                <h3 className="dp-merchant-daily-title">Daily Food</h3>
+                <p className="dp-merchant-daily-copy">5 Basic Meat + 5 Basic Vegetables, once every 24 hours.</p>
+                <p>{!shop ? (loadState === "error" ? "Daily Food status unavailable. Retry the shop." : "Checking availability...") : shop.dailyFood.status === "locked"
+                  ? "Locked — complete Assanti's quest." : shop.dailyFood.status === "claimed"
+                    ? "Already claimed. Your next meal is growing!" : "Available — your food is ready, Keeper."}</p>
+                {shop?.dailyFood.status === "claimed" && shop.dailyFood.nextClaimAt && <p>
+                  Available again: {new Date(shop.dailyFood.nextClaimAt).toLocaleString()}
+                </p>}
+                <button type="button" className="dp-btn btn-gold kithna-food-daily-button"
+                  disabled={busyAction !== null || shop?.dailyFood.status !== "available"}
+                  onClick={() => void claimDailyFood()}>
+                  {busyAction === "daily" ? "Claiming..." : "Claim Daily Food"}
+                </button>
+              </div>
+              {!shop && <button type="button" className="btn-pearl" disabled={busyAction !== null || loadState === "loading"}
+                onClick={() => void refreshShop().then(() => setMerchantMessage("Shop refreshed.")).catch((error: unknown) =>
+                  setMerchantMessage(error instanceof Error ? error.message : "Could not refresh the shop."))}>Retry shop</button>}
               {merchantMessage ? (
                 <p className="kithna-food-message" role="status">
                   {merchantMessage}
@@ -335,69 +378,29 @@ export default function KithnaFoodShop() {
                           )} Dots`
                         : "Trade Balance: 0 Dots"}
                   </div>
+                  <p className="kithna-food-trade-help">Prices and totals are in Dots. Purchases happen before sales; each item trades separately.</p>
                   <div className="kithna-food-trade-list">
-                    <div className="kithna-food-trade-row">
-                      <span className="kithna-food-trade-name">Meat</span>
-                      <span className="kithna-food-trade-cell">
-                        {meatStock}
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        max={Math.min(50, meatStock)}
-                        inputMode="numeric"
-                        className="kithna-food-trade-button"
-                        value={meatQuantity}
-                        disabled={busyAction !== null || meatStock === 0}
-                        onChange={(event) =>
-                          setMeatQuantity(
-                            Math.max(
-                              0,
-                              Math.min(
-                                50,
-                                meatStock,
-                                Number(event.target.value) || 0,
-                              ),
-                            ),
-                          )
-                        }
-                        aria-label="Meat quantity to buy"
-                      />
-                      <span className="kithna-food-trade-cell">
-                        {meatQuantity * 5}
-                      </span>
+                    {!shop && <p role="status">{loadState === "error" ? "Shop unavailable. Retry to load today's food." : "Loading today's food..."}</p>}
+                    <div className="kithna-food-trade-row kithna-food-column-labels" aria-hidden="true">
+                      <span className="kithna-food-trade-name">Food</span><span>Price</span><span>Qty</span><span>Total</span>
                     </div>
-                    <div className="kithna-food-trade-row">
-                      <span className="kithna-food-trade-name">Vegetables</span>
-                      <span className="kithna-food-trade-cell">
-                        {vegetableStock}
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        max={Math.min(50, vegetableStock)}
-                        inputMode="numeric"
-                        className="kithna-food-trade-button"
-                        value={vegetableQuantity}
-                        disabled={busyAction !== null || vegetableStock === 0}
-                        onChange={(event) =>
-                          setVegetableQuantity(
-                            Math.max(
-                              0,
-                              Math.min(
-                                50,
-                                vegetableStock,
-                                Number(event.target.value) || 0,
-                              ),
-                            ),
-                          )
-                        }
-                        aria-label="Vegetable quantity to buy"
-                      />
-                      <span className="kithna-food-trade-cell">
-                        {vegetableQuantity * 5}
-                      </span>
-                    </div>
+                    {availableFoods.map((food) => {
+                      const quantity = quantityWithin(purchaseQuantities[food.slug] ?? 0, buyLimit(food));
+                      return <div className="kithna-food-trade-row" key={food.slug}>
+                        <span className="kithna-food-trade-name">{food.name}
+                          <small>{food.description}</small>
+                          <small>+{food.hunger} hunger{food.permanent ? " · Always available" : " · Today"}</small>
+                        </span>
+                        <span className="kithna-food-trade-cell">{food.price}</span>
+                        <input type="number" min="0" max={buyLimit(food)} step="1" inputMode="numeric"
+                          className="kithna-food-trade-button" value={quantity}
+                          disabled={busyAction !== null || buyLimit(food) === 0}
+                          onChange={(event) => setPurchaseQuantities((current) => ({ ...current,
+                            [food.slug]: quantityWithin(Number(event.target.value), buyLimit(food)),
+                          }))} aria-label={food.name + " quantity to buy"} />
+                        <span className="kithna-food-trade-cell">{quantity * food.price}</span>
+                      </div>;
+                    })}
                   </div>
                 </section>
                 <section className="dp-merchant-section">
@@ -405,6 +408,9 @@ export default function KithnaFoodShop() {
                     {userName} Inventory
                   </h2>
                   <div className="kithna-food-user-inventory">
+                    <div className="kithna-food-trade-row kithna-food-column-labels" aria-hidden="true">
+                      <span className="kithna-food-trade-name">Food / price</span><span>Owned</span><span>Qty</span><span>Total</span>
+                    </div>
                     {tradeableUserInventory.length > 0 ? (
                       tradeableUserInventory.map((item) => {
                         const sellQuantity = Math.max(
@@ -420,7 +426,8 @@ export default function KithnaFoodShop() {
                             key={item.slug}
                           >
                             <span className="kithna-food-trade-name">
-                              {item.name}
+                              {catalog.find((food) => food.slug === item.slug)?.name ?? item.name}
+                              <small>{priceOf(item.slug)} Dots each</small>
                             </span>
                             <span className="kithna-food-trade-cell">
                               {item.qty}
@@ -432,7 +439,7 @@ export default function KithnaFoodShop() {
                               inputMode="numeric"
                               className="kithna-food-trade-button"
                               value={sellQuantity}
-                              disabled={busyAction !== null}
+                              disabled={busyAction !== null || !shop}
                               onChange={(event) =>
                                 setSellQuantities((current) => ({
                                   ...current,
@@ -448,14 +455,14 @@ export default function KithnaFoodShop() {
                               aria-label={`${item.name} quantity to sell`}
                             />
                             <span className="kithna-food-trade-cell">
-                              {sellQuantity * 5}
+                              {sellQuantity * priceOf(item.slug)}
                             </span>
                           </div>
                         );
                       })
                     ) : (
                       <p className="kithna-food-empty-inventory">
-                        You have no food to sell.
+                        {!shop ? (loadState === "error" ? "Inventory unavailable until the shop reconnects." : "Loading your inventory...") : "You have no food to sell."}
                       </p>
                     )}
                   </div>
@@ -468,11 +475,7 @@ export default function KithnaFoodShop() {
                   disabled={
                     busyAction !== null ||
                     userDots === null ||
-                    (meatQuantity === 0 &&
-                      vegetableQuantity === 0 &&
-                      !Object.values(sellQuantities).some(
-                        (quantity) => quantity > 0,
-                      ))
+                    (!shop || (purchaseTotal === 0 && sellTotal === 0))
                   }
                   onClick={() => void completeTrade()}
                 >

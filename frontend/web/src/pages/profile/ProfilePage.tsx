@@ -219,7 +219,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [titleSaving, setTitleSaving] = useState(false);
   const [titleError, setTitleError] = useState<string | null>(null);
   const [titlesOpen, setTitlesOpen] = useState(false);
-  const [trainerLevel, setTrainerLevel] = useState(1);
+  const [trainerLevel, setTrainerLevel] = useState<number | null>(null);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [avatarCustomization, setAvatarCustomization] =
     useState<AvatarCustomization>(DEFAULT_AVATAR);
@@ -627,14 +627,21 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const activeElementClass = getElementClass(activePet?.line);
 
   useEffect(() => {
-    if (!user) {
-      setTrainerLevel(1);
-      return;
-    }
+    let cancelled = false;
+    setTrainerLevel(null);
+    if (!user) return;
 
     void apiFetch<{ trainer_level: number }>("/api/me/trainer-progression")
-      .then((progression) => setTrainerLevel(progression.trainer_level))
-      .catch(() => setTrainerLevel(1));
+      .then((progression) => {
+        if (!cancelled) setTrainerLevel(progression.trainer_level);
+      })
+      .catch(() => {
+        if (!cancelled) setTrainerLevel(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   useEffect(() => {
@@ -841,7 +848,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
                 <div>
                   <dt>Trainer Level</dt>
-                  <dd>{trainerLevel}</dd>
+                  <dd>{trainerLevel ?? "Unavailable"}</dd>
                 </div>
 
                 <div>

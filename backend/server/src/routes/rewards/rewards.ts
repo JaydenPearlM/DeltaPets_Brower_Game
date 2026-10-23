@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Response } from "express";
+import type { NextFunction, Response } from "express";
 
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
@@ -100,50 +100,60 @@ function rewardForStreak(nextStreak: number): Reward {
 rewardsRouter.get(
   "/status",
   requireUser,
-  async (req: AuthedRequest, res: Response) => {
-    const user_id = req.user!.id;
-    const now = new Date();
+  async (req: AuthedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user_id = req.user!.id;
+      const now = new Date();
 
-    const { data: row, error } = await supabaseAdmin
-      .from("daily_login_rewards")
-      .select("id, streak, last_claimed_at, potato_received")
-      .eq("id", user_id)
-      .maybeSingle();
+      const { data: row, error } = await supabaseAdmin
+        .from("daily_login_rewards")
+        .select("id, streak, last_claimed_at, potato_received")
+        .eq("id", user_id)
+        .maybeSingle();
 
-    if (error) return res.status(500).json({ error: error.message });
+      if (error) return res.status(500).json({ error: error.message });
 
-    const streak = row?.streak ?? 0;
-    const last = row?.last_claimed_at ? new Date(row.last_claimed_at) : null;
+      const streak = row?.streak ?? 0;
+      const last = row?.last_claimed_at ? new Date(row.last_claimed_at) : null;
 
-    const diffDays = last ? daysBetweenUTC(last, now) : 999;
-    const claimedToday = diffDays === 0;
+      const diffDays = last ? daysBetweenUTC(last, now) : 999;
+      const claimedToday = diffDays === 0;
 
-    const resetIfClaiming = diffDays >= 4;
+      const resetIfClaiming = diffDays >= 4;
 
-    const missesUsed = last ? Math.max(0, diffDays - 1) : 0;
-    const missesRemaining = Math.max(0, 2 - missesUsed);
+      const missesUsed = last ? Math.max(0, diffDays - 1) : 0;
+      const missesRemaining = Math.max(0, 2 - missesUsed);
 
-    const baseStreak = resetIfClaiming ? 0 : streak;
-    const nextStreak = baseStreak + 1;
-    const nextDayIndex = (nextStreak - 1) % 7;
+      const baseStreak = resetIfClaiming ? 0 : streak;
+      const nextStreak = baseStreak + 1;
+      const nextDayIndex = (nextStreak - 1) % 7;
 
-    const preview = rewardForStreak(nextStreak);
+      const preview = rewardForStreak(nextStreak);
 
-    return res.json({
-      streak,
-      claimedToday,
-      canClaim: !claimedToday,
-      missesRemaining,
-      nextDayIndex,
-      week1: true,
-      preview,
-    });
+      return res.json({
+        streak,
+        claimedToday,
+        canClaim: !claimedToday,
+        missesRemaining,
+        nextDayIndex,
+        week1: true,
+        preview,
+      });
+    } catch (error: unknown) {
+      next(error);
+    }
   },
 );
 
 const claimBodySchema = z.object({}).strict();
 const claimResultSchema = z.discriminatedUnion("ok", [
-  z.object({ ok: z.literal(false), error: z.literal("Already claimed today.") }),
+  z.object({
+    ok: z.literal(false),
+    error: z.enum([
+      "Already claimed today.",
+      "Activate a non-runaway Kith before claiming this XP reward.",
+    ]),
+  }),
   z.object({
     ok: z.literal(true),
     reward: z.discriminatedUnion("kind", [

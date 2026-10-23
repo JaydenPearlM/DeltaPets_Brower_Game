@@ -3,25 +3,29 @@ import { supabaseAdmin } from "../lib/supabaseAdmin";
 
 export const healthRouter = Router();
 
-healthRouter.get("/health", async (_req, res) => {
-  const { error } = await supabaseAdmin
-    .from("profiles")
-    .select("user_id")
-    .limit(1);
+healthRouter.get("/health", async (_req, res, next) => {
+  try {
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id")
+      .limit(1);
 
-  if (error) {
-    res.status(503).json({
-      ok: false,
+    if (error) {
+      res.status(503).json({
+        ok: false,
+        uptime: Math.floor(process.uptime()),
+        database: "down",
+        error: error.message,
+      });
+      return;
+    }
+
+    res.json({
+      ok: true,
       uptime: Math.floor(process.uptime()),
-      database: "down",
-      error: error.message,
+      database: "up",
     });
-    return;
+  } catch (error: unknown) {
+    next(error);
   }
-
-  res.json({
-    ok: true,
-    uptime: Math.floor(process.uptime()),
-    database: "up",
-  });
 });

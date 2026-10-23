@@ -65,6 +65,7 @@ export default function QuestDialogue({
         </div>
 
         <div className="questDialogueBody">
+          <div className="questDialogueScroll">
           <p className="questDialogueGiver">{giverName}</p>
 
           <h2>{title}</h2>
@@ -78,6 +79,8 @@ export default function QuestDialogue({
           </div>
 
           {error ? <p role="alert">{error}</p> : null}
+
+          </div>
 
           <div className="questDialogueActions">
             <button

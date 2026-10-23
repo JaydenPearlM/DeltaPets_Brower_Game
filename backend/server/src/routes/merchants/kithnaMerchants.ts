@@ -4,8 +4,25 @@ import { z } from "zod";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { validateBody } from "../../middleware/validateRequest";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
+import { getDeltaTime, getDeltaPhaseSchedule } from "../../lib/deltaTime";
 
 export const kithnaMerchantsRouter = Router();
+
+kithnaMerchantsRouter.get("/food", requireUser, async (req: AuthedRequest, res) => {
+  if (!req.user?.id) return res.status(401).json({ error: "Not authenticated." });
+  try {
+    const deltaDay = getDeltaTime().deltaDay;
+    const { data, error } = await supabaseAdmin.rpc("get_assanti_food_shop", {
+      p_user_id: req.user.id, p_delta_day: deltaDay,
+    });
+    if (error) return res.status(503).json({ error: "Assanti's shop is temporarily unavailable. Please try again." });
+    const cycleMs = getDeltaPhaseSchedule().reduce((sum, phase) => sum + phase.durationMinutes, 0) * 60_000;
+    res.setHeader("Cache-Control", "no-store");
+    return res.json({ ...data, nextRotationAt: new Date((deltaDay + 1) * cycleMs).toISOString() });
+  } catch {
+    return res.status(503).json({ error: "Assanti's shop is temporarily unavailable. Please try again." });
+  }
+});
 
 kithnaMerchantsRouter.post("/food/daily", requireUser, async (req: AuthedRequest, res) => {
   if (!req.user?.id) return res.status(401).json({ error: "Not authenticated." });
@@ -33,8 +50,13 @@ kithnaMerchantsRouter.post("/food/daily", requireUser, async (req: AuthedRequest
 });
 
 const foodIntent = z.object({
-  slug: z.enum(["alpha-meat", "alpha-vegetables"]),
-  // Keep quantity * the 5-Dot price within PostgreSQL's integer range.
+  slug: z.enum([
+    "alpha-meat", "alpha-vegetables", "carrot", "potato", "tomato", "corn",
+    "lettuce", "broccoli", "green-peas", "green-beans", "pumpkin", "mushroom",
+    "cucumber", "bell-pepper", "sweet-potato", "raw-beef", "raw-chicken",
+    "raw-fish", "turkey", "pork", "egg", "apple", "wild-berries", "rice", "bread",
+  ]),
+  // PostgreSQL uses bigint totals and checks wallet capacity before updating.
   quantity: z.number().int().min(1).max(429496729),
 }).strict();
 const purchaseIntent = foodIntent.extend({ quantity: z.number().int().min(1).max(50) });
@@ -42,6 +64,10 @@ const tradeErrors = new Set([
   "Not enough Dots.",
   "Not enough owned food.",
   "Food stack is full.",
+  "That food is not available today.",
+  "Assanti does not have enough Dots.",
+  "Merchant wallet is full.",
+  "Player wallet is full.",
 ]);
 
 // Each RPC changes both inventory and wallet in one database transaction.
@@ -58,11 +84,12 @@ for (const direction of ["purchase", "sell"] as const) {
 
       const { slug, quantity } = schema.parse(req.body);
       try {
-        const { data, error } = await supabaseAdmin.rpc("trade_assanti_food", {
+        const { data, error } = await supabaseAdmin.rpc("trade_assanti_food_on_day", {
           p_user_id: userId,
           p_slug: slug,
           p_quantity: quantity,
           p_direction: direction,
+          p_delta_day: getDeltaTime().deltaDay,
         });
         if (error) {
           if (error.code === "P0001" && tradeErrors.has(error.message)) {

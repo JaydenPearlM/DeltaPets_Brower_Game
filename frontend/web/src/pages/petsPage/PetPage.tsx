@@ -11,7 +11,6 @@ import {
   titleCase,
 } from "@/lib/petUtils";
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
-import LostKithRegistry from "@/pages/petsPage/components/LostKithRegistry/LostKithRegistry";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
 import StatsChamber from "@/components/StatsChamber/StatsChamber";
@@ -250,7 +249,6 @@ export default function PetPage() {
   const [personalityName, setPersonalityName] = useState<string | null>(null);
   const [starterMerchant, setStarterMerchant] =
     useState<StarterMerchantState | null>(null);
-  const [showLostRegistry, setShowLostRegistry] = useState(false);
   const [showRelicArteTree, setShowRelicArteTree] = useState(false);
   const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
   const [rescueEggError, setRescueEggError] = useState<string | null>(null);
@@ -694,14 +692,6 @@ export default function PetPage() {
                 type="button"
                 className="petRepoRunawayModalPrimary"
                 disabled={claimingRescueEgg}
-                onClick={() => setShowLostRegistry(true)}
-              >
-                Registry
-              </button>
-              <button
-                type="button"
-                className="petRepoRunawayModalPrimary"
-                disabled={claimingRescueEgg}
                 onClick={claimRescueEgg}
               >
                 {claimingRescueEgg ? "Summoning egg..." : "Merchant Egg Reroll"}
@@ -749,14 +739,6 @@ export default function PetPage() {
     return (
       <div className="petRepoPage dpTimeRoomPage" data-phase={phase}>
         {runawayEmergencyModal}
-        <LostKithRegistry
-          open={showLostRegistry}
-          onClose={() => setShowLostRegistry(false)}
-          onRecovered={() => {
-            setShowLostRegistry(false);
-            void loadPetPage(false);
-          }}
-        />
       </div>
     );
   }
@@ -782,13 +764,6 @@ export default function PetPage() {
               <button
                 type="button"
                 className="petRepoRunawayModalPrimary"
-                onClick={() => setShowLostRegistry(true)}
-              >
-                Registry
-              </button>
-              <button
-                type="button"
-                className="petRepoRunawayModalPrimary"
                 disabled={claimingRescueEgg}
                 onClick={claimRescueEgg}
               >
@@ -800,14 +775,6 @@ export default function PetPage() {
             ) : null}
           </div>
 
-          <LostKithRegistry
-            open={showLostRegistry}
-            onClose={() => setShowLostRegistry(false)}
-            onRecovered={() => {
-              setShowLostRegistry(false);
-              void loadPetPage(false);
-            }}
-          />
         </>
       ) : null}
 
@@ -830,23 +797,8 @@ export default function PetPage() {
               </p>
             </div>
 
-            <button
-              type="button"
-              className="lostKithRegistryOpenButton"
-              onClick={() => setShowLostRegistry(true)}
-            >
-              Lost Kith Registry
-            </button>
           </header>
 
-          <LostKithRegistry
-            open={showLostRegistry}
-            onClose={() => setShowLostRegistry(false)}
-            onRecovered={() => {
-              setShowLostRegistry(false);
-              void loadPetPage(false);
-            }}
-          />
 
           <PetDetailsPanel
             pet={pet}
