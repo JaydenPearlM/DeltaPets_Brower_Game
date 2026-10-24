@@ -15,8 +15,8 @@ type PoeTayToeStatus = {
 
 type PoeTayToeReward = {
   dots: number;
-  itemSlug: string;
-  itemName: string;
+  itemSlug: string | null;
+  itemName: string | null;
   itemQty: number;
 };
 
@@ -170,9 +170,11 @@ export default function PoeTayToe({ locationKey }: PoeTayToeProps) {
               <div className="poeTayToeReward">
                 <strong>+ {reward.dots} Dots</strong>
 
-                <strong>
-                  + {reward.itemQty} {reward.itemName}
-                </strong>
+                {reward.itemQty > 0 && reward.itemName ? (
+                  <strong>
+                    + {reward.itemQty} {reward.itemName}
+                  </strong>
+                ) : null}
               </div>
             ) : null}
 

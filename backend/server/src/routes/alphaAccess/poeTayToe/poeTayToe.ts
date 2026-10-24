@@ -140,8 +140,10 @@ poeTayToeRouter.post(
         found: true,
         reward: {
           dots: result.dots_awarded,
-          itemSlug: result.item_slug,
-          itemName: ITEM_NAMES[result.item_slug] ?? result.item_slug,
+          itemSlug: result.item_slug ?? null,
+          itemName: result.item_slug
+            ? (ITEM_NAMES[result.item_slug] ?? result.item_slug)
+            : null,
           itemQty: result.item_qty,
         },
       });
