@@ -4,6 +4,7 @@ import type { AuthedRequest } from "../../middleware/auth";
 import { AppError } from "../../lib/AppError";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { safeNum } from "../../lib/utils";
+import { getTutorialCare } from "../../lib/ownedItemCatalogs";
 import { careSnapshot, normalizePetForClient } from "../../lib/petCareHelpers";
 import { applyCareDecay } from "../../shared/pets/care/CareDecay";
 import { fetchActivePet } from "../routePets/petsRepo";
@@ -25,7 +26,7 @@ const petSchema = z.object({
 }).passthrough();
 const clamp = (value: number, max = 50) => Math.max(0, Math.min(max, value));
 
-export async function performOwnedCare(userId: string, action: OwnedCareAction) {
+export async function performOwnedCare(userId: string, action: OwnedCareAction, itemSlug?: string) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const { pet: rawPet, used } = await fetchActivePet(userId);
     if (!rawPet) throw new AppError("No active pet found.", 404);
@@ -64,7 +65,19 @@ export async function performOwnedCare(userId: string, action: OwnedCareAction) 
       }
     }
 
-    const { data, error } = await supabaseAdmin.rpc("perform_owned_care", {
+    if (itemSlug) {
+      const definition = getTutorialCare().find(item => item.slug === itemSlug);
+      if (!definition) throw new AppError("That item cannot be used for care.", 400);
+      // Purchased care applies its existing JSON effects, without legacy action bonuses.
+      for (const key of ["hunger", "clean", "happy", "comfort", "rest", "energy", "bond"]) delete patch[key];
+      for (const [key, amount] of Object.entries(definition.effects)) {
+        if (!["clean", "happy"].includes(key) || !Number.isSafeInteger(amount) || amount <= 0)
+          throw new AppError("This care item's effects are unavailable.", 503);
+        patch[key] = clamp(safeNum(pet[key], 50) + amount);
+      }
+    }
+    const { data, error } = await supabaseAdmin.rpc(itemSlug ? "perform_owned_item_care" : "perform_owned_care", {
+      ...(itemSlug ? { p_slug: itemSlug } : {}),
       p_user_id: userId, p_pet_id: pet.id, p_action: action,
       p_expected: careSnapshot(pet), p_patch: patch,
     });
@@ -105,4 +118,19 @@ export function ownedCareHandler(fixedAction?: OwnedCareAction) {
       });
     }
   };
+}
+
+export async function ownedItemCareHandler(req: AuthedRequest, res: Response) {
+  if (!req.user?.id) return res.status(401).json({ error: "Unauthorized" });
+  const parsed = z.object({ slug: z.string().min(1).max(100) }).strict().safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Choose an owned care item." });
+  try {
+    const item = getTutorialCare().find(item => item.slug === parsed.data.slug);
+    if (!item) return res.status(400).json({ error: "That item cannot be used for care." });
+    return res.json(await performOwnedCare(req.user.id, item.effects.clean ? "clean" : "play", item.slug));
+  } catch (error) {
+    return res.status(error instanceof AppError ? error.statusCode : 503).json({
+      error: error instanceof AppError ? error.message : "Item care is unavailable. Please try again later.",
+    });
+  }
 }

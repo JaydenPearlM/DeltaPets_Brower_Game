@@ -597,8 +597,8 @@ kithnaRouter.get(
 // POST /api/kithna/lost-registry/recover
 //
 // Recovers a specific runaway pet if it's still inside the window and
-// the user can afford it in the chosen currency. Atomic spend via the
-// spend_wallet RPC, refunds automatically if the pet update fails.
+// the user can afford it in the chosen currency. Kith restoration and
+// wallet deduction are atomic in recover_runaway_pet_with_payment.
 // ============================================================
 kithnaRouter.post(
   "/lost-registry/recover",
@@ -650,48 +650,20 @@ kithnaRouter.post(
 
       const amount = currency === "crystals" ? cost.crystals : cost.dots;
 
-      const { data: spent, error: spendError } = await supabaseAdmin.rpc(
-        "spend_wallet",
-        {
-          p_user_id: userId,
-          p_dots: currency === "dots" ? amount : 0,
-          p_crystals: currency === "crystals" ? amount : 0,
-        },
-      );
-
-      if (spendError) throw spendError;
-
-      if (!spent) {
-        return res.status(400).json({
-          error: `Not enough ${currency} to recover this Delta.`,
-        });
-      }
-
       const { data: recoveryRows, error: recoveryError } =
-        await supabaseAdmin.rpc("recover_runaway_pet_to_party", {
+        await supabaseAdmin.rpc("recover_runaway_pet_with_payment", {
           p_user_id: userId,
           p_pet_id: petId,
+          p_dots: currency === "dots" ? amount : 0,
+          p_crystals: currency === "crystals" ? amount : 0,
         });
 
       if (recoveryError) {
-        // The charge succeeded, but recovery failed. Refund exactly what
-        // the player paid before returning the error.
-        const { error: refundError } = await supabaseAdmin.rpc(
-          "increment_wallet",
-          {
-            p_user_id: userId,
-            p_dots: currency === "dots" ? amount : 0,
-            p_crystals: currency === "crystals" ? amount : 0,
-          },
-        );
-
-        if (refundError) {
-          logger.error(
-            "[kithna/lost-registry/recover] refund failed",
-            refundError,
-          );
+        if (recoveryError.message.includes("Not enough recovery currency.")) {
+          return res.status(400).json({
+            error: `Not enough ${currency} to recover this Delta.`,
+          });
         }
-
         throw recoveryError;
       }
 
@@ -700,22 +672,6 @@ kithnaRouter.post(
         : recoveryRows;
 
       if (!recovery) {
-        const { error: refundError } = await supabaseAdmin.rpc(
-          "increment_wallet",
-          {
-            p_user_id: userId,
-            p_dots: currency === "dots" ? amount : 0,
-            p_crystals: currency === "crystals" ? amount : 0,
-          },
-        );
-
-        if (refundError) {
-          logger.error(
-            "[kithna/lost-registry/recover] empty-result refund failed",
-            refundError,
-          );
-        }
-
         throw new Error("Recovery completed without a destination.");
       }
 

@@ -9,7 +9,7 @@ const ts = backendRequire('typescript');
 const routes = new Map();
 const userId = '11111111-1111-4111-8111-111111111111';
 const eggId = '22222222-2222-4222-8222-222222222222';
-let calls = [], reads = [], egg, rpcResult;
+let calls = [], reads = [], egg, rpcResult, slot, slotError = null;
 const stats = { hp: 2, atk: 2, def: 2, spd: 2, magi: 2, mana: 0, base_total: 10 };
 const starter = { speciesId: 'test_starter', line: 'fire', hatchlingName: 'Test hatchling', baseStats: stats };
 const db = {
@@ -21,7 +21,8 @@ const db = {
       not() { return this; }, or() { return this; }, order() { return this; }, limit() { return this; },
       async maybeSingle() {
         reads.push({ table, filters });
-        return { data: table === 'pets' && egg && filters.every(([k, v]) => egg[k] === v) ? egg : null, error: null };
+        const row = table === 'pets' ? egg : table === 'hatchery_slots' ? slot : null;
+        return { data: row && filters.every(([k, v]) => row[k] === v) ? row : null, error: table === 'hatchery_slots' ? slotError : null };
       },
       // Any mutation outside the single RPC must fail this test.
       update() { throw new Error('Unexpected non-atomic UPDATE'); },
@@ -45,7 +46,11 @@ function load(file, imports) {
   }, exports);
   return exports;
 }
-const auth = load('backend/server/src/middleware/auth.ts', { express, '../lib/supabaseAdmin': { supabaseAdmin: db }, '../lib/logger': { logger } });
+const auth = load('backend/server/src/middleware/auth.ts', {
+  express, '../lib/supabaseAdmin': { supabaseAdmin: db }, '../lib/logger': { logger },
+  zod: backendRequire('zod'), '../env.server': { env: {} },
+  '@supabase/supabase-js': { createClient() { throw new Error('Unexpected auth client creation'); } },
+});
 load('backend/server/src/routes/routePets/routePets.ts', {
   express, '../../middleware/auth': auth, '../../middleware/validateRequest': { validateBody: () => () => {} },
   '../../lib/supabaseAdmin': { supabaseAdmin: db }, '../../lib/logger': { logger },
@@ -75,6 +80,23 @@ async function main() {
   egg = { id: eggId, user_id: 'other-user', stage: 'egg' };
   assert.equal((await request({eggId})).statusCode,404); assert.equal(calls.length,0);
   egg = { id: eggId, user_id: userId, stage:'egg', species:starter.speciesId, line:'fire', name:'Mystery Egg', hatch_ends_at:new Date(Date.now()-1000).toISOString(), personality_id:'p', personality_key:'p', passive_trait_key:'existing' };
+  const validSlot = { id: 1, user_id: userId, pet_id: eggId, unlocked: true };
+  slot = validSlot;
+  for (const location of ['storage', 'inventory', null, undefined]) {
+    egg.location = location;
+    assert.equal((await request({eggId})).statusCode,409);
+    assert.equal(calls.length,0);
+  }
+  egg.location = 'hatchery';
+  for (const invalidSlot of [null, {...validSlot,unlocked:false}, {...validSlot,user_id:'other-user'}, {...validSlot,pet_id:'other-egg'}]) {
+    slot = invalidSlot;
+    assert.equal((await request({eggId})).statusCode,409);
+    assert.equal(calls.length,0);
+  }
+  slot = validSlot;
+  slotError = { message: 'Simulated slot lookup failure' };
+  assert.equal((await request({eggId})).statusCode,500); assert.equal(calls.length,0);
+  slotError = null;
   rpcResult = { data: [{ success:true, pet_row:{...egg,stage:'hatchling',location:'active',is_active:true},party_slot_assigned:1,trainer_level:1,active_gameplay_locked:false }], error:null };
   let res=await request({eggId,userId:'spoofed'});
   assert.equal(res.statusCode,200); assert.equal(calls.length,1); assert.equal(calls[0].name,'hatch_pet'); assert.equal(calls[0].args.p_user_id,userId);
@@ -84,6 +106,6 @@ async function main() {
   rpcResult={data:null,error:{message:'Simulated database failure'}};
   assert.equal((await request({eggId})).statusCode,500); assert.equal(calls.length,1);
   egg.stage='hatchling'; assert.equal((await request({eggId})).statusCode,404); assert.equal(calls.length,0);
-  console.log('PASS hatch handler/auth/malformed/ownership/replay/error regression doubles. NOT database concurrency proof.');
+  console.log('PASS hatch handler/auth/malformed/ownership/location/unlocked-slot/replay/error regression doubles. NOT database concurrency proof.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

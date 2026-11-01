@@ -1,0 +1,76 @@
+[
+  {
+    "name": "Cream Battered Shirt",
+    "slug": "battered-shirt-cream",
+    "artwork_description": "Cream battered short-sleeve shirt with frayed edges, small tears, and sewn patches",
+    "wearable_category": "upper_body",
+    "complete_layer": true,
+    "price": 30
+  },
+  {
+    "name": "Muted Blue Battered Shirt",
+    "slug": "battered-shirt-muted-blue",
+    "artwork_description": "Muted blue battered short-sleeve shirt with frayed edges, small tears, and sewn patches",
+    "wearable_category": "upper_body",
+    "complete_layer": true,
+    "price": 30
+  },
+  {
+    "name": "Dusty Green Battered Shirt",
+    "slug": "battered-shirt-dusty-green",
+    "artwork_description": "Dusty green battered short-sleeve shirt with frayed edges, small tears, and sewn patches",
+    "wearable_category": "upper_body",
+    "complete_layer": true,
+    "price": 30
+  },
+  {
+    "name": "Faded Plum Battered Shirt",
+    "slug": "battered-shirt-faded-plum",
+    "artwork_description": "Faded plum battered short-sleeve shirt with frayed edges, small tears, and sewn patches",
+    "wearable_category": "upper_body",
+    "complete_layer": true,
+    "price": 30
+  },
+  {
+    "name": "Dark Brown Battered Trousers",
+    "slug": "battered-trousers-dark-brown",
+    "artwork_description": "Dark brown worn trousers with frayed cuffs and patches",
+    "wearable_category": "lower_body",
+    "price": 30
+  },
+  {
+    "name": "Slate Gray Battered Trousers",
+    "slug": "battered-trousers-slate-gray",
+    "artwork_description": "Slate gray worn trousers with frayed cuffs and patches",
+    "wearable_category": "lower_body",
+    "price": 30
+  },
+  {
+    "name": "Faded Olive Battered Trousers",
+    "slug": "battered-trousers-faded-olive",
+    "artwork_description": "Faded olive worn trousers with frayed cuffs and patches",
+    "wearable_category": "lower_body",
+    "price": 30
+  },
+  {
+    "name": "Muted Purple Battered Skirt",
+    "slug": "battered-skirt-muted-purple",
+    "artwork_description": "Muted purple battered wrap skirt with worn hems and sewn patches",
+    "wearable_category": "lower_body",
+    "price": 30
+  },
+  {
+    "name": "Dusty Blue Battered Skirt",
+    "slug": "battered-skirt-dusty-blue",
+    "artwork_description": "Dusty blue battered wrap skirt with worn hems and sewn patches",
+    "wearable_category": "lower_body",
+    "price": 30
+  },
+  {
+    "name": "Moss Green Battered Skirt",
+    "slug": "battered-skirt-moss-green",
+    "artwork_description": "Moss green battered wrap skirt with worn hems and sewn patches",
+    "wearable_category": "lower_body",
+    "price": 30
+  }
+]

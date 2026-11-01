@@ -68,15 +68,17 @@ type RoomPayload = {
 
   foodQuestProgressTarget?: number | null;
 };
-
 type Room = {
   id: string;
   sequence_number: number;
   event_payload: RoomPayload;
+  event_kind: WildwoodRoomView["eventKind"];
   status: string;
+  item_claimed_at: string | null;
 };
 
-const roomColumns = "id, sequence_number, event_payload, status";
+const roomColumns =
+  "id, sequence_number, event_payload, event_kind, status, item_claimed_at";
 
 // The room payload is server-written, versioned state. Never accept it in a request.
 function payload(room: Room): RoomPayload {
@@ -94,11 +96,13 @@ function view(room: Room | null): WildwoodRoomView | null {
     id: room.id,
     sequence: room.sequence_number,
     message: data.message,
+    eventKind: room.event_kind,
     battle: data.battle,
     turnOrder: data.battle ? previewBattleOrder(data.battle) : [],
     corrupted: data.battle !== null,
     images: data.images,
     questProgressTarget: data.questProgressTarget,
+    itemClaimed: room.item_claimed_at !== null,
   };
 }
 

@@ -7,15 +7,27 @@ export default function AuthCallback() {
   const navigate = useNavigate();
   const [msg, setMsg] = useState("Establishing your Delta Network connection…");
   const [verified, setVerified] = useState(false);
+  const [verificationFailed, setVerificationFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     let handled = false;
 
+    const timeout = window.setTimeout(() => {
+      if (cancelled || handled) return;
+
+      setVerificationFailed(true);
+      setMsg(
+        "Account verification could not be completed. The link may have expired. Please try again or return to Sign In.",
+      );
+    }, 10000);
+
     async function finishVerification() {
       if (cancelled || handled) return;
 
       handled = true;
+      window.clearTimeout(timeout);
+      setVerificationFailed(false);
 
       const { error } = await supabase.auth.signOut();
 
@@ -26,6 +38,7 @@ export default function AuthCallback() {
           "[auth] callback sign-out failed:",
           error.message ?? error,
         );
+        setVerificationFailed(true);
         setMsg("Account verified. Please sign out and sign in again.");
         return;
       }
@@ -47,27 +60,38 @@ export default function AuthCallback() {
     );
 
     void (async () => {
-      const { data, error } = await supabase.auth.getSession();
+      try {
+        const { data, error } = await supabase.auth.getSession();
 
-      if (cancelled) return;
+        if (cancelled || handled) return;
 
-      if (error) {
-        console.error("[auth] callback failed:", error.message ?? error);
+        if (error) {
+          console.error("[auth] callback failed:", error.message ?? error);
+          window.clearTimeout(timeout);
+          setVerificationFailed(true);
+          setMsg("Account verification failed. Please try the link again.");
+          return;
+        }
+
+        if (data.session) {
+          await finishVerification();
+        }
+      } catch (error) {
+        if (cancelled || handled) return;
+
+        console.error("[auth] callback failed:", error);
+        window.clearTimeout(timeout);
+        setVerificationFailed(true);
         setMsg("Account verification failed. Please try the link again.");
-        return;
-      }
-
-      if (data.session) {
-        await finishVerification();
       }
     })();
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeout);
       subscription.subscription.unsubscribe();
     };
   }, []);
-
   return (
     <main className="authCallbackPage">
       <section className="authCallbackShell">
@@ -137,6 +161,16 @@ export default function AuthCallback() {
                 </button>
               </div>
             </>
+          ) : verificationFailed ? (
+            <div className="authCallbackActions">
+              <button
+                type="button"
+                className="dp-btn dp-btn-yellow"
+                onClick={() => navigate("/signin", { replace: true })}
+              >
+                RETURN TO SIGN IN
+              </button>
+            </div>
           ) : (
             <div className="authCallbackPulse" aria-hidden="true" />
           )}

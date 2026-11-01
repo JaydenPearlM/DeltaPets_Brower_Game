@@ -48,11 +48,8 @@ const ComingSoonPage = lazy(() =>
 const FoodMerchantPage = lazy(
   () => import("../../pages/Cities/Kithna/merchant/kithna_Food_Shop"),
 );
-const MerchantClosedPage = lazy(
-  () => import("../../pages/Cities/Kithna/Merchants/MerchantClosedPage"),
-);
-const KithnaThriftStore = lazy(
-  () => import("../../pages/Cities/Kithna/Merchants/KithnaThriftStore"),
+const KithnaThriftShop = lazy(
+  () => import("../../pages/Cities/Kithna/merchant/Kithna_Thrift_Shop"),
 );
 
 function PageLoader() {
@@ -252,7 +249,7 @@ export const router = createBrowserRouter([
         path: "kithna/thriftstore",
         element: withSuspense(
           <ProtectedRoute>
-            <KithnaThriftStore />
+            <KithnaThriftShop />
           </ProtectedRoute>,
         ),
       },
@@ -268,7 +265,7 @@ export const router = createBrowserRouter([
         path: "kithna/health",
         element: withSuspense(
           <ProtectedRoute>
-            <MerchantClosedPage merchantName="Health Merchant" />
+            <ComingSoonPage pageName="Health Merchant" />
           </ProtectedRoute>,
         ),
       },
@@ -276,7 +273,7 @@ export const router = createBrowserRouter([
         path: "kithna/relics",
         element: withSuspense(
           <ProtectedRoute>
-            <MerchantClosedPage merchantName="Relic Store" />
+            <ComingSoonPage pageName="Relic Store" />
           </ProtectedRoute>,
         ),
       },
@@ -284,7 +281,7 @@ export const router = createBrowserRouter([
         path: "kithna/armor",
         element: withSuspense(
           <ProtectedRoute>
-            <MerchantClosedPage merchantName="Armor Merchant" />
+            <ComingSoonPage pageName="Armor Merchant" />
           </ProtectedRoute>,
         ),
       },
@@ -292,7 +289,7 @@ export const router = createBrowserRouter([
         path: "kithna/weapons",
         element: withSuspense(
           <ProtectedRoute>
-            <MerchantClosedPage merchantName="Weapon Merchant" />
+            <ComingSoonPage pageName="Weapon Merchant" />
           </ProtectedRoute>,
         ),
       },

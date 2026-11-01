@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import careCatalog from "../../../../pet_items/tutorial/basic_pet_care.json";
+import { kennithCatalog } from "@/lib/kithna/kennithCatalog";
 import { useAuth } from "@/app/providers/useAuth";
-import { apiFetch } from "@/lib/api/baseClient";
+import { ApiError, apiFetch } from "@/lib/api/baseClient";
 import "./inventory.css";
+import { isRegularInventoryItem } from "@/lib/inventoryDisplay";
+
+// These owned items are displayed in Closet and Browse Relics, not the general bag.
+const dedicatedViewSlugs = new Set(
+  [...kennithCatalog.clothing, ...kennithCatalog.accessories, ...kennithCatalog.relics]
+    .map(item => item.slug),
+);
 
 // Authoritative quantities for care, merchant trades and new rewards.
 // Older browser-local items remain visible separately as legacy possessions.
@@ -14,6 +24,8 @@ export type BackendInventoryItem = {
   stackLimit: number;
   effects: Record<string, unknown>;
   qty: number;
+  availableQty?: number;
+  equippedQty?: number;
   updatedAt: string;
 };
 
@@ -36,7 +48,9 @@ export type InventoryItemDefinition = {
   careCategory?: CareInventoryCategory;
 };
 
-type CareInventoryCounts = Record<CareInventoryCategory, number>;
+type CareInventoryCounts = Record<CareInventoryCategory, number> & {
+  tutorial?: number;
+};
 
 type InventoryItemRecord = InventoryItemDefinition & {
   qty: number;
@@ -82,103 +96,13 @@ const EMPTY_CARE_INVENTORY: CareInventoryCounts = {
   bed: 0,
 };
 
-const CARE_ITEM_DEFINITIONS: Record<
-  CareInventoryCategory,
-  InventoryItemDefinition
-> = {
-  food: {
-    slug: "kithna-food-pack",
-    name: "Kithna Food Pack",
-    type: "food",
-    description: "A simple meal for restoring hunger.",
-    rarity: "common",
-    stackLimit: 99,
-    careCategory: "food",
-  },
-  soap: {
-    slug: "soft-cleaning-brush",
-    name: "Soft Cleaning Brush",
-    type: "care",
-    description: "A gentle brush for restoring clean.",
-    rarity: "common",
-    stackLimit: 99,
-    careCategory: "soap",
-  },
-  toy: {
-    slug: "spark-jingle-toy",
-    name: "Spark Jingle Toy",
-    type: "care",
-    description: "A tiny toy for restoring mood.",
-    rarity: "common",
-    stackLimit: 99,
-    careCategory: "toy",
-  },
-  bed: {
-    slug: "moon-nap-pillow",
-    name: "Moon Nap Pillow",
-    type: "care",
-    description: "A soft pillow for restoring comfort.",
-    rarity: "common",
-    stackLimit: 99,
-    careCategory: "bed",
-  },
-};
-
 function emptyInventoryState(): InventoryStorageState {
   return { items: {} };
 }
 
-function normalizeInventoryItem(
-  item: Partial<InventoryItemRecord>,
-): InventoryItemRecord | null {
-  const slug = typeof item.slug === "string" ? item.slug.trim() : "";
-  const name = typeof item.name === "string" ? item.name.trim() : "";
-  const description =
-    typeof item.description === "string" ? item.description.trim() : "";
-  const qty = Math.max(0, Math.floor(Number(item.qty ?? 0)));
-
-  if (!slug || !name || qty <= 0) return null;
-
-  return {
-    slug,
-    name,
-    type: item.type ?? "misc",
-    description,
-    rarity: item.rarity ?? "common",
-    stackLimit: Math.max(1, Math.floor(Number(item.stackLimit ?? 99))),
-    careCategory: item.careCategory,
-    qty,
-  };
-}
-
 function readInventoryState(): InventoryStorageState {
-  try {
-    const raw = window.localStorage.getItem(INVENTORY_STORAGE_KEY);
-
-    if (!raw) {
-      return emptyInventoryState();
-    }
-
-    const parsed = JSON.parse(raw) as Partial<InventoryStorageState>;
-
-    if (parsed.items && typeof parsed.items === "object") {
-      const nextState = emptyInventoryState();
-
-      Object.values(parsed.items).forEach((item) => {
-        const normalizedItem = normalizeInventoryItem(item);
-
-        if (!normalizedItem) return;
-
-        nextState.items[normalizedItem.slug] = normalizedItem;
-      });
-
-      return nextState;
-    }
-
-    return emptyInventoryState();
-  } catch {
-    return emptyInventoryState();
-  }
+  // Retired unowned browser inventory must not appear under another account.
+  return emptyInventoryState();
 }
 
 function writeInventoryState(nextInventory: InventoryStorageState) {
@@ -229,34 +153,60 @@ export function getCareItemCount(category: CareInventoryCategory) {
   return getCareInventoryCounts()[category] ?? 0;
 }
 
-function backendCareCategory(item: BackendInventoryItem): CareInventoryCategory | undefined {
+function backendCareCategory(
+  item: BackendInventoryItem,
+): CareInventoryCategory | undefined {
   if (item.type !== "care") return undefined;
   const category = item.effects.careCategory;
-  if (category === "food" || category === "soap" || category === "toy" || category === "bed") {
+  if (
+    category === "food" ||
+    category === "soap" ||
+    category === "toy" ||
+    category === "bed"
+  ) {
     return category;
   }
   return undefined;
 }
 
 export async function getServerCareInventoryCounts(): Promise<CareInventoryCounts> {
-  const result = await apiFetch<{ items: BackendInventoryItem[] }>("/api/inventory");
-  return result.items.reduce<CareInventoryCounts>((counts, item) => {
-    const category = backendCareCategory(item);
-    if (category) counts[category] += item.qty;
-    return counts;
-  }, { ...EMPTY_CARE_INVENTORY });
+  const result = await apiFetch<{ items: BackendInventoryItem[] }>(
+    "/api/inventory",
+  );
+  return result.items.reduce<CareInventoryCounts>(
+    (counts, item) => {
+      const category = backendCareCategory(item);
+      if (category) counts[category] += item.availableQty ?? item.qty;
+      if (careCatalog.some((entry) => entry.slug === item.slug))
+        counts.tutorial =
+          (counts.tutorial ?? 0) + (item.availableQty ?? item.qty);
+      return counts;
+    },
+    { ...EMPTY_CARE_INVENTORY },
+  );
 }
 
 type DisplayInventoryItem = InventoryItemRecord & { legacy: boolean };
 
 function serverDisplayItem(item: BackendInventoryItem): DisplayInventoryItem {
   const category = backendCareCategory(item);
-  const type: InventoryItemType = category === "food" ? "food"
-    : item.type === "care" ? "care"
-    : item.type === "seed" || item.type === "armor" || item.type === "skill" ? item.type : "misc";
+  const type: InventoryItemType =
+    category === "food"
+      ? "food"
+      : item.type === "care"
+        ? "care"
+        : item.type === "seed" || item.type === "armor" || item.type === "skill"
+          ? item.type
+          : "misc";
   return {
-    slug: item.slug, name: item.name, type, description: item.description ?? "",
-    stackLimit: item.stackLimit, careCategory: category, qty: item.qty, legacy: false,
+    slug: item.slug,
+    name: item.name,
+    type,
+    description: item.description ?? "",
+    stackLimit: item.stackLimit,
+    careCategory: category,
+    qty: item.availableQty ?? item.qty,
+    legacy: false,
   };
 }
 
@@ -289,7 +239,9 @@ export function addInventoryItem(item: InventoryItemDefinition, amount = 1) {
 }
 
 export function addCareItem(category: CareInventoryCategory, amount = 1) {
-  addInventoryItem(CARE_ITEM_DEFINITIONS[category], amount);
+  // Retired compatibility entry point: do not recreate legacy starter items.
+  void category;
+  void amount;
 }
 
 export function consumeInventoryItem(slug: string, amount = 1) {
@@ -383,7 +335,13 @@ export default function Inventory({ onClose }: InventoryProps) {
         }
       } catch (err) {
         if (!cancelled && request === latestRequest) {
-          setServerItems([]);
+          const accessLost =
+            (err instanceof ApiError &&
+              (err.status === 401 || err.status === 403)) ||
+            (err instanceof Error &&
+              (err.message === "Session expired. Please log in again." ||
+                err.message === "Missing access token. Are you logged in?"));
+          if (accessLost) setServerItems([]);
           setBackendError(
             err instanceof Error ? err.message : "Failed to load inventory.",
           );
@@ -396,7 +354,9 @@ export default function Inventory({ onClose }: InventoryProps) {
     }
 
     void loadBackendInventory();
-    const refresh = () => { void loadBackendInventory(); };
+    const refresh = () => {
+      void loadBackendInventory();
+    };
     window.addEventListener(INVENTORY_CHANGE_EVENT, refresh);
 
     return () => {
@@ -408,7 +368,7 @@ export default function Inventory({ onClose }: InventoryProps) {
   const sortedInventoryItems = useMemo(
     () =>
       [
-        ...serverItems.filter((item) => item.qty > 0).map(serverDisplayItem),
+        ...serverItems.map(serverDisplayItem).filter((item) => item.qty > 0),
         ...inventoryItems.map((item) => ({ ...item, legacy: true })),
       ].sort((firstItem, secondItem) =>
         firstItem.name.localeCompare(secondItem.name),
@@ -417,7 +377,10 @@ export default function Inventory({ onClose }: InventoryProps) {
   );
 
   const visibleInventoryItems = useMemo(
-    () => sortedInventoryItems.filter((item) => matchesFilter(item, filter)),
+    () =>
+      sortedInventoryItems.filter(
+        (item) => isRegularInventoryItem(item) && !dedicatedViewSlugs.has(item.slug) && matchesFilter(item, filter),
+      ),
     [sortedInventoryItems, filter],
   );
 
@@ -481,52 +444,70 @@ export default function Inventory({ onClose }: InventoryProps) {
             ) : null}
           </div>
         </div>
-
       </header>
 
       <div className="inventoryBody">
         {backendLoading ? <p role="status">Loading inventory...</p> : null}
         {backendError ? <p role="alert">{backendError}</p> : null}
         {inventoryItems.length > 0 ? (
-          <p>Legacy local items are preserved below. They cannot be used for care or sold for Dots.</p>
+          <p>
+            Legacy local items are preserved below. They cannot be used for care
+            or sold for Dots.
+          </p>
         ) : null}
-      <p className="inventorySectionLabel">
-        Items ({visibleInventoryItems.length}/{MAX_INVENTORY_SLOTS})
-      </p>
+        <p className="inventorySectionLabel">
+          {visibleInventoryItems.length > MAX_INVENTORY_SLOTS
+            ? `Items (${visibleInventoryItems.length} displayed · ${MAX_INVENTORY_SLOTS} base slots)`
+            : `Items (${visibleInventoryItems.length}/${MAX_INVENTORY_SLOTS})`}
+        </p>
 
-      <div
-        className="inventoryGrid inventoryGrid--slots"
-        aria-label="Inventory items"
-      >
-        {inventorySlots.map((item, slotIndex) =>
-          item ? (
-            <article className="inventoryItemCard" key={`${item.legacy ? "legacy" : "server"}:${item.slug}`}>
-              <div className="inventoryItemCardHeader">
-                <div>
-                  <p className="inventoryItemType">{item.type}{item.legacy ? " · Legacy" : ""}</p>
-                  <h3>{item.name}</h3>
+        <div
+          className="inventoryGrid inventoryGrid--slots"
+          aria-label="Inventory items"
+        >
+          {inventorySlots.map((item, slotIndex) =>
+            item ? (
+              <article
+                className="inventoryItemCard"
+                key={`${item.legacy ? "legacy" : "server"}:${item.slug}`}
+              >
+                <div className="inventoryItemCardHeader">
+                  <div>
+                    <p className="inventoryItemType">
+                      {item.type}
+                      {item.legacy ? " · Legacy" : ""}
+                    </p>
+                    <h3>{item.name}</h3>
+                  </div>
+
+                  <span className="inventoryItemQty">×{item.qty}</span>
                 </div>
 
-                <span className="inventoryItemQty">×{item.qty}</span>
-              </div>
+                <p className="inventoryItemDescription">{item.description}</p>
+                {[
+                  ...kennithCatalog.clothing,
+                  ...kennithCatalog.accessories,
+                ].some((entry) => entry.slug === item.slug) && (
+                  <Link to="/profile" onClick={onClose}>
+                    Avatar Customization
+                  </Link>
+                )}
 
-              <p className="inventoryItemDescription">{item.description}</p>
-
-              {item.careCategory ? (
-                <p className="inventoryItemMeta">
-                  Care target: {item.careCategory}
-                </p>
-              ) : null}
-            </article>
-          ) : (
-            <div
-              className="inventorySlotEmpty"
-              key={`empty-${slotIndex}`}
-              aria-hidden="true"
-            />
-          ),
-        )}
-      </div>
+                {item.careCategory ? (
+                  <p className="inventoryItemMeta">
+                    Care target: {item.careCategory}
+                  </p>
+                ) : null}
+              </article>
+            ) : (
+              <div
+                className="inventorySlotEmpty"
+                key={`empty-${slotIndex}`}
+                aria-hidden="true"
+              />
+            ),
+          )}
+        </div>
 
         <div className="inventoryFooter">
           <button

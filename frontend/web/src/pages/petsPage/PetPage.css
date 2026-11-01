@@ -1367,9 +1367,9 @@
   color: var(--dp-panel-text);
 }
 
-/* NEW */
+/* Align care panels with the shared page frame. */
 .petRepoStage {
-  --petRepo-left-offset: 145px;
+  --petRepo-left-offset: 0px;
   width: 100%;
   padding-left: var(--petRepo-left-offset);
 }

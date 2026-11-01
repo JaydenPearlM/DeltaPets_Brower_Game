@@ -71,6 +71,7 @@ export default function WildwoodExploreResult({
 
   const [notice, setNotice] = useState("");
   const [collecting, setCollecting] = useState(false);
+  const isCollected = room.itemClaimed || collectedItem !== null;
 
   useEffect(() => {
     onCollectingChange(collecting);
@@ -81,7 +82,7 @@ export default function WildwoodExploreResult({
   }, [collecting, onCollectingChange]);
 
   async function collect() {
-    if (result.kind !== "item" || busy || collecting || collectedItem) {
+    if (result.kind !== "item" || busy || collecting || isCollected) {
       return;
     }
 
@@ -138,13 +139,13 @@ export default function WildwoodExploreResult({
 
           <p role="status">
             {notice ||
-              (collectedItem
+              (isCollected
                 ? "Collected."
                 : "You can take the item or continue exploring.")}
           </p>
 
           <div className="ww-command-buttons">
-            {!collectedItem && (
+            {!isCollected && (
               <button
                 className="dp-btn dp-btn--yellow"
                 disabled={busy || collecting}
@@ -155,9 +156,7 @@ export default function WildwoodExploreResult({
             )}
           </div>
 
-          {!collectedItem && (
-            <p>Exploring again leaves this discovery behind.</p>
-          )}
+          {!isCollected && <p>Exploring again leaves this discovery behind.</p>}
         </>
       ) : result.kind === "encounter" ? (
         <>

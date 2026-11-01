@@ -12,7 +12,10 @@ import { apiFetch } from "@/lib/api/baseClient";
 import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
 import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
-import type { BackendInventoryItem } from "@/components/inventory/inventory";
+import {
+  getInventoryChangeEventName,
+  type BackendInventoryItem,
+} from "@/components/inventory/inventory";
 import haikuScrollIcon from "@/kith/assets/Scroll/Haiku_Scrolls.png";
 import "@/components/inventory/inventory.css";
 import { AvatarPreview } from "@/components/Profile/Customization/AvatarPreview";
@@ -33,6 +36,8 @@ import {
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
 import ClosedAlphaRibbon from "./ClosedAlphaRibbon";
+import clothingCatalog from "../../../../pet_items/tutorial/basic_clothing.json";
+import accessoryCatalog from "../../../../pet_items/tutorial/hats_and_glasses.json";
 
 type ProfilePageProps = {
   pageName?: string;
@@ -55,10 +60,10 @@ const AVATAR_CONTROLS = [
 ] as const;
 
 const CLOSED_ALPHA_TESTER_EMAILS = new Set([
+  "maxwellpearl6790@gmail.com",
   "jaydentestemail6790@gmail.com",
   "estes_c@hotmail.com",
   "wildssam8@gmail.com",
-  "p.kurzawski@yahoo.com",
   "cindy_sanner@yahoo.com",
   "holyfoleyproductions@gmail.com",
   "saitinsangel@hotmail.com",
@@ -221,10 +226,13 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [titlesOpen, setTitlesOpen] = useState(false);
   const [trainerLevel, setTrainerLevel] = useState<number | null>(null);
   const [customizeOpen, setCustomizeOpen] = useState(false);
+  const [closetOwned, setClosetOwned] = useState<Set<string>>(new Set());
+  const [closetError, setClosetError] = useState("");
   const [avatarCustomization, setAvatarCustomization] =
     useState<AvatarCustomization>(DEFAULT_AVATAR);
   const [savedAppearance, setSavedAppearance] = useState(DEFAULT_AVATAR);
-  const [defaultAppearance, setDefaultAppearance] = useState<AvatarCustomization | null>(null);
+  const [defaultAppearance, setDefaultAppearance] =
+    useState<AvatarCustomization | null>(null);
   const [appearanceLoading, setAppearanceLoading] = useState(true);
   const [appearanceLoaded, setAppearanceLoaded] = useState(false);
   const [appearanceSaving, setAppearanceSaving] = useState(false);
@@ -233,10 +241,11 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const appearanceRequestVersion = useRef(0);
   const appearanceSavePending = useRef(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
-
   const titleRequestVersion = useRef(0);
   const titleSelectorRef = useRef<HTMLButtonElement>(null);
   const titleDialogRef = useRef<HTMLElement>(null);
+  const weeklyRewardsButtonRef = useRef<HTMLButtonElement>(null);
+  const weeklyRewardsDialogRef = useRef<HTMLElement>(null);
 
   const { user } = useAuth();
 
@@ -265,14 +274,43 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       })
       .catch((error: unknown) => {
         if (version !== appearanceRequestVersion.current) return;
-        setAppearanceError(error instanceof Error ? error.message : "Could not load your appearance.");
+        setAppearanceError(
+          error instanceof Error
+            ? error.message
+            : "Could not load your appearance.",
+        );
       })
       .finally(() => {
-        if (version === appearanceRequestVersion.current) setAppearanceLoading(false);
+        if (version === appearanceRequestVersion.current)
+          setAppearanceLoading(false);
       });
 
-    return () => { appearanceRequestVersion.current += 1; };
+    return () => {
+      appearanceRequestVersion.current += 1;
+    };
   }, [user?.id]);
+
+  useEffect(() => {
+    setClosetOwned(new Set());
+    setClosetError("");
+    if (!user?.id || !customizeOpen) return;
+    let active = true;
+    void apiFetch<{ items: { slug: string; qty: number }[] }>("/api/inventory")
+      .then(({ items }) => {
+        if (active)
+          setClosetOwned(
+            new Set(
+              items.filter((item) => item.qty > 0).map((item) => item.slug),
+            ),
+          );
+      })
+      .catch(() => {
+        if (active) setClosetError("Could not load owned wardrobe items.");
+      });
+    return () => {
+      active = false;
+    };
+  }, [user?.id, customizeOpen]);
 
   async function saveAppearance(target: "current" | "default") {
     if (!user?.id || !appearanceLoaded || appearanceSavePending.current) return;
@@ -288,11 +326,20 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
       });
       if (version !== appearanceRequestVersion.current) return;
       setSavedAppearance(result.appearance ?? DEFAULT_AVATAR);
+      window.dispatchEvent(new Event(getInventoryChangeEventName()));
       setDefaultAppearance(result.defaultAppearance);
-      setAppearanceMessage(target === "current" ? "Appearance saved." : "Default appearance saved.");
+      setAppearanceMessage(
+        target === "current"
+          ? "Appearance saved."
+          : "Default appearance saved.",
+      );
     } catch (error: unknown) {
       if (version === appearanceRequestVersion.current) {
-        setAppearanceError(error instanceof Error ? error.message : "Could not save your appearance.");
+        setAppearanceError(
+          error instanceof Error
+            ? error.message
+            : "Could not save your appearance.",
+        );
       }
     } finally {
       if (version === appearanceRequestVersion.current) {
@@ -709,6 +756,63 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
     };
   }, [titlesOpen]);
 
+  useEffect(() => {
+    if (!weeklyRewardsOpen) return;
+
+    const trigger = weeklyRewardsButtonRef.current;
+    const dialog = weeklyRewardsDialogRef.current;
+
+    dialog?.focus();
+
+    function handleWeeklyRewardsKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setWeeklyRewardsOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialog) return;
+
+      const buttons = Array.from(
+        dialog.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"),
+      );
+
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+
+      if (!first || !last) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      if (
+        event.shiftKey &&
+        (document.activeElement === first ||
+          document.activeElement === dialog ||
+          !dialog.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last ||
+          document.activeElement === dialog ||
+          !dialog.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleWeeklyRewardsKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleWeeklyRewardsKeyDown);
+      trigger?.focus();
+    };
+  }, [weeklyRewardsOpen]);
+
   return (
     <div className="dp-profile-page poeTayToeHost">
       <PoeTayToe locationKey="profile" />
@@ -763,17 +867,22 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
               }}
               aria-expanded={customizeOpen}
             >
-              Customize
+              Closet
             </button>
 
             <div className="dp-profile-alpha-ribbon-stack">
-              <ClosedAlphaRibbon />
+              {isClosedAlphaTester ? (
+                <>
+                  <ClosedAlphaRibbon />
 
-              <span className="dp-profile-alpha-ribbon-message">
-                Thank you for helping shape Aliune!
-              </span>
+                  <span className="dp-profile-alpha-ribbon-message">
+                    Thank you for helping shape Aliune!
+                  </span>
+                </>
+              ) : null}
 
               <button
+                ref={weeklyRewardsButtonRef}
                 type="button"
                 className={`btn btn-gold dp-profile-rewards-button${
                   rewardReady ? " is-ready" : ""
@@ -795,7 +904,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                   disabled={
                     appearanceSaving ||
                     (key === "hairColor" &&
-                    avatarCustomization.hairStyle === "hair-bald")
+                      avatarCustomization.hairStyle === "hair-bald")
                   }
                   onClick={() =>
                     setAvatarCustomization((current) => {
@@ -818,23 +927,95 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
                   <span>Click to change</span>
                 </button>
               ))}
-              <button type="button" className="btn btn-gold" disabled={appearanceSaving}
-                onClick={() => void saveAppearance("current")}>
+              {(
+                [
+                  {
+                    key: "upperBodyClothing",
+                    label: "Shirts",
+                    options: clothingCatalog.filter(
+                      (item) => item.wearable_category === "upper_body",
+                    ),
+                  },
+                  {
+                    key: "lowerBodyClothing",
+                    label: "Trousers & Skirts",
+                    options: clothingCatalog.filter(
+                      (item) => item.wearable_category === "lower_body",
+                    ),
+                  },
+                  {
+                    key: "hat",
+                    label: "Hats",
+                    options: accessoryCatalog.filter(
+                      (item) => item.wearable_category === "hat",
+                    ),
+                  },
+                  {
+                    key: "eyewear",
+                    label: "Glasses & Monocles",
+                    options: accessoryCatalog.filter(
+                      (item) => item.wearable_category === "glasses",
+                    ),
+                  },
+                ] as const
+              ).map(({ key, label, options }) => (
+                <label key={key} className="dp-profile-customizer-card">
+                  <strong>{label}</strong>
+                  <select
+                    value={avatarCustomization[key] ?? ""}
+                    disabled={appearanceSaving || Boolean(closetError)}
+                    onChange={(event) =>
+                      setAvatarCustomization((current) => ({
+                        ...current,
+                        [key]: event.target.value || null,
+                      }))
+                    }
+                  >
+                    <option value="">None</option>
+                    {options
+                      .filter((item) => closetOwned.has(item.slug))
+                      .map((item) => (
+                        <option key={item.slug} value={item.slug}>
+                          {item.name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              ))}
+              {closetError ? <p role="alert">{closetError}</p> : null}
+              <button
+                type="button"
+                className="btn btn-gold"
+                disabled={appearanceSaving}
+                onClick={() => void saveAppearance("current")}
+              >
                 {appearanceSaving ? "Saving..." : "Save Appearance"}
               </button>
-              <button type="button" className="btn btn-gold" disabled={appearanceSaving}
-                onClick={() => void saveAppearance("default")}>
+              <button
+                type="button"
+                className="btn btn-gold"
+                disabled={appearanceSaving}
+                onClick={() => void saveAppearance("default")}
+              >
                 Set as Default
               </button>
-              <button type="button" className="btn btn-gold"
+              <button
+                type="button"
+                className="btn btn-gold"
                 disabled={appearanceSaving || !defaultAppearance}
                 onClick={() => {
-                  if (defaultAppearance) setAvatarCustomization(defaultAppearance);
-                  setAppearanceMessage("Default restored to preview. Save Appearance to apply it.");
-                }}>
+                  if (defaultAppearance)
+                    setAvatarCustomization(defaultAppearance);
+                  setAppearanceMessage(
+                    "Default restored to preview. Save Appearance to apply it.",
+                  );
+                }}
+              >
                 Use Default
               </button>
-              {appearanceMessage ? <p role="status">{appearanceMessage}</p> : null}
+              {appearanceMessage ? (
+                <p role="status">{appearanceMessage}</p>
+              ) : null}
             </div>
           ) : (
             <div className="dp-profile-info">
@@ -964,7 +1145,9 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
             </div>
           )}
           {appearanceError ? <p role="alert">{appearanceError}</p> : null}
-          {user?.id ? <Link to={`/profile/${user.id}`}>View shareable profile</Link> : null}
+          {user?.id ? (
+            <Link to={`/profile/${user.id}`}>View shareable profile</Link>
+          ) : null}
         </section>
 
         <section className="dp-profile-active-panel dp-profile-star-panel">
@@ -1279,6 +1462,8 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
           onMouseDown={() => setWeeklyRewardsOpen(false)}
         >
           <section
+            ref={weeklyRewardsDialogRef}
+            tabIndex={-1}
             className="dp-profile-rewards-popup"
             role="dialog"
             aria-modal="true"

@@ -562,59 +562,6 @@ petsRouter.post(
     try {
       const userId = req.user!.id;
 
-      const { data: existingPets, error: existingPetsError } =
-        await supabaseAdmin
-          .from("pets")
-          .select("id, ran_away, stage, is_rescue_reroll")
-          .eq("user_id", userId);
-
-      if (existingPetsError) throw existingPetsError;
-
-      const healthyCount = (existingPets ?? []).filter(
-        (row: any) => !row?.ran_away && row?.stage !== "egg",
-      ).length;
-
-      const hasPendingRescueEgg = (existingPets ?? []).some(
-        (row: any) =>
-          !row?.ran_away &&
-          row?.stage === "egg" &&
-          row?.is_rescue_reroll === true,
-      );
-
-      if (hasPendingRescueEgg) {
-        return res.status(409).json({
-          success: false,
-          error: "You already have a rescue egg waiting to hatch.",
-        });
-      }
-
-      if (healthyCount > 0) {
-        return res.status(400).json({
-          success: false,
-          error:
-            "You still have a Delta. The rescue egg is only for when every Delta has run away.",
-        });
-      }
-
-      const { data: openSlot, error: openSlotError } = await supabaseAdmin
-        .from("hatchery_slots")
-        .select("id, slot_index")
-        .eq("user_id", userId)
-        .eq("unlocked", true)
-        .is("pet_id", null)
-        .order("slot_index", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-
-      if (openSlotError) throw openSlotError;
-
-      if (!openSlot) {
-        return res.status(400).json({
-          success: false,
-          error: "No open hatchery slot is available for a rescue egg.",
-        });
-      }
-
       const worldTime = getWorldTimeOfDay();
       const starter = getStarterForSelection({
         line: "random",
@@ -630,121 +577,45 @@ petsRouter.post(
       const { strongStats, weakStat } = rollGrowthTraits();
       const passiveTrait = await rollPassiveTrait();
 
-      const { data: insertedPet, error: insertError } = await supabaseAdmin
-        .from("pets")
-        .insert({
-          user_id: userId,
-          name: starter.eggName,
-          species: starter.speciesId,
-          line: starter.line,
-          stage: "egg",
-          energy: 100,
-          hatch_ends_at: hatchEndsAt,
-          is_active: false,
-          location: "hatchery",
-          passive_trait_id: passiveTrait?.id ?? null,
-          passive_trait_key: passiveTrait?.key ?? null,
-          hatch_time_alignment: worldTime,
-          growth_strong_stats: strongStats,
-          growth_weak_stat: weakStat,
-          mutation_capacity: 1,
-          is_rescue_reroll: true,
-        })
-        .select("*")
-        .single();
-
-      if (insertError) {
-        logger.error("[rescue-egg] pet insert failed", insertError);
-        return res.status(500).json({
+      const { data: result, error: rescueError } = await supabaseAdmin.rpc(
+        "grant_rescue_egg",
+        {
+          p_user_id: userId,
+          p_egg: {
+            name: starter.eggName,
+            species: starter.speciesId,
+            line: starter.line,
+            hatch_ends_at: hatchEndsAt,
+            passive_trait_id: passiveTrait?.id ?? null,
+            passive_trait_key: passiveTrait?.key ?? null,
+            hatch_time_alignment: worldTime,
+            growth_strong_stats: strongStats,
+            growth_weak_stat: weakStat,
+          },
+          p_base_stats: starter.baseStats,
+        },
+      );
+      if (rescueError) throw rescueError;
+      if (!result) throw new Error("Missing rescue result.");
+      if (!result.success) {
+        return res.status(result.status_code === 409 ? 409 : 400).json({
           success: false,
-          error: insertError.message,
-        });
-      }
-
-      if (
-        insertedPet.species !== starter.speciesId ||
-        insertedPet.line !== starter.line
-      ) {
-        logger.error("[rescue-egg] persisted identity mismatch", {
-          petId: insertedPet.id,
-          expectedSpecies: starter.speciesId,
-          storedSpecies: insertedPet.species ?? null,
-          expectedLine: starter.line,
-          storedLine: insertedPet.line ?? null,
-        });
-
-        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
-
-        return res.status(500).json({
-          success: false,
-          error: "Rescue egg identity was not stored correctly.",
-        });
-      }
-
-      try {
-        await insertBaseStats(insertedPet.id, starter.baseStats);
-      } catch (statsError: any) {
-        logger.error("[rescue-egg] insertBaseStats failed", statsError);
-        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
-
-        return res.status(500).json({
-          success: false,
-          error:
-            statsError?.message ??
-            statsError?.details ??
-            "Failed to insert egg base stats",
-        });
-      }
-
-      const { error: slotError } = await supabaseAdmin
-        .from("hatchery_slots")
-        .update({ pet_id: insertedPet.id })
-        .eq("id", openSlot.id)
-        .eq("user_id", userId);
-
-      if (slotError) {
-        logger.error("[rescue-egg] slot assignment failed", slotError);
-        // Roll back the pet insert so we don't leave an orphaned egg with
-        // no slot, better to fail the whole rescue than half-grant it.
-        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
-        return res.status(500).json({
-          success: false,
-          error: slotError.message,
-        });
-      }
-
-      const { error: forfeitError } = await supabaseAdmin
-        .from("pets")
-        .update({ runaway_at: null })
-        .eq("user_id", userId)
-        .eq("ran_away", true);
-
-      if (forfeitError) {
-        logger.error("[rescue-egg] runaway forfeit failed", forfeitError);
-        await supabaseAdmin
-          .from("hatchery_slots")
-          .update({ pet_id: null })
-          .eq("id", openSlot.id)
-          .eq("user_id", userId);
-        await supabaseAdmin.from("pets").delete().eq("id", insertedPet.id);
-        return res.status(500).json({
-          success: false,
-          error: forfeitError.message,
+          error: result.error,
         });
       }
 
       logger.info("[rescue-egg] rescue egg granted", {
         userId,
-        petId: insertedPet.id,
+        petId: result.pet.id,
         speciesId: starter.speciesId,
         line: starter.line,
-        slotIndex: openSlot.slot_index,
+        slotIndex: result.slot_index,
       });
 
       return res.status(200).json({
         success: true,
-        pet: insertedPet,
-        slot_index: openSlot.slot_index,
+        pet: result.pet,
+        slot_index: result.slot_index,
       });
     } catch (err: any) {
       logger.error("[rescue-egg] failed", err);
@@ -990,6 +861,24 @@ petsRouter.post(
         return res.status(400).json({ error: "Pet is not an egg" });
       }
 
+      if (egg.location !== "hatchery") {
+        return res.status(409).json({ error: "Egg must occupy an unlocked Hatchery slot." });
+      }
+
+      const { data: hatcherySlot, error: hatcherySlotError } = await supabaseAdmin
+        .from("hatchery_slots")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("pet_id", eggId)
+        .eq("unlocked", true)
+        .limit(1)
+        .maybeSingle();
+
+      if (hatcherySlotError) throw hatcherySlotError;
+      if (!hatcherySlot) {
+        return res.status(409).json({ error: "Egg must occupy an unlocked Hatchery slot." });
+      }
+
       const hatchEndsAt = egg.hatch_ends_at;
 
       if (!hatchEndsAt) {
@@ -1014,7 +903,7 @@ petsRouter.post(
 
       const aliuneSignal = await fetchCurrentAliuneHatchSignal(nowIso);
       const eggLossChance =
-        isMysteryEggProtected(typedEgg) || isVeluneEgg
+        isMysteryEggProtected(typedEgg) || isVeluneEgg || egg.is_favorite
           ? 0
           : getEggLossChancePermille(aliuneSignal);
 
@@ -1027,7 +916,10 @@ petsRouter.post(
           "consume_corrupted_egg",
           { p_user_id: userId, p_egg_id: egg.id },
         );
-        if (lossError) throw lossError;
+        if (lossError) {
+          if (lossError.code === "P0001") return res.status(409).json({ error: lossError.message });
+          throw lossError;
+        }
         if (!consumed) {
           return res
             .status(409)

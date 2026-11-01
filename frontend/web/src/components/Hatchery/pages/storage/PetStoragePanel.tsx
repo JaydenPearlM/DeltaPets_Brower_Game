@@ -7,6 +7,7 @@ import {
 import MainTeam from "../../../MainTeam/mainTeam";
 import {
   ELEMENT_EGG_NAMES,
+  findNonStarterSpeciesById,
   SHARED_SPECIES,
   VELUNE,
 } from "@shared/pets/species";
@@ -181,6 +182,8 @@ function StoragePetCard(props: {
   targetSlot: number | null;
   isWorking: boolean;
   incubatorBusy: boolean;
+  favoriteBusy: boolean;
+  onFavorite: (petId: string, favorite: boolean) => void;
 }) {
   const {
     pet,
@@ -191,6 +194,8 @@ function StoragePetCard(props: {
     onSelectPet,
     isWorking,
     incubatorBusy,
+    favoriteBusy,
+    onFavorite,
   } = props;
 
   const isEgg =
@@ -203,6 +208,13 @@ function StoragePetCard(props: {
   const isStarterPet =
     !isEgg && STARTER_SPECIES_IDS.has(String(pet.species ?? "").trim());
   const isVelune = pet.species === VELUNE.id;
+  const rarity = String(
+    pet.rarity || findNonStarterSpeciesById(pet.species)?.rarity ||
+      (isStarterEgg || isStarterPet ? "epic" : ""),
+  ).trim().toLowerCase();
+  const rarityLabel = ["common", "uncommon", "rare", "epic"].includes(rarity)
+    ? rarity.charAt(0).toUpperCase() + rarity.slice(1)
+    : null;
 
   const petPortrait =
     getStarterPortrait(pet.species, pet.stage) ||
@@ -242,6 +254,22 @@ function StoragePetCard(props: {
           : "Drag pet to team or move it back from team."
       }
     >
+      <button
+        type="button"
+        className="storageFavorite"
+        draggable={false}
+        disabled={favoriteBusy || pet.is_favorite === undefined}
+        aria-pressed={pet.is_favorite === true}
+        aria-label={pet.is_favorite === undefined ? "Favorite status unavailable" :
+          `${pet.is_favorite ? "Unfavorite" : "Favorite"} ${pet.name?.trim() || "Kith"}`}
+        title={pet.is_favorite ? "Favorited and protected" : "Favorite to protect this Kith"}
+        onClick={(event) => {
+          event.stopPropagation();
+          onFavorite(pet.id, !pet.is_favorite);
+        }}
+      >
+        {pet.is_favorite ? "★" : "☆"}
+      </button>
       <div className="storagePetBody">
         <div className={["storagePetOrb", isEgg ? "isEgg" : "isPet"].join(" ")}>
           {isEgg ? (
@@ -278,8 +306,8 @@ function StoragePetCard(props: {
               : pet.name?.trim() || "Unnamed Delta"}
           </div>
 
-          {isStarterEgg || isStarterPet ? (
-            <span className="storageRarityBadge epic">Epic</span>
+          {!isVelune && rarityLabel ? (
+            <span className={`storageRarityBadge ${rarity}`}>{rarityLabel}</span>
           ) : null}
           {isVelune ? (
             <span className="storageRarityBadge epic">
@@ -343,6 +371,9 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
     firstEmptyPartySlot,
     loading,
     error,
+    favoriteError,
+    favoriteBusy,
+    setFavorite,
     workingPetId,
     workingSlotIndex,
     incubatingEggs,
@@ -600,15 +631,12 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
           />
         </div>
 
-        <div className="storageIncubatorNotice">
-          Incubating now:{" "}
-          <strong>
-            {incubatingEgg
-              ? incubatingEgg.name?.trim() ||
-                resolveEggIdentity(incubatingEgg).label
-              : "None"}
-          </strong>
-        </div>
+        {!loading && !error && search.trim().length > 0 && filteredPets.length === 0 && (
+          <div role="status">
+            <div className="storageEmptyTitle">Nothing matches that search.</div>
+            <div className="storageEmptyText">Try a different search.</div>
+          </div>
+        )}
 
         <div className="storageGridScroll">
           {loading ? (
@@ -618,19 +646,14 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
                 Pulling your Deltas out of the database cave.
               </div>
             </div>
-          ) : filteredPets.length === 0 ? (
-            <div className="storageEmptyState">
-              <div className="storageEmptyTitle">
-                Nothing matches that filter.
-              </div>
-              <div className="storageEmptyText">Try a different search.</div>
-            </div>
           ) : (
             <div className="storagePetGrid">
               {filteredPets.map((pet) => (
                 <StoragePetCard
                   key={pet.id}
                   pet={pet}
+                  favoriteBusy={favoriteBusy}
+                  onFavorite={(petId, favorite) => void setFavorite(petId, favorite)}
                   isDragging={draggingPetId === pet.id}
                   onDragStart={handleStorageDragStart}
                   onDragEnd={clearDragState}
@@ -653,6 +676,7 @@ export function PetStoragePanel(props: PetStoragePanelProps) {
         </div>
 
         {error ? <div className="storageErrorText">Error: {error}</div> : null}
+        {favoriteError ? <div className="storageErrorText" role="alert">{favoriteError}</div> : null}
       </section>
 
       {mobilePetAction ? (

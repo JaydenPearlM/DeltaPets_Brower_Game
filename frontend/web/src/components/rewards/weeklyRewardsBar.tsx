@@ -14,7 +14,7 @@ const WEEK1_LABELS = [
   { day: "Thu", label: "Potions" },
   { day: "Fri", label: "EXP +100" },
   { day: "Sat", label: "500 Dots" },
-  { day: "Sun", label: "Alpha Tester Ribbon" },
+  { day: "Sun", label: "100 Dots" },
 ];
 
 function getErrorMessage(error: unknown) {

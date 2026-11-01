@@ -200,17 +200,17 @@ type KithnaLocation = (typeof DESKTOP_BUILDING_MARKERS)[number];
 type KithnaLocationId = KithnaLocation["id"];
 
 const LOCATION_DESCRIPTIONS: Record<KithnaLocationId, string> = {
-  registry: "View your Kith Registry and registered companions.",
-  "pet-care": "Care for and spend time with your Kith.",
-  hatchery: "Visit the Hatchery.",
-  fishing: "The fishing pier is undergoing cleanup.",
-  gym: "Temporarily closed for cleaning.",
-  park: "The entrance is blocked by a fallen tree.",
-  wildwood: "Explore the Wildwood once the path is unlocked.",
-  farm: "Visit the local food merchant.",
-  wardrobe: "Browse clothing and wardrobe options.",
-  boat: "Travel services are temporarily delayed.",
-  unknown: "???",
+  registry: "Meet your registered Kith and revisit your companions.",
+  "pet-care": "Spend time with your Kith and keep them happy and healthy.",
+  hatchery: "Where new journeys begin. Hatch eggs and meet your newest Kith.",
+  fishing: "The pier is closed while cleanup is underway.",
+  gym: "Temporarily closed. The gym could use a little cleaning!",
+  park: "A fallen tree blocks the entrance after the last storm.",
+  wildwood: "Unlock the path to explore Kithna's mysterious Wildwood.",
+  farm: "Visit Assanti's Mart for fresh food and supplies and something else.",
+  wardrobe: "Discover clothes and accessories for your avatar.",
+  boat: "Island travel is temporarily unavailable.",
+  unknown: "A mysterious place. What could be hiding here?",
 };
 
 function KithnaMarkerIcon({
@@ -238,10 +238,10 @@ function KithnaMarkerIcon({
   }
   const paths: Record<Exclude<typeof id, "gym">, ReactNode> = {
     fishing: (
-      <>
+      <g transform="translate(-3 0)">
         <path d="M12 3v12c0 7 9 7 9 0v-2" />
         <path d="m18 15 3-3 3 3" />
-      </>
+      </g>
     ),
     boat: (
       <>
@@ -326,16 +326,32 @@ export default function KithnaMap() {
     if (!directory || !lastDirectoryEntry || !mapFrame) return;
 
     function sizeMap() {
-      if (!directory || !lastDirectoryEntry || !mapFrame || !directory.offsetHeight) return;
-      const height = lastDirectoryEntry.getBoundingClientRect().bottom -
+      if (
+        !directory ||
+        !lastDirectoryEntry ||
+        !mapFrame ||
+        !directory.offsetHeight
+      )
+        return;
+      const height =
+        lastDirectoryEntry.getBoundingClientRect().bottom -
         directory.getBoundingClientRect().top;
       const style = getComputedStyle(mapFrame);
-      const horizontalFrame = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) +
-        parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
-      const verticalFrame = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) +
-        parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
-      const width = (height - verticalFrame) * 1440 / 2559 + horizontalFrame;
-      mapFrame.parentElement?.style.setProperty("--kithna-aligned-map-width", `${width}px`);
+      const horizontalFrame =
+        parseFloat(style.paddingLeft) +
+        parseFloat(style.paddingRight) +
+        parseFloat(style.borderLeftWidth) +
+        parseFloat(style.borderRightWidth);
+      const verticalFrame =
+        parseFloat(style.paddingTop) +
+        parseFloat(style.paddingBottom) +
+        parseFloat(style.borderTopWidth) +
+        parseFloat(style.borderBottomWidth);
+      const width = ((height - verticalFrame) * 1440) / 2559 + horizontalFrame;
+      mapFrame.parentElement?.style.setProperty(
+        "--kithna-aligned-map-width",
+        `${width}px`,
+      );
     }
 
     const observer = new ResizeObserver(sizeMap);
@@ -422,11 +438,22 @@ export default function KithnaMap() {
 
       <h1 className="kithnaDirectoryHeading dp-popup-grid-panel">
         <span>Welcome to Kithna</span>
+        <span className="kithnaDirectorySubtitle">
+          Island of New Beginnings
+        </span>
       </h1>
-      <nav ref={directoryRef} className="kithnaLocationDirectory" aria-label="Kithna location directory">
+      <nav
+        ref={directoryRef}
+        className="kithnaLocationDirectory"
+        aria-label="Kithna location directory"
+      >
         {[
-          ...DESKTOP_BUILDING_MARKERS.filter((marker) => marker.id === "hatchery"),
-          ...DESKTOP_BUILDING_MARKERS.filter((marker) => marker.id === "pet-care"),
+          ...DESKTOP_BUILDING_MARKERS.filter(
+            (marker) => marker.id === "hatchery",
+          ),
+          ...DESKTOP_BUILDING_MARKERS.filter(
+            (marker) => marker.id === "pet-care",
+          ),
           ...DESKTOP_BUILDING_MARKERS.filter(
             (marker) => marker.id !== "hatchery" && marker.id !== "pet-care",
           ),
@@ -436,7 +463,7 @@ export default function KithnaMap() {
             ref={marker.id === "unknown" ? lastDirectoryEntryRef : undefined}
             type="button"
             className="kithnaDirectoryEntry dp-popup-grid-panel"
-            aria-disabled={
+            disabled={
               marker.id === "unknown" ||
               ((marker.id === "wildwood" || marker.id === "farm") && !wildwood)
             }
@@ -452,7 +479,11 @@ export default function KithnaMap() {
           </button>
         ))}
       </nav>
-      <section ref={mapFrameRef} className="kithnaMapFrame" aria-label="Kithna town map">
+      <section
+        ref={mapFrameRef}
+        className="kithnaMapFrame"
+        aria-label="Kithna town map"
+      >
         <div
           className="kithnaIsland"
           style={{ backgroundImage: `url("${kithnaMapImage}")` }}
@@ -681,7 +712,7 @@ export default function KithnaMap() {
                     type="button"
                     className="kithnaDesktopBuildingMarker"
                     aria-label={tooltip}
-                    aria-disabled={isDisabled}
+                    disabled={isDisabled}
                     onClick={() => activateLocation(marker)}
                   >
                     <KithnaMarkerIcon id={marker.id} />

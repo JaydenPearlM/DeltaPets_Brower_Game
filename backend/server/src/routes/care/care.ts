@@ -15,9 +15,10 @@ import {
   updatePetCareStats,
 } from "../../lib/petCareHelpers";
 
-import { ownedCareHandler } from "./ownedCare";
+import { ownedCareHandler, ownedItemCareHandler } from "./ownedCare";
 
 export const careRouter = Router();
+careRouter.post("/item", requireUser, ownedItemCareHandler);
 
 // Blocks dev-only routes from running outside local development.
 function devOnly(_req: AuthedRequest, res: Response, next: NextFunction) {
@@ -166,6 +167,7 @@ function titleCaseValue(value: unknown, fallback = "Mysterious") {
 }
 
 function petNeedsRunawayLock(pet: Record<string, any>) {
+  if (pet.is_favorite) return false;
   const hunger = wholeCare(pet.hunger, 50);
   const clean = wholeCare(pet.clean, 50);
   const happy = wholeCare(pet.happy, 50);
@@ -1015,24 +1017,17 @@ careRouter.post("/place", requireUser, async (req: AuthedRequest, res) => {
         .status(400)
         .json({ error: "That Delta has already run away." });
     }
-    const { error: clearError } = await supabaseAdmin
-      .from("pets")
-      .update({ is_active: false })
-      .eq("user_id", userId)
-      .eq("is_active", true);
-
-    if (clearError) {
-      return res.status(500).json({ error: clearError.message });
-    }
-
-    const { error: activateError } = await supabaseAdmin
-      .from("pets")
-      .update({ is_active: true, location: "active" })
-      .eq("id", petId)
-      .eq("user_id", userId);
+    const { error: activateError } = await supabaseAdmin.rpc(
+      "apply_pet_storage_action",
+      { p_user_id: userId, p_action: "set_active", p_pet_id: petId, p_slot_index: null },
+    );
 
     if (activateError) {
-      return res.status(500).json({ error: activateError.message });
+      if (activateError.code === "P0001") {
+        return res.status(400).json({ error: activateError.message });
+      }
+      logger.error("[care/place] activation failed", activateError);
+      return res.status(500).json({ error: "Failed to place active pet." });
     }
 
     return res.json({ success: true, petId });

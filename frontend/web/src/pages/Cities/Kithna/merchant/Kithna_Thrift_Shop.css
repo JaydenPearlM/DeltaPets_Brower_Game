@@ -1,0 +1,30 @@
+/* Kennith uses the shared merchant and Assanti layout rules unchanged. */
+/* Match Assanti's source-image proportions without changing Kennith's artwork file. */
+.kithna-thrift-shop .kithna-food-merchant-image {
+  aspect-ratio: 1601 / 982;
+  object-fit: cover;
+}
+
+.kithna-thrift-item-icon {
+  float: left;
+  object-fit: contain;
+  margin-right: 6px;
+}
+
+.kithna-thrift-trading-notice {
+  margin: 0 0 10px;
+  color: var(--merchant-cream);
+  font-size: 0.8rem;
+}
+
+.kithna-thrift-shop .kithna-thrift-empty {
+  padding: 16px 10px;
+  color: var(--merchant-cream);
+  line-height: 1.5;
+}
+
+.kithna-thrift-shop [role="tabpanel"]:focus-visible {
+  outline: 2px solid var(--merchant-gold);
+  outline-offset: 4px;
+}
+

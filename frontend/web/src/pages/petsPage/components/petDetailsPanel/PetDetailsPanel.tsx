@@ -109,6 +109,7 @@ type PetDetailsPanelProps = {
   energy: number;
   bond: number;
   inventoryCounts?: {
+    tutorial?: number;
     food: number;
     soap: number;
     toy: number;
@@ -974,7 +975,7 @@ export default function PetDetailsPanel({
               type="button"
               className="petRepoAction petRepoActionYellow"
               onClick={() => void runCareAction("pet")}
-              disabled={busy || nicknameSaving || safeInventory.bed <= 0}
+              disabled={busy || nicknameSaving || safeInventory.bed <= 0 && (inventoryCounts?.tutorial ?? 0) <= 0}
             >
               Comfort {safeInventory.bed > 0 ? `· ${safeInventory.bed}` : ""}
             </button>

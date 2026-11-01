@@ -6,91 +6,190 @@ import { requireUser, type AuthedRequest } from "../middleware/auth";
 import { supabaseAdmin } from "../lib/supabaseAdmin";
 import { logger } from "../lib/logger";
 import { z } from "zod";
+import { equipmentMigrationMissing } from "../lib/equipment";
 import { readAppearance, saveAppearanceSchema } from "../lib/profileAppearance";
 
 export const meRouter = Router();
 
-meRouter.get("/me/appearance", requireUser, async (req: AuthedRequest, res: Response) => {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from("profiles")
-      .select("avatar_customization, default_avatar_customization")
-      .eq("user_id", req.user!.id)
-      .maybeSingle();
-    if (error) throw error;
-    return res.json({
-      appearance: readAppearance(data?.avatar_customization),
-      defaultAppearance: readAppearance(data?.default_avatar_customization),
-    });
-  } catch (error) {
-    logger.error("[GET /api/me/appearance] failed", error);
-    return res.status(500).json({ error: "Could not load your saved appearance." });
-  }
-});
+meRouter.get(
+  "/me/appearance",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("profiles")
+        .select("avatar_customization, default_avatar_customization")
+        .eq("user_id", req.user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return res.json({
+        appearance: readAppearance(data?.avatar_customization),
+        defaultAppearance: readAppearance(data?.default_avatar_customization),
+      });
+    } catch (error) {
+      logger.error("[GET /api/me/appearance] failed", error);
+      return res
+        .status(500)
+        .json({ error: "Could not load your saved appearance." });
+    }
+  },
+);
 
-meRouter.put("/me/appearance", requireUser, async (req: AuthedRequest, res: Response) => {
-  const parsed = saveAppearanceSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: "Choose valid appearance options." });
-  }
-  try {
-    const column = parsed.data.target === "current"
-      ? "avatar_customization"
-      : "default_avatar_customization";
-    const { data, error } = await supabaseAdmin
-      .from("profiles")
-      .upsert({ user_id: req.user!.id, [column]: parsed.data.appearance }, { onConflict: "user_id" })
-      .select("avatar_customization, default_avatar_customization")
-      .single();
-    if (error) throw error;
-    return res.json({
-      appearance: readAppearance(data.avatar_customization),
-      defaultAppearance: readAppearance(data.default_avatar_customization),
-    });
-  } catch (error) {
-    logger.error("[PUT /api/me/appearance] failed", error);
-    return res.status(500).json({ error: "Could not save your appearance. Please try again." });
-  }
-});
+meRouter.put(
+  "/me/appearance",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    const parsed = saveAppearanceSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res
+        .status(400)
+        .json({ error: "Choose valid appearance options." });
+    }
+    try {
+      const atomic = await supabaseAdmin.rpc("save_owned_appearance", {
+        p_user_id: req.user!.id,
+        p_appearance: parsed.data.appearance,
+        p_target: parsed.data.target,
+      });
+      if (!atomic.error) {
+        if (!atomic.data || typeof atomic.data !== "object")
+          throw new Error("Invalid equipment response");
+        return res.json({
+          appearance: readAppearance(atomic.data.avatar_customization),
+          defaultAppearance: readAppearance(
+            atomic.data.default_avatar_customization,
+          ),
+        });
+      }
+      if (!equipmentMigrationMissing(atomic.error)) {
+        if (
+          atomic.error.message ===
+          "You do not own one or more selected wardrobe items."
+        )
+          return res.status(409).json({ error: atomic.error.message });
+        throw atomic.error;
+      }
+      // Retain the existing wardrobe save while the review-only migration is absent.
+      const equipped: string[] = [
+        parsed.data.appearance.upperBodyClothing,
+        parsed.data.appearance.lowerBodyClothing,
+        parsed.data.appearance.hat,
+        parsed.data.appearance.eyewear,
+      ].filter(
+        (slug): slug is NonNullable<typeof slug> => typeof slug === "string",
+      );
+      if (equipped.length) {
+        const { data: owned, error: ownershipError } = await supabaseAdmin
+          .from("inventory")
+          .select("qty, item_defs!inner(slug)")
+          .eq("user_id", req.user!.id)
+          .in("item_defs.slug", equipped)
+          .gt("qty", 0);
+        if (ownershipError) throw ownershipError;
+        const ownedSlugs = new Set(
+          (owned ?? []).map((row) => {
+            const definition = row.item_defs as unknown as { slug: string };
+            return definition.slug;
+          }),
+        );
+        if (equipped.some((slug) => !ownedSlugs.has(slug))) {
+          return res.status(403).json({
+            error: "You do not own one or more selected wardrobe items.",
+          });
+        }
+      }
+      const column =
+        parsed.data.target === "current"
+          ? "avatar_customization"
+          : "default_avatar_customization";
+      const { data, error } = await supabaseAdmin
+        .from("profiles")
+        .upsert(
+          { user_id: req.user!.id, [column]: parsed.data.appearance },
+          { onConflict: "user_id" },
+        )
+        .select("avatar_customization, default_avatar_customization")
+        .single();
+      if (error) throw error;
+      return res.json({
+        appearance: readAppearance(data.avatar_customization),
+        defaultAppearance: readAppearance(data.default_avatar_customization),
+      });
+    } catch (error) {
+      logger.error("[PUT /api/me/appearance] failed", error);
+      return res
+        .status(500)
+        .json({ error: "Could not save your appearance. Please try again." });
+    }
+  },
+);
 
-meRouter.get("/profiles/:playerId", requireUser, async (req: AuthedRequest, res: Response) => {
-  const playerId = z.string().uuid().safeParse(req.params.playerId);
-  if (!playerId.success) {
-    return res.status(400).json({ error: "Invalid player profile link." });
-  }
-  try {
-    const { data: profile, error } = await supabaseAdmin
-      .from("profiles")
-      .select("user_id, username, display_name, created_at, active_title, avatar_customization")
-      .eq("user_id", playerId.data)
-      .maybeSingle();
-    if (error) throw error;
-    if (!profile) return res.status(404).json({ error: "Player profile not found." });
+meRouter.get(
+  "/profiles/:playerId",
+  requireUser,
+  async (req: AuthedRequest, res: Response) => {
+    const playerId = z.string().uuid().safeParse(req.params.playerId);
+    if (!playerId.success) {
+      return res.status(400).json({ error: "Invalid player profile link." });
+    }
+    try {
+      const { data: profile, error } = await supabaseAdmin
+        .from("profiles")
+        .select(
+          "user_id, username, display_name, created_at, active_title, avatar_customization",
+        )
+        .eq("user_id", playerId.data)
+        .maybeSingle();
+      if (error) throw error;
+      if (!profile)
+        return res.status(404).json({ error: "Player profile not found." });
 
-    const [progression, pets] = await Promise.all([
-      supabaseAdmin.from("trainer_progression").select("trainer_level")
-        .eq("user_id", playerId.data).maybeSingle(),
-      supabaseAdmin.from("pets").select("id", { count: "exact", head: true })
-        .eq("user_id", playerId.data),
-    ]);
-    if (progression.error) throw progression.error;
-    if (pets.error) throw pets.error;
-    // Explicit public fields only; never return the complete profile row.
-    return res.json({
-      playerId: profile.user_id,
-      displayName: profile.display_name || profile.username || "Traveler",
-      username: profile.username,
-      joinedAt: profile.created_at,
-      title: profile.active_title,
-      appearance: readAppearance(profile.avatar_customization),
-      trainerLevel: progression.data?.trainer_level ?? 1,
-      kithOwned: pets.count ?? 0,
-    });
-  } catch (error) {
-    logger.error("[GET /api/profiles/:playerId] failed", error);
-    return res.status(500).json({ error: "Could not load this player profile." });
-  }
-});
+      const [progression, pets] = await Promise.all([
+        supabaseAdmin
+          .from("trainer_progression")
+          .select("trainer_level")
+          .eq("user_id", playerId.data)
+          .maybeSingle(),
+        supabaseAdmin
+          .from("pets")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", playerId.data)
+          .neq("stage", "egg")
+          .eq("ran_away", false),
+      ]);
+      if (progression.error) {
+        logger.warn(
+          "[GET /api/profiles/:playerId] trainer progression unavailable",
+          progression.error,
+        );
+      }
+      if (pets.error) {
+        logger.warn(
+          "[GET /api/profiles/:playerId] pet count unavailable",
+          pets.error,
+        );
+      }
+      // Explicit public fields only; never return the complete profile row.
+      return res.json({
+        playerId: profile.user_id,
+        displayName: profile.display_name || profile.username || "Traveler",
+        username: profile.username,
+        joinedAt: profile.created_at,
+        title: profile.active_title,
+        appearance: readAppearance(profile.avatar_customization),
+        trainerLevel: progression.error
+          ? null
+          : (progression.data?.trainer_level ?? null),
+        kithOwned: pets.error ? null : pets.count,
+      });
+    } catch (error) {
+      logger.error("[GET /api/profiles/:playerId] failed", error);
+      return res
+        .status(500)
+        .json({ error: "Could not load this player profile." });
+    }
+  },
+);
 
 meRouter.get(
   "/me/trainer-progression",
@@ -547,11 +646,17 @@ meRouter.post(
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const dots = z.number().int().positive().max(2147483647).safeParse(req.body?.dots);
+      const dots = z
+        .number()
+        .int()
+        .positive()
+        .max(2147483647)
+        .safeParse(req.body?.dots);
 
       if (!dots.success) {
         return res.status(400).json({
-          error: "Dots amount must be a positive integer within the supported range.",
+          error:
+            "Dots amount must be a positive integer within the supported range.",
         });
       }
 

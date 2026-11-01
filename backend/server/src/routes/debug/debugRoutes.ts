@@ -92,93 +92,16 @@ debugRouter.post(
         email,
       });
 
-      const { data: ownedPets } = await supabaseAdmin
-        .from("pets")
-        .select("id")
-        .eq("user_id", userId);
-      const petIds = (ownedPets ?? []).map((p) => p.id);
-
-      const { data: ownedBattleRuns } = await supabaseAdmin
-        .from("battle_runs")
-        .select("id")
-        .eq("user_id", userId);
-      const battleRunIds = (ownedBattleRuns ?? []).map((r) => r.id);
-
-      const { data: ownedPveRuns } = await supabaseAdmin
-        .from("pve_instability_runs")
-        .select("id")
-        .eq("user_id", userId);
-      const pveRunIds = (ownedPveRuns ?? []).map((r) => r.id);
-
-      await supabaseAdmin
-        .from("signup_trigger_errors")
-        .delete()
-        .or(`user_id.eq.${userId},email.eq.${email}`);
-
-      if (battleRunIds.length) {
-        await supabaseAdmin
-          .from("battle_run_fights")
-          .delete()
-          .in("run_id", battleRunIds);
+      // Keep pet children and pet deletion in one transaction with Favorite locks.
+      const { error: resetError } = await supabaseAdmin.rpc("reset_test_account_game_data", {
+        p_user_id: userId,
+        p_email: email,
+        p_confirm: req.body.confirm,
+      });
+      if (resetError) {
+        if (resetError.code === "P0001") return res.status(409).json({ error: resetError.message });
+        throw new Error("Account reset failed. No game data was changed.");
       }
-
-      if (pveRunIds.length) {
-        await supabaseAdmin
-          .from("pve_instability_fights")
-          .delete()
-          .in("run_id", pveRunIds);
-      }
-
-      if (petIds.length) {
-        await supabaseAdmin.from("pet_mutations").delete().in("pet_id", petIds);
-        await supabaseAdmin.from("pet_awards").delete().in("pet_id", petIds);
-        await supabaseAdmin
-          .from("pet_element_affinities")
-          .delete()
-          .in("pet_id", petIds);
-        await supabaseAdmin.from("pet_elements").delete().in("pet_id", petIds);
-        await supabaseAdmin.from("pet_skills").delete().in("pet_id", petIds);
-        await supabaseAdmin
-          .from("pet_stat_allocations")
-          .delete()
-          .in("pet_id", petIds);
-        await supabaseAdmin.from("pet_stats").delete().in("pet_id", petIds);
-      }
-
-      await supabaseAdmin.from("trainer_awards").delete().eq("user_id", userId);
-      await supabaseAdmin.from("daily_login_rewards").delete().eq("id", userId);
-      await supabaseAdmin
-        .from("hatchery_shelf_slots")
-        .delete()
-        .eq("user_id", userId);
-      await supabaseAdmin.from("hatchery_slots").delete().eq("user_id", userId);
-      await supabaseAdmin.from("party_slots").delete().eq("user_id", userId);
-      await supabaseAdmin.from("home_objects").delete().eq("user_id", userId);
-      await supabaseAdmin.from("inventory").delete().eq("user_id", userId);
-      await supabaseAdmin.from("eggs").delete().eq("user_id", userId);
-      await supabaseAdmin.from("wallet_ledger").delete().eq("user_id", userId);
-      await supabaseAdmin.from("battle_runs").delete().eq("user_id", userId);
-      await supabaseAdmin
-        .from("pve_instability_runs")
-        .delete()
-        .eq("user_id", userId);
-      await supabaseAdmin
-        .from("pve_active_buffs")
-        .delete()
-        .eq("user_id", userId);
-      await supabaseAdmin
-        .from("pve_research_stats")
-        .delete()
-        .eq("user_id", userId);
-      await supabaseAdmin.from("daily_care").delete().eq("user_id", userId);
-      await supabaseAdmin.from("user_resources").delete().eq("user_id", userId);
-      await supabaseAdmin.from("wallets").delete().eq("user_id", userId);
-
-      // Pets after all pet children are gone.
-      await supabaseAdmin.from("pets").delete().eq("user_id", userId);
-
-      // Profile after eggs are gone.
-      await supabaseAdmin.from("profiles").delete().eq("user_id", userId);
 
       // Finally, remove the login itself so this email can sign up fresh.
       const { error: authDeleteError } =

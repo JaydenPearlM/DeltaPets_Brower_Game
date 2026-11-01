@@ -84,6 +84,7 @@ async function main() {
     const beforeLimit = calls.length;
     assert.equal((await send("purchase", { slug: "alpha-meat", quantity: 51 })).status, 400);
     assert.equal(calls.length, beforeLimit);
+    assert.equal((await send("purchase", { slug: "alpha-meat", quantity: 50 })).status, 200);
     await send("sell", { slug: "alpha-meat", quantity: 1 }, "account-B");
     assert.equal(calls.at(-1).args.p_user_id, "account-B");
     for (const message of ["Not enough owned food.", "Not enough Dots.", "Food stack is full.", "Assanti does not have enough Dots.", "That food is not available today.", "Player wallet is full.", "Merchant wallet is full."]) {
@@ -110,6 +111,7 @@ async function main() {
     assert.equal(shop.status, 200);
     assert.equal(shop.cache, 'no-store');
     assert.equal(shop.body.merchantDots, 1234);
+    assert.equal(calls.at(-1).name, 'get_assanti_groceries');
     assert.equal(calls.at(-1).args.p_delta_day, getDeltaTime().deltaDay);
     assert.equal(getDeltaTime(new Date(shop.body.nextRotationAt)).deltaDay, getDeltaTime().deltaDay + 1);
     const beforeDaily = calls.length;
@@ -124,6 +126,29 @@ async function main() {
       assert.equal(response.status,409);
       assert.equal(response.body.error,message);
     }
+    const basket = {deltaDay:getDeltaTime().deltaDay, lines:[
+      {slug:'alpha-meat',buy:2,sell:0}, {slug:'carrot',buy:0,sell:1},
+    ]};
+    const beforeBasket = calls.length;
+    assert.equal((await send('trade', basket, '')).status, 401);
+    assert.equal((await send('trade', {...basket, deltaDay:basket.deltaDay-1})).status, 409);
+    assert.equal((await send('trade', {...basket, lines:[basket.lines[0],basket.lines[0]]})).status, 400);
+    assert.equal((await send('trade', {...basket, price:0})).status, 400);
+    assert.equal((await send('trade', {...basket, lines:[{slug:'alpha-meat',buy:51,sell:0}]})).status, 400);
+    assert.equal((await send('trade', {...basket, lines:[{slug:'healing-potion',buy:1,sell:0}]})).status, 400);
+    assert.equal(calls.length,beforeBasket);
+    rpcResult = {data:{ok:true,cost:10,value:5},error:null};
+    assert.deepEqual(await send('trade',basket),{status:200,body:rpcResult.data});
+    assert.deepEqual(calls.at(-1), {name:'trade_assanti_basket',args:{
+      p_user_id:'account-A',p_delta_day:basket.deltaDay,p_lines:basket.lines,
+    }});
+    rpcResult = {data:null,error:{code:'PGRST202',message:'private schema details'}};
+    assert.equal((await readShop()).status,503);
+    assert.deepEqual(await send('trade',basket),{status:503,body:{error:'Trade unavailable. Refresh before trying again.'}});
+    rpcResult = {data:null,error:{code:'P0001',message:'Not enough owned items.'}};
+    assert.deepEqual(await send('trade',basket),{status:409,body:{error:'Not enough owned items.'}});
+    rpcResult = {data:null,error:{code:'P0001',message:'Food stack is full.'}};
+    assert.deepEqual(await send('trade',basket),{status:409,body:{error:'Food stack is full.'}});
     throwRpc = true;
     assert.equal((await send("sell", { slug: "alpha-meat", quantity: 1 })).status, 500);
     console.log(`PASS: ${checked} real-router requests; validation, authenticated identity, single RPC, safe errors.`);

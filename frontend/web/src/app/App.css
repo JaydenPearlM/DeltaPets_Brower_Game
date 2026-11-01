@@ -5,6 +5,63 @@
   padding: 0;
 }
 
+/* One desktop frame; route panels fill it without a second outer gutter. */
+@media (min-width: 641px) {
+  .appRoot > .appHeader,
+  .appRoot > .appContent,
+  .appRoot > .appCopyright {
+    width: min(var(--dp-page-max), calc(100% - 20px));
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+
+  .appRoot > .appContent {
+    padding-inline: 0;
+  }
+
+  .appContent > .dp-arena-page,
+  .appContent > .dp-merchant-page,
+  .appContent > .ww-page {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  .appContent > .dp-profile-page > .hp-banner,
+  .appContent > .dp-profile-page > .dp-profile-layout {
+    width: 100%;
+  }
+}
+
+/* Keep the footer 10px below regular page content, including on mobile. */
+.appRoot > .appContent:has(+ .appCopyright) {
+  padding-bottom: 10px;
+}
+
+.appContent > :is(
+  .hp-root, .dp-profile-page, .petRepoPage, .hatcheryPage,
+  .kithnaMapPage, .dp-merchant-page, .dp-arena-page,
+  .dp-dungeons-page, .dp-park-page, .gym-page, .dp-farm-page,
+  .comingSoonPage
+) {
+  min-height: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.appContent > .dp-merchant-page > .dp-merchant-shell {
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.appContent > .hp-root .hp-supportPanel {
+  margin-bottom: 0;
+}
+
+.appContent > .ww-page {
+  margin-bottom: 0;
+}
+
 /* ===== GLOBAL CONTAINER ===== */
 .appShell {
   width: 100%;

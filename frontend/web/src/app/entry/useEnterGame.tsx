@@ -96,7 +96,6 @@ export function useEnterGame() {
       navigate("/profile", { replace: true });
     } catch (err) {
       console.error("[enterGame] failed:", err);
-      navigate("/", { replace: true });
       throw err;
     } finally {
       setLoading(false);

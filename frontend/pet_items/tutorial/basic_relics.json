@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Smooth River Stone",
+    "slug": "smooth-river-stone",
+    "artwork_description": "Rounded blue-gray stone",
+    "price": 40
+  },
+  {
+    "name": "Carved Wooden Token",
+    "slug": "carved-wooden-token",
+    "artwork_description": "Wooden disc with a simple spiral",
+    "price": 40
+  },
+  {
+    "name": "Copper Keepsake",
+    "slug": "copper-keepsake",
+    "artwork_description": "Tarnished copper charm",
+    "price": 40
+  },
+  {
+    "name": "Woven Cord Charm",
+    "slug": "woven-cord-charm",
+    "artwork_description": "Knotted cord around a wooden bead",
+    "price": 40
+  },
+  {
+    "name": "Clay Medallion",
+    "slug": "clay-medallion",
+    "artwork_description": "Small clay pendant with a leaf imprint",
+    "price": 40
+  },
+  {
+    "name": "Polished Shell",
+    "slug": "polished-shell",
+    "artwork_description": "Cream shell with a soft pink interior",
+    "price": 40
+  },
+  {
+    "name": "Chipped Stone Pendant",
+    "slug": "chipped-stone-pendant",
+    "artwork_description": "Plain stone pendant with a chipped edge",
+    "price": 40
+  },
+  {
+    "name": "Old Brass Bell",
+    "slug": "old-brass-bell",
+    "artwork_description": "Small, weathered brass bell",
+    "price": 40
+  }
+]

@@ -34,10 +34,6 @@ export default function WildwoodPage() {
     null,
   );
 
-  const [eggEncounterRoomId, setEggEncounterRoomId] = useState<string | null>(
-    null,
-  );
-
   const [questProgressFlash, setQuestProgressFlash] = useState<{
     progress: number;
     target: number;
@@ -195,21 +191,28 @@ export default function WildwoodPage() {
       setShowBattle(false);
 
       setEggEncounter(null);
-      setEggEncounterRoomId(null);
 
       if (next.room && !next.room.battle) {
-        const eggResult = await apiFetch<RoamEncounterResult>(
-          "/api/kithna/roam",
-          {
-            method: "POST",
-          },
-        );
+        try {
+          const eggResult = await apiFetch<RoamEncounterResult>(
+            "/api/kithna/roam",
+            {
+              method: "POST",
+            },
+          );
 
-        if (!mounted.current) return;
+          if (!mounted.current) return;
 
-        if (eggResult.found) {
-          setEggEncounter(eggResult);
-          setEggEncounterRoomId(next.room.id);
+          if (eggResult.found) {
+            setEggEncounter(eggResult);
+          }
+        } catch (roamError) {
+          if (import.meta.env.DEV) {
+            console.warn(
+              "[Wildwood] Optional roaming encounter failed:",
+              roamError,
+            );
+          }
         }
       }
 
@@ -408,28 +411,18 @@ export default function WildwoodPage() {
                   aria-label="Wildwood exploration"
                   aria-busy={busy}
                 >
-                  {room && room.id === visitRoomId ? (
-                    eggEncounterRoomId === room.id ? (
-                      <div className="ww-explore-result">
-                        <p className="ww-eyebrow">Step {visitSteps}</p>
-
-                        <h2>Something found</h2>
-
-                        <p>You discovered an egg along the Wildwood path.</p>
-                      </div>
-                    ) : (
-                      <WildwoodExploreResult
-                        key={room.id}
-                        room={room}
-                        busy={busy || Boolean(error)}
-                        step={visitSteps}
-                        onBattle={() => setShowBattle(true)}
-                        onCollected={(name) =>
-                          setRecentFinds((finds) => [...finds, name])
-                        }
-                        onCollectingChange={setCollecting}
-                      />
-                    )
+                  {room && (room.id === visitRoomId || visitRoomId === null) ? (
+                    <WildwoodExploreResult
+                      key={room.id}
+                      room={room}
+                      busy={busy || Boolean(error)}
+                      step={visitSteps}
+                      onBattle={() => setShowBattle(true)}
+                      onCollected={(name) =>
+                        setRecentFinds((finds) => [...finds, name])
+                      }
+                      onCollectingChange={setCollecting}
+                    />
                   ) : (
                     <p className="ww-eyebrow">Steps this visit: {visitSteps}</p>
                   )}

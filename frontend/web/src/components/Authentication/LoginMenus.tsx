@@ -218,6 +218,8 @@ export function LoginMenus({
     setLoading(true);
     console.log("[auth] sign-in request started");
 
+    let authenticated = false;
+
     try {
       const { error } = await signIn({
         identifier: trimmedIdentifier,
@@ -232,13 +234,16 @@ export function LoginMenus({
         return;
       }
 
-      closeModal();
+      authenticated = true;
       await enterGame();
+      closeModal();
     } catch (error) {
-      console.error("[auth] sign-in failed:", error);
+      console.error("[auth] sign-in or game entry failed:", error);
       setMessage({
         type: "error",
-        text: "Sign in failed. Please try again.",
+        text: authenticated
+          ? "You're signed in, but DeltaPets couldn't load your game entry. Please try again."
+          : "Sign in failed. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -367,7 +372,6 @@ export function LoginMenus({
       if (hasSession) {
         await supabase.auth.signOut();
       }
-
       resetSignupFields();
       setLoginPassword("");
       setView("login");
@@ -375,11 +379,16 @@ export function LoginMenus({
         type: "success",
         text: "Account created! Go to your email and activate your DeltaPets account before signing in.",
       });
+    } catch (error) {
+      console.error("[signup] unexpected signup error:", error);
+      setMessage({
+        type: "error",
+        text: "Could not confirm whether your account was created. Please check your email or try signing in before attempting signup again.",
+      });
     } finally {
       setLoading(false);
     }
   }
-
   const modalMarkup =
     mounted && isOpen
       ? createPortal(

@@ -1,3 +1,23 @@
+/* Kithna only: prevent extra space below the footer. */
+body:has(.kithnaMapPage) {
+  min-height: 100dvh;
+}
+
+#root:has(.kithnaMapPage) {
+  height: auto;
+  min-height: 100dvh;
+}
+
+.appRoot:has(.kithnaMapPage) {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.appRoot:has(.kithnaMapPage) > .appContent {
+  flex: 0 0 auto;
+}
+
 .kithnaMapPage {
   padding: 24px 0;
 
@@ -306,7 +326,9 @@
   font-weight: 1000;
   line-height: 1;
   pointer-events: none;
-  text-shadow: 0 2px 3px #1b1a18, 0 0 4px #1b1a18;
+  text-shadow:
+    0 2px 3px #1b1a18,
+    0 0 4px #1b1a18;
 }
 
 /*
@@ -915,7 +937,9 @@
 
 /* Quest indicators follow the existing desktop icon anchors. */
 @media (min-width: 901px) {
-  .kithnaQuestMobileMarkers { display: none; }
+  .kithnaQuestMobileMarkers {
+    display: none;
+  }
 
   .kithnaQuestMarker--anchored {
     left: 50%;
@@ -923,8 +947,6 @@
     bottom: calc(100% + 4px);
     transform: translateX(-50%);
   }
-
-
 }
 
 /* Border colors apply only to the three Kithna location notices. */
@@ -943,8 +965,14 @@
   .kithnaMapPage {
     display: grid;
     grid-template-columns:
-      minmax(0, calc((100% - var(--space-6)) / 3))
-      minmax(0, min(var(--kithna-aligned-map-width, 507px), calc((100% - var(--space-6)) * 2 / 3)));
+      minmax(0, 1fr)
+      minmax(
+        0,
+        min(
+          var(--kithna-aligned-map-width, 507px),
+          calc((100% - var(--space-6)) * 2 / 3)
+        )
+      );
     justify-content: center;
     align-items: start;
     gap: var(--space-6);
@@ -965,7 +993,7 @@
     padding: var(--space-6);
     text-align: center;
     font-family: var(--font-heading);
-    font-size: clamp(1.5rem, 2.4vw, 2.25rem);
+    font-size: clamp(2rem, 2.4vw, 2.25rem);
     font-weight: 700;
     letter-spacing: 0.04em;
     line-height: 1.3;
@@ -973,6 +1001,28 @@
     box-shadow: none;
     --dp-popup-border: var(--dp-cyber-cyan);
     --dp-popup-inner-border: var(--dp-panel-purple-border);
+  }
+
+  .kithnaDirectoryHeading > span:first-child {
+    display: block;
+    font-family: "Quintessential", cursive;
+    font-size: clamp(2rem, 3vw, 3rem);
+    font-weight: 400;
+    line-height: 1.5;
+    font-kerning: normal;
+    letter-spacing: 0.07em;
+  }
+  .kithnaDirectorySubtitle {
+    display: block;
+    margin-top: 8px;
+    font-family: "Space Mono", monospace;
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.03em;
+    transform: translateY(-12px);
+    text-align: center;
+    color: var(--dp-text-secondary);
   }
 
   .kithnaLocationDirectory {

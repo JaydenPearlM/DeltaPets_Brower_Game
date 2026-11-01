@@ -9,7 +9,8 @@
     "stack_limit": 99,
     "effects": {
       "hunger": 15
-    }
+    },
+    "price": 5
   },
   {
     "slug": "alpha-vegetables",
@@ -21,7 +22,8 @@
     "stack_limit": 99,
     "effects": {
       "hunger": 15
-    }
+    },
+    "price": 5
   },
   {
     "slug": "carrot",
@@ -34,7 +36,8 @@
     "effects": {
       "hunger": 9
     },
-    "image": "carrot.png"
+    "image": "carrot.png",
+    "price": 3
   },
   {
     "slug": "potato",
@@ -47,7 +50,8 @@
     "effects": {
       "hunger": 12
     },
-    "image": "potato.png"
+    "image": "potato.png",
+    "price": 4
   },
   {
     "slug": "tomato",
@@ -60,7 +64,8 @@
     "effects": {
       "hunger": 8
     },
-    "image": "tomato.png"
+    "image": "tomato.png",
+    "price": 3
   },
   {
     "slug": "corn",
@@ -73,7 +78,8 @@
     "effects": {
       "hunger": 11
     },
-    "image": "corn.png"
+    "image": "corn.png",
+    "price": 4
   },
   {
     "slug": "lettuce",
@@ -86,7 +92,8 @@
     "effects": {
       "hunger": 7
     },
-    "image": "lettuce.png"
+    "image": "lettuce.png",
+    "price": 3
   },
   {
     "slug": "broccoli",
@@ -99,7 +106,8 @@
     "effects": {
       "hunger": 10
     },
-    "image": "broccoli.png"
+    "image": "broccoli.png",
+    "price": 4
   },
   {
     "slug": "green-peas",
@@ -112,7 +120,8 @@
     "effects": {
       "hunger": 9
     },
-    "image": "green_peas.png"
+    "image": "green_peas.png",
+    "price": 3
   },
   {
     "slug": "green-beans",
@@ -125,7 +134,8 @@
     "effects": {
       "hunger": 9
     },
-    "image": "green_beans.png"
+    "image": "green_beans.png",
+    "price": 3
   },
   {
     "slug": "pumpkin",
@@ -138,7 +148,8 @@
     "effects": {
       "hunger": 13
     },
-    "image": "pumpkin.png"
+    "image": "pumpkin.png",
+    "price": 3
   },
   {
     "slug": "mushroom",
@@ -151,7 +162,8 @@
     "effects": {
       "hunger": 8
     },
-    "image": "mushroom.png"
+    "image": "mushroom.png",
+    "price": 3
   },
   {
     "slug": "cucumber",
@@ -164,7 +176,8 @@
     "effects": {
       "hunger": 7
     },
-    "image": "cucumber.png"
+    "image": "cucumber.png",
+    "price": 3
   },
   {
     "slug": "bell-pepper",
@@ -177,7 +190,8 @@
     "effects": {
       "hunger": 8
     },
-    "image": "bell_pepper.png"
+    "image": "bell_pepper.png",
+    "price": 3
   },
   {
     "slug": "sweet-potato",
@@ -190,7 +204,8 @@
     "effects": {
       "hunger": 14
     },
-    "image": "sweet_potato.png"
+    "image": "sweet_potato.png",
+    "price": 5
   },
   {
     "slug": "raw-beef",
@@ -203,7 +218,8 @@
     "effects": {
       "hunger": 16
     },
-    "image": "raw_beef.png"
+    "image": "raw_beef.png",
+    "price": 6
   },
   {
     "slug": "raw-chicken",
@@ -216,7 +232,8 @@
     "effects": {
       "hunger": 15
     },
-    "image": "raw_chicken.png"
+    "image": "raw_chicken.png",
+    "price": 5
   },
   {
     "slug": "raw-fish",
@@ -229,7 +246,8 @@
     "effects": {
       "hunger": 15
     },
-    "image": "raw_fish.png"
+    "image": "raw_fish.png",
+    "price": 5
   },
   {
     "slug": "turkey",
@@ -242,7 +260,8 @@
     "effects": {
       "hunger": 15
     },
-    "image": "turkey.png"
+    "image": "turkey.png",
+    "price": 5
   },
   {
     "slug": "pork",
@@ -255,7 +274,8 @@
     "effects": {
       "hunger": 16
     },
-    "image": "pork.png"
+    "image": "pork.png",
+    "price": 6
   },
   {
     "slug": "egg",
@@ -268,7 +288,8 @@
     "effects": {
       "hunger": 9
     },
-    "image": "egg.png"
+    "image": "egg.png",
+    "price": 3
   },
   {
     "slug": "apple",
@@ -281,7 +302,8 @@
     "effects": {
       "hunger": 10
     },
-    "image": "apple.png"
+    "image": "apple.png",
+    "price": 4
   },
   {
     "slug": "wild-berries",
@@ -294,7 +316,8 @@
     "effects": {
       "hunger": 8
     },
-    "image": "wild_berries.png"
+    "image": "wild_berries.png",
+    "price": 3
   },
   {
     "slug": "rice",
@@ -307,7 +330,8 @@
     "effects": {
       "hunger": 13
     },
-    "image": "rice.png"
+    "image": "rice.png",
+    "price": 5
   },
   {
     "slug": "bread",
@@ -320,6 +344,7 @@
     "effects": {
       "hunger": 12
     },
-    "image": "bread.png"
+    "image": "bread.png",
+    "price": 4
   }
 ]

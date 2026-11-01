@@ -10,7 +10,8 @@
     "effects": {
       "hp": 20
     },
-    "image": "minor_healing_potion.png"
+    "image": "minor_healing_potion.png",
+    "price": 10
   },
   {
     "slug": "healing-potion",
@@ -23,7 +24,8 @@
     "effects": {
       "hp": 35
     },
-    "image": "healing_potion.png"
+    "image": "healing_potion.png",
+    "price": 18
   },
   {
     "slug": "greater-healing-potion",
@@ -36,7 +38,8 @@
     "effects": {
       "hp": 55
     },
-    "image": "greater_healing_potion.png"
+    "image": "greater_healing_potion.png",
+    "price": 55
   },
   {
     "slug": "major-healing-potion",
@@ -49,7 +52,8 @@
     "effects": {
       "hp": 75
     },
-    "image": "major_healing_potion.png"
+    "image": "major_healing_potion.png",
+    "price": 113
   },
   {
     "slug": "supreme-healing-potion",
@@ -62,7 +66,8 @@
     "effects": {
       "hp": 100
     },
-    "image": "supreme_healing_potion.png"
+    "image": "supreme_healing_potion.png",
+    "price": 200
   },
   {
     "slug": "redberry-tonic",
@@ -75,7 +80,8 @@
     "effects": {
       "hp": 18
     },
-    "image": "redberry_tonic.png"
+    "image": "redberry_tonic.png",
+    "price": 9
   },
   {
     "slug": "herbal-remedy",
@@ -88,7 +94,8 @@
     "effects": {
       "hp": 22
     },
-    "image": "herbal_remedy.png"
+    "image": "herbal_remedy.png",
+    "price": 11
   },
   {
     "slug": "warmroot-tonic",
@@ -101,7 +108,8 @@
     "effects": {
       "hp": 24
     },
-    "image": "warmroot_tonic.png"
+    "image": "warmroot_tonic.png",
+    "price": 12
   },
   {
     "slug": "honey-heal-draught",
@@ -114,7 +122,8 @@
     "effects": {
       "hp": 26
     },
-    "image": "honey_heal_draught.png"
+    "image": "honey_heal_draught.png",
+    "price": 13
   },
   {
     "slug": "greenleaf-tonic",
@@ -127,7 +136,8 @@
     "effects": {
       "hp": 25
     },
-    "image": "greenleaf_tonic.png"
+    "image": "greenleaf_tonic.png",
+    "price": 13
   },
   {
     "slug": "mosswater-elixir",
@@ -140,7 +150,8 @@
     "effects": {
       "hp": 28
     },
-    "image": "mosswater_elixir.png"
+    "image": "mosswater_elixir.png",
+    "price": 14
   },
   {
     "slug": "sunfruit-tonic",
@@ -153,7 +164,8 @@
     "effects": {
       "hp": 30
     },
-    "image": "sunfruit_tonic.png"
+    "image": "sunfruit_tonic.png",
+    "price": 15
   },
   {
     "slug": "moonberry-remedy",
@@ -166,7 +178,8 @@
     "effects": {
       "hp": 38
     },
-    "image": "moonberry_remedy.png"
+    "image": "moonberry_remedy.png",
+    "price": 38
   },
   {
     "slug": "silverleaf-elixir",
@@ -179,7 +192,8 @@
     "effects": {
       "hp": 42
     },
-    "image": "silverleaf_elixir.png"
+    "image": "silverleaf_elixir.png",
+    "price": 42
   },
   {
     "slug": "crystalwater-tonic",
@@ -192,7 +206,8 @@
     "effects": {
       "hp": 40
     },
-    "image": "crystalwater_tonic.png"
+    "image": "crystalwater_tonic.png",
+    "price": 40
   },
   {
     "slug": "ember-healing-tonic",
@@ -205,7 +220,8 @@
     "effects": {
       "hp": 44
     },
-    "image": "ember_healing_tonic.png"
+    "image": "ember_healing_tonic.png",
+    "price": 44
   },
   {
     "slug": "tide-healing-tonic",
@@ -218,7 +234,8 @@
     "effects": {
       "hp": 44
     },
-    "image": "tide_healing_tonic.png"
+    "image": "tide_healing_tonic.png",
+    "price": 44
   },
   {
     "slug": "stone-healing-tonic",
@@ -231,7 +248,8 @@
     "effects": {
       "hp": 46
     },
-    "image": "stone_healing_tonic.png"
+    "image": "stone_healing_tonic.png",
+    "price": 46
   },
   {
     "slug": "breeze-healing-tonic",
@@ -244,7 +262,8 @@
     "effects": {
       "hp": 42
     },
-    "image": "breeze_healing_tonic.png"
+    "image": "breeze_healing_tonic.png",
+    "price": 42
   },
   {
     "slug": "frost-healing-tonic",
@@ -257,7 +276,8 @@
     "effects": {
       "hp": 45
     },
-    "image": "frost_healing_tonic.png"
+    "image": "frost_healing_tonic.png",
+    "price": 45
   },
   {
     "slug": "storm-healing-tonic",
@@ -270,7 +290,8 @@
     "effects": {
       "hp": 46
     },
-    "image": "storm_healing_tonic.png"
+    "image": "storm_healing_tonic.png",
+    "price": 46
   },
   {
     "slug": "sun-healing-tonic",
@@ -283,7 +304,8 @@
     "effects": {
       "hp": 48
     },
-    "image": "sun_healing_tonic.png"
+    "image": "sun_healing_tonic.png",
+    "price": 48
   },
   {
     "slug": "shade-healing-tonic",
@@ -296,7 +318,8 @@
     "effects": {
       "hp": 48
     },
-    "image": "shade_healing_tonic.png"
+    "image": "shade_healing_tonic.png",
+    "price": 48
   },
   {
     "slug": "prismatic-healing-tonic",
@@ -309,7 +332,8 @@
     "effects": {
       "hp": 65
     },
-    "image": "prismatic_healing_tonic.png"
+    "image": "prismatic_healing_tonic.png",
+    "price": 98
   },
   {
     "slug": "wildwood-remedy",
@@ -322,7 +346,8 @@
     "effects": {
       "hp": 50
     },
-    "image": "wildwood_remedy.png"
+    "image": "wildwood_remedy.png",
+    "price": 50
   },
   {
     "slug": "kithna-restoration-draught",
@@ -335,7 +360,8 @@
     "effects": {
       "hp": 52
     },
-    "image": "kithna_restoration_draught.png"
+    "image": "kithna_restoration_draught.png",
+    "price": 52
   },
   {
     "slug": "deepwood-elixir",
@@ -348,7 +374,8 @@
     "effects": {
       "hp": 60
     },
-    "image": "deepwood_elixir.png"
+    "image": "deepwood_elixir.png",
+    "price": 90
   },
   {
     "slug": "mountain-spring-elixir",
@@ -361,7 +388,8 @@
     "effects": {
       "hp": 62
     },
-    "image": "mountain_spring_elixir.png"
+    "image": "mountain_spring_elixir.png",
+    "price": 93
   },
   {
     "slug": "golden-restoration-tonic",
@@ -374,7 +402,8 @@
     "effects": {
       "hp": 64
     },
-    "image": "golden_restoration_tonic.png"
+    "image": "golden_restoration_tonic.png",
+    "price": 96
   },
   {
     "slug": "violet-restoration-tonic",
@@ -387,7 +416,8 @@
     "effects": {
       "hp": 63
     },
-    "image": "violet_restoration_tonic.png"
+    "image": "violet_restoration_tonic.png",
+    "price": 95
   },
   {
     "slug": "ruby-elixir",
@@ -400,7 +430,8 @@
     "effects": {
       "hp": 68
     },
-    "image": "ruby_elixir.png"
+    "image": "ruby_elixir.png",
+    "price": 102
   },
   {
     "slug": "sapphire-elixir",
@@ -413,7 +444,8 @@
     "effects": {
       "hp": 68
     },
-    "image": "sapphire_elixir.png"
+    "image": "sapphire_elixir.png",
+    "price": 102
   },
   {
     "slug": "emerald-elixir",
@@ -426,7 +458,8 @@
     "effects": {
       "hp": 70
     },
-    "image": "emerald_elixir.png"
+    "image": "emerald_elixir.png",
+    "price": 105
   },
   {
     "slug": "amber-elixir",
@@ -439,7 +472,8 @@
     "effects": {
       "hp": 70
     },
-    "image": "amber_elixir.png"
+    "image": "amber_elixir.png",
+    "price": 105
   },
   {
     "slug": "amethyst-elixir",
@@ -452,7 +486,8 @@
     "effects": {
       "hp": 72
     },
-    "image": "amethyst_elixir.png"
+    "image": "amethyst_elixir.png",
+    "price": 108
   },
   {
     "slug": "royal-healing-draught",
@@ -465,7 +500,8 @@
     "effects": {
       "hp": 85
     },
-    "image": "royal_healing_draught.png"
+    "image": "royal_healing_draught.png",
+    "price": 170
   },
   {
     "slug": "ancient-restoration-elixir",
@@ -478,7 +514,8 @@
     "effects": {
       "hp": 90
     },
-    "image": "ancient_restoration_elixir.png"
+    "image": "ancient_restoration_elixir.png",
+    "price": 180
   },
   {
     "slug": "starlight-tonic",
@@ -491,7 +528,8 @@
     "effects": {
       "hp": 88
     },
-    "image": "starlight_tonic.png"
+    "image": "starlight_tonic.png",
+    "price": 176
   },
   {
     "slug": "moonlight-elixir",
@@ -504,7 +542,8 @@
     "effects": {
       "hp": 90
     },
-    "image": "moonlight_elixir.png"
+    "image": "moonlight_elixir.png",
+    "price": 180
   },
   {
     "slug": "sunlight-elixir",
@@ -517,7 +556,8 @@
     "effects": {
       "hp": 92
     },
-    "image": "sunlight_elixir.png"
+    "image": "sunlight_elixir.png",
+    "price": 184
   },
   {
     "slug": "prism-restoration-elixir",
@@ -530,7 +570,8 @@
     "effects": {
       "hp": 95
     },
-    "image": "prism_restoration_elixir.png"
+    "image": "prism_restoration_elixir.png",
+    "price": 190
   },
   {
     "slug": "grand-healing-elixir",
@@ -543,7 +584,8 @@
     "effects": {
       "hp": 100
     },
-    "image": "grand_healing_elixir.png"
+    "image": "grand_healing_elixir.png",
+    "price": 200
   },
   {
     "slug": "legendary-healing-draught",
@@ -556,7 +598,8 @@
     "effects": {
       "hp": 120
     },
-    "image": "legendary_healing_draught.png"
+    "image": "legendary_healing_draught.png",
+    "price": 300
   },
   {
     "slug": "mythic-restoration-elixir",
@@ -569,7 +612,8 @@
     "effects": {
       "hp": 130
     },
-    "image": "mythic_restoration_elixir.png"
+    "image": "mythic_restoration_elixir.png",
+    "price": 325
   },
   {
     "slug": "celestial-healing-tonic",
@@ -582,7 +626,8 @@
     "effects": {
       "hp": 125
     },
-    "image": "celestial_healing_tonic.png"
+    "image": "celestial_healing_tonic.png",
+    "price": 313
   },
   {
     "slug": "aurora-elixir",
@@ -595,7 +640,8 @@
     "effects": {
       "hp": 135
     },
-    "image": "aurora_elixir.png"
+    "image": "aurora_elixir.png",
+    "price": 338
   },
   {
     "slug": "relic-restoration-draught",
@@ -608,7 +654,8 @@
     "effects": {
       "hp": 140
     },
-    "image": "relic_restoration_draught.png"
+    "image": "relic_restoration_draught.png",
+    "price": 350
   },
   {
     "slug": "kithna-grand-remedy",
@@ -621,7 +668,8 @@
     "effects": {
       "hp": 145
     },
-    "image": "kithna_grand_remedy.png"
+    "image": "kithna_grand_remedy.png",
+    "price": 363
   },
   {
     "slug": "prismatic-grand-elixir",
@@ -634,7 +682,8 @@
     "effects": {
       "hp": 150
     },
-    "image": "prismatic_grand_elixir.png"
+    "image": "prismatic_grand_elixir.png",
+    "price": 375
   },
   {
     "slug": "master-healers-draught",
@@ -647,6 +696,7 @@
     "effects": {
       "hp": 160
     },
-    "image": "master_healers_draught.png"
+    "image": "master_healers_draught.png",
+    "price": 400
   }
 ]

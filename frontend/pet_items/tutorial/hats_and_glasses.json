@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Battered Side-Cap (Brown)",
+    "slug": "battered-side-cap-brown",
+    "artwork_description": "Worn brown side-cap with stitched Delta triangle emblem",
+    "wearable_category": "hat",
+    "price": 25
+  },
+  {
+    "name": "Battered Travel Cap (Blue)",
+    "slug": "battered-travel-cap-blue",
+    "artwork_description": "Worn blue travel cap with a Delta triangle emblem",
+    "wearable_category": "hat",
+    "price": 25
+  },
+  {
+    "name": "Battered Mender's Cap (Olive)",
+    "slug": "battered-menders-cap-olive",
+    "artwork_description": "Patched olive mender's cap with stitched Delta triangle emblem",
+    "wearable_category": "hat",
+    "price": 25
+  },
+  {
+    "name": "Round Glasses (Dark Metal)",
+    "slug": "round-glasses-dark-metal",
+    "artwork_description": "Round dark metal frames",
+    "wearable_category": "glasses",
+    "price": 25
+  },
+  {
+    "name": "Round Glasses (Bronze)",
+    "slug": "round-glasses-bronze",
+    "artwork_description": "Round bronze frames",
+    "wearable_category": "glasses",
+    "price": 25
+  },
+  {
+    "name": "Square Glasses (Dark Metal)",
+    "slug": "square-glasses-dark-metal",
+    "artwork_description": "Square dark metal frames",
+    "wearable_category": "glasses",
+    "price": 25
+  },
+  {
+    "name": "Square Glasses (Blue-Gray)",
+    "slug": "square-glasses-blue-gray",
+    "artwork_description": "Square blue-gray frames",
+    "wearable_category": "glasses",
+    "price": 25
+  },
+  {
+    "name": "Brass Monocle",
+    "slug": "brass-monocle",
+    "artwork_description": "Brass monocle with chain",
+    "wearable_category": "glasses",
+    "price": 25
+  }
+]

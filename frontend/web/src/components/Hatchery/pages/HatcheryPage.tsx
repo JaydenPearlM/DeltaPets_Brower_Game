@@ -130,6 +130,8 @@ type HatcheryResponse = {
 
 type HatchActionResponse = {
   server_now: string;
+  egg_lost?: boolean;
+  corruption_event?: { outcome?: string; message?: string } | null;
   pet: {
     id: string;
     name?: string | null;
@@ -577,6 +579,23 @@ function HatchRevealOverlay({
   eggRef: HatchEgg | null;
   onDismiss: () => void;
 }) {
+  if (result.egg_lost || result.corruption_event?.outcome === "egg_lost" || !result.pet) {
+    const eggLost = result.egg_lost || result.corruption_event?.outcome === "egg_lost";
+    return (
+      <div className="hatchRevealOverlay">
+        <div className="hatchRevealCard">
+          <div className="hatchRevealMessage" role="status">
+            {eggLost
+              ? result.corruption_event?.message || "Aliune Signal interference corrupted the egg. The egg was lost."
+              : "No Kith was returned. Continue to refresh the Hatchery."}
+          </div>
+          <button type="button" className="primaryBtn hatchRevealContinueBtn" onClick={onDismiss}>
+            Continue
+          </button>
+        </div>
+      </div>
+    );
+  }
   const petName = result.pet?.name ?? "Unknown Kith";
   const portrait =
     getKithnaPortrait(eggRef?.species) ||

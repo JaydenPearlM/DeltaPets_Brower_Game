@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "@/lib/api/baseClient";
 import { AvatarPreview } from "@/components/Profile/Customization/AvatarPreview";
-import { DEFAULT_AVATAR, type AvatarCustomization } from "@/components/Profile/Customization/avatarTypes";
+import {
+  DEFAULT_AVATAR,
+  type AvatarCustomization,
+} from "@/components/Profile/Customization/avatarTypes";
 import "./ProfilePage.css";
 
 type PlayerProfile = {
@@ -12,8 +15,8 @@ type PlayerProfile = {
   joinedAt: string;
   title: string | null;
   appearance: AvatarCustomization | null;
-  trainerLevel: number;
-  kithOwned: number;
+  trainerLevel: number | null;
+  kithOwned: number | null;
 };
 
 export default function PlayerProfilePage() {
@@ -25,36 +28,72 @@ export default function PlayerProfilePage() {
     let cancelled = false;
     setProfile(null);
     setError("");
-    void apiFetch<PlayerProfile>(`/api/profiles/${encodeURIComponent(playerId ?? "")}`)
-      .then((result) => { if (!cancelled) setProfile(result); })
+    void apiFetch<PlayerProfile>(
+      `/api/profiles/${encodeURIComponent(playerId ?? "")}`,
+    )
+      .then((result) => {
+        if (!cancelled) setProfile(result);
+      })
       .catch((problem: unknown) => {
-        if (!cancelled) setError(problem instanceof Error ? problem.message : "Could not load this profile.");
+        if (!cancelled)
+          setError(
+            problem instanceof Error
+              ? problem.message
+              : "Could not load this profile.",
+          );
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [playerId]);
 
   return (
     <div className="dp-profile-page">
       <section className="dp-profile-trainer-panel dp-profile-star-panel">
-        {error ? <p role="alert">{error}</p> : !profile ? (
+        {error ? (
+          <p role="alert">{error}</p>
+        ) : !profile ? (
           <p role="status">Loading player profile...</p>
         ) : (
           <>
             <div className="dp-profile-viewport" aria-label="Trainer viewport">
               <div className="dp-profile-trainer-avatar">
-                <AvatarPreview customization={profile.appearance ?? DEFAULT_AVATAR} />
+                <AvatarPreview
+                  customization={profile.appearance ?? DEFAULT_AVATAR}
+                />
               </div>
             </div>
             <div className="dp-profile-info">
               <h1>{profile.displayName}</h1>
               <dl className="dp-profile-details">
-                <div><dt>Username</dt><dd>{profile.username ?? "--"}</dd></div>
-                <div><dt>Title</dt><dd>{profile.title ?? "No Title"}</dd></div>
-                <div><dt>Joined</dt><dd>{new Date(profile.joinedAt).toLocaleDateString(undefined, {
-                  year: "numeric", month: "long", day: "numeric",
-                })}</dd></div>
-                <div><dt>Trainer Level</dt><dd>{profile.trainerLevel}</dd></div>
-                <div><dt>Kith Owned</dt><dd>{profile.kithOwned.toLocaleString()}</dd></div>
+                <div>
+                  <dt>Username</dt>
+                  <dd>{profile.username ?? "--"}</dd>
+                </div>
+                <div>
+                  <dt>Title</dt>
+                  <dd>{profile.title ?? "No Title"}</dd>
+                </div>
+                <div>
+                  <dt>Joined</dt>
+                  <dd>
+                    {new Date(profile.joinedAt).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Trainer Level</dt>
+                  <dd>{profile.trainerLevel ?? "Unavailable"}</dd>
+                </div>
+                <div>
+                  <dt>Kith Owned</dt>
+                  <dd>
+                    {profile.kithOwned?.toLocaleString() ?? "Unavailable"}
+                  </dd>
+                </div>
               </dl>
             </div>
           </>

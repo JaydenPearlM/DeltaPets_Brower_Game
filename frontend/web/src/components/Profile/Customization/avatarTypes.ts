@@ -6,6 +6,10 @@ export type AvatarCustomization = {
   eyeStyle: string;
   eyeColor: string;
   mouthStyle: string;
+  upperBodyClothing?: string | null;
+  lowerBodyClothing?: string | null;
+  hat?: string | null;
+  eyewear?: string | null;
 };
 
 export const DEFAULT_AVATAR: AvatarCustomization = {

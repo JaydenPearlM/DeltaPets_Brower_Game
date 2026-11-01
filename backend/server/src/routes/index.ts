@@ -19,6 +19,7 @@ import { wildwoodRouter } from "./cities/kithna/wildwood";
 import { inventoryRouter } from "./inventory/inventory";
 
 import { kithnaMerchantsRouter } from "./merchants/kithnaMerchants";
+import { kennithRouter } from "./merchants/kennith";
 import { poeTayToeRouter } from "./alphaAccess/poeTayToe/poeTayToe";
 
 const apiRouter = Router();
@@ -62,6 +63,7 @@ apiRouter.use("/daily-care", dailyCareRouter);
 =============================== */
 
 apiRouter.use("/merchants/kithna", kithnaMerchantsRouter);
+apiRouter.use("/merchants/kithna/kennith", kennithRouter);
 
 /* ===============================
    REWARDS SYSTEM

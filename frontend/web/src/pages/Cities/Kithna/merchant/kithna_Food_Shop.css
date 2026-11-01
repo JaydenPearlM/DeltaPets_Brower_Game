@@ -3,13 +3,23 @@
 }
 
 .kithna-food-back-link {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: fit-content;
   margin: 0 0 12px auto;
+  padding: 8px 14px;
+  border: 1px solid var(--merchant-gold);
+  border-radius: 10px;
+  background: var(--merchant-shadow);
   color: var(--merchant-gold);
   font-family: var(--font-heading);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.kithna-food-back-link:hover {
+  background: var(--merchant-wall);
 }
 
 .kithna-food-back-link:focus-visible {
@@ -170,5 +180,878 @@
     grid-template-columns: minmax(0, 1fr) 36px 48px 42px;
     gap: 5px;
     padding-inline: 4px;
+  }
+}
+
+/* Assanti shop: illustration row is the exact height of the adjacent info panel. */
+.kithna-food-shop .kithna-food-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  grid-template-areas: "art details";
+  grid-template-rows: auto;
+  align-items: stretch;
+  column-gap: 24px;
+  row-gap: 12px;
+}
+.kithna-food-shop .dp-merchant-foreground.kithna-food-merchant-art {
+  grid-area: art;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  align-self: start;
+}
+.kithna-food-merchant-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;
+}
+.kithna-food-shop .kithna-food-merchant-summary {
+  grid-area: details;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  align-self: stretch;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 14px;
+  border: 2px solid var(--merchant-gold);
+  border-radius: 16px;
+  background: var(--merchant-shadow);
+}
+.kithna-food-shop .kithna-food-merchant-summary .dp-merchant-name {
+  color: #ffda5c;
+}
+.kithna-food-merchant-intro {
+  margin: 0;
+  line-height: 1.45;
+  font-size: 0.92rem;
+}
+.kithna-food-chat-panel {
+  display: grid;
+  gap: 5px;
+}
+.kithna-food-chat-panel .dp-merchant-dialogue {
+  padding: 10px 12px;
+}
+.kithna-food-header-daily {
+  margin-top: 2px;
+  padding: 12px;
+}
+.kithna-food-departments {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.kithna-food-department {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--merchant-fabric);
+  border-radius: 12px;
+  background: var(--merchant-wall);
+}
+.kithna-food-department h2 {
+  margin: 0 0 8px;
+  color: var(--merchant-gold);
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+}
+.kithna-food-department p {
+  margin: 0;
+  line-height: 1.5;
+}
+@media (max-width: 760px) {
+  .kithna-food-shop .kithna-food-header {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "art" "details";
+  }
+  .kithna-food-shop .kithna-food-merchant-summary {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  .kithna-food-departments {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The art defines the first grid row's height; the info is contained inside it. */
+.kithna-food-merchant-info-slot {
+  grid-area: details;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+}
+.kithna-food-shop
+  .kithna-food-merchant-info-slot
+  .kithna-food-merchant-summary {
+  position: absolute;
+  inset: 0;
+  height: auto;
+  max-height: none;
+}
+@media (max-width: 760px) {
+  .kithna-food-merchant-info-slot {
+    min-height: 350px;
+  }
+  .kithna-food-shop
+    .kithna-food-merchant-info-slot
+    .kithna-food-merchant-summary {
+    position: static;
+    height: auto;
+  }
+}
+
+/* Merchant stock stays left; player inventory stays right. */
+.kithna-food-shop .kithna-food-main-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+.kithna-food-shop .kithna-food-trade-area {
+  order: 0;
+}
+.kithna-food-shop .dp-merchant-info {
+  order: 1;
+}
+.kithna-food-shop .kithna-food-trade-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.kithna-food-category-copy {
+  margin: 0 0 14px;
+}
+.kithna-food-category {
+  padding-top: 14px;
+  margin-top: 16px;
+  border-top: 1px solid var(--merchant-fabric);
+}
+.kithna-food-category h3 {
+  margin: 0 0 8px;
+  color: var(--merchant-gold);
+  font-family: var(--font-heading);
+}
+.kithna-food-category p {
+  margin: 0;
+}
+@media (max-width: 760px) {
+  .kithna-food-shop .kithna-food-trade-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Subtitle under the gold Assanti Shop heading. */
+.kithna-food-shop-subtitle {
+  margin: 0;
+  color: var(--merchant-cream);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+/* Merchant goods tabs: display-only category switching, no trade API changes. */
+.kithna-food-shop-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--merchant-fabric);
+}
+.kithna-food-shop-tab {
+  border: 1px solid var(--merchant-fabric);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--merchant-cream);
+  font: inherit;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.kithna-food-shop-tab[aria-selected="true"] {
+  background: var(--merchant-wall);
+  border-color: var(--merchant-gold);
+  color: var(--merchant-gold);
+  font-weight: 700;
+}
+.kithna-food-shop-tab:focus-visible {
+  outline: 2px solid var(--merchant-gold);
+  outline-offset: 2px;
+}
+.kithna-food-tab-coming-soon {
+  color: var(--merchant-cream);
+  padding: 12px 0;
+}
+.kithna-food-tab-coming-soon p {
+  margin: 0;
+}
+
+/* Merchant Dots aligned with the Merchant's Goods heading. */
+.kithna-food-goods-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.kithna-food-goods-heading .dp-merchant-section-title {
+  margin: 0;
+  min-width: 0;
+}
+.kithna-food-goods-dots-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 125px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid var(--merchant-gold);
+  border-radius: 10px;
+  background: rgba(255, 215, 120, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 120, 0.14);
+  text-align: center;
+}
+.kithna-food-goods-dots-label {
+  color: #ffd76a;
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.kithna-food-goods-dots-value {
+  display: block;
+  margin-top: 6px;
+  color: #ffe48a;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+/* Display-only previews for future non-food merchandise */
+.kithna-food-preview-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--merchant-fabric);
+}
+.kithna-food-preview-item small {
+  display: block;
+}
+.kithna-food-unsellable {
+  white-space: nowrap;
+  color: var(--merchant-gold);
+  font-size: 0.8rem;
+}
+
+/* Four merchant tabs remain scrollable on narrow displays without disturbing the blue-grid panels. */
+.kithna-food-shop-tabs {
+  flex-wrap: wrap;
+}
+.kithna-food-preview-item small {
+  display: block;
+  margin-top: 3px;
+}
+
+/* Food sorting only: potions have no merchant prices yet. */
+.kithna-food-category-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.kithna-food-price-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--merchant-gold);
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+}
+.kithna-food-price-sort select {
+  min-width: 115px;
+  max-width: 100%;
+  padding: 6px;
+  border: 1px solid var(--merchant-gold);
+  border-radius: 5px;
+  color: var(--merchant-cream);
+  background: var(--merchant-wall);
+}
+.kithna-food-preview-status {
+  color: var(--merchant-gold);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+/* Farm systems are not released. Tabs remain viewable but visibly locked. */
+.kithna-food-shop .kithna-food-shop-tab--locked {
+  color: var(--merchant-cream);
+  opacity: 0.48;
+  filter: grayscale(1);
+}
+.kithna-food-shop .kithna-food-shop-tab--locked[aria-selected="true"] {
+  color: var(--merchant-cream);
+  border-color: var(--merchant-fabric);
+  background: var(--merchant-wall);
+}
+.kithna-food-shop .kithna-food-locked-panel {
+  opacity: 0.55;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+.kithna-food-shop .kithna-food-locked-notice {
+  margin-bottom: 12px;
+  font-family: var(--font-heading);
+}
+/* Keep retry/status/hidden quest behavior without the removed farm-info panel. */
+.kithna-food-shop .kithna-food-shop-utilities {
+  order: 1;
+  min-width: 0;
+}
+
+/* Clear spacing below the Potions sorting control. */
+#qwen-panel-potions .kithna-food-category-toolbar {
+  margin-bottom: 24px;
+}
+
+/* Proposed potion prices and inventory position; actual stock is unknown until the merchant API supports it. */
+.kithna-food-potion-list-head,
+.kithna-food-potion-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(62px, 0.24fr) minmax(
+      94px,
+      0.35fr
+    );
+  gap: 12px;
+  align-items: center;
+}
+.kithna-food-potion-list-head {
+  color: var(--merchant-gold);
+  font-family: var(--font-heading);
+  font-size: 0.76rem;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--merchant-fabric);
+}
+.kithna-food-potion-row {
+  display: grid;
+}
+.kithna-food-potion-list-head span:nth-child(2),
+.kithna-food-potion-stock {
+  text-align: center;
+}
+.kithna-food-potion-list-head span:nth-child(3),
+.kithna-food-potion-price {
+  text-align: right;
+}
+.kithna-food-potion-price {
+  color: var(--merchant-gold);
+  font-weight: 600;
+}
+@media (max-width: 480px) {
+  .kithna-food-potion-list-head,
+  .kithna-food-potion-row {
+    grid-template-columns: minmax(0, 1fr) 55px 80px;
+    gap: 6px;
+  }
+  .kithna-food-potion-price {
+    font-size: 0.8rem;
+  }
+}
+
+/* Readable gold merchant heading and buy-column labels; preserve the established tabs/panels. */
+.kithna-food-shop .kithna-food-goods-heading .dp-merchant-section-title {
+  color: var(--merchant-gold);
+  font-size: clamp(1.45rem, 1.75vw, 1.8rem);
+}
+.kithna-food-shop .kithna-food-buy-row {
+  grid-template-columns:
+    minmax(0, 1fr) minmax(62px, 0.27fr) minmax(52px, 0.2fr)
+    minmax(58px, 0.24fr);
+  gap: 10px;
+}
+.kithna-food-shop .kithna-food-buy-row.kithna-food-column-labels {
+  color: var(--merchant-gold);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.kithna-food-shop .kithna-food-buy-row.kithna-food-column-labels span {
+  color: var(--merchant-gold);
+}
+.kithna-food-shop .kithna-food-buy-row .kithna-food-trade-name {
+  font-size: 1rem;
+}
+.kithna-food-shop .kithna-food-buy-row .kithna-food-trade-cell {
+  font-size: 0.95rem;
+}
+.kithna-food-shop .kithna-food-stock-cell {
+  text-align: center;
+}
+@media (max-width: 480px) {
+  .kithna-food-shop .kithna-food-buy-row {
+    grid-template-columns: minmax(0, 1fr) 48px 40px 52px;
+    gap: 5px;
+    padding-inline: 4px;
+  }
+  .kithna-food-shop .kithna-food-buy-row.kithna-food-column-labels {
+    font-size: 0.78rem;
+  }
+}
+
+/* Align potion goods with the existing Food / In Stock / Price / QTY grid.
+   Potion stock and purchase quantity remain unavailable until server-backed
+   inventory and transactional purchase endpoints exist. */
+.kithna-food-shop .kithna-food-potion-list-head,
+.kithna-food-shop .kithna-food-potion-row {
+  grid-template-columns:
+    minmax(0, 1fr) minmax(62px, 0.27fr) minmax(52px, 0.2fr)
+    minmax(58px, 0.24fr);
+  gap: 10px;
+}
+.kithna-food-shop .kithna-food-potion-list-head {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.kithna-food-shop .kithna-food-potion-list-head span {
+  color: var(--merchant-gold);
+}
+.kithna-food-shop .kithna-food-potion-list-head span:nth-child(3),
+.kithna-food-shop .kithna-food-potion-price {
+  text-align: center;
+}
+.kithna-food-shop .kithna-food-potion-list-head span:nth-child(4),
+.kithna-food-shop .kithna-food-potion-quantity {
+  text-align: center;
+}
+.kithna-food-shop .kithna-food-potion-quantity {
+  color: var(--merchant-muted, currentColor);
+}
+@media (max-width: 480px) {
+  .kithna-food-shop .kithna-food-potion-list-head,
+  .kithna-food-shop .kithna-food-potion-row {
+    grid-template-columns: minmax(0, 1fr) 48px 40px 52px;
+    gap: 5px;
+    padding-inline: 4px;
+  }
+  .kithna-food-shop .kithna-food-potion-list-head {
+    font-size: 0.78rem;
+  }
+}
+
+/* Five columns: item, merchant stock, price, requested quantity, readonly signed Dots. */
+.kithna-food-shop .kithna-food-buy-row,
+.kithna-food-shop .kithna-food-potion-list-head,
+.kithna-food-shop .kithna-food-potion-row {
+  grid-template-columns:
+    minmax(0, 1fr) minmax(58px, 0.26fr) minmax(48px, 0.2fr)
+    minmax(54px, 0.24fr) minmax(76px, 0.3fr);
+  gap: 8px;
+}
+.kithna-food-shop .kithna-food-row-total {
+  color: var(--merchant-gold);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+.kithna-food-shop .kithna-food-potion-list-head span:nth-child(5),
+.kithna-food-shop .kithna-food-potion-row .kithna-food-row-total {
+  text-align: right;
+}
+@media (max-width: 600px) {
+  .kithna-food-shop .kithna-food-buy-row,
+  .kithna-food-shop .kithna-food-potion-list-head,
+  .kithna-food-shop .kithna-food-potion-row {
+    grid-template-columns: minmax(0, 1fr) 44px 38px 42px 61px;
+    gap: 4px;
+  }
+  .kithna-food-shop .kithna-food-row-total {
+    font-size: 0.75rem;
+  }
+}
+
+/* Align the Food column values directly beneath their headings. */
+.kithna-food-shop
+  .kithna-food-buy-row.kithna-food-column-labels
+  > span:nth-child(n + 2) {
+  text-align: center;
+}
+.kithna-food-shop
+  .kithna-food-buy-row:not(.kithna-food-column-labels)
+  > .kithna-food-trade-cell:nth-child(3),
+.kithna-food-shop
+  .kithna-food-buy-row:not(.kithna-food-column-labels)
+  > .kithna-food-row-total {
+  text-align: center;
+}
+.kithna-food-shop .kithna-food-buy-row > input.kithna-food-trade-button {
+  justify-self: center;
+  width: min(100%, 44px);
+  box-sizing: border-box;
+  padding-inline: 2px;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.kithna-food-shop
+  .kithna-food-buy-row
+  > input.kithna-food-trade-button::-webkit-inner-spin-button,
+.kithna-food-shop
+  .kithna-food-buy-row
+  > input.kithna-food-trade-button::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* All four merchant tabs share the Food table's five-column layout. */
+.kithna-food-shop
+  .kithna-food-buy-row.kithna-food-column-labels
+  > span:nth-child(n + 2),
+.kithna-food-shop .kithna-food-buy-row > .kithna-food-trade-cell,
+.kithna-food-shop .kithna-food-buy-row > .kithna-food-row-total {
+  text-align: center;
+}
+.kithna-food-shop .kithna-food-buy-row > input.kithna-food-trade-button {
+  justify-self: center;
+  width: min(100%, 44px);
+  text-align: center;
+}
+
+/* Keep each food's name and Hunger stat together above its description. */
+.kithna-food-shop .kithna-food-inline-stat {
+  display: inline;
+  font: inherit;
+  color: var(--merchant-gold);
+  white-space: nowrap;
+}
+
+/* Compact, shared purchase quantity control for Food and Potions. */
+.kithna-food-shop .kithna-food-qty-control {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  width: 100%;
+  min-width: 0;
+  gap: 1px;
+}
+
+.kithna-food-shop .kithna-food-qty-arrow {
+  flex: 0 0 10px;
+  border: 0;
+  padding: 0;
+  color: var(--merchant-gold);
+  background: transparent;
+  font-size: 9px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kithna-food-shop .kithna-food-qty-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.kithna-food-shop .kithna-food-qty-control > input.kithna-food-trade-button {
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding-inline: 0;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.kithna-food-shop .kithna-food-qty-control > input::-webkit-inner-spin-button,
+.kithna-food-shop .kithna-food-qty-control > input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Inventory panel only: User Dots left, inventory heading right. */
+.kithna-food-shop
+  .kithna-food-trade-columns
+  > .dp-merchant-section:nth-child(2)
+  .kithna-food-goods-heading {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.kithna-food-shop
+  .kithna-food-trade-columns
+  > .dp-merchant-section:nth-child(2)
+  .kithna-food-goods-dots-panel {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.kithna-food-shop
+  .kithna-food-trade-columns
+  > .dp-merchant-section:nth-child(2)
+  .dp-merchant-section-title {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: right;
+}
+
+/* Inventory only: room for the same left/right QTY controls used by Merchant Goods. */
+.kithna-food-shop .kithna-food-user-inventory .kithna-food-trade-row {
+  grid-template-columns: minmax(0, 1fr) 48px 48px 76px 76px;
+}
+
+.kithna-food-shop .kithna-food-user-inventory .kithna-food-row-total {
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .kithna-food-shop .kithna-food-user-inventory .kithna-food-trade-row {
+    grid-template-columns: minmax(0, 1fr) 36px 38px 68px 61px;
+  }
+}
+
+/* Player Inventory: mirror Merchant Goods header typography and centered values. */
+.kithna-food-shop .kithna-food-user-inventory .kithna-food-column-labels {
+  color: var(--merchant-gold);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.kithna-food-shop .kithna-food-user-inventory .kithna-food-column-labels > span,
+.kithna-food-shop .kithna-food-user-inventory .kithna-food-trade-cell,
+.kithna-food-shop .kithna-food-user-inventory .kithna-food-row-total {
+  text-align: center;
+}
+
+.kithna-food-shop .kithna-food-user-inventory .kithna-food-trade-cell {
+  font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  .kithna-food-shop .kithna-food-user-inventory .kithna-food-column-labels {
+    font-size: 0.78rem;
+  }
+}
+
+/* Inventory only: keep the Food name left and numeric headings/values centered. */
+.kithna-food-shop
+  .kithna-food-user-inventory
+  .kithna-food-column-labels
+  > .kithna-food-trade-name {
+  text-align: left;
+}
+.kithna-food-shop .kithna-food-user-inventory .kithna-food-qty-control {
+  justify-self: center;
+  min-width: 0;
+  width: 100%;
+}
+@media (max-width: 480px) {
+  .kithna-food-shop .kithna-food-user-inventory .kithna-food-trade-row {
+    grid-template-columns: minmax(0, 1fr) 30px 33px 60px 55px;
+    gap: 4px;
+    padding-inline: 4px;
+  }
+}
+
+/* Assanti Shop — Qwen introduction and farm shortcut */
+.kithna-food-shop .kithna-food-merchant-introduction {
+  display: grid;
+  gap: 10px;
+}
+.kithna-food-shop .kithna-food-merchant-introduction p {
+  margin: 0;
+  color: var(--merchant-cream);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.kithna-food-shop .kithna-food-chat-panel {
+  gap: 10px;
+}
+.kithna-food-shop .kithna-food-info-actions {
+  align-items: center;
+  gap: 12px;
+}
+.kithna-food-shop .kithna-food-farm-button {
+  border-radius: 24px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 700;
+}
+.kithna-food-shop .kithna-food-farm-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  filter: grayscale(0.45);
+}
+.kithna-food-shop .kithna-food-farm-button:focus-visible,
+.kithna-food-shop .kithna-food-info-button:focus-visible {
+  outline: 2px solid var(--merchant-gold);
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .kithna-food-shop .kithna-food-info-actions > button {
+    width: 100%;
+  }
+}
+/* =========================================
+   ASSANTI SHOP — COMPACT MERCHANT INFO
+   ========================================= */
+
+/* Remove unnecessary vertical spacing */
+.kithna-food-shop .kithna-food-merchant-summary {
+  gap: 6px;
+  padding: 10px 12px;
+}
+
+/* Compact heading */
+.kithna-food-shop .kithna-food-merchant-summary .dp-merchant-name {
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* Reduce paragraph spacing */
+.kithna-food-shop .kithna-food-shop-subtitle,
+.kithna-food-shop .kithna-food-merchant-intro {
+  margin: 0;
+  line-height: 1.3;
+  font-size: 0.82rem;
+}
+
+/* Compact dialogue */
+.kithna-food-shop .kithna-food-chat-panel {
+  gap: 4px;
+}
+
+.kithna-food-shop .kithna-food-chat-panel .dp-merchant-dialogue {
+  margin: 0;
+  padding: 8px 10px;
+  line-height: 1.3;
+  font-size: 0.82rem;
+}
+
+/* Compact action buttons */
+.kithna-food-shop .kithna-food-info-actions {
+  gap: 8px;
+}
+
+.kithna-food-shop .kithna-food-info-actions button {
+  padding: 7px 12px;
+  font-size: 0.75rem;
+}
+
+/* Prevent horizontal overflow */
+.kithna-food-shop .kithna-food-merchant-summary {
+  overflow-x: hidden;
+}
+
+/* Keep merchant actions anchored below changing Qwen dialogue. */
+.kithna-food-shop .kithna-food-chat-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.kithna-food-shop .kithna-food-chat-panel .dp-merchant-dialogue {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.kithna-food-shop .kithna-food-info-actions {
+  margin-top: auto;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Checkout summary stays above both merchant and player columns. */
+.kithna-food-shop .kithna-food-checkout-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.kithna-food-shop .kithna-food-checkout-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 190px;
+  padding: 9px 16px;
+  border: 1px solid var(--merchant-gold);
+  border-radius: 10px;
+  background: rgba(255, 215, 120, 0.08);
+  text-align: center;
+}
+.kithna-food-shop .kithna-food-checkout-summary small {
+  color: var(--merchant-cream);
+}
+.kithna-food-shop .kithna-food-checkout-note {
+  width: 100%;
+  text-align: center;
+  color: var(--merchant-cream);
+}
+.kithna-food-shop .kithna-food-clear-button {
+  align-self: flex-end;
+  margin: 0 0 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--merchant-gold);
+  border-radius: 8px;
+  background: var(--merchant-shadow);
+  color: var(--merchant-gold);
+  font: inherit;
+  cursor: pointer;
+}
+.kithna-food-shop .kithna-food-clear-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Assanti checkout: one shared panel with the total and trade action side by side. */
+.kithna-food-shop .kithna-food-checkout-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 190px);
+  align-items: stretch;
+  gap: 8px;
+  width: min(100%, 470px);
+  margin-inline: auto;
+  padding: 5px;
+  border: 1px solid var(--merchant-gold);
+  border-radius: 12px;
+  background: var(--merchant-shadow);
+}
+.kithna-food-shop .kithna-food-checkout-summary {
+  min-width: 0;
+  justify-content: center;
+  padding: 5px;
+}
+.kithna-food-shop .kithna-food-checkout-bar > .dp-btn {
+  width: 100%;
+  min-height: 64px;
+  align-self: stretch;
+}
+.kithna-food-shop .kithna-food-checkout-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 4px 6px 0;
+}
+@media (max-width: 520px) {
+  .kithna-food-shop .kithna-food-checkout-bar {
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 42%);
+    gap: 8px;
+    padding: 5px;
+  }
+  .kithna-food-shop .kithna-food-checkout-summary {
+    padding: 5px;
   }
 }

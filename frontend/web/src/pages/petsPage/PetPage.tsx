@@ -14,6 +14,8 @@ import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDeta
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
 import StatsChamber from "@/components/StatsChamber/StatsChamber";
+import RelicEquipment from "./components/RelicEquipment";
+import OwnedCarePicker from "./components/OwnedCarePicker";
 import RelicArtTree from "@/components/Relic_ Art_ trees/RelicArtTree";
 import MainTeam from "@/components/MainTeam/mainTeam";
 import type {
@@ -249,6 +251,7 @@ export default function PetPage() {
   const [personalityName, setPersonalityName] = useState<string | null>(null);
   const [starterMerchant, setStarterMerchant] =
     useState<StarterMerchantState | null>(null);
+  const [showCarePicker, setShowCarePicker] = useState(false);
   const [showRelicArteTree, setShowRelicArteTree] = useState(false);
   const [claimingRescueEgg, setClaimingRescueEgg] = useState(false);
   const [rescueEggError, setRescueEggError] = useState<string | null>(null);
@@ -256,7 +259,7 @@ export default function PetPage() {
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [showNicknameEditor, setShowNicknameEditor] = useState(false);
   const [careInventoryCounts, setCareInventoryCounts] = useState<
-    Record<CareInventoryCategory, number>
+    Record<CareInventoryCategory, number> & { tutorial?: number }
   >({
     food: 0,
     soap: 0,
@@ -285,6 +288,20 @@ export default function PetPage() {
   const hasLoadedOnceRef = useRef(false);
   const hasLoggedRunawayLockRef = useRef(false);
   const careActionPendingRef = useRef(false);
+  const currentUserIdRef = useRef(user?.id);
+
+  currentUserIdRef.current = user?.id;
+
+  useEffect(() => {
+    setPet(null);
+    setStats(null);
+    setElements(null);
+    setTeam([]);
+    setStarterMerchant(null);
+    setPersonalityName(null);
+    setLoadErr(null);
+    hasLoadedOnceRef.current = false;
+  }, [user?.id]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -296,11 +313,15 @@ export default function PetPage() {
     async (showSpinner: boolean) => {
       if (!user) return;
 
+      const requestedUserId = user.id;
+
       if (showSpinner) setLoadingPage(true);
       setLoadErr(null);
 
       try {
         const json = await apiFetch<CareCurrentResponse>("/api/care/current");
+
+        if (currentUserIdRef.current !== requestedUserId) return;
 
         const nextPet = json.pet ?? null;
         const nextStats = json.stats ?? null;
@@ -330,16 +351,13 @@ export default function PetPage() {
         const message =
           error instanceof Error ? error.message : "Failed to load pet page.";
 
-        setLoadErr(message);
-        setPet(null);
-        setStarterMerchant(null);
-        setStats(null);
-        setElements(null);
-        setTeam([]);
-        setPersonalityName(null);
-        setShowNicknameEditor(false);
+        if (currentUserIdRef.current === requestedUserId) {
+          setLoadErr(message);
+        }
       } finally {
-        setLoadingPage(false);
+        if (currentUserIdRef.current === requestedUserId) {
+          setLoadingPage(false);
+        }
       }
     },
     [user],
@@ -360,10 +378,14 @@ export default function PetPage() {
 
     void loadPetPage(true);
 
-    const handleWindowFocus = () => void loadPetPage(false);
+    const handleWindowFocus = () => {
+      void loadPetPage(false);
+      void syncCareInventoryCounts();
+    };
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         void loadPetPage(false);
+        void syncCareInventoryCounts();
       }
     };
 
@@ -384,8 +406,12 @@ export default function PetPage() {
   }, [authLoading, user, loadPetPage]);
 
   const runCareAction = useCallback(
-    async (action: CareAction) => {
+    async (action: CareAction, itemSlug?: string, legacyPet = false) => {
       if (careActionPendingRef.current || busy || nicknameSaving) return;
+      if (action === "pet" && !itemSlug && !legacyPet) {
+        setShowCarePicker(true);
+        return;
+      }
 
       const cooldownRemainingMs = getCareCooldownRemainingMs(pet, action);
 
@@ -404,8 +430,12 @@ export default function PetPage() {
       setActionMsg(null);
 
       try {
-        const json =
-          action === "pet"
+        const json = itemSlug
+          ? await apiFetch<{ message?: string }>("/api/care/item", {
+              method: "POST",
+              json: { slug: itemSlug },
+            })
+          : action === "pet"
             ? await apiFetch<{ message?: string }>(`/api/care/${action}`, {
                 method: "POST",
               })
@@ -421,7 +451,14 @@ export default function PetPage() {
           pet: "They look happier.",
         };
 
-        setActionMsg(json?.message || defaultMessageMap[action]);
+        setActionMsg(
+          json?.message ||
+            (itemSlug
+              ? "Care item used successfully."
+              : defaultMessageMap[action]),
+        );
+        setShowCarePicker(false);
+        window.dispatchEvent(new Event(getInventoryChangeEventName()));
         await loadPetPage(false);
       } catch (error) {
         setActionMsg(
@@ -454,6 +491,7 @@ export default function PetPage() {
         setActionMsg("Active Delta switched.");
         await loadPetPage(false);
       } catch (error) {
+        setViewingSlotIndex(null);
         setActionMsg(
           error instanceof Error
             ? error.message
@@ -514,8 +552,18 @@ export default function PetPage() {
     setRescueEggError(null);
 
     try {
-      await apiFetch("/api/pets/rescue-egg", { method: "POST" });
-      navigate("/rescue-reveal");
+      const result = await apiFetch<{
+        success: boolean;
+        pet: { id: string };
+      }>("/api/pets/rescue-egg", { method: "POST" });
+
+      if (!result.success || !result.pet?.id) {
+        throw new Error("Could not confirm the rescue egg.");
+      }
+
+      navigate("/rescue-reveal", {
+        state: { rescueEggId: result.pet.id },
+      });
     } catch (error) {
       setRescueEggError(
         error instanceof Error
@@ -645,16 +693,18 @@ export default function PetPage() {
 
   const selectKithTeamSlot = useCallback(
     (slotIndex: number) => {
-      setViewingSlotIndex(slotIndex);
+      if (busy || nicknameSaving) return;
+
       const selectedSlot = kithTeamSlots.find(
         (slot) => slot.slotIndex === slotIndex,
       );
 
-      if (selectedSlot?.petId) {
-        void switchActivePet(selectedSlot.petId);
-      }
+      if (!selectedSlot?.petId) return;
+
+      setViewingSlotIndex(slotIndex);
+      void switchActivePet(selectedSlot.petId);
     },
-    [kithTeamSlots, switchActivePet],
+    [busy, nicknameSaving, kithTeamSlots, switchActivePet],
   );
 
   const nicknameLocked = Boolean(pet?.nickname?.trim());
@@ -774,7 +824,6 @@ export default function PetPage() {
               <p className="petRepoRunawayModalError">{rescueEggError}</p>
             ) : null}
           </div>
-
         </>
       ) : null}
 
@@ -796,9 +845,7 @@ export default function PetPage() {
                 real condition.
               </p>
             </div>
-
           </header>
-
 
           <PetDetailsPanel
             pet={pet}
@@ -844,14 +891,22 @@ export default function PetPage() {
           />
 
           <section className="petRepoBottomGrid">
-            <StatsChamber
-              pet={viewedPet?.id === pet?.id ? pet : (viewedPet ?? pet)}
-              petLabel={viewedPetLabel}
-              totalStats={totalStats}
-              elementRows={elementRows}
-              petElementTheme={petElementTheme}
-              growthTraits={growthTraits}
-            />
+            {viewedPet && pet && viewedPet.id !== pet.id ? (
+              <p role="status" aria-live="polite">
+                Loading selected Kith statistics…
+              </p>
+            ) : pet ? (
+              <StatsChamber
+                pet={pet}
+                petLabel={
+                  viewedPet?.id === pet.id ? viewedPetLabel : getPetLabel(pet)
+                }
+                totalStats={totalStats}
+                elementRows={elementRows}
+                petElementTheme={getElementThemeKey(pet)}
+                growthTraits={growthTraits}
+              />
+            ) : null}
 
             <div className="petRepoBottomRightColumn">
               <SkillsChamber
@@ -865,47 +920,10 @@ export default function PetPage() {
                 stats={totalStats}
               />
 
-              <div className="petRepoRelicPanel">
-                <div className="petRepoRelicPanelInner dp-blue-grid-panel">
-                  <div className="petRepoRelicPanelHeader">
-                    <span>Relic Artes Chamber</span>
-                  </div>
-
-                  <div className="petRepoRelicPanelContent">
-                    <div className="petRepoRelicArtColumn">
-                      <div className="petRepoRelicArtFrame">
-                        <span>No Relic</span>
-                      </div>
-
-                      <div className="petRepoRelicArtCopy">
-                        <h3>No Relic</h3>
-
-                        <p>
-                          Browse this Kith's collected Relics and equip one
-                          here.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="petRepoRelicActions">
-                      <button
-                        type="button"
-                        className="dp-btn--close petRepoRelicBrowseButton"
-                      >
-                        Browse Relics
-                      </button>
-
-                      <button
-                        type="button"
-                        className="dp-btn--close petRepoRelicTreeButton"
-                        onClick={() => setShowRelicArteTree(true)}
-                      >
-                        See Arte Tree
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <RelicEquipment
+                petId={pet.id}
+                onTree={() => setShowRelicArteTree(true)}
+              />
 
               <KithProgressCard
                 name={getPetLabel(pet)}
@@ -934,6 +952,14 @@ export default function PetPage() {
         </section>
       ) : null}
 
+      <OwnedCarePicker
+        open={showCarePicker}
+        message={actionMsg}
+        onClose={() => setShowCarePicker(false)}
+        busy={busy}
+        canPet={careInventoryCounts.bed > 0}
+        onUse={(slug) => void runCareAction("pet", slug, !slug)}
+      />
       <RelicArtTree
         open={showRelicArteTree}
         onClose={() => setShowRelicArteTree(false)}

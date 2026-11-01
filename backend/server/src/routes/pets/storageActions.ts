@@ -45,3 +45,41 @@ export async function handleStorageAction(req: AuthedRequest, res: Response) {
 }
 
 storageActionsRouter.post("/storage/action", requireUser, handleStorageAction);
+
+const favoriteSchema = z.object({ petId, favorite: z.boolean() }).strict();
+const favoriteUnavailable = "Favorites are unavailable. Please try again later.";
+
+export async function handleFavoriteList(req: AuthedRequest, res: Response) {
+  if (!req.user) return res.status(401).json({ error: "Authentication required." });
+  try {
+    const { data, error } = await supabaseAdmin.from("pets")
+      .select("id,is_favorite").eq("user_id", req.user.id);
+    if (error) throw error;
+    return res.json({ pets: data });
+  } catch (error: unknown) {
+    logger.error("[storage] favorites unavailable", error);
+    return res.status(503).json({ error: favoriteUnavailable });
+  }
+}
+
+export async function handleFavoriteUpdate(req: AuthedRequest, res: Response) {
+  if (!req.user) return res.status(401).json({ error: "Authentication required." });
+  const parsed = favoriteSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Invalid favorite update." });
+  try {
+    const { data, error } = await supabaseAdmin.rpc("set_kith_favorite", {
+      p_user_id: req.user.id, p_pet_id: parsed.data.petId, p_favorite: parsed.data.favorite,
+    });
+    if (error) {
+      if (error.code === "P0001") return res.status(409).json({ error: error.message });
+      throw error;
+    }
+    return res.json({ favorite: data });
+  } catch (error: unknown) {
+    logger.error("[storage] favorite update failed", error);
+    return res.status(503).json({ error: favoriteUnavailable });
+  }
+}
+
+storageActionsRouter.get("/storage/favorites", requireUser, handleFavoriteList);
+storageActionsRouter.post("/storage/favorite", requireUser, handleFavoriteUpdate);

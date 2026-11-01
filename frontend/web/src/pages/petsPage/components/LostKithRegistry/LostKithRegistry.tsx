@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/api/baseClient";
 import DpPopupWindow from "@/pages/petsPage/components/DpPopupWindow";
 import "./LostKithRegistry.css";
@@ -23,6 +23,21 @@ type LostKithRegistryProps = {
   onClose: () => void;
   onRecovered: () => void;
 };
+
+function getRemainingMs(expiresAt: string, now: number): number {
+  const expiresMs = Date.parse(expiresAt);
+  return Number.isFinite(expiresMs) ? Math.max(0, expiresMs - now) : 0;
+}
+
+function formatRemainingTime(remainingMs: number): string {
+  if (remainingMs <= 0) return "Recovery expired";
+
+  const totalMinutes = Math.ceil(remainingMs / 60_000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${hours}h ${minutes}m left to recover`;
+}
 
 export default function LostKithRegistry({
   open,
@@ -54,11 +69,40 @@ export default function LostKithRegistry({
     }
   }, []);
 
+  const [now, setNow] = useState(() => Date.now());
+  const refreshedExpiredIds = useRef<Set<string>>(new Set());
+
   useEffect(() => {
-    if (open) {
-      void loadEntries();
-    }
+    if (!open) return;
+
+    refreshedExpiredIds.current.clear();
+    setNow(Date.now());
+    void loadEntries();
+
+    const intervalId = window.setInterval(() => {
+      setNow(Date.now());
+    }, 30_000);
+
+    return () => window.clearInterval(intervalId);
   }, [open, loadEntries]);
+
+  useEffect(() => {
+    if (!open || loading) return;
+
+    const newlyExpired = entries.filter(
+      (entry) =>
+        getRemainingMs(entry.expires_at, now) === 0 &&
+        !refreshedExpiredIds.current.has(entry.pet_id),
+    );
+
+    if (newlyExpired.length === 0) return;
+
+    for (const entry of newlyExpired) {
+      refreshedExpiredIds.current.add(entry.pet_id);
+    }
+
+    void loadEntries();
+  }, [open, loading, entries, now, loadEntries]);
 
   async function recover(petId: string, currency: "dots" | "crystals") {
     setRecoveringId(petId);
@@ -107,43 +151,46 @@ export default function LostKithRegistry({
         </p>
       ) : (
         <ul className="lostKithRegistryList">
-          {entries.map((entry) => (
-            <li key={entry.pet_id} className="lostKithRegistryEntry">
-              <div className="lostKithRegistryEntryInfo">
-                <strong>{entry.name || "Unnamed Delta"}</strong>
-                <span className="lostKithRegistryMeta">
-                  Level {entry.level ?? 1} · Bond {entry.bond ?? 0}
-                </span>
-                <span className="lostKithRegistryMeta">
-                  {entry.hours_remaining > 0
-                    ? `${entry.hours_remaining}h left to recover`
-                    : "Expiring soon"}
-                </span>
-              </div>
+          {entries.map((entry) => {
+            const remainingMs = getRemainingMs(entry.expires_at, now);
+            const expired = remainingMs === 0;
 
-              <div className="lostKithRegistryActions">
-                <button
-                  type="button"
-                  disabled={recoveringId === entry.pet_id}
-                  onClick={() => recover(entry.pet_id, "dots")}
-                >
-                  {recoveringId === entry.pet_id
-                    ? "Recovering..."
-                    : `${entry.dots_cost} Dots`}
-                </button>
-                <button
-                  type="button"
-                  className="lostKithRegistryCrystalButton"
-                  disabled={recoveringId === entry.pet_id}
-                  onClick={() => recover(entry.pet_id, "crystals")}
-                >
-                  {recoveringId === entry.pet_id
-                    ? "Recovering..."
-                    : `${entry.crystals_cost} Crystals`}
-                </button>
-              </div>
-            </li>
-          ))}
+            return (
+              <li key={entry.pet_id} className="lostKithRegistryEntry">
+                <div className="lostKithRegistryEntryInfo">
+                  <strong>{entry.name || "Unnamed Delta"}</strong>
+                  <span className="lostKithRegistryMeta">
+                    Level {entry.level ?? 1} · Bond {entry.bond ?? 0}
+                  </span>
+                  <span className="lostKithRegistryMeta">
+                    {formatRemainingTime(remainingMs)}
+                  </span>
+                </div>
+
+                <div className="lostKithRegistryActions">
+                  <button
+                    type="button"
+                    disabled={expired || recoveringId !== null}
+                    onClick={() => recover(entry.pet_id, "dots")}
+                  >
+                    {recoveringId === entry.pet_id
+                      ? "Recovering..."
+                      : `${entry.dots_cost} Dots`}
+                  </button>
+                  <button
+                    type="button"
+                    className="lostKithRegistryCrystalButton"
+                    disabled={expired || recoveringId !== null}
+                    onClick={() => recover(entry.pet_id, "crystals")}
+                  >
+                    {recoveringId === entry.pet_id
+                      ? "Recovering..."
+                      : `${entry.crystals_cost} Crystals`}
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </DpPopupWindow>

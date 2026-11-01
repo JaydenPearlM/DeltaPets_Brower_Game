@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/app/providers/useAuth";
 import { apiFetch } from "@/lib/api/baseClient";
 
@@ -179,6 +179,59 @@ function resampleClosed(pts: Point[], N: number) {
    component
 ========================================================= */
 export default function RescueEggReveal() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [confirmed, setConfirmed] = useState(false);
+
+  const rescueEggId: unknown = (
+    location.state as {
+      rescueEggId?: unknown;
+    } | null
+  )?.rescueEggId;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (typeof rescueEggId !== "string" || !rescueEggId) {
+      navigate("/hatchery", { replace: true });
+      return;
+    }
+
+    void apiFetch<{
+      slots: Array<{
+        pet: { id: string; stage: string | null } | null;
+      }>;
+    }>("/api/pets/hatchery")
+      .then((result) => {
+        if (cancelled) return;
+
+        const eggExists = result.slots.some(
+          (slot) => slot.pet?.id === rescueEggId && slot.pet.stage === "egg",
+        );
+
+        if (eggExists) {
+          setConfirmed(true);
+        } else {
+          navigate("/hatchery", { replace: true });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          navigate("/hatchery", { replace: true });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, rescueEggId]);
+
+  if (!confirmed) return null;
+
+  return <ConfirmedRescueEggReveal />;
+}
+
+function ConfirmedRescueEggReveal() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [playerName, setPlayerName] = useState("Traveler");

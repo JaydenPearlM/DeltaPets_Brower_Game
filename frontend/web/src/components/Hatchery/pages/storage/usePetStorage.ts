@@ -25,6 +25,7 @@ export type StoragePet = {
   level: number | null;
   location: string | null;
   is_active: boolean | null;
+  is_favorite?: boolean;
   runaway_at?: string | null;
   ran_away?: boolean | null;
   created_at: string | null;
@@ -171,6 +172,8 @@ export function usePetStorage(options: UsePetStorageOptions) {
   const [workingPetId, setWorkingPetId] = useState<string | null>(null);
   const [workingSlotIndex, setWorkingSlotIndex] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [favoriteError, setFavoriteError] = useState("");
+  const [favoriteBusy, setFavoriteBusy] = useState(false);
 
   const loadAll = useCallback(async () => {
     if (!userId) {
@@ -183,7 +186,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
     setLoading(true);
     setError("");
 
-    const [petsResult, partyResult] = await Promise.all([
+    const [petsResult, partyResult, favorites] = await Promise.all([
       supabase
         .from("pets")
         .select(
@@ -224,6 +227,15 @@ export function usePetStorage(options: UsePetStorageOptions) {
         .select("id,user_id,slot_index,pet_id")
         .eq("user_id", userId)
         .order("slot_index", { ascending: true }),
+      apiFetch<{ pets: { id: string; is_favorite: boolean }[] }>("/api/pets/storage/favorites")
+        .then((result) => {
+          setFavoriteError("");
+          return new Map(result.pets.map((pet) => [pet.id, pet.is_favorite]));
+        })
+        .catch(() => {
+          setFavoriteError("Favorites are unavailable. Protection status could not be loaded.");
+          return new Map<string, boolean>();
+        }),
     ]);
 
     if (petsResult.error) {
@@ -254,6 +266,7 @@ export function usePetStorage(options: UsePetStorageOptions) {
           level: pet.level,
           location: pet.location,
           is_active: pet.is_active,
+          is_favorite: favorites.get(pet.id),
           runaway_at: pet.runaway_at ?? null,
           ran_away: pet.ran_away ?? null,
           created_at: pet.created_at,
@@ -421,6 +434,22 @@ export function usePetStorage(options: UsePetStorageOptions) {
     runStorageAction("store_inventory_egg", petId);
   const moveEggToStorage = (petId: string) =>
     runStorageAction("store_hatchery_egg", petId);
+
+  const setFavorite = async (petId: string, favorite: boolean) => {
+    setFavoriteBusy(true);
+    setFavoriteError("");
+    try {
+      const result = await apiFetch<{ favorite: boolean }>("/api/pets/storage/favorite", {
+        method: "POST", json: { petId, favorite },
+      });
+      setPets((current) => current.map((pet) => pet.id === petId
+        ? { ...pet, is_favorite: result.favorite } : pet));
+    } catch (problem: unknown) {
+      setFavoriteError(problem instanceof Error ? problem.message : "Favorite update failed.");
+    } finally {
+      setFavoriteBusy(false);
+    }
+  };
   return {
     pets: storedPets,
     allPets: pets,
@@ -429,6 +458,9 @@ export function usePetStorage(options: UsePetStorageOptions) {
     counts,
     loading,
     error,
+    favoriteError,
+    favoriteBusy,
+    setFavorite,
     workingPetId,
     workingSlotIndex,
     storageCounts,

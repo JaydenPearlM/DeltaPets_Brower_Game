@@ -17,6 +17,7 @@ export function setCareDecayLogger(logger: CareDecayLogger | null) {
 
 export type CarePet = {
   id: string;
+  is_favorite?: boolean;
   hunger?: number | null;
   clean?: number | null;
   happy?: number | null;
@@ -172,7 +173,7 @@ function buildRunawayState(args: {
     ? neglectBase + (addElapsedHours ? elapsedHours : 0)
     : 0;
 
-  const runaway = ranAwayBase || neglectHours >= RUNAWAY_THRESHOLD_HOURS;
+  const runaway = ranAwayBase || (!pet.is_favorite && neglectHours >= RUNAWAY_THRESHOLD_HOURS);
   const timestamp = new Date(nowMs).toISOString();
   const runawayAt = runaway ? String(pet.runaway_at ?? timestamp) : null;
 

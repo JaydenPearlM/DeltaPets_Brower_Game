@@ -45,8 +45,9 @@ const WEEKLY_REWARDS: readonly WeeklyReward[] = [
   },
   { kind: "dots", amount: 500, label: "500 Dots" },
   {
-    kind: "ribbon",
-    label: "Alpha Tester Ribbon",
+    kind: "dots",
+    amount: 100,
+    label: "100 Dots",
   },
 ] as const;
 
@@ -152,6 +153,7 @@ const claimResultSchema = z.discriminatedUnion("ok", [
     error: z.enum([
       "Already claimed today.",
       "Activate a non-runaway Kith before claiming this XP reward.",
+      "Make room for the full item reward before claiming.",
     ]),
   }),
   z.object({
