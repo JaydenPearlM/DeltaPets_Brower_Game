@@ -27,9 +27,8 @@ export function HomepageSupportPanel() {
               <h3 className="hp-heroFeatureTitle">Free to Play</h3>
 
               <p className="hp-heroFeatureText">
-                DeltaPets is planned as free to play. Optional supporter
-                purchases may be added later, while core gameplay remains
-                accessible without requiring payment.
+                Core gameplay is planned to be free, with optional supporter
+                purchases later.
               </p>
             </div>
           </article>
@@ -41,9 +40,8 @@ export function HomepageSupportPanel() {
               <h3 className="hp-heroFeatureTitle">Open Alpha</h3>
 
               <p className="hp-heroFeatureText">
-                DeltaPets is entering active public testing. Expect bugs,
-                balance changes, evolving systems, and updates as player
-                feedback helps shape the game.
+                Public testing is coming. Expect bugs and updates as your
+                feedback shapes Aliune.
               </p>
             </div>
           </article>
@@ -55,9 +53,8 @@ export function HomepageSupportPanel() {
               <h3 className="hp-heroFeatureTitle">Built by One Developer</h3>
 
               <p className="hp-heroFeatureText">
-                DeltaPets is currently designed, programmed, illustrated, and
-                maintained by one developer. Testing, feedback, and support help
-                keep development moving.
+                Made by one developer, with your feedback and support helping
+                Aliune grow.
               </p>
             </div>
           </article>

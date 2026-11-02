@@ -37,6 +37,7 @@ function getDisplayName(species: string, nickname: string | null) {
 export function useHomepageSpotlightPet() {
   const [pet, setPet] = useState<HomepageSpotlightPet | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -59,6 +60,7 @@ export function useHomepageSpotlightPet() {
       })
       .catch(() => {
         if (!cancelled) {
+          setError("Spotlight could not load. Please try refreshing the page.");
           setPet(null);
           setLoading(false);
         }
@@ -79,5 +81,6 @@ export function useHomepageSpotlightPet() {
     pet,
     displayName,
     loading,
+    error,
   };
 }

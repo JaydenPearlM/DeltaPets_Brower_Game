@@ -344,70 +344,44 @@ async function hydratePassiveTrait(pet: Record<string, any>) {
 }
 careRouter.get("/spotlight", async (_req, res) => {
   try {
-    const { count: slotCount, error: countError } = await supabaseAdmin
-      .from("party_slots")
-      .select("user_id", { count: "exact", head: true })
-      .eq("slot_index", 1);
+    // Rotate only among active, hatched Kith that are still on a Main Team.
+    // The active Kith can occupy any team slot, not necessarily slot 1.
+    const eligiblePets = (head = false) => supabaseAdmin
+      .from("pets")
+      .select("*,party_slots!inner(pet_id)", { count: "exact", head })
+      .eq("is_active", true)
+      .eq("ran_away", false)
+      .neq("stage", "egg");
 
-    if (countError) {
-      throw countError;
-    }
-
-    if (!slotCount) {
-      return res.json({ pet: null });
-    }
+    const { count: petCount, error: countError } = await eligiblePets(true);
+    if (countError) throw countError;
+    if (!petCount) return res.json({ pet: null });
 
     const rotationWindowMs = 2 * 60 * 60 * 1000;
-    const rotationIndex =
-      Math.floor(Date.now() / rotationWindowMs) % slotCount;
-
-    const { data: selectedSlot, error: slotsError } = await supabaseAdmin
-      .from("party_slots")
-      .select("user_id,pet_id,slot_index")
-      .eq("slot_index", 1)
-      .order("user_id", { ascending: true })
+    const rotationIndex = Math.floor(Date.now() / rotationWindowMs) % petCount;
+    let { data: pet, error: petError } = await eligiblePets()
+      .order("id", { ascending: true })
       .range(rotationIndex, rotationIndex)
       .maybeSingle();
+    if (petError) throw petError;
 
-    if (slotsError) {
-      throw slotsError;
-    }
-
-    // A slot can disappear between the count and selection queries.
-    if (!selectedSlot) {
-      return res.json({ pet: null });
-    }
-
-    const [
-      { data: pet, error: petError },
-      { data: profile, error: profileError },
-    ] = await Promise.all([
-      supabaseAdmin
-        .from("pets")
-        .select("*")
-        .eq("id", selectedSlot.pet_id)
-        .eq("ran_away", false)
-        .neq("stage", "egg")
-        .maybeSingle(),
-
-      supabaseAdmin
-        .from("profiles")
-        .select("username,display_name")
-        .eq("user_id", selectedSlot.user_id)
-        .maybeSingle(),
-    ]);
-
-    if (petError) {
-      throw petError;
-    }
-
-    if (profileError) {
-      throw profileError;
-    }
-
+    // Team changes between the count and read must not leave an empty rotation.
     if (!pet) {
-      return res.json({ pet: null });
+      const fallback = await eligiblePets()
+        .order("id", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (fallback.error) throw fallback.error;
+      pet = fallback.data;
     }
+    if (!pet) return res.json({ pet: null });
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("username,display_name")
+      .eq("user_id", pet.user_id)
+      .maybeSingle();
+    if (profileError) throw profileError;
 
     const hydratedPet = await hydrateMutationTraits(
       await hydratePassiveTrait(pet),

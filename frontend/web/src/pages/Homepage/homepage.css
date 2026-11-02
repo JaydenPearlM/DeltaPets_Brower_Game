@@ -3754,3 +3754,25 @@
     justify-content: center;
   }
 }
+/* Desktop hero alignment: retain the existing layout and badge artwork. */
+@media (min-width: 1280px) {
+  .hp-heroContent {
+    position: relative;
+  }
+
+  .hp-heroTitle--logo {
+    left: -61px;
+  }
+
+  .hp-heroFreeToPlaySlot {
+    position: static;
+  }
+
+  .hp-heroFreeToPlaySlot .dp-free-to-play {
+    left: auto;
+    right: -5px;
+    top: auto;
+    transform: scale(0.55);
+    transform-origin: top right;
+  }
+}

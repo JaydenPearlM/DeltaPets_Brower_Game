@@ -49,6 +49,7 @@ export default function Homepage() {
     pet: spotlightPet,
     displayName: spotlightDisplayName,
     loading: spotlightLoading,
+    error: spotlightError,
   } = useHomepageSpotlightPet();
 
   const {
@@ -243,7 +244,7 @@ export default function Homepage() {
                 <p className="hp-loadingBlock">Loading spotlight pet...</p>
               ) : !spotlightPet ? (
                 <p className="hp-loadingBlock">
-                  No featured Kith is available right now.
+                  {spotlightError || "No active Main Team Kith is available right now."}
                 </p>
               ) : (
                 <>
