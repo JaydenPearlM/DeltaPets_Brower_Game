@@ -1551,3 +1551,8 @@
     min-height: 118px;
   }
 }
+
+.skillChamberCatalog { min-width: 0; overflow-wrap: anywhere; font-size: 0.8rem; line-height: 1.45; }
+.skillChamberCatalog ul { list-style: none; padding: 0; }
+.skillChamberCatalog li { display: flex; flex-direction: column; gap: 4px; margin: 12px 0; }
+.skillChamberCatalog summary { cursor: pointer; color: var(--dp-title-gold, #ffdf75); }

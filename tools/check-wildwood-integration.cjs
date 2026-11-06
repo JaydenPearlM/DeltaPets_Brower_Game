@@ -20,6 +20,8 @@ const tables = {
 };
 let failQuestWrite = false;
 let failResultWrite = false;
+let failXpWrite = false;
+let loseXpResponse = false;
 let encounterRoll = 0;
 let completionWrites = 0;
 class Query {
@@ -74,7 +76,30 @@ class Query {
   }
 }
 Module._load = function(request, parent, isMain) {
-  if (request.endsWith("lib/supabaseAdmin")) return { supabaseAdmin: { from: table => new Query(table) } };
+  if (request.endsWith("lib/supabaseAdmin")) return { supabaseAdmin: {
+    from: table => new Query(table),
+    // PostgreSQL concurrency/rollback are covered by check-wildwood-progression.cjs.
+    // This double checks service routing, recovery and the response contract.
+    async rpc(name, { p_user_id, p_room_id }) {
+      assert.equal(name, 'settle_wildwood_victory_xp');
+      const room = tables.wildwood_rooms.find(row => row.id === p_room_id);
+      const data = room.event_payload;
+      assert.equal(data.battle.status, 'victory');
+      assert.equal(data.xpRewardVersion, 1);
+      if (failXpWrite) { failXpWrite = false; return { data: null, error: Error('Injected XP failure') }; }
+      if (data.xpReward) return { data: structuredClone(data.xpReward), error: null };
+      const participant = data.battle.participants.find(p => p.side === 'player');
+      const pet = tables.pets.find(p => p.id === participant.sourcePetId && p.user_id === p_user_id);
+      const previousXp = pet.xp ?? 0, previousLevel = pet.level;
+      pet.xp = previousXp + 25;
+      while (pet.level < 30 && pet.xp >= 50 * pet.level * (pet.level + 1)) pet.level++;
+      const pointsEarned = pet.level - previousLevel;
+      pet.unspent_points = (pet.unspent_points ?? 0) + pointsEarned;
+      data.xpReward = { petId: pet.id, amount: 25, previousXp, xp: pet.xp, previousLevel, level: pet.level, pointsEarned };
+      if (loseXpResponse) { loseXpResponse = false; return { data: null, error: Error('Lost XP response') }; }
+      return { data: structuredClone(data.xpReward), error: null };
+    },
+  } };
   if (request.endsWith("middleware/auth")) return { requireUser: (_req, _res, next) => next() };
   if (request.endsWith("lib/logger")) return { logger: { error() {} } };
   // Force the random encounter branch; production chance remains unchanged.
@@ -95,15 +120,16 @@ async function post(path, userId = user) {
 }
 
 async function main() {
+  const beforePausedClaim = structuredClone(tables);
+  const pausedClaim = await post("/collect-item");
+  assert.equal(pausedClaim.statusCode, 503);
+  assert.equal(pausedClaim.body.error, "Wildwood item collection is temporarily unavailable.");
+  assert.deepEqual(tables, beforePausedClaim, "Paused collection must not write any data");
   const petBefore = structuredClone(tables.pets);
   const initial = await service.getWildwoodSession(user);
   assert.equal(initial.team.length, 1);
   assert.equal(initial.team[0].displayHp, 5, "HP display includes level-one allocations, excluding level zero");
   const requestFor = previousRoomId => ({ requestId: crypto.randomUUID(), previousRoomId, formation: [{ petId, row: "back" }] });
-  tables.trainer_progression[0].trainer_level = 1;
-  await assert.rejects(service.exploreWildwood(user, requestFor(null)), /Trainer Level 5 is required/);
-  assert.equal(tables.wildwood_expeditions.length, 0);
-  tables.trainer_progression[0].trainer_level = 5;
   await assert.rejects(service.exploreWildwood("locked-user", requestFor(null)), /Accept Somethings Afoot/);
   assert.equal(tables.wildwood_expeditions.length, 0);
   assert.equal((await post("/quest/turn-in")).statusCode, 409);
@@ -135,9 +161,20 @@ async function main() {
       await assert.rejects(service.exploreWildwood(user, requestFor(room.id)), /Injected result write failure/);
       assert.equal(tables.wildwood_rooms.length, win, "Cannot advance past unsettled statistics");
       failResultWrite = false;
+    } else if (win === 4) {
+      failXpWrite = true;
+      await assert.rejects(service.actInWildwood(user, room.battle.id, action), /Injected XP failure/);
+      assert.equal(tables.pets[0].xp, 75);
+    } else if (win === 5) {
+      loseXpResponse = true;
+      await assert.rejects(service.actInWildwood(user, room.battle.id, action), /Lost XP response/);
+      assert.equal(tables.pets[0].xp, 125);
     } else await service.actInWildwood(user, room.battle.id, action);
     const recovered = await service.getWildwoodSession(user);
     assert.equal(recovered.room.battle.status, "victory");
+    assert.equal(recovered.room.xpReward.petId, petId);
+    assert.equal(recovered.room.xpReward.amount, 25);
+    assert.equal(tables.pets[0].xp, win * 25);
     assert.equal(tables.player_quests[0].progress, win, "Recovery lost or duplicated quest credit");
     await service.getWildwoodSession(user);
     assert.equal(tables.player_quests[0].progress, win);
@@ -147,7 +184,7 @@ async function main() {
   assert.equal(tables.player_quests[0].status, "ready_to_turn_in");
   assert.equal(tables.pet_battle_results.length, 5, "Quest recovery must not duplicate battle results");
   assert.ok(tables.pet_battle_results.every(row => row.user_id === user && row.pet_id === petId && row.result === "victory"));
-  assert.deepEqual(tables.pets, petBefore);
+  assert.deepEqual(tables.pets, [{ ...petBefore[0], xp: 125, level: 2, unspent_points: 1 }]);
   await assert.rejects(service.exploreWildwood(user, { requestId: crypto.randomUUID(), previousRoomId, formation: [{ petId: crypto.randomUUID(), row: "front" }] }), /team changed/);
   const ready = structuredClone(tables.player_quests[0]);
   await post("/quest/accept");
@@ -198,7 +235,7 @@ async function main() {
   console.log("PASS: five qualifying victories reach 5/5 and ready_to_turn_in");
   console.log("PASS: concurrent actions, repeated exploration, stale actions, foreign battle access, invalid formation");
   console.log("PASS: saved victory recovers after a failed quest write, with no duplicate credit");
-  console.log("PASS: pet records unchanged; no XP or egg writes; no live database used");
+  console.log("PASS: participating pet earns 25 XP once per victory, reaches level 2, and preserves other fields; no live database used");
   console.log("PASS: locked access, non-combat replay, battle re-entry, defeat, and concurrent exploration");
   console.log("PASS: premature turn-in rejected; concurrent/repeated turn-in and acceptance preserve completion and unlocks");
 }

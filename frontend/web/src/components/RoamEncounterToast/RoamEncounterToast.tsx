@@ -16,6 +16,7 @@ import "./RoamEncounterToast.css";
 type RoamEncounterToastProps = {
   result: RoamEncounterResult | null;
   onDismiss: () => void;
+  onTaken?: (egg: { egg_id: string; egg_name: string }) => void;
 };
 
 function getEggElementClass(eggName?: string): string {
@@ -71,6 +72,7 @@ function getEggImage(eggName?: string): string | null {
 export function RoamEncounterToast({
   result,
   onDismiss,
+  onTaken,
 }: RoamEncounterToastProps) {
   const [workingAction, setWorkingAction] = useState<"take" | "leave" | null>(
     null,
@@ -83,10 +85,13 @@ export function RoamEncounterToast({
     setError("");
 
     try {
-      await apiFetch<unknown>(`/api/kithna/roam/${action}`, {
+      const receipt = await apiFetch<{ taken?: boolean; egg_id?: string; egg_name?: string }>(`/api/kithna/roam/${action}`, {
         method: "POST",
       });
 
+      if (action === "take" && receipt.taken === true && receipt.egg_id && receipt.egg_name) {
+        onTaken?.({ egg_id: receipt.egg_id, egg_name: receipt.egg_name });
+      }
       onDismiss();
     } catch (err) {
       setError(

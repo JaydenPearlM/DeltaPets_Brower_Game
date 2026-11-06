@@ -738,3 +738,31 @@ export default function SkillChamber({
     </section>
   );
 }
+
+// Wildwood catalog only: no editable loadout or inferred learned records.
+export function WildwoodSkillsCatalog({ pet }: {
+  pet: { id: string; name: string; species: string; level: number; element: string; stage?: string } | null;
+}) {
+  const skills = pet ? buildDisplaySkills(pet, null) : [];
+  return (
+    <section className="skillsPanel skillsPanel--compact dp-standard-panel" aria-label="Skills Chamber">
+      <h2 className="skillsTitle">Skills Chamber</h2>
+      <div className="skillChamberCatalog">
+        <p>{pet ? `${pet.name} - Level ${pet.level}` : "No active Kith available."}</p>
+        <p>Learned and equipped skills are not available yet.</p>
+        <p>Catalog requirements describe eligibility, not learned skills or combat availability. Species effects remain unapproved.</p>
+        {pet && <details>
+          <summary>Skill catalog</summary>
+          <ul>{skills.map((skill) => (
+            <li key={skill.id}>
+              <strong>{skill.displayName}</strong>
+              <span>{skill.unlockLine} - {!pet.stage && ["lowform-skill", "highform-skill", "legion-skill", "mythic-legendary-skill"].includes(skill.id)
+                ? "Stage unavailable" : skill.unlocked ? "Requirement met" : "Requirement not met"}</span>
+              <span>Learning status unavailable</span>
+            </li>
+          ))}</ul>
+        </details>}
+      </div>
+    </section>
+  );
+}

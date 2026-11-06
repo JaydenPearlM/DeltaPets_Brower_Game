@@ -10,7 +10,7 @@ const MAX_LOG_EVENTS = 50;
 const MAX_AUTOMATIC_TURNS = 200;
 const idSchema = z.string().trim().min(1);
 const statSchema = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
-const participantSchema = z.object({
+const participantSchema = (maxLevel: number) => z.object({
   id: idSchema,
   sourcePetId: idSchema.optional(),
   speciesId: idSchema,
@@ -20,7 +20,7 @@ const participantSchema = z.object({
   element: z.enum([
     "null_element", "fire", "water", "earth", "air", "ice", "storm", "light", "shadow",
   ]),
-  level: z.number().int().min(1).max(10),
+  level: z.number().int().min(1).max(maxLevel),
   hpMax: statSchema.positive(),
   hpCur: statSchema,
   atk: statSchema,
@@ -155,10 +155,12 @@ export function createBattle(
   id: string,
   participants: readonly BattleParticipantInput[],
   mendMultiplier = 1,
+  maxLevel: 10 | 30 = 10,
 ): BattleState {
-  const parsed = z.array(participantSchema).min(2).max(8).safeParse(participants);
+  requireRule(maxLevel === 10 || maxLevel === 30, "Invalid battle level cap");
+  const parsed = z.array(participantSchema(maxLevel)).min(2).max(8).safeParse(participants);
   requireRule(idSchema.safeParse(id).success, "Invalid battle ID");
-  requireRule(parsed.success, "Invalid participants: require bounded HP, level 1–10 and positive SPD");
+  requireRule(parsed.success, `Invalid participants: require bounded HP, level 1–${maxLevel} and positive SPD`);
   requireRule(Number.isFinite(mendMultiplier) && mendMultiplier > 0, "Invalid Mend multiplier");
   const pets = parsed.data;
   requireRule(new Set(pets.map((pet) => pet.id)).size === pets.length, "Duplicate participant ID");

@@ -1,3 +1,4 @@
+import PoeTayToe, { POTATO_ROUTES } from "../components/PoeTayToe/PoeTayToe";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { LogoutButton } from "../components/Authentication/LogoutButton";
@@ -614,6 +615,9 @@ export default function App() {
 
       <main className="appContent">
         <Outlet />
+        {user && POTATO_ROUTES[location.pathname.replace(/\/$/, "") || "/"] && (
+          <PoeTayToe key={user.id} locationKey={POTATO_ROUTES[location.pathname.replace(/\/$/, "") || "/"]} />
+        )}
       </main>
 
       {!hideHeader && (

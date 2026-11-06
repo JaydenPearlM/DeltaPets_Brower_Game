@@ -252,19 +252,11 @@
   },
 
   "communication": {
-    "language": "kithness",
-    "language_file": "KithnessLanguage.json",
-    "dialect_key": "fire",
-
-    "starts_translated": false,
-
+    "language": "direct_understandable_speech",
     "personality_affects_delivery": true,
     "mood_affects_delivery": true,
     "bond_affects_delivery": true,
-    "bond_affects_comprehension": true,
-    "runes_affect_comprehension": true,
     "underlying_intent_is_separate_from_spoken_line": true,
-
     "intent_categories": [
       "greeting",
       "farewell",
@@ -304,19 +296,19 @@
       "warn",
       "ask_for_help"
     ],
-
     "generation_order": [
       "determine_intent",
       "apply_individual_personality",
       "apply_current_mood",
       "apply_bond_behavior",
-      "apply_fire_dialect",
-      "select_kithness_words",
-      "apply_rune_comprehension",
-      "apply_bond_comprehension"
+      "render_understandable_dialogue"
     ],
-
-    "never_generate_personality_from_species_name": true
+    "never_generate_personality_from_species_name": true,
+    "understood_from_start": true,
+    "comprehension_requires_bond_or_runes": false,
+    "translation_system_enabled": false,
+    "comprehension_gated_by_personality_bond_trust_or_mood": false,
+    "spoken_language_available_at_hatching": true
   },
 
   "request_style": {
@@ -342,16 +334,15 @@
   },
 
   "request_dialogue": {
-    "language": "kithness",
-    "use_global_language_templates": true,
+    "language": "direct_understandable_speech",
+    "use_global_language_templates": false,
+    "always_understandable": true,
 
     "low": {
-      "comprehension": "mostly_untranslated",
       "allowed_intents": ["basic_need", "basic_emotion", "accept", "refuse"]
     },
 
     "medium": {
-      "comprehension": "rune_and_context_fragments",
       "allowed_intents": [
         "basic_need",
         "preference",
@@ -363,7 +354,6 @@
     },
 
     "high": {
-      "comprehension": "mostly_understood",
       "allowed_intents": [
         "need",
         "preference",
@@ -377,7 +367,6 @@
     },
 
     "lifelong": {
-      "comprehension": "naturally_understood",
       "allowed_intents": [
         "need",
         "preference",
@@ -508,7 +497,7 @@
   "bond_behavior": {
     "low": {
       "relationship_state": "unfamiliar",
-      "communication": "mostly_kithness",
+      "communication": "understandable_speech",
       "trainer_recognition": true,
       "trust": "low",
       "behavior": "determined_by_individual_personality",
@@ -518,7 +507,7 @@
 
     "medium": {
       "relationship_state": "familiar",
-      "communication": "partially_understood_kithness",
+      "communication": "understandable_speech",
       "trust": "growing",
       "behavior": "determined_by_individual_personality_and_experience",
       "physical_contact": "learned_preference",
@@ -527,7 +516,7 @@
 
     "high": {
       "relationship_state": "bonded",
-      "communication": "mostly_understood_kithness",
+      "communication": "understandable_speech",
       "trust": "high",
       "behavior": "individual_personality_remains_intact",
       "physical_contact": "learned_preference",
@@ -536,7 +525,7 @@
 
     "lifelong": {
       "relationship_state": "lifelong",
-      "communication": "naturally_understood_kithness",
+      "communication": "understandable_speech",
       "trust": "very_high",
       "behavior": "individual_personality_remains_intact",
       "physical_contact": "learned_preference",
@@ -616,7 +605,7 @@
       "evaluate_relationship",
       "evaluate_context",
       "choose_body_language",
-      "choose_kithness_intent"
+      "choose_dialogue_intent"
     ]
   },
 
@@ -696,7 +685,7 @@
     "spotlight_image_key": "magmado",
     "visual_theme_key": "fire_magmado",
 
-    "voice_source": "kithness",
+    "voice_source": "individual_personality_mood_and_context",
 
     "voice_tags_source": ["species", "element_dialect", "personality", "mood"],
 

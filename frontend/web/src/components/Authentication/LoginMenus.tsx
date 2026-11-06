@@ -236,7 +236,11 @@ export function LoginMenus({
 
       authenticated = true;
       await enterGame();
-      closeModal();
+      // Close the sign-in modal without undoing enterGame's navigation.
+      setIsOpen(false);
+      setMessage(null);
+      setLoading(false);
+      setLoginPassword("");
     } catch (error) {
       console.error("[auth] sign-in or game entry failed:", error);
       setMessage({

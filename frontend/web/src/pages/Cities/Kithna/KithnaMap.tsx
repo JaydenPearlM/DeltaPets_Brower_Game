@@ -3,7 +3,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import DpPopupWindow from "@/pages/petsPage/components/DpPopupWindow";
 
-import PoeTayToe from "../../../components/PoeTayToe/PoeTayToe";
 
 import { useKithnaQuests } from "./KithnaQuest/useKithnaQuests";
 import KithnaQuestMarker from "./KithnaQuest/KithnaQuestMarker";
@@ -803,7 +802,6 @@ export default function KithnaMap() {
             <div className="kithnaFountainBowl" />
           </div>
 
-          <PoeTayToe locationKey="hatchery-back" />
         </div>
       </section>
     </main>

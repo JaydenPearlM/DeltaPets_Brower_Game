@@ -14,7 +14,12 @@ import {
   type WildwoodStatus,
 } from "@/lib/kithna/wildwoodApi";
 import WildwoodBattle, { KithPortrait } from "./WildwoodBattle";
-import WildwoodExploreResult from "./WildwoodExploreResult";
+import WildwoodExploreResult, {
+  type WildwoodCollectedItem,
+} from "./WildwoodExploreResult";
+import { kennithCatalog } from "@/lib/kithna/kennithCatalog";
+import WildwoodScene from "./WildwoodScene";
+import WildwoodSkillsChamber from "./WildwoodSkillsChamber";
 import "./wildwood.css";
 
 export default function WildwoodPage() {
@@ -24,10 +29,20 @@ export default function WildwoodPage() {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [showBattle, setShowBattle] = useState(false);
+  const [introBattleId, setIntroBattleId] = useState<string | null>(null);
+  const introducedBattles = useRef(new Set<string>());
   const [prepared, setPrepared] = useState(false);
   const [visitSteps, setVisitSteps] = useState(0);
   const [visitRoomId, setVisitRoomId] = useState<string | null>(null);
-  const [recentFinds, setRecentFinds] = useState<string[]>([]);
+  const [recentFinds, setRecentFinds] = useState<
+    {
+      id: string;
+      name: string;
+      category: "Eggs" | "Relics" | "Etchings" | "Clothes" | null;
+      rarity?: number;
+      description?: string | null;
+    }[]
+  >([]);
   const [collecting, setCollecting] = useState(false);
 
   const [eggEncounter, setEggEncounter] = useState<RoamEncounterResult | null>(
@@ -54,6 +69,7 @@ export default function WildwoodPage() {
     setShowBattle(
       (current) =>
         next.room?.battle?.status === "active" ||
+        (!session && Boolean(next.room?.xpReward)) ||
         (current && next.room?.id === session?.room?.id),
     );
 
@@ -188,7 +204,18 @@ export default function WildwoodPage() {
       setSession(next);
       setVisitSteps((steps) => steps + 1);
       setVisitRoomId(next.room?.id ?? null);
-      setShowBattle(false);
+      const battle = next.room?.battle;
+      if (next.room?.corrupted && battle?.status === "active") {
+        if (!introducedBattles.current.has(battle.id)) {
+          introducedBattles.current.add(battle.id);
+          setIntroBattleId(battle.id);
+          setShowBattle(false);
+        } else {
+          setShowBattle(true);
+        }
+      } else {
+        setShowBattle(false);
+      }
 
       setEggEncounter(null);
 
@@ -266,8 +293,28 @@ export default function WildwoodPage() {
   }
 
   const room = session?.room;
+  const chamberPet = session?.team.find((pet) => pet.hpCur > 0);
+  const pathStep = Math.min(100, Math.max(0, room?.sequence ?? visitSteps));
+
+  useEffect(() => {
+    if (!introBattleId) return;
+    const timer = window.setTimeout(
+      () => {
+        setIntroBattleId(null);
+        if (
+          room?.battle?.id === introBattleId &&
+          room.battle.status === "active"
+        ) {
+          setShowBattle(true);
+        }
+      },
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1500,
+    );
+    return () => window.clearTimeout(timer);
+  }, [introBattleId, room?.battle?.id, room?.battle?.status]);
 
   const canExplore =
+    !introBattleId &&
     !busy &&
     !collecting &&
     !error &&
@@ -276,105 +323,264 @@ export default function WildwoodPage() {
     room?.battle?.status !== "active";
 
   return (
-    <main className="ww-page dp-standard-panel">
-      {questProgressFlash ? (
-        <div
-          className={[
-            "ww-quest-progress-flash",
-            questProgressFlash.complete
-              ? "ww-quest-progress-flash--complete"
-              : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          role="status"
-          aria-live="polite"
-        >
-          <span className="ww-quest-progress-flash__label">
-            Corrupted Kith defeated
-          </span>
-
-          <strong className="ww-quest-progress-flash__count">
-            {questProgressFlash.progress} / {questProgressFlash.target}
-          </strong>
-
-          {questProgressFlash.complete ? (
-            <span className="ww-quest-progress-flash__complete">
-              Objective Complete
-            </span>
-          ) : null}
-        </div>
-      ) : null}
-
-      <header className="ww-page-heading">
-        <div>
-          <h1>Wildwood</h1>
-
-          <p className="ww-warning">
-            Warning: corrupted Kith have been sighted nearby.
-          </p>
-        </div>
-
-        <Link to="/cities/kithna">Back to Kithna</Link>
+    <>
+      <header className="ww-page ww-title-panel dp-standard-panel">
+        <h1>Wildwood</h1>
       </header>
-
-      {error && (
-        <div className="ww-error" role="alert">
-          <p>{error}</p>
-
-          <button
-            className="dp-btn dp-btn--blue"
-            disabled={busy}
-            onClick={() => void run(reload)}
+      <main className="ww-page dp-standard-panel">
+        {questProgressFlash ? (
+          <div
+            className={[
+              "ww-quest-progress-flash",
+              questProgressFlash.complete
+                ? "ww-quest-progress-flash--complete"
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            role="status"
+            aria-live="polite"
           >
-            Reload latest state
-          </button>
-        </div>
-      )}
+            <span className="ww-quest-progress-flash__label">
+              Corrupted Kith defeated
+            </span>
 
-      {room?.battle && showBattle ? (
-        <WildwoodBattle
-          key={`${room.battle.id}-${room.battle.turnNumber}`}
-          battle={room.battle}
-          images={room.images}
-          turnOrder={room.turnOrder}
-          corrupted={room.corrupted}
-          busy={busy || Boolean(error)}
-          onAction={action}
-          onReturn={() =>
-            void run(async () => {
-              const next = await reload();
+            <strong className="ww-quest-progress-flash__count">
+              {questProgressFlash.progress} / {questProgressFlash.target}
+            </strong>
 
-              if (!mounted.current || !next) return;
+            {questProgressFlash.complete ? (
+              <span className="ww-quest-progress-flash__complete">
+                Objective Complete
+              </span>
+            ) : null}
+          </div>
+        ) : null}
 
-              setShowBattle(next.room?.battle?.status === "active");
-              setPrepared(true);
-            })
-          }
-        />
-      ) : (
-        <>
-          {prepared ? (
-            <div className="ww-exploration-layout">
-              <div className="ww-exploration-info">
-                <section className="ww-team-summary" aria-label="Your Team">
-                  <div className="ww-page-heading">
-                    <h2>Your Team</h2>
+        <nav className="ww-navigation" aria-label="Wildwood navigation">
+          <Link to="/cities/kithna">Back to Kithna</Link>
+        </nav>
 
-                    <button
-                      className="dp-btn dp-btn--yellow"
-                      disabled={
-                        busy || collecting || room?.battle?.status === "active"
-                      }
-                      onClick={() => setPrepared(false)}
+        {error && (
+          <div className="ww-error" role="alert">
+            <p>{error}</p>
+
+            <button
+              className="dp-btn dp-btn--blue"
+              disabled={busy}
+              onClick={() => void run(reload)}
+            >
+              Reload latest state
+            </button>
+          </div>
+        )}
+
+        {room?.battle && showBattle ? (
+          <WildwoodBattle
+            key={`${room.battle.id}-${room.battle.turnNumber}`}
+            battle={room.battle}
+            images={room.images}
+            turnOrder={room.turnOrder}
+            corrupted={room.corrupted}
+            xpReward={room.xpReward}
+            busy={busy || Boolean(error)}
+            onAction={action}
+            onReturn={() =>
+              void run(async () => {
+                const next = await reload();
+
+                if (!mounted.current || !next) return;
+
+                setShowBattle(next.room?.battle?.status === "active");
+                setPrepared(true);
+              })
+            }
+          />
+        ) : (
+          <>
+            {prepared ? (
+              <div className="ww-exploration-layout">
+                <div className="ww-exploration-info">
+                  <section className="ww-team-summary" aria-label="Your Team">
+                    <div className="ww-page-heading">
+                      <h2>Your Team</h2>
+                    </div>
+
+                    <ul>
+                      {Array.from({ length: 4 }, (_, index) => {
+                        const pet = session?.team[index];
+                        return pet ? (
+                          <li key={pet.id}>
+                            <KithPortrait
+                              name={pet.name}
+                              speciesId={pet.speciesId}
+                              imageUrl={pet.imageUrl}
+                            />
+
+                            <strong>{pet.name}</strong>
+
+                            <span>HP {pet.displayHp ?? "Unavailable"}</span>
+                          </li>
+                        ) : (
+                          <li key={`empty-${index}`} className="ww-team-empty">
+                            <span>Empty Slot</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+
+                  <section
+                    className="ww-recent-finds"
+                    aria-label="Recent Finds"
+                  >
+                    <h2>Recent Finds</h2>
+                    <div className="ww-find-columns">
+                      {(["Eggs", "Relics", "Etchings", "Clothes"] as const).map(
+                        (category) => {
+                          const finds = recentFinds.filter(
+                            (find) => find.category === category,
+                          );
+                          return (
+                            <section key={category} aria-label={category}>
+                              <h3>{category}</h3>
+                              {finds.length ? (
+                                <ul>
+                                  {finds.map((find, index) => (
+                                    <li key={`${index}-${find.name}`}>
+                                      <strong>{find.name}</strong>
+                                      {find.rarity != null && (
+                                        <span>Rarity: {find.rarity}</span>
+                                      )}
+                                      {find.description && (
+                                        <span>{find.description}</span>
+                                      )}
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p>No discoveries this visit.</p>
+                              )}
+                            </section>
+                          );
+                        },
+                      )}
+                    </div>
+                  </section>
+                </div>
+
+                <div className="ww-middle-column">
+                  <WildwoodSkillsChamber
+                    key={chamberPet?.id ?? "no-kith"}
+                    petId={chamberPet?.id}
+                    refreshSignal={room?.sequence ?? 0}
+                  />
+                  <section
+                    className="ww-explore-viewport"
+                    aria-label="Wildwood exploration"
+                    aria-busy={busy}
+                  >
+                    {room &&
+                    (room.id === visitRoomId || visitRoomId === null) ? (
+                      <WildwoodExploreResult
+                        key={room.id}
+                        room={room}
+                        busy={busy || Boolean(error)}
+                        step={pathStep}
+                        onBattle={() => setShowBattle(true)}
+                        onCollected={(item: WildwoodCollectedItem) => {
+                          const category = kennithCatalog.relics.some(
+                            ({ slug }) => slug === item.slug,
+                          )
+                            ? "Relics"
+                            : [
+                                  ...kennithCatalog.clothing,
+                                  ...kennithCatalog.accessories,
+                                ].some(({ slug }) => slug === item.slug)
+                              ? "Clothes"
+                              : item.type === "etching"
+                                ? "Etchings"
+                                : null;
+                          const id = `${room.id}:${item.slug}`;
+                          setRecentFinds((finds) =>
+                            finds.some((find) => find.id === id)
+                              ? finds
+                              : [
+                                  ...finds,
+                                  {
+                                    id,
+                                    name: item.name,
+                                    category,
+                                    rarity: item.rarity,
+                                    description: item.description,
+                                  },
+                                ],
+                          );
+                        }}
+                        onCollectingChange={setCollecting}
+                      />
+                    ) : (
+                      <h2 className="ww-path-heading">Path {pathStep} / 100</h2>
+                    )}
+
+                    <div className="ww-explore-control">
+                      <button
+                        className="dp-btn dp-btn--yellow"
+                        disabled={!canExplore}
+                        onClick={explore}
+                      >
+                        {busy ? "Exploring...!" : "Explore Wildwood"}
+                      </button>
+                    </div>
+                  </section>
+                </div>
+
+                <section className="ww-art-panel" aria-label="Wildwood scenery">
+                  <WildwoodScene room={room} step={pathStep} />
+                  {introBattleId && (
+                    <div
+                      key={introBattleId}
+                      className="ww-battle-intro"
+                      role="status"
+                      aria-label="Battle starting"
                     >
-                      Edit formation
-                    </button>
-                  </div>
+                      <span
+                        className="ww-battle-intro__streak ww-battle-intro__streak--cyan"
+                        aria-hidden="true"
+                      />
+                      <span
+                        className="ww-battle-intro__streak ww-battle-intro__streak--purple"
+                        aria-hidden="true"
+                      />
+                      <span
+                        className="ww-battle-intro__pulse"
+                        aria-hidden="true"
+                      />
+                      <strong
+                        className="ww-battle-intro__title"
+                        aria-hidden="true"
+                      >
+                        BATTLE!
+                      </strong>
+                    </div>
+                  )}
+                </section>
+              </div>
+            ) : (
+              <>
+                <section className="ww-formation">
+                  <p className="ww-eyebrow">Prepare</p>
 
-                  <ul>
+                  <h2>Prepare for Wildwood</h2>
+
+                  <p>
+                    Your first living party member will battle one wild Kith at
+                    a time.
+                  </p>
+
+                  <div className="ww-team">
                     {session?.team.map((pet) => (
-                      <li key={pet.id}>
+                      <article key={pet.id}>
                         <KithPortrait
                           name={pet.name}
                           speciesId={pet.speciesId}
@@ -384,160 +590,49 @@ export default function WildwoodPage() {
                         <strong>{pet.name}</strong>
 
                         <span>
-                          {formation[pet.id] ?? pet.row} · HP{" "}
-                          {pet.displayHp ?? "Unavailable"}
+                          HP {pet.displayHp ?? "Unavailable"} Â· SPD {pet.spd}
                         </span>
-                      </li>
+                      </article>
                     ))}
-                  </ul>
-                </section>
+                  </div>
 
-                <section className="ww-recent-finds" aria-label="Recent Finds">
-                  <h2>Recent Finds</h2>
-
-                  {recentFinds.length ? (
-                    <ul>
-                      {recentFinds.map((name, index) => (
-                        <li key={`${index}-${name}`}>{name}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No items collected this visit.</p>
+                  {session && !session.team.length && (
+                    <p>
+                      Add hatched Kith to your team in the{" "}
+                      <Link to="/hatchery">Hatchery</Link> before exploring.
+                    </p>
                   )}
                 </section>
 
-                <section
-                  className="ww-explore-viewport"
-                  aria-label="Wildwood exploration"
-                  aria-busy={busy}
-                >
-                  {room && (room.id === visitRoomId || visitRoomId === null) ? (
-                    <WildwoodExploreResult
-                      key={room.id}
-                      room={room}
-                      busy={busy || Boolean(error)}
-                      step={visitSteps}
-                      onBattle={() => setShowBattle(true)}
-                      onCollected={(name) =>
-                        setRecentFinds((finds) => [...finds, name])
-                      }
-                      onCollectingChange={setCollecting}
-                    />
-                  ) : (
-                    <p className="ww-eyebrow">Steps this visit: {visitSteps}</p>
-                  )}
-                </section>
-              </div>
-
-              <section
-                className="ww-art-panel"
-                aria-label="Wildwood art area"
-              />
-
-              <div className="ww-explore-control">
-                <button
-                  className="dp-btn dp-btn--yellow"
-                  disabled={!canExplore}
-                  onClick={explore}
-                >
-                  {busy ? "Exploring…" : "Explore Wildwood"}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <section className="ww-formation">
-                <p className="ww-eyebrow">Prepare</p>
-
-                <h2>Your formation</h2>
-
-                <p>
-                  Rows set your position. They do not change stats in this
-                  version.
-                </p>
-
-                <div className="ww-team">
-                  {session?.team.map((pet) => (
-                    <article key={pet.id}>
-                      <KithPortrait
-                        name={pet.name}
-                        speciesId={pet.speciesId}
-                        imageUrl={pet.imageUrl}
-                      />
-
-                      <strong>{pet.name}</strong>
-
-                      <span>
-                        HP {pet.displayHp ?? "Unavailable"} · SPD {pet.spd}
-                      </span>
-
-                      <label>
-                        Row
-                        <select
-                          disabled={busy}
-                          value={formation[pet.id] ?? pet.row}
-                          onChange={(event) => {
-                            const row = event.target.value;
-
-                            if (
-                              row !== "front" &&
-                              row !== "middle" &&
-                              row !== "back"
-                            ) {
-                              return;
-                            }
-
-                            setFormation((current) => ({
-                              ...current,
-                              [pet.id]: row,
-                            }));
-                          }}
-                        >
-                          <option value="front">Front</option>
-                          <option value="middle">Middle</option>
-                          <option value="back">Back</option>
-                        </select>
-                      </label>
-                    </article>
-                  ))}
+                <div className="ww-explore-control">
+                  <button
+                    className="dp-btn dp-btn--yellow"
+                    disabled={!canExplore}
+                    onClick={() => setPrepared(true)}
+                  >
+                    {busy ? "Loadingâ€¦" : "Enter Wildwood"}
+                  </button>
                 </div>
+              </>
+            )}
+          </>
+        )}
 
-                {session && !session.team.length && (
-                  <p>
-                    Add hatched Kith to your team in the{" "}
-                    <Link to="/hatchery">Hatchery</Link> before exploring.
-                  </p>
-                )}
-              </section>
-
-              <div className="ww-explore-control">
-                <button
-                  className="dp-btn dp-btn--yellow"
-                  disabled={!canExplore}
-                  onClick={() => setPrepared(true)}
-                >
-                  {busy ? "Loading…" : "Confirm formation"}
-                </button>
-              </div>
-            </>
-          )}
-        </>
-      )}
-
-      <RoamEncounterToast
-        result={eggEncounter}
-        onDismiss={() => {
-          if (eggEncounter?.egg_name) {
-            const eggName = eggEncounter.egg_name;
-
-            if (eggName) {
-              setRecentFinds((finds) => [...finds, eggName]);
-            }
+        <RoamEncounterToast
+          result={eggEncounter}
+          onTaken={(egg) =>
+            setRecentFinds((finds) =>
+              finds.some((find) => find.id === egg.egg_id)
+                ? finds
+                : [
+                    ...finds,
+                    { id: egg.egg_id, name: egg.egg_name, category: "Eggs" },
+                  ],
+            )
           }
-
-          setEggEncounter(null);
-        }}
-      />
-    </main>
+          onDismiss={() => setEggEncounter(null)}
+        />
+      </main>
+    </>
   );
 }

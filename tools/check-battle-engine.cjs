@@ -165,4 +165,19 @@ check("participant limits, rows, IDs, levels, HP and Speed validation", () => {
   assert.equal(full.participants.length, 8);
 });
 
+check("Wildwood opt-in accepts levels through 30 without changing the default cap", () => {
+  for (const level of [1, 2, 10, 11, 29, 30]) {
+    const inputs = [pet("p", "player", { level }), pet("e", "enemy")];
+    const state = createBattle("wildwood", inputs, 1, 30);
+    assert.equal(state.participants[0].level, level);
+    const resumed = act(JSON.parse(JSON.stringify(state)), "skill", "e", "basic-strike");
+    assert.equal(resumed.participants[0].level, level);
+    if (level > 10) assert.throws(() => createBattle("default", inputs), BattleRuleError);
+  }
+  for (const level of [0, 31, 1.5, NaN]) {
+    assert.throws(() => createBattle("invalid", [pet("p", "player", { level }), pet("e", "enemy")], 1, 30), BattleRuleError);
+  }
+  assert.throws(() => createBattle("invalid-cap", [pet("p", "player"), pet("e", "enemy")], 1, 100), /Invalid battle level cap/);
+});
+
 console.log(`${checks} battle engine checks passed.`);

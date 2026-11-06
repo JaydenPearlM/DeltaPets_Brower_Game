@@ -1140,8 +1140,8 @@
     }
 
     .appContent {
-      padding-left: 5px !important;
-      padding-right: 5px !important;
+      padding-left: 10px !important;
+      padding-right: 10px !important;
     }
 
     .hatcheryPage {
@@ -2317,7 +2317,7 @@
     }
 
     .hatcheryPage .storageActionBtn--options {
-      min-height: 34px !important;
+      min-height: 44px !important;
       padding: 7px 14px !important;
       border-radius: 14px !important;
       color: var(--btn-pearl-text) !important;
@@ -2389,6 +2389,131 @@
       width: 24px !important;
       height: 24px !important;
       font-size: 13px !important;
+    }
+
+    .kithnaMapPage {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kithnaMapPage .kithnaDesktopBuildingMarkers {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 7;
+      pointer-events: none;
+    }
+
+    .kithnaDesktopBuildingMarkerAnchor {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+    }
+
+    .kithnaDesktopBuildingMarker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      box-sizing: border-box;
+      border: 2px solid #e6c5ff;
+      border-radius: 50%;
+      background: #914ddf;
+      color: #ffffff;
+      box-shadow: 0 0 0 2px rgba(3, 20, 49, 0.8);
+      cursor: pointer;
+    }
+
+    .kithnaDesktopBuildingMarker:focus-visible {
+      outline: 2px solid var(--dp-cyber-cyan);
+      outline-offset: 2px;
+    }
+
+    .kithnaDesktopBuildingMarker:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .kithnaDesktopBuildingMarker--gym { left: 38%; top: 12%; }
+    .kithnaDesktopBuildingMarker--fishing { left: 56%; top: 12%; }
+    .kithnaDesktopBuildingMarker--boat { left: 85%; top: 17.5%; }
+    .kithnaDesktopBuildingMarker--farm { left: 91%; top: 26%; }
+    .kithnaDesktopBuildingMarker--wardrobe { left: 45%; top: 31%; }
+    .kithnaDesktopBuildingMarker--registry { left: 65%; top: 40%; }
+    .kithnaDesktopBuildingMarker--pet-care { left: 90%; top: 51%; }
+    .kithnaDesktopBuildingMarker--hatchery { left: 81%; top: 66%; }
+    .kithnaDesktopBuildingMarker--park { left: 9%; top: 58%; }
+    .kithnaDesktopBuildingMarker--wildwood { left: 16.7%; top: 80%; }
+    .kithnaDesktopBuildingMarker--unknown {
+      left: min(95.5%, calc(100% - 26px));
+      top: 87%;
+    }
+
+    .kithnaDesktopBuildingMarker--boat .kithnaDesktopBuildingMarker {
+      background: #475569;
+      border-color: #94a3b8;
+      color: #cbd5e1;
+      opacity: 0.65;
+    }
+
+    .kithnaMapPage .kithnaQuestMobileMarkers {
+      display: none;
+    }
+
+    .kithnaMapPage .kithnaQuestMarker--anchored {
+      left: 50%;
+      top: auto;
+      bottom: calc(100% + 4px);
+      transform: translateX(-50%);
+    }
+
+    .kithnaMapPage .kithnaLocationDirectory {
+      order: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .kithnaDirectoryEntry {
+      --dp-popup-border: var(--dp-cyber-cyan);
+      --dp-popup-inner-border: var(--dp-panel-purple-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-width: 0;
+      min-height: 44px;
+      box-sizing: border-box;
+      padding: 24px;
+      color: var(--dp-panel-text);
+      font: inherit;
+      text-align: left;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      cursor: pointer;
+    }
+
+    .kithnaDirectoryEntry svg {
+      flex-shrink: 0;
+      color: var(--dp-cyber-cyan);
+    }
+
+    .kithnaDirectoryEntry:focus-visible {
+      outline: 2px solid var(--dp-cyber-cyan);
+      outline-offset: 2px;
+    }
+
+    .kithnaDirectoryEntry:disabled {
+      cursor: not-allowed;
+    }
+
+    .kithnaDirectoryDescription {
+      display: block;
+      margin-top: 4px;
+      color: var(--dp-panel-muted);
     }
 
     /* Homepage */
@@ -2736,16 +2861,29 @@
     }
 
     .hp-spotlightPetFrame {
-      width: min(160px, 100%) !important;
-      max-width: 160px !important;
+      width: 100% !important;
+      max-width: 100% !important;
       min-height: 140px !important;
       margin: 0 auto !important;
       box-sizing: border-box !important;
     }
 
+    .hp-spotlightPetFrame:has(.hp-spotlightPetImage)::before {
+      content: "";
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      background: url("./kith/assets/storage/footprint.png") center / 150% no-repeat;
+      filter: none;
+      opacity: 0.15;
+    }
+
     .hp-spotlightPetImage {
-      width: 120px !important;
-      height: 120px !important;
+      position: relative;
+      width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 1;
       object-fit: contain !important;
     }
 
@@ -2791,13 +2929,47 @@
 
     .dp-profile-layout,
     .dp-profile-page .hp-banner {
-      width: calc(100% - 10px) !important;
+      width: 100% !important;
       max-width: 100% !important;
     }
 
     .dp-profile-panel {
       padding: 34px !important;
       border-radius: 10px !important;
+    }
+
+    .dp-profile-active-panel::before {
+      border-radius: 14px;
+    }
+
+    .dp-profile-active-stats > .dp-profile-active-stat--strong {
+      border-color: var(--dp-stat-strong);
+      box-shadow: 0 0 6px var(--dp-stat-strong-bg);
+    }
+
+    .dp-profile-active-stats > .dp-profile-active-stat--weak {
+      border-color: var(--dp-stat-weak);
+      box-shadow: 0 0 6px var(--dp-stat-weak-bg);
+    }
+
+    .dp-profile-active-pet:has(> img) {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .dp-profile-active-pet:has(> img)::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(100%, 280px);
+      aspect-ratio: 1;
+      max-height: 320px;
+      background: url("./kith/assets/storage/footprint.png") center / 150% no-repeat;
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: -1;
     }
 
     .dp-profile-avatar {
@@ -2890,7 +3062,7 @@
     }
 
     .mainTeamCenterStage {
-      font-size: 0.58rem !important;
+      font-size: 13px !important;
     }
 
     .statsChamber .petRepoInfoRow {
@@ -3260,6 +3432,451 @@
 }
 
 /* Mobile QA: care feedback, portrait framing, navigation, and Assanti's shop. */
+/* Kennith only: phone headings, categories, and labeled trade rows. */
+@media (max-width: 430px) {
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-merchant-info-slot {
+    min-height: 0;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .dp-merchant-section {
+    padding: 12px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-goods-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-goods-heading .dp-merchant-section-title {
+    text-align: left !important;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-goods-dots-panel {
+    min-width: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-goods-dots-value {
+    margin-top: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-shop-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-shop-tab {
+    min-height: 44px;
+    padding: 8px;
+    line-height: 1.35;
+    overflow-wrap: normal;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-checkout-bar {
+    width: 100%;
+    box-sizing: border-box;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-checkout-bar > .dp-btn {
+    min-height: 44px;
+    padding: 8px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-checkout-summary {
+    gap: 6px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .dp-merchant-section .kithna-food-trade-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 0;
+  }
+
+  /* Each value carries its label, so it remains clear below a full-width name. */
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-column-labels {
+    display: none;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-trade-name {
+    grid-column: 1 / -1;
+    text-align: left;
+    line-height: 1.4;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-trade-name small {
+    margin-top: 4px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-trade-cell {
+    grid-row: 2;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-trade-cell::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--merchant-gold);
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+  }
+
+  .kithna-thrift-shop .kithna-food-trade-cell:nth-child(2)::before { content: "In Stock"; }
+  .kithna-thrift-shop .kithna-food-user-inventory .kithna-food-trade-cell:nth-child(2)::before { content: "Owned"; }
+  .kithna-thrift-shop .kithna-food-trade-cell:nth-child(3)::before { content: "Price"; }
+  .kithna-thrift-shop .kithna-food-row-total::before { content: "Total Dots"; }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-qty-control {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    gap: 8px;
+  }
+
+  .kithna-thrift-shop .kithna-food-qty-control::before {
+    content: "QTY";
+    color: var(--merchant-gold);
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-qty-arrow {
+    flex: 0 0 44px;
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-qty-control > input.kithna-food-trade-button {
+    flex: 0 0 auto;
+    width: 4ch;
+    max-width: 100%;
+    height: 36px;
+    min-height: 36px !important;
+    padding: 4px;
+    justify-self: center;
+    font-size: 1rem;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-clear-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-price-sort select {
+    min-height: 44px;
+  }
+
+  /* Kennith stock: one bounded item card with a consistent reading order. */
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-trade-list {
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .dp-merchant-section .kithna-food-buy-row:not(.kithna-food-column-labels) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 12px 8px;
+    padding: 12px 8px;
+    border: 1px solid var(--merchant-fabric);
+    border-radius: var(--radius-md);
+    background: var(--dp-standard-panel-bg);
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-buy-row .kithna-food-trade-name {
+    grid-row: 1;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--merchant-fabric);
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-buy-row .kithna-food-trade-name small {
+    clear: both;
+    padding-top: 4px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-buy-row .kithna-food-trade-cell {
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-buy-row .kithna-food-row-total {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: end;
+    min-height: 44px;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-food-buy-row .kithna-food-qty-control {
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .kithna-thrift-shop .kithna-food-buy-row .kithna-food-qty-control::before {
+    content: "Quantity";
+    grid-column: 1 / -1;
+  }
+
+  .kithna-thrift-shop.kithna-food-shop .kithna-thrift-empty {
+    margin: 0;
+    padding: 12px 0;
+    line-height: 1.5;
+  }
+}
+
+/* Assanti only: match the approved phone layout without changing Kennith. */
+@media (max-width: 430px) {
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-merchant-info-slot {
+    min-height: 0;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .dp-merchant-section {
+    padding: 12px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-goods-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-goods-heading .dp-merchant-section-title {
+    text-align: left !important;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-goods-dots-panel {
+    min-width: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-goods-dots-value {
+    margin-top: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-shop-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-shop-tab {
+    min-height: 44px;
+    padding: 8px;
+    line-height: 1.35;
+    overflow-wrap: normal;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-checkout-bar {
+    width: 100%;
+    box-sizing: border-box;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-checkout-bar > .dp-btn {
+    min-height: 44px;
+    padding: 8px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-checkout-summary {
+    gap: 6px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .dp-merchant-section .kithna-food-trade-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 0;
+  }
+
+  /* Each value carries its label, so it remains clear below a full-width name. */
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-column-labels {
+    display: none;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-name {
+    grid-column: 1 / -1;
+    text-align: left;
+    line-height: 1.4;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-name small {
+    margin-top: 4px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-cell {
+    grid-row: 2;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-cell::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--merchant-gold);
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-cell:nth-child(2)::before { content: "In Stock"; }
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-user-inventory .kithna-food-trade-cell:nth-child(2)::before { content: "Owned"; }
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-cell:nth-child(3)::before { content: "Price"; }
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-row-total::before { content: "Total Dots"; }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-qty-control {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    gap: 8px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-qty-control::before {
+    content: "QTY";
+    color: var(--merchant-gold);
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-qty-arrow {
+    flex: 0 0 44px;
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-qty-control > input.kithna-food-trade-button {
+    flex: 0 0 auto;
+    width: 4ch;
+    max-width: 100%;
+    height: 36px;
+    min-height: 36px !important;
+    padding: 4px;
+    justify-self: center;
+    font-size: 1rem;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-clear-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-price-sort select {
+    min-height: 44px;
+  }
+
+  /* Merchant goods and player inventory share the same item cards. */
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-list,
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-user-inventory {
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .dp-merchant-section .kithna-food-trade-row:not(.kithna-food-column-labels) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 12px 8px;
+    padding: 12px 8px;
+    border: 1px solid var(--merchant-fabric);
+    border-radius: var(--radius-md);
+    background: var(--dp-standard-panel-bg);
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-row .kithna-food-trade-name {
+    grid-row: 1;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--merchant-fabric);
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-row .kithna-food-trade-name small {
+    clear: both;
+    padding-top: 4px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-row .kithna-food-trade-cell {
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-row .kithna-food-row-total {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: end;
+    min-height: 44px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-row .kithna-food-qty-control {
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-row .kithna-food-qty-control::before {
+    content: "Quantity";
+    grid-column: 1 / -1;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-empty-inventory {
+    margin: 0;
+    padding: 12px 0;
+    line-height: 1.5;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-trade-name > span {
+    white-space: normal !important;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-inline-stat {
+    display: inline-block;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-buy-row > input.kithna-food-trade-button {
+    grid-column: 1;
+    grid-row: 3;
+    justify-self: start;
+    width: 4ch;
+    height: 36px;
+    min-height: 36px !important;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-header-daily {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-header-daily .dp-merchant-daily-title,
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-header-daily .dp-merchant-daily-copy {
+    margin: 0;
+  }
+
+  .kithna-food-shop:has([id="qwen-tab-food"]) .kithna-food-daily-button {
+    min-height: 44px;
+    margin-top: 0;
+    white-space: normal;
+  }
+}
+
 @media (max-width: 640px) {
   .petRepoCareStatusPanel
     .petRepoCareActionMessageSlot:has(.petRepoInlineMessage) {
@@ -3542,12 +4159,14 @@ body:has(.dpc-root) .appCopyright {
   }
 }
 /* =========================================================
-   PET PAGE MOBILE HEADER
+   PET, PROFILE, AND MERCHANT MOBILE HEADER
    Normal page flow. Banner scrolls with the whole page.
-   Pets page only.
+   Pets, profile, and merchant pages only.
    ========================================================= */
 @media (max-width: 430px) {
-  body:has(.petRepoPage) .appHeader {
+  body:has(.petRepoPage) .appHeader,
+  body:has(.dp-profile-page) .appHeader,
+  body:has(.dp-merchant-page) .appHeader {
     position: relative !important;
     top: auto !important;
     left: auto !important;

@@ -1,10 +1,8 @@
 .poeTayToe {
-  position: fixed;
-  z-index: 2147483647;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -13,8 +11,8 @@
 
 .poeTayToe img {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
   transition: transform 120ms ease;
@@ -31,44 +29,24 @@
   border-radius: 999px;
 }
 
-.poeTayToe--hatchery-back {
-  left: 55%;
-  top: 11%;
-}
-
-.poeTayToe--profile {
-  right: 8%;
-  top: 38%;
-}
-
-.poeTayToe--pet {
-  left: 11%;
-  top: 46%;
-}
-
-.poeTayToe--food-merchant {
-  right: 9%;
-  bottom: 18%;
-}
-
-.poeTayToeHost {
-  position: relative;
-}
-
-.poeTayToe--food-merchant {
-  right: 12px;
-  bottom: 12px;
-}
-
-.poeTayToeBackdrop {
-  z-index: 10000;
+.poeTayToeSlot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 10px;
 }
 
 .poeTayToePopup {
   width: min(92vw, 460px);
-  max-height: 88vh;
-  padding: 22px;
+  max-height: 88dvh;
+  padding: 0;
   text-align: center;
+  box-sizing: border-box;
+}
+
+.poeTayToePopup .dpPopupWindowContent {
+  max-height: calc(88dvh - 8px);
+  box-sizing: border-box;
+  padding: 22px;
 }
 
 .poeTayToePopup h2,
@@ -139,32 +117,5 @@
 }
 
 @media (max-width: 700px) {
-  .poeTayToe {
-    width: 26px;
-    height: 26px;
-  }
-
-  .poeTayToe--hatchery-back {
-    left: 52%;
-    top: 12%;
-  }
-
-  .poeTayToe--profile {
-    right: 7%;
-    top: 32%;
-  }
-
-  .poeTayToe--pet {
-    left: 8%;
-    top: 42%;
-  }
-
-  .poeTayToe--food-merchant {
-    right: 7%;
-    bottom: 16%;
-  }
-
-  .poeTayToePopup {
-    padding: 18px;
-  }
+  .poeTayToePopup .dpPopupWindowContent { padding: 18px; }
 }

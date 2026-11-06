@@ -56,12 +56,12 @@
     "individuality_rule": "Personality, preferences, growth traits, bond, and memories belong to the individual Velune and use the normal Kith systems."
   },
   "communication": {
-    "language": "delta_language",
-    "language_file": "delta-language.json",
-    "dialect_key": "mythical_legendary",
-    "starts_translated": false,
-    "bond_affects_comprehension": true,
-    "runes_affect_comprehension": true
+    "language": "direct_understandable_speech",
+    "understood_from_start": true,
+    "comprehension_requires_bond_or_runes": false,
+    "translation_system_enabled": false,
+    "comprehension_gated_by_personality_bond_trust_or_mood": false,
+    "spoken_language_available_at_hatching": true
   },
   "runtime_contract": {
     "species_profile_is_static": true,

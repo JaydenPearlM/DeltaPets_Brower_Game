@@ -3,15 +3,9 @@ import type { WildwoodRoomView } from "@shared/battle/wildwoodTypes";
 import { apiFetch } from "@/lib/api/baseClient";
 import { KithPortrait } from "./WildwoodBattle";
 
-type WildwoodCollectedItem = {
-  slug: string;
-  name: string;
-  type: string;
-  description: string | null;
-  rarity: number;
-  stackLimit: number;
-  effects: Record<string, unknown>;
-};
+import type { BackendInventoryItem } from "@/components/inventory/inventory";
+
+export type WildwoodCollectedItem = Omit<BackendInventoryItem, "qty" | "updatedAt">;
 
 type CollectItemResponse = {
   item: WildwoodCollectedItem;
@@ -39,13 +33,15 @@ function resultFor(room: WildwoodRoomView): ExploreResult {
       kind: "event",
       message:
         room.battle.status === "victory"
-          ? ""
+          ? "Kith retreats deeper into Wildwood. The path is clear again."
           : "Your encounter has ended. Your Kith collection is safe.",
     };
   }
 
   return {
-    kind: "item",
+    // Item discovery is paused until the Wildwood item lineup is ready.
+    kind: "event",
+    message: room.message || "The trees rustle softly around you.",
   };
 }
 
@@ -61,7 +57,7 @@ export default function WildwoodExploreResult({
   busy: boolean;
   step: number;
   onBattle: () => void;
-  onCollected: (name: string) => void;
+  onCollected: (item: WildwoodCollectedItem) => void;
   onCollectingChange: (collecting: boolean) => void;
 }) {
   const result = resultFor(room);
@@ -104,7 +100,7 @@ export default function WildwoodExploreResult({
 
       setNotice(`${response.item.name} was added to your inventory.`);
 
-      onCollected(response.item.name);
+      if (response.qty > 0) onCollected(response.item);
     } catch (problem) {
       setNotice(
         problem instanceof Error
@@ -118,7 +114,8 @@ export default function WildwoodExploreResult({
 
   return (
     <div className="ww-explore-result">
-      <p className="ww-eyebrow">Step {step}</p>
+      <h2 className="ww-path-heading">Path {Math.min(100, Math.max(0, step))} / 100</h2>
+      <p role="status">{result.kind === "event" ? result.message : room.message}</p>
 
       {result.kind === "item" ? (
         <>
@@ -134,7 +131,7 @@ export default function WildwoodExploreResult({
               </p>
             </>
           ) : (
-            <p>Something is hidden along the Wildwood path.</p>
+            <p>Something lies tucked between the roots.</p>
           )}
 
           <p role="status">
@@ -158,7 +155,7 @@ export default function WildwoodExploreResult({
 
           {!isCollected && <p>Exploring again leaves this discovery behind.</p>}
         </>
-      ) : result.kind === "encounter" ? (
+      ) : result.kind === "encounter" && !room.corrupted ? (
         <>
           <h2>
             {room.corrupted ? "Corrupted Kith encounter" : "Kith encounter"}
@@ -187,19 +184,17 @@ export default function WildwoodExploreResult({
               ))}
           </div>
 
-          <p>{room.message}</p>
-
-          <button
-            className="dp-btn dp-btn--yellow"
-            disabled={busy}
-            onClick={onBattle}
-          >
-            Continue to battle
-          </button>
+          {!room.corrupted && (
+            <button
+              className="dp-btn dp-btn--yellow"
+              disabled={busy}
+              onClick={onBattle}
+            >
+              Continue to battle
+            </button>
+          )}
         </>
-      ) : (
-        <>{result.message && <p role="status">{result.message}</p>}</>
-      )}
+      ) : null}
     </div>
   );
 }

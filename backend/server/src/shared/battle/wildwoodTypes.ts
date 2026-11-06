@@ -6,6 +6,15 @@ import type {
 } from "../../battle/battleTypes";
 
 export type { BattleAction, BattleRow, BattleState };
+export type WildwoodXpReward = {
+  petId: string;
+  amount: number;
+  previousXp: number;
+  xp: number;
+  previousLevel: number;
+  level: number;
+  pointsEarned: number;
+};
 export type WildwoodTeamMember = BattleParticipantInput & {
   imageUrl: string | null;
   displayHp: number | null;
@@ -21,6 +30,7 @@ export type WildwoodRoomView = {
   images: Record<string, string | null>;
   questProgressTarget: number | null;
   itemClaimed: boolean;
+  xpReward?: WildwoodXpReward | null;
 };
 export type WildwoodSession = {
   team: WildwoodTeamMember[];
