@@ -9,11 +9,12 @@ export type CharacterProfile = {
   asset_key: string;
   communication: {
     language: string;
-    language_file: string;
-    dialect_key: string;
-    starts_translated: boolean;
-    bond_affects_comprehension: boolean;
-    runes_affect_comprehension: boolean;
+    /** English is understandable from hatching; delivery may reflect individual state. */
+    understood_from_start: boolean;
+    comprehension_requires_bond_or_runes: boolean;
+    translation_system_enabled: boolean;
+    comprehension_gated_by_personality_bond_trust_or_mood: boolean;
+    spoken_language_available_at_hatching: boolean;
   };
   [key: string]: unknown;
 };

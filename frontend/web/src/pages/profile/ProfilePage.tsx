@@ -10,7 +10,6 @@ import { AnnouncementPanel } from "@/components/Announcements/AnnouncementPanel"
 import { supabase } from "@/lib/supabase/client";
 import { apiFetch } from "@/lib/api/baseClient";
 import { WeeklyRewardsBar } from "@/components/rewards/weeklyRewardsBar";
-import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import { getRewardsStatus } from "@/components/rewards/claimRewards";
 import {
   getInventoryChangeEventName,
@@ -200,6 +199,24 @@ type ActiveKithStats = {
   mana: number;
 };
 
+function getActiveKithStatClass(
+  pet: Record<string, unknown> | null,
+  stat: keyof ActiveKithStats,
+) {
+  const strong = pet?.growth_strong_stats ?? pet?.growthStrongStats ?? pet?.strong_stats;
+  const weak = pet?.growth_weak_stat ?? pet?.growth_weak_stats ?? pet?.growthWeakStat ?? pet?.weak_stat;
+  const statKeys = ["hp", "atk", "magi", "def", "spd", "mana"];
+  const weakStat = Array.isArray(weak)
+    ? weak.find((key) => statKeys.includes(key))
+    : weak;
+
+  if (weakStat === stat) return "dp-profile-active-stat--weak";
+  if (Array.isArray(strong) && strong.includes(stat)) {
+    return "dp-profile-active-stat--strong";
+  }
+  return undefined;
+}
+
 export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [dots, setDots] = useState<number | null>(null);
   const [starterElement, setStarterElement] = useState<string | null>(null);
@@ -214,6 +231,8 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
   const [haikuCollectionOpen, setHaikuCollectionOpen] = useState(false);
   const [selectedHaikuScroll, setSelectedHaikuScroll] =
     useState<BackendInventoryItem | null>(null);
+  const [activeKithTraits, setActiveKithTraits] =
+    useState<Record<string, unknown> | null>(null);
   const [activeKithStats, setActiveKithStats] =
     useState<ActiveKithStats | null>(null);
   const [weeklyRewardsOpen, setWeeklyRewardsOpen] = useState(false);
@@ -480,6 +499,7 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
   useEffect(() => {
     setActiveKithStats(null);
+    setActiveKithTraits(null);
 
     if (!user?.id) return;
 
@@ -487,15 +507,18 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
     void apiFetch<{
       stats: ActiveKithStats | null;
+      pet: Record<string, unknown> | null;
     }>("/api/care/current")
       .then((result) => {
         if (!cancelled) {
           setActiveKithStats(result.stats ?? null);
+          setActiveKithTraits(result.pet ?? null);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setActiveKithStats(null);
+          setActiveKithTraits(null);
         }
       });
 
@@ -815,7 +838,6 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
   return (
     <div className="dp-profile-page poeTayToeHost">
-      <PoeTayToe locationKey="profile" />
 
       {banner?.enabled && bannerItems.length > 0 ? (
         <section
@@ -1171,27 +1193,52 @@ export default function ProfilePage({ pageName: _pageName }: ProfilePageProps) {
 
             {activePet ? (
               <div className="dp-profile-active-stats">
-                <div>
+                <div
+                  className={getActiveKithStatClass(
+                    activeKithTraits?.id === activePet.id ? activeKithTraits : null,
+                    "hp",
+                  )}
+                >
                   <span>HP</span>
                   <strong>{activeKithStats?.hp ?? "--"}</strong>
                 </div>
 
-                <div>
+                <div
+                  className={getActiveKithStatClass(
+                    activeKithTraits?.id === activePet.id ? activeKithTraits : null,
+                    "atk",
+                  )}
+                >
                   <span>ATK</span>
                   <strong>{activeKithStats?.atk ?? "--"}</strong>
                 </div>
 
-                <div>
+                <div
+                  className={getActiveKithStatClass(
+                    activeKithTraits?.id === activePet.id ? activeKithTraits : null,
+                    "magi",
+                  )}
+                >
                   <span>MAGI</span>
                   <strong>{activeKithStats?.magi ?? "--"}</strong>
                 </div>
 
-                <div>
+                <div
+                  className={getActiveKithStatClass(
+                    activeKithTraits?.id === activePet.id ? activeKithTraits : null,
+                    "def",
+                  )}
+                >
                   <span>DEF</span>
                   <strong>{activeKithStats?.def ?? "--"}</strong>
                 </div>
 
-                <div>
+                <div
+                  className={getActiveKithStatClass(
+                    activeKithTraits?.id === activePet.id ? activeKithTraits : null,
+                    "spd",
+                  )}
+                >
                   <span>SPD</span>
                   <strong>{activeKithStats?.spd ?? "--"}</strong>
                 </div>

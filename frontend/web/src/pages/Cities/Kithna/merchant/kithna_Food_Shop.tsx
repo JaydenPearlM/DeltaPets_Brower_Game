@@ -13,7 +13,6 @@ import {
 import { type BackendInventoryItem } from "@/components/inventory/inventory";
 import "../../Merchant_global_styles.css";
 import "./kithna_Food_Shop.css";
-import PoeTayToe from "../../../../components/PoeTayToe/PoeTayToe";
 import assantiShopArt from "@/kith/assets/merchant/Assantis_shop.png";
 import foodDefinitions from "../../../../../../pet_items/food.json";
 import potionDefinitions from "../../../../../../pet_items/Potions.json";
@@ -53,7 +52,8 @@ type FoodShop = {
 const quantityWithin = (value: number, limit: number) =>
   Number.isFinite(value) ? Math.max(0, Math.min(limit, Math.floor(value))) : 0;
 const QWEN_CHAT = [
-  "I might be making potions now, but once you unlock the farm, I'll also have fresh meat and vegetables available for purchase!",
+  "I might be be doing farm work now, but my potions are even better!",
+  "Ignore the ferret next door. Im pretty sure he deserved it anyway.  It was to increase his brain power.",
   "Assanti is away on business, so I'm keeping the shop going. I'd rather make potions, though. They don't always turn out quite right though!",
   "Oh, have you noticed that strange purple mist rising from that island in the distance? Nobody in Kithna knows what it is. It's been there for a while now, and people are starting to talk. I just hope it stays over there. I've got enough trouble keeping my potions from exploding!",
   "Have you heard? Alec over at the breeding station got an egg where nothing came out. That's crazy!",
@@ -483,7 +483,6 @@ export default function KithnaFoodShop() {
   return (
     <main className="dp-merchant-page kithna-food-shop">
       <div className="dp-merchant-shell poeTayToeHost">
-        <PoeTayToe locationKey="food-merchant" />
         <section className="dp-merchant-panel dp-standard-panel">
           <Link className="kithna-food-back-link" to="/cities/kithna">
             ← Back to Kithna
@@ -533,54 +532,45 @@ export default function KithnaFoodShop() {
                     <button
                       type="button"
                       className="dp-btn btn-gold kithna-food-farm-button"
-                      disabled={quest?.status !== "completed"}
-                      onClick={() => setActiveShopTab("food")}
+                      disabled={
+                        busyAction !== null ||
+                        quest?.status !== "completed" ||
+                        shop?.dailyFood.status !== "available"
+                      }
+                      onClick={() => void claimDailyFood()}
                       title={
-                        quest?.status === "completed"
-                          ? "View meat and vegetables"
-                          : "Complete the food quest to unlock"
+                        quest?.status !== "completed"
+                          ? "Complete the food quest to unlock"
+                          : "5 Basic Meat + 5 Basic Veggies, once every 24 hours."
                       }
                     >
                       {quest?.status !== "completed" && (
                         <span aria-hidden="true">🔒 </span>
                       )}
-                      Meat &amp; Veggies
+                      {busyAction === "daily"
+                        ? "Claiming..."
+                        : "Meat & Veggies"}
                     </button>
                   </div>
                 </div>
-                {shop?.dailyFood.status !== "locked" && shop && (
-                  <div className="dp-merchant-daily kithna-food-header-daily">
-                    <h3 className="dp-merchant-daily-title">Free Daily Food</h3>
-                    <p className="dp-merchant-daily-copy">
-                      5 Basic Meat + 5 Basic Veggies, once every 24 hours.
-                    </p>
-                    <p>
-                      {shop.dailyFood.status === "claimed"
-                        ? "Already claimed. Your next meal is growing!"
-                        : "Your food is ready, Keeper."}
-                    </p>
-                    {shop.dailyFood.status === "claimed" &&
-                      shop.dailyFood.nextClaimAt && (
-                        <p>
-                          Available again:{" "}
-                          {new Date(
-                            shop.dailyFood.nextClaimAt,
-                          ).toLocaleString()}
-                        </p>
-                      )}
-                    <button
-                      type="button"
-                      className="dp-btn btn-gold kithna-food-daily-button"
-                      disabled={
-                        busyAction !== null ||
-                        shop.dailyFood.status !== "available"
-                      }
-                      onClick={() => void claimDailyFood()}
-                    >
-                      {busyAction === "daily"
-                        ? "Claiming..."
-                        : "Claim Daily Food"}
-                    </button>
+                {shop && shop.dailyFood.status !== "locked" && (
+                  <div className="kithna-food-chat-panel" aria-live="polite">
+                    <p>Thanks for saving my sisters farm!</p>
+                    <p>5 Basic Meat + 5 Basic Veggies, once every 24 hours.</p>
+                    {shop.dailyFood.status === "claimed" && (
+                      <p>
+                        Already claimed. Your next meal is growing!
+                        {shop.dailyFood.nextClaimAt && (
+                          <>
+                            {" "}
+                            Available again:{" "}
+                            {new Date(
+                              shop.dailyFood.nextClaimAt,
+                            ).toLocaleString()}
+                          </>
+                        )}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

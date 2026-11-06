@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { BattleAction, BattleState } from "@shared/battle/wildwoodTypes";
+import type { BattleAction, BattleState, WildwoodXpReward } from "@shared/battle/wildwoodTypes";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
 import corruptClodion from "@/kith/assets/Kithna_pets/corrupt/hatchling_clodion_corrupt.png";
@@ -23,6 +23,7 @@ type Props = {
   turnOrder: string[];
   corrupted: boolean;
   busy: boolean;
+  xpReward?: WildwoodXpReward | null;
   onAction: (action: BattleAction) => void;
   onReturn: () => void;
 };
@@ -65,6 +66,7 @@ export default function WildwoodBattle({
   turnOrder,
   corrupted,
   busy,
+  xpReward,
   onAction,
   onReturn,
 }: Props) {
@@ -144,7 +146,7 @@ export default function WildwoodBattle({
           : active
             ? `${actor?.name ?? "Enemy"}'s turn`
             : battle.status === "victory"
-              ? ""
+              ? "The woodland path grows quiet."
               : "Your encounter has ended. No permanent damage was applied."}
       </p>
       {active && (
@@ -161,72 +163,59 @@ export default function WildwoodBattle({
         </div>
       )}
       <div className="ww-field">
-        {(["enemy", "player"] as const).map((side) => (
-          <section
-            className={`ww-side ww-side-${side}`}
-            key={side}
-            aria-label={side === "enemy" ? "Corrupted Kith" : "Your team"}
-          >
-            <h3>{side === "enemy" ? "Corrupted Kith" : "Your team"}</h3>
-            <div className="ww-lanes">
-              {(side === "enemy"
-                ? ["back", "middle", "front"]
-                : ["front", "middle", "back"]
-              ).map((row) => {
-                const units = battle.participants.filter(
-                  (pet) => pet.side === side && pet.row === row,
-                );
-                return (
-                  <div className="ww-lane" key={row}>
-                    <h4>{row}</h4>
-                    {units.length ? (
-                      units.map((pet) => (
-                        <button
-                          type="button"
-                          key={pet.id}
-                          className={`ww-unit ${pet.id === actor?.id ? "ww-unit-active" : ""} ${pet.defeated ? "ww-unit-defeated" : ""}`}
-                          disabled={!legal(pet)}
-                          onClick={() => target(pet.id)}
-                          aria-label={`${pet.name}, ${pet.hpCur} of ${pet.hpMax} HP${legal(pet) ? ", select target" : ""}`}
-                        >
-                          <span className="ww-unit-name">{pet.name}</span>
-                          <span className={corrupted && side === "enemy" ? "ww-corrupted-portrait" : undefined}>
-                          <KithPortrait
-                            speciesId={pet.speciesId}
-                            name={pet.name}
-                            imageUrl={images[pet.id]}
-                            enemy={side === "enemy"}
-                          />
-                          </span>
-                          <span className="ww-hp">
-                            <span
-                              style={{
-                                width: `${(pet.hpCur / pet.hpMax) * 100}%`,
-                              }}
-                            />
-                          </span>
-                          <span>
-                            {pet.hpCur} / {pet.hpMax} HP
-                          </span>
-                          <span className="ww-unit-meta">
-                            {pet.element === "null_element"
-                              ? "Voidborne"
-                              : pet.element}{" "}
-                            · SPD {pet.spd}
-                          </span>
-                          {pet.guarding && <strong>Guarding</strong>}
-                          {pet.defeated && <strong>Defeated</strong>}
-                        </button>
-                      ))
-                    ) : (
-                      <span className="ww-empty-row">Empty row</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        ))}
+        {(["enemy", "player"] as const).map((side) => {
+          const pet =
+            battle.participants.find((unit) => unit.side === side && unit.id === actor?.id) ??
+            battle.participants.find((unit) => unit.side === side && !unit.defeated) ??
+            battle.participants.find((unit) => unit.side === side);
+          if (!pet) return null;
+          return (
+            <section
+              className={`ww-side ww-side-${side}`}
+              key={side}
+              aria-label={side === "enemy" ? "Wild Kith" : "Your Kith"}
+            >
+              <h3>{side === "enemy" ? "Wild Kith" : "Your Kith"}</h3>
+              <button
+                type="button"
+                key={pet.id}
+                className={`ww-unit ${pet.id === actor?.id ? "ww-unit-active" : ""} ${pet.defeated ? "ww-unit-defeated" : ""}`}
+                disabled={!legal(pet)}
+                onClick={() => target(pet.id)}
+                aria-label={`${pet.name}, ${pet.hpCur} of ${pet.hpMax} HP${legal(pet) ? ", select target" : ""}`}
+              >
+                <span className="ww-unit-name">{pet.name}</span>
+                <span>Level {pet.level}</span>
+                <span className={corrupted && side === "enemy" ? "ww-corrupted-portrait" : undefined}>
+                <KithPortrait
+                  speciesId={pet.speciesId}
+                  name={pet.name}
+                  imageUrl={images[pet.id]}
+                  enemy={side === "enemy"}
+                />
+                </span>
+                <span className="ww-hp">
+                  <span
+                    style={{
+                      width: `${(pet.hpCur / pet.hpMax) * 100}%`,
+                    }}
+                  />
+                </span>
+                <span>
+                  {pet.hpCur} / {pet.hpMax} HP
+                </span>
+                <span className="ww-unit-meta">
+                  {pet.element === "null_element"
+                    ? "Voidborne"
+                    : pet.element}{" "}
+                  · SPD {pet.spd}
+                </span>
+                {pet.guarding && <strong>Guarding</strong>}
+                {pet.defeated && <strong>Defeated</strong>}
+              </button>
+            </section>
+          );
+        })}
       </div>
       {active ? (
         <div className="ww-actions">
@@ -290,7 +279,16 @@ export default function WildwoodBattle({
         </div>
       ) : (
         <div className="ww-result">
-          <p>XP and corrupted-egg rewards are not enabled in this version.</p>
+          {xpReward ? (
+            <p role="status">
+              {label(xpReward.petId)} earned {xpReward.amount} XP. {xpReward.level > xpReward.previousLevel
+                ? `Level up! Level ${xpReward.previousLevel} → ${xpReward.level}. ${xpReward.pointsEarned} stat point${xpReward.pointsEarned === 1 ? "" : "s"} earned.`
+                : `Level ${xpReward.level}${xpReward.level === 30 ? " (maximum)" : ""}.`}
+            </p>
+          ) : (
+            <p>{battle.status === "defeat" ? "No victory XP earned." : "No XP reward confirmed for this encounter."}</p>
+          )}
+          <p>Corrupted-egg rewards are not enabled in this version.</p>
           <button
             className="dp-btn dp-btn--yellow"
             disabled={busy}

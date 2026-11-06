@@ -18,6 +18,7 @@ import type {
   WildwoodRoomView,
   WildwoodSession,
   WildwoodTeamMember,
+  WildwoodXpReward,
 } from "../../../shared/battle/wildwoodTypes";
 import { findPetSpeciesById } from "../../../shared/pets/species/all-species";
 import { getKithnaEggsForTime } from "../../../shared/pets/species/kithna-species";
@@ -63,6 +64,8 @@ type RoomPayload = {
   battle: BattleState | null;
   images: Record<string, string | null>;
   recordBattleStats?: boolean;
+  xpRewardVersion?: 1;
+  xpReward?: WildwoodXpReward;
 
   questProgressTarget: number | null;
 
@@ -103,6 +106,7 @@ function view(room: Room | null): WildwoodRoomView | null {
     images: data.images,
     questProgressTarget: data.questProgressTarget,
     itemClaimed: room.item_claimed_at !== null,
+    xpReward: data.xpReward ?? null,
   };
 }
 
@@ -212,6 +216,26 @@ async function settleBattleResults(userId: string, room: Room | null) {
   if (result.error) throw result.error;
 }
 
+async function settleXp(userId: string, room: Room | null) {
+  if (!room) return;
+  const data = payload(room);
+  // No retroactive rewards for encounters created before progression shipped.
+  if (data.xpRewardVersion !== 1 || data.battle?.status !== "victory") return;
+  const result = await supabaseAdmin.rpc("settle_wildwood_victory_xp", {
+    p_user_id: userId,
+    p_room_id: room.id,
+  });
+  if (result.error) throw result.error;
+  const reward = z.object({
+    petId: z.uuid(), amount: z.literal(25),
+    previousXp: z.number().int().nonnegative(), xp: z.number().int().nonnegative(),
+    previousLevel: z.number().int().min(1).max(30), level: z.number().int().min(1).max(30),
+    pointsEarned: z.number().int().min(0).max(29),
+  }).safeParse(result.data);
+  if (!reward.success) throw new WildwoodError("XP could not be confirmed. Reload to recover your reward.");
+  data.xpReward = reward.data;
+}
+
 /** A persisted victory carries absolute targets, never repeatable +1 requests. */
 async function settleQuest(userId: string, room: Room | null) {
   if (!room) return;
@@ -274,7 +298,7 @@ const petSchema = z.object({
   name: z.string().nullable(),
   species: z.string(),
   line: z.string(),
-  level: z.number().int().min(1).max(10),
+  level: z.number().int().min(1).max(30),
   stage: z.string(),
   ran_away: z.boolean(),
   hp_max: z.number().int().positive(),
@@ -433,6 +457,7 @@ export async function getWildwoodSession(
   const room = expeditionId ? await latestRoom(expeditionId) : null;
 
   await settleBattleResults(userId, room);
+  await settleXp(userId, room);
   await settleQuest(userId, room);
 
   // An ongoing battle remains recoverable even if the party changed elsewhere.
@@ -466,6 +491,7 @@ export async function exploreWildwood(
     throw new WildwoodError("Finish your current battle before exploring.");
 
   await settleBattleResults(userId, previous);
+  await settleXp(userId, previous);
   await settleQuest(userId, previous);
 
   const team = await loadTeam(userId);
@@ -499,7 +525,7 @@ export async function exploreWildwood(
 
   if (profile.error) throw profile.error;
 
-  const players = team.map(
+  const players = team.filter((pet) => pet.hpCur > 0).slice(0, 1).map(
     ({ imageUrl: _image, displayHp: _displayHp, ...pet }) => ({
       ...pet,
       row: chosen.get(pet.id)!,
@@ -512,6 +538,7 @@ export async function exploreWildwood(
           randomUUID(),
           [...players, corruptedEnemy()],
           profile.data?.active_title === "Alpha Pro" ? 1.05 : 1,
+          30,
         )
       : null;
 
@@ -523,11 +550,12 @@ export async function exploreWildwood(
     requestId: request.requestId,
     battle,
     recordBattleStats: battle !== null,
+    ...(battle ? { xpRewardVersion: 1 as const } : {}),
     images,
 
     message: battle
-      ? "A corrupted Kith blocks the path."
-      : "You follow the woodland path. No corrupted Kith appeared this time.",
+      ? "A corrupted Kith emerges from the brush!"
+      : "The trees rustle softly around you.",
 
     questProgressTarget:
       battle && quest.status === "active"
@@ -566,6 +594,7 @@ export async function exploreWildwood(
   }
 
   await settleBattleResults(userId, inserted.data);
+  await settleXp(userId, inserted.data);
   await settleQuest(userId, inserted.data);
 
   return { team, room: view(inserted.data) };
@@ -610,6 +639,7 @@ export async function actInWildwood(
     );
 
   await settleBattleResults(userId, updated.data);
+  await settleXp(userId, updated.data);
   await settleQuest(userId, updated.data);
 
   return { team: [], room: view(updated.data) };

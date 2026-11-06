@@ -110,10 +110,18 @@ const WILDWOOD_ITEM_POOL = [
   "shadow-delta",
 ] as const;
 
+// Temporary pause while Wildwood's item lineup is being prepared.
+const WILDWOOD_ITEM_COLLECTION_ENABLED = false;
+
 wildwoodRouter.post(
   "/collect-item",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
+    if (!WILDWOOD_ITEM_COLLECTION_ENABLED) {
+      return res.status(503).json({
+        error: "Wildwood item collection is temporarily unavailable.",
+      });
+    }
     try {
       const userId = req.user!.id;
 

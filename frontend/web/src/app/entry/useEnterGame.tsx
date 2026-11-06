@@ -69,7 +69,6 @@ export function useEnterGame() {
       debugLog("[enterGame] introSeen:", introSeen);
       debugLog("[enterGame] hasEgg:", hasEgg);
       debugLog("[enterGame] hasHatchedPet:", hasHatchedPet);
-
       if (!introSeen) {
         debugLog("[enterGame] routing -> /first-entry");
         navigate("/first-entry", { replace: true });

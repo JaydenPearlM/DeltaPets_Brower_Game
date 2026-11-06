@@ -25,7 +25,6 @@ import type {
 import "./PetPage.css";
 
 import { KithProgressCard } from "@/components/ProgressCard/KithProgressCard";
-import PoeTayToe from "@/components/PoeTayToe/PoeTayToe";
 import {
   type CareInventoryCategory,
   getServerCareInventoryCounts,
@@ -778,7 +777,6 @@ export default function PetPage() {
         className="petRepoPage dpTimeRoomPage poeTayToeHost"
         data-phase={phase}
       >
-        <PoeTayToe locationKey="pet" />
         {runawayEmergencyModal}
         <div className="petRepoStateCard">Loading Delta Room…</div>
       </div>
@@ -798,7 +796,6 @@ export default function PetPage() {
       className="petRepoPage dpTimeRoomPage poeTayToeHost"
       data-phase={phase}
     >
-      <PoeTayToe locationKey="pet" />
       {loadErr ? (
         <div className="petRepoStateCard petRepoStateCardError">
           <h2>Pet page load error</h2>

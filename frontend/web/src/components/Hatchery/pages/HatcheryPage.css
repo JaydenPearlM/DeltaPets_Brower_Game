@@ -1579,7 +1579,6 @@
 
 .selectedEggPanel::after,
 .rackPanel::after,
-.storagePanel::after,
 .selectedEggStatsInset::after,
 .incubationInsetPanel::after,
 .panelBody::after {
