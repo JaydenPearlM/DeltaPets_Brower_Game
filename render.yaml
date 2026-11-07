@@ -3,7 +3,7 @@ services:
     name: deltapets
     env: node
     plan: starter
-    autoDeploy: true
+    autoDeploy: false
 
     # Same-origin architecture: this builds the frontend, then builds
     # and starts the backend, which serves frontend/web/dist itself
@@ -74,7 +74,6 @@ services:
       npm install -g pnpm@9.0.0 &&
       pnpm install --frozen-lockfile
     startCommand: node tools/jaybug/health-check.mjs
-
     envVars:
       - key: JAYBUG_GAME_URL
         value: https://deltapets.jayden-devfolio.com
