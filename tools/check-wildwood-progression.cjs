@@ -51,7 +51,7 @@ async function main() {
     INSERT INTO pets(id,user_id) VALUES ('${pet}','${user}'), ('${other}','${user}');
     GRANT SELECT, UPDATE ON pets, wildwood_rooms TO service_role;
     GRANT SELECT ON wildwood_expeditions, pet_battle_results TO service_role;`);
-  sql(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261104134447_wildwood_victory_progression.sql'), 'utf8'));
+  sql(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261104165826_wildwood_victory_progression.sql'), 'utf8'));
   const first = room();
   const receipt = JSON.parse(sql(claim(first)));
   assert.equal(receipt.amount, 25);

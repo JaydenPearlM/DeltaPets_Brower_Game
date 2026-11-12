@@ -337,6 +337,7 @@
   },
   {
     "slug": "wildwood-remedy",
+    "region": "kithna",
     "name": "Wildwood Remedy",
     "type": "consumable",
     "category": "potion",
@@ -351,6 +352,7 @@
   },
   {
     "slug": "kithna-restoration-draught",
+    "region": "kithna",
     "name": "Kithna Restoration Draught",
     "type": "consumable",
     "category": "potion",
@@ -505,6 +507,7 @@
   },
   {
     "slug": "ancient-restoration-elixir",
+    "region": "kithna",
     "name": "Ancient Restoration Elixir",
     "type": "consumable",
     "category": "potion",
@@ -659,6 +662,7 @@
   },
   {
     "slug": "kithna-grand-remedy",
+    "region": "kithna",
     "name": "Kithna Grand Remedy",
     "type": "consumable",
     "category": "potion",

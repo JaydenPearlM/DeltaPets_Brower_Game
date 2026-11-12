@@ -804,5 +804,1400 @@
       "universal_happiness",
       "universal_proximity_preference"
     ]
+  },
+  "progression": {
+    "contract_version": 1,
+    "status": "PROPOSED",
+    "species_definition_is_authoritative_for_base_stats": null,
+    "base_stats_reference": "Profile and registry egg stats differ; preserve both pending an explicit source-of-truth decision.",
+    "preserve_existing_hatch_bonus_and_individual_stat_rolls": true,
+    "experience": {
+      "progression_group": "species_specific",
+      "non_starter_progression": "species_specific",
+      "level_1_to_2": {
+        "method": "UNDECIDED for Epic non-starter Kith; no starter hatch/care gate assigned",
+        "xp_target": null,
+        "xp_per_hatch": null,
+        "xp_per_care_action": null,
+        "xp_from_other_sources": "Preserve existing XP sources and find_xp_reward. Verified Glimmer species rules.xpMultiplier is 0.8; no calculation activated or rebalanced here."
+      },
+      "levels_after_2": {
+        "rules": "Repository legacy Wildwood victory settlement uses cumulative XP 50 * L * (L - 1), caps level at 30, adds 25 XP and one unspent point per gained level. Egg discovery adds existing find XP without recalculating level. Neither inspected path applies species xpMultiplier. Deployment not verified. Rarity-specific curve and future integration UNDECIDED; preserve runtime rules.",
+        "xp_curve": null,
+        "do_not_generate_unapproved_requirements": true
+      },
+      "xp_schedule": {
+        "unit": "XP",
+        "interpretation": "xp_to_reach_level is the additional XP required since previous level; cumulative_xp_to_reach_level is total lifetime XP needed",
+        "starting_level": 1,
+        "starting_cumulative_xp": null,
+        "levels_defined_for_planning": "1 through 30; approved maximum level is 30",
+        "values_status": "UNDECIDED; planning only, not an active XP curve",
+        "shared_schedule_key": null,
+        "entries": [
+          {
+            "level": 1,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 2,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 3,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 4,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 5,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 6,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 7,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 8,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 9,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 10,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 11,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 12,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 13,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 14,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 15,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 16,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 17,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 18,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 19,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 20,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 21,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 22,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 23,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 24,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 25,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 26,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 27,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 28,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 29,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          },
+          {
+            "level": 30,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Epic non-starter requirements UNDECIDED; preserve runtime progression."
+          }
+        ],
+        "invariant": "Do not treat null XP as zero, and do not award levels from this proposal until implemented and validated",
+        "maximum_level": 30
+      }
+    },
+    "stat_growth": {
+      "starting_level": 1,
+      "starting_stats": "species_base_plus_existing_level_1_hatch_allocation",
+      "base_stats_immutable_after_hatch": true,
+      "preserve_individual_strong_and_weak_stat_traits": true,
+      "player_allocation": {
+        "unlocks_at_level": null,
+        "source": "new_level_up_points_only",
+        "stat_keys": [
+          "hp",
+          "atk",
+          "magi",
+          "def",
+          "spd",
+          "mana"
+        ],
+        "points_per_later_level": null,
+        "per_stat_caps": null,
+        "do_not_reallocate_base_stats": true,
+        "do_not_reallocate_hatch_rolls": true,
+        "spending_must_be_server_validated": true,
+        "spending_must_be_atomic": true,
+        "unspent_points_persist_per_pet": true,
+        "level_1_manual_allocation": "Preserve existing individual hatch allocations; no starter allocation rules assigned.",
+        "existing_level_1_editor": "review_if_it_is_player_controlled; never rewrite_existing_level_1_allocations",
+        "no_random_stat_allocation_from_level_2_onward": null,
+        "level_2_points_source": "UNDECIDED for Epic non-starters; no points awarded here"
+      },
+      "stat_components": [
+        "species_base",
+        "level_1_hatch_allocation",
+        "level_2_and_later_player_allocations"
+      ],
+      "effective_stat_rule": "sum_components_without_mutating_existing_baseline_or_hatch_roll"
+    },
+    "skills": {
+      "progression_scope": "Glimmer Light design proposal only; Epic non-starter milestones require approval",
+      "learned_skills_persist_per_pet": true,
+      "do_not_replace_existing_skills_on_level_up": true,
+      "other_levels": "UNDECIDED; Epic learning milestones need approval",
+      "skills_after_evolution": "preserve_existing_evolution_skill_registry",
+      "skill_unlocks_require_server_validation": true,
+      "move_catalog": [
+        {
+          "skill_id": "basic-strike",
+          "display_name": "Elemental Strike",
+          "element": "derived_from_pet_element",
+          "category": "basic_combat_action",
+          "description": "Existing Light physical basic attack; preserve approved ATK/elemental formula. Level 1 starting action, not a new species unlock.",
+          "power": null,
+          "accuracy": null,
+          "cost": null,
+          "cooldown": null,
+          "target": null,
+          "effect": null,
+          "status": "existing_runtime_reference_no_new_unlock"
+        },
+        {
+          "skill_id": "guard",
+          "display_name": "Guard",
+          "element": "light",
+          "category": "existing_combat_action",
+          "description": "Retain approved defensive command.",
+          "status": "existing_runtime_reference_no_new_unlock"
+        },
+        {
+          "skill_id": "mend",
+          "display_name": "Mend",
+          "element": "light",
+          "category": "existing_combat_action",
+          "description": "Retain approved MAGI healing formula and 1 MP cost.",
+          "status": "existing_runtime_reference_no_new_unlock"
+        }
+      ],
+      "skill_unlocks_by_level": [
+        {
+          "level": 1,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 2,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 3,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 4,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 5,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 6,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 7,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 8,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 9,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 10,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 11,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 12,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 13,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 14,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 15,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 16,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 17,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 18,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 19,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 20,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 21,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 22,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 23,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 24,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 25,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 26,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 27,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 28,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 29,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        },
+        {
+          "level": 30,
+          "moves": [],
+          "status": "No new unlock; Epic non-starter milestones unapproved"
+        }
+      ],
+      "level_milestones_reference": "Epic non-starter milestones require approval. Null milestone_key keeps this proposal ineligible for the live Level 2 contract; unlock table stays empty.",
+      "hatchling_move_design_draft": {
+        "status": "PROPOSED",
+        "implementation_approved": false,
+        "notes": "Light design only; Epic non-starter milestone approval required. Shared species-independent engine supports Elemental Strike, Guard and Mend; preserve existing Light element and formulas. MAGI controls magical power; physical basics are free; existing Mend costs 1 MP. Maximum MP = (base Mana + allocated Mana + applicable passive Mana) * 3 matches the shared helper. Proposed special costs remain null.",
+        "candidate_moves": [
+          {
+            "proposed_skill_id": "glimmer-radiant-veil",
+            "name": "Radiant Veil",
+            "element": "light",
+            "role": "tank",
+            "category": "defense",
+            "description": "Glimmer shapes luminous energy into a protective radiant veil motif.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          },
+          {
+            "proposed_skill_id": "glimmer-flash-strike",
+            "name": "Flash Strike",
+            "element": "light",
+            "role": "dps",
+            "category": "physical_damage",
+            "description": "Glimmer delivers a light-themed physical flourish for Flash Strike.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          },
+          {
+            "proposed_skill_id": "glimmer-gentle-radiance",
+            "name": "Gentle Radiance",
+            "element": "light",
+            "role": "healer",
+            "category": "healing",
+            "description": "Glimmer channels restorative Light energy through Gentle Radiance.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          },
+          {
+            "proposed_skill_id": "glimmer-glimmer-bolt",
+            "name": "Glimmer Bolt",
+            "element": "light",
+            "role": "sorcerer",
+            "category": "ranged_magic",
+            "description": "Glimmer weaves Light magic into a shimmering glimmer bolt motif.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          }
+        ]
+      },
+      "element_restriction": "light",
+      "available_combat_roles": [
+        "tank",
+        "healer",
+        "dps",
+        "sorcerer"
+      ],
+      "combat_roles_definition": {
+        "tank": "defensive abilities",
+        "healer": "healing abilities",
+        "dps": "physical damage abilities",
+        "sorcerer": "ranged magic abilities"
+      },
+      "skill_sources": {
+        "natural_species_progression": "species-specific choices at explicitly approved milestones",
+        "additional_compatible_skills": "eligible compatible skills obtained from discovery, purchase, or rewards; separate from natural progression"
+      },
+      "additional_skill_catalog": {
+        "status": "not_defined_here",
+        "separate_from_natural_progression": true,
+        "compatible_element": "light",
+        "entries": []
+      },
+      "level_2_skill_choice": {
+        "level": 2,
+        "source": "natural_species_progression",
+        "status": "PROPOSED",
+        "element": "light",
+        "offered_roles": [
+          "tank",
+          "dps",
+          "healer",
+          "sorcerer"
+        ],
+        "candidate_skill_ids": [
+          "glimmer-radiant-veil",
+          "glimmer-flash-strike",
+          "glimmer-gentle-radiance",
+          "glimmer-glimmer-bolt"
+        ],
+        "selection_count": 1,
+        "selection_method": "player_choice",
+        "milestone_key": null,
+        "automatic_grant": false,
+        "eligible_does_not_mean_learned_or_equipped": true,
+        "numeric_values_undecided": true,
+        "choice_requires_approved_level_milestone_and_backend_validation": true
+      },
+      "level_3_to_30_skill_design_proposal": {
+        "status": "PROPOSED",
+        "implementation_approved": false,
+        "combat_enabled": false,
+        "automatic_grant": false,
+        "notes": "Glimmer Light design only, matching confirmed identity. Luminous motifs imply no new anatomy or evolution. No numeric effects or status effects approved.",
+        "selection_count": 1,
+        "selection_method": "player_choice",
+        "display_role_labels": false,
+        "non_milestone_levels": "No additional species skill proposed; preserve existing approved scaling.",
+        "milestones": [
+          {
+            "proposed_unlock_level": 5,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glimmer-gleam-guard",
+                "name": "Gleam Guard",
+                "element": "light",
+                "role": "tank",
+                "category": "defense",
+                "description": "Glimmer shapes luminous energy into a protective gleam guard motif.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-gleaming-swipe",
+                "name": "Gleaming Swipe",
+                "element": "light",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Glimmer delivers a light-themed physical flourish for Gleaming Swipe.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-soothing-glow",
+                "name": "Soothing Glow",
+                "element": "light",
+                "role": "healer",
+                "category": "healing",
+                "description": "Glimmer channels restorative Light energy through Soothing Glow.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-radiant-arc",
+                "name": "Radiant Arc",
+                "element": "light",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Glimmer weaves Light magic into a shimmering radiant arc motif.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 8,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glimmer-halo-shell",
+                "name": "Halo Shell",
+                "element": "light",
+                "role": "tank",
+                "category": "defense",
+                "description": "Glimmer shapes luminous energy into a protective halo shell motif.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-gleam-rush",
+                "name": "Gleam Rush",
+                "element": "light",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Glimmer delivers a light-themed physical flourish for Gleam Rush.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-healing-light",
+                "name": "Healing Light",
+                "element": "light",
+                "role": "healer",
+                "category": "healing",
+                "description": "Glimmer channels restorative Light energy through Healing Light.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-prism-spiral",
+                "name": "Prism Spiral",
+                "element": "light",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Glimmer weaves Light magic into a shimmering prism spiral motif.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 11,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glimmer-radiant-barrier",
+                "name": "Radiant Barrier",
+                "element": "light",
+                "role": "tank",
+                "category": "defense",
+                "description": "Glimmer shapes luminous energy into a protective radiant barrier motif.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-flash-barrage",
+                "name": "Flash Barrage",
+                "element": "light",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Glimmer delivers a light-themed physical flourish for Flash Barrage.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-luminous-renewal",
+                "name": "Luminous Renewal",
+                "element": "light",
+                "role": "healer",
+                "category": "healing",
+                "description": "Glimmer channels restorative Light energy through Luminous Renewal.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-radiant-pulse",
+                "name": "Radiant Pulse",
+                "element": "light",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Glimmer weaves Light magic into a shimmering radiant pulse motif.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 14,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glimmer-prism-armor",
+                "name": "Prism Armor",
+                "element": "light",
+                "role": "tank",
+                "category": "defense",
+                "description": "Glimmer shapes luminous energy into a protective prism armor motif.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-gleam-breaker",
+                "name": "Gleam Breaker",
+                "element": "light",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Glimmer delivers a light-themed physical flourish for Gleam Breaker.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-restoring-light",
+                "name": "Restoring Light",
+                "element": "light",
+                "role": "healer",
+                "category": "healing",
+                "description": "Glimmer channels restorative Light energy through Restoring Light.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-ribbon-of-light",
+                "name": "Ribbon of Light",
+                "element": "light",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Glimmer weaves Light magic into a shimmering ribbon of light motif.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 17,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glimmer-light-sentinel",
+                "name": "Light Sentinel",
+                "element": "light",
+                "role": "tank",
+                "category": "defense",
+                "description": "Glimmer shapes luminous energy into a protective light sentinel motif.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-sunflash-strike",
+                "name": "Sunflash Strike",
+                "element": "light",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Glimmer delivers a light-themed physical flourish for Sunflash Strike.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-revitalizing-glimmer",
+                "name": "Revitalizing Glimmer",
+                "element": "light",
+                "role": "healer",
+                "category": "healing",
+                "description": "Glimmer channels restorative Light energy through Revitalizing Glimmer.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-prismatic-surge",
+                "name": "Prismatic Surge",
+                "element": "light",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Glimmer weaves Light magic into a shimmering prismatic surge motif.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 20,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glimmer-living-beacon",
+                "name": "Living Beacon",
+                "element": "light",
+                "role": "tank",
+                "category": "defense",
+                "description": "Glimmer shapes luminous energy into a protective living beacon motif.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-radiant-frenzy",
+                "name": "Radiant Frenzy",
+                "element": "light",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Glimmer delivers a light-themed physical flourish for Radiant Frenzy.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-light-sanctuary",
+                "name": "Light Sanctuary",
+                "element": "light",
+                "role": "healer",
+                "category": "healing",
+                "description": "Glimmer channels restorative Light energy through Light Sanctuary.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-radiant-bloom",
+                "name": "Radiant Bloom",
+                "element": "light",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Glimmer weaves Light magic into a shimmering radiant bloom motif.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 23,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glimmer-celestial-lightguard",
+                "name": "Celestial Lightguard",
+                "element": "light",
+                "role": "tank",
+                "category": "defense",
+                "description": "Glimmer shapes luminous energy into a protective celestial lightguard motif.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-piercing-gleam",
+                "name": "Piercing Gleam",
+                "element": "light",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Glimmer delivers a light-themed physical flourish for Piercing Gleam.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-restoring-brilliance",
+                "name": "Restoring Brilliance",
+                "element": "light",
+                "role": "healer",
+                "category": "healing",
+                "description": "Glimmer channels restorative Light energy through Restoring Brilliance.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-mystic-radiance",
+                "name": "Mystic Radiance",
+                "element": "light",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Glimmer weaves Light magic into a shimmering mystic radiance motif.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 26,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glimmer-eternal-brilliance",
+                "name": "Eternal Brilliance",
+                "element": "light",
+                "role": "tank",
+                "category": "defense",
+                "description": "Glimmer shapes luminous energy into a protective eternal brilliance motif.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-thousand-rays",
+                "name": "Thousand Rays",
+                "element": "light",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Glimmer delivers a light-themed physical flourish for Thousand Rays.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-heart-of-the-light",
+                "name": "Heart of the Light",
+                "element": "light",
+                "role": "healer",
+                "category": "healing",
+                "description": "Glimmer channels restorative Light energy through Heart of the Light.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-lights-wrath",
+                "name": "Light's Wrath",
+                "element": "light",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Glimmer weaves Light magic into a shimmering light's wrath motif.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 30,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glimmer-guardian-of-radiance",
+                "name": "Guardian of Radiance",
+                "element": "light",
+                "role": "tank",
+                "category": "defense",
+                "description": "Glimmer shapes luminous energy into a protective guardian of radiance motif.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-radiant-cataclysm",
+                "name": "Radiant Cataclysm",
+                "element": "light",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Glimmer delivers a light-themed physical flourish for Radiant Cataclysm.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-everlasting-light",
+                "name": "Everlasting Light",
+                "element": "light",
+                "role": "healer",
+                "category": "healing",
+                "description": "Glimmer channels restorative Light energy through Everlasting Light.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glimmer-radiant-awakening",
+                "name": "Radiant Awakening",
+                "element": "light",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Glimmer weaves Light magic into a shimmering radiant awakening motif.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          }
+        ]
+      },
+      "player_skill_decisions": {
+        "at_approved_skill_learning_milestones": [
+          "keep_current_skill",
+          "replace_selected_learned_skill_with_eligible_new_skill"
+        ],
+        "replacement_requires_confirmation": true,
+        "replacement_semantics": "Future approved milestones only: preserve existing animation timing; show four eligible skill names/descriptions, never role labels; select and confirm one. Validate ownership, eligibility and retry identity to prevent duplicate learning/rewards. Replacement must respect authoritative learned capacity, explicitly confirm the old skill and commit atomically. Four local equipped slots do not establish learned capacity. Cancel/failure preserves old skills; unselected skills are not learned. No UI or persistence activated.",
+        "replacement_must_persist_per_individual_kith_when_implemented": true,
+        "eligible_is_not_learned_or_equipped": true,
+        "does_not_implement_database_persistence": true,
+        "no_unapproved_milestones_from_3_through_30": true
+      }
+    },
+    "awareness_milestones": {
+      "level_1": {
+        "recognizes_owner": true,
+        "identity_source": "owner_and_individual_pet_state",
+        "initial_relationship": "unfamiliar",
+        "uses_existing_personality_bond_mood_memory_rules": true,
+        "no_automatic_love_or_trust": true
+      },
+      "level_2": {
+        "retains_personality_and_memories": true,
+        "may_react_to_level_up": true,
+        "level_up_memory_type": "proposed_not_yet_in_memory_important_types",
+        "recognition_not_gated_by_level": true
+      },
+      "runtime_status": "requires_implementation_and_testing"
+    },
+    "implementation_safety": {
+      "configuration_only": true,
+      "does_not_change_existing_players_or_pet_rows": true,
+      "do_not_modify_production_database_without_separate_approval": true,
+      "do_not_change_existing_xp_rewards_until_verified": true,
+      "single_stat_source_requires_updating_starter_species_consumers": false,
+      "does_not_implement_leveling_or_stat_allocation": true,
+      "existing_level_1_allocations_must_be_retained": true,
+      "level_2_and_later_stat_points_are_manual_not_random": null,
+      "no_existing_gameplay_changed": true
+    },
+    "maximum_level": 30
   }
 }

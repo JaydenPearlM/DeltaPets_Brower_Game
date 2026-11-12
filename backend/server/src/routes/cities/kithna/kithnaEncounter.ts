@@ -5,6 +5,9 @@
 // ========================================
 
 import { Router, Response } from "express";
+import { randomUUID } from "node:crypto";
+import { z } from "zod";
+import { getWildwoodState } from "./wildwoodState";
 import { randomInt as cryptoRandomInt } from "node:crypto";
 import { requireUser, type AuthedRequest } from "../../../middleware/auth";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
@@ -230,12 +233,19 @@ kithnaRouter.post(
 );
 
 type PendingKithnaEncounter = {
+  wildwoodRoomId?: string;
+  encounterId?: string;
   species: KithnaNonStarterSpecies;
   eggQuality: Awaited<ReturnType<typeof rollNonStarterEggQuality>>;
   timeOfDay: "day" | "night";
 };
 
 const pendingRoamEncounterByUser = new Map<string, PendingKithnaEncounter>();
+
+export function discardPendingWildwoodEgg(userId: string) {
+  if (pendingRoamEncounterByUser.get(userId)?.wildwoodRoomId)
+    pendingRoamEncounterByUser.delete(userId);
+}
 
 function pickRandomSpecies(
   pool: KithnaNonStarterSpecies[],
@@ -285,9 +295,27 @@ kithnaRouter.post(
       const userId = req.user!.id;
       const now = Date.now();
 
+      const origin = z.object({ wildwoodRoomId: z.uuid().optional() }).safeParse(req.body ?? {});
+      if (!origin.success) return res.status(400).json({ error: "Invalid encounter location." });
+      const wildwoodRoomId = origin.data.wildwoodRoomId;
+      if (wildwoodRoomId) {
+        const state = await getWildwoodState(userId);
+        if (!state.expedition) return res.status(409).json({ error: "No active Wildwood visit." });
+        const { data: room, error } = await supabaseAdmin.from("wildwood_rooms")
+          .select("id, event_kind, status, event_payload")
+          .eq("id", wildwoodRoomId).eq("expedition_id", state.expedition.id).maybeSingle();
+        if (error) throw error;
+        if (!room || room.status !== "resolved" || room.event_payload?.battle !== null)
+          return res.status(409).json({ error: "No completed Wildwood discovery is available." });
+        if (room.event_payload?.eggTreasure || room.event_payload?.eggTreasureClosed)
+          return res.json({ found: false, reason: "no_find" });
+      }
+
       const pendingEncounter = pendingRoamEncounterByUser.get(userId);
 
       if (pendingEncounter) {
+        if (pendingEncounter.wildwoodRoomId !== wildwoodRoomId)
+          return res.status(409).json({ error: "Finish or leave the previous egg encounter first." });
         return res.json({
           found: true,
           egg_name: pendingEncounter.species.evolution.egg,
@@ -318,6 +346,7 @@ kithnaRouter.post(
         .limit(1);
 
       if (hatchedError) {
+        if (wildwoodRoomId) throw hatchedError;
         logger.error("[kithna/roam] hatch check failed", hatchedError);
 
         return res.json({
@@ -364,6 +393,8 @@ kithnaRouter.post(
       );
 
       pendingRoamEncounterByUser.set(userId, {
+        wildwoodRoomId,
+        encounterId: randomUUID(),
         species,
         eggQuality,
         timeOfDay,
@@ -411,9 +442,30 @@ kithnaRouter.post(
         });
       }
 
-      pendingRoamEncounterByUser.delete(userId);
-
       const { species, eggQuality, timeOfDay } = pendingEncounter;
+
+      if (pendingEncounter.wildwoodRoomId) {
+        const { data, error } = await supabaseAdmin.rpc("hold_wildwood_egg", {
+          p_user_id: userId, p_room_id: pendingEncounter.wildwoodRoomId,
+          p_encounter_id: pendingEncounter.encounterId,
+          p_egg: {
+            name: species.evolution.egg, species: species.id, rarity: species.rarity, line: species.line,
+            pending_hatch_minutes: species.rules.hatchMinutes?.min ?? eggQuality.hatch_minutes,
+            hatch_time_alignment: timeOfDay, growth_strong_stats: eggQuality.growth_strong_stats,
+            growth_weak_stat: eggQuality.growth_weak_stat, passive_trait_id: eggQuality.passive_trait_id,
+            passive_trait_key: eggQuality.passive_trait_key, mutation_capacity: eggQuality.mutation_capacity,
+          },
+          p_base_stats: species.eggBaseStats, p_xp: species.findXpReward,
+        });
+        if (error) throw error;
+        if (data?.success !== true || data.held !== true)
+          return res.status(409).json({ error: "This Wildwood egg is no longer available." });
+        pendingRoamEncounterByUser.delete(userId);
+        return res.json({ taken: true, held: true, egg_id: data.encounterId,
+          egg_name: species.evolution.egg, location: "treasure", xp_awarded: data.xp_awarded });
+      }
+
+      pendingRoamEncounterByUser.delete(userId);
 
       const { data: insertedPet, error: insertError } = await supabaseAdmin
         .from("pets")
@@ -491,7 +543,9 @@ kithnaRouter.post(
       logger.error("[kithna/roam/take] failed", err);
 
       return res.status(500).json({
-        error: err?.message ?? "Taking the egg failed.",
+        error: pendingRoamEncounterByUser.get(req.user!.id)?.wildwoodRoomId
+          ? "Could not confirm the Wildwood egg. Please retry."
+          : err?.message ?? "Taking the egg failed.",
       });
     }
   },

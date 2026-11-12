@@ -1,4 +1,13 @@
 import { Router, type Response } from "express";
+
+import {
+  discoveryClaimSchema,
+  readyWildwoodDiscoveryCatalog,
+  selectWildwoodDiscovery,
+  wildwoodDiscoveryEnabled,
+} from "./wildwoodDiscoveries";
+
+import { wildwoodTreasureRouter } from "./wildwoodTreasure";
 import { requireUser, type AuthedRequest } from "../../../middleware/auth";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { logger } from "../../../lib/logger";
@@ -21,6 +30,8 @@ import {
 } from "./wildwoodState";
 
 export const wildwoodRouter = Router();
+
+wildwoodRouter.use("/treasure", wildwoodTreasureRouter);
 
 function battleError(res: Response, error: unknown) {
   if (error instanceof WildwoodError) {
@@ -97,63 +108,81 @@ wildwoodRouter.get(
   },
 );
 
-const WILDWOOD_ITEM_POOL = [
-  "potion_small",
-  "haiku_scroll_50",
-  "water-delta",
-  "fire-delta",
-  "earth-delta",
-  "air-delta",
-  "ice-delta",
-  "storm-delta",
-  "light-delta",
-  "shadow-delta",
-] as const;
-
-// Temporary pause while Wildwood's item lineup is being prepared.
-const WILDWOOD_ITEM_COLLECTION_ENABLED = false;
+// Disabled until both the deployment switch and the migrated catalog are ready.
+wildwoodRouter.get(
+  "/discoveries/status",
+  requireUser,
+  async (_req: AuthedRequest, res: Response) => {
+    try {
+      return res.json({
+        enabled: (await readyWildwoodDiscoveryCatalog()) !== null,
+      });
+    } catch (error) {
+      logger.error("[wildwood/discoveries/status] failed", error);
+      return res
+        .status(503)
+        .json({ error: "Wildwood discoveries are temporarily unavailable." });
+    }
+  },
+);
 
 wildwoodRouter.post(
   "/collect-item",
   requireUser,
   async (req: AuthedRequest, res: Response) => {
-    if (!WILDWOOD_ITEM_COLLECTION_ENABLED) {
+    if (!wildwoodDiscoveryEnabled())
       return res.status(503).json({
         error: "Wildwood item collection is temporarily unavailable.",
       });
-    }
+    const parsed = discoveryClaimSchema.safeParse(req.body);
+    if (!parsed.success)
+      return res
+        .status(400)
+        .json({ error: "A valid Wildwood room is required." });
     try {
-      const userId = req.user!.id;
-
-      const roomId =
-        typeof req.body?.roomId === "string" ? req.body.roomId : "";
-
-      if (!roomId) {
-        return res.status(400).json({
-          error: "Wildwood room is required.",
+      const catalog = await readyWildwoodDiscoveryCatalog();
+      if (!catalog)
+        return res.status(503).json({
+          error: "Wildwood item collection is temporarily unavailable.",
         });
-      }
-
-      const itemSlug =
-        WILDWOOD_ITEM_POOL[
-          Math.floor(Math.random() * WILDWOOD_ITEM_POOL.length)
-        ];
-      const { data, error } = await supabaseAdmin.rpc("claim_wildwood_item", {
-        p_user_id: userId,
-        p_room_id: roomId,
-        p_item_slug: itemSlug,
-      });
+      const selected = selectWildwoodDiscovery(catalog);
+      const { data, error } = await supabaseAdmin.rpc(
+        "claim_wildwood_discovery",
+        {
+          p_user_id: req.user!.id,
+          p_room_id: parsed.data.roomId,
+          p_item_slug: selected.slug,
+        },
+      );
       if (error) throw error;
       if (!data) throw new Error("Missing Wildwood claim result.");
-      if (!data.success) {
-        return res.status(data.status_code).json({ error: data.error });
+      if (data.success !== true) {
+        const status = [404, 409, 503].includes(data.status_code)
+          ? data.status_code
+          : 500;
+        return res.status(status).json({
+          error:
+            status === 500 ? "Could not confirm this discovery." : data.error,
+        });
       }
-      return res.json({ item: data.item, qty: data.qty });
+      if (
+        data.held !== true ||
+        data.item?.slug !== selected.slug ||
+        !Number.isInteger(data.qty) ||
+        data.qty !== 1
+      ) {
+        throw new Error("Invalid Wildwood Treasure claim result.");
+      }
+
+      return res.json({
+        item: data.item,
+        qty: data.qty,
+        held: true,
+      });
     } catch (error) {
       logger.error("[POST /api/kithna/wildwood/collect-item] failed", error);
-
       return res.status(500).json({
-        error: "Failed to collect the Wildwood item.",
+        error: "Could not confirm the reward. Reload before trying again.",
       });
     }
   },

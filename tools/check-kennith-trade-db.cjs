@@ -40,7 +40,7 @@ sql(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPAS
   CREATE TABLE inventory(user_id uuid,item_id uuid REFERENCES item_defs(id),qty integer CHECK(qty>=0),updated_at timestamptz DEFAULT now(),PRIMARY KEY(user_id,item_id));
   CREATE TABLE profiles(user_id uuid PRIMARY KEY,avatar_customization jsonb DEFAULT '{}');
   GRANT SELECT,INSERT,UPDATE ON wallets,item_defs,inventory,profiles TO service_role;`);
-for(const file of ['20261029221654_kennith_daily_wallet_proposal.sql','20261031000000_kennith_purchase_proposal.sql','20261101125225_kennith_atomic_trade.sql'])
+for(const file of ['20261029221654_kennith_daily_wallet_proposal.sql','20261031015143_kennith_purchase_proposal.sql','20261101130407_kennith_atomic_trade.sql'])
   sql(fs.readFileSync(`supabase/migrations/${file}`,'utf8'));
 sql(`INSERT INTO wallets(user_id,dots) VALUES('${user}',500),('${user2}',500);
   INSERT INTO profiles(user_id) VALUES('${user}'),('${user2}');

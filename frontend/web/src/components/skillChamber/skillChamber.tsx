@@ -1,4 +1,4 @@
-import { type CSSProperties, useMemo, useState } from "react";
+import { type ReactNode, type CSSProperties, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import PetSkillsInventory, {
   type DisplaySkill,
@@ -11,8 +11,21 @@ import {
 import "./skillChamber.css";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
+import { maximumMp, hasBattleMp, type BattleMp } from "@shared/battle/mana";
+
+export type CombatCommands = {
+  selected: "basic-strike" | "guard" | "mend";
+  disabled: boolean;
+  mendDisabled: boolean;
+  onSelect: (id: "basic-strike" | "guard" | "mend") => void;
+  controls: ReactNode;
+};
 
 type SkillChamberProps = {
+  combat?: CombatCommands;
+  battleMp?: BattleMp;
+  battleHp?: { hpCur: number; hpMax: number };
+  manaStatus?: "ready" | "loading" | "unavailable";
   pet?: Record<string, any> | null;
   stats?: {
     hp?: number | null;
@@ -258,7 +271,7 @@ function getPetName(pet?: Record<string, any> | null) {
 
 function getSkillDescription(skillId: SkillId, fallback: string) {
   if (skillId === "basic-strike") {
-    return "A level 1 elemental starter attack shaped by elements.";
+    return "A level 1 physical elemental attack using ATK. Costs no MP.";
   }
 
   return fallback;
@@ -420,6 +433,10 @@ function buildDisplaySkills(
 export default function SkillChamber({
   pet = null,
   stats = null,
+  manaStatus = "ready",
+  battleMp,
+  battleHp,
+  combat,
 }: SkillChamberProps) {
   const [selectedSkill, setSelectedSkill] =
     useState<ChamberDisplaySkill | null>(null);
@@ -466,12 +483,32 @@ export default function SkillChamber({
   const petLevel = getPetLevel(pet);
   const petPreviewUrl =
     getStarterPortrait(pet?.species, pet?.stage) ||
-    getKithnaPortrait(pet?.species) ||
     getKithnaPortrait(pet?.name) ||
+    getKithnaPortrait(pet?.species) ||
     getStarterPortrait(pet?.name) ||
     pet?.portrait_url ||
     pet?.sprite_url ||
     pet?.image_url;
+
+  // Saved Mana excludes passive modifiers in both existing data paths.
+  const savedMana: unknown = stats?.mana ?? pet?.mana;
+  const effects: unknown = pet?.passive_trait_effects;
+  const passiveMana = effects && typeof effects === "object" && "mana" in effects
+    ? effects.mana : 0;
+  const resource = battleMp && hasBattleMp(battleMp) ? battleMp : null;
+  const maxMp = battleMp ? resource?.mpMax ?? null
+    : manaStatus === "ready" ? maximumMp(savedMana, passiveMana) : null;
+  const mpLabel = resource ? `${resource.mpCur} / ${resource.mpMax}`
+    : battleMp ? "MP unavailable"
+      : manaStatus === "loading" ? "Loading MP…" : `Max ${maxMp ?? "Unavailable"}`;
+  const portraitTransform = petPreviewUrl === getStarterPortrait("earth_starter", "hatchling")
+    ? "translateY(-22%) scale(1.5)"
+    : petPreviewUrl === getKithnaPortrait("kithna_magmado")
+      ? "translate(12%, 12%) scale(1.1)"
+      : petPreviewUrl === getKithnaPortrait("kithna_clodian")
+        ? "translate(28%, 24%) scale(1.5)"
+        : petPreviewUrl === getKithnaPortrait("kithna_pebelin")
+          ? "translateY(8%) scale(1.15)" : "none";
 
   function equipSkill(skillId: SkillId) {
     if (!LOADOUT_SKILL_IDS.includes(skillId)) return;
@@ -512,15 +549,21 @@ export default function SkillChamber({
                 key={skill.id}
                 className={`skillChamberCommand skillChamberCommand--${skill.id}`}
                 style={getCommandButtonStyle(skill.id as SkillId, pet)}
-                onClick={() => setSelectedSkill(skill)}
+                disabled={combat ? combat.disabled || (skill.id === "mend" && combat.mendDisabled) : undefined}
+                aria-pressed={combat ? combat.selected === skill.id : undefined}
+                onClick={() => {
+                  if (combat) {
+                    if (!combat.disabled && (skill.id === "basic-strike" || skill.id === "guard" || (skill.id === "mend" && !combat.mendDisabled))) combat.onSelect(skill.id);
+                  } else setSelectedSkill(skill);
+                }}
               >
-                <span>{skill.displayName}</span>
+                <span>{skill.displayName}{combat && skill.id === "mend" ? " (1 MP)" : ""}</span>
               </button>
             );
           })}
         </div>
 
-        <div className="skillCenterActionRow">
+        {!combat && <div className="skillCenterActionRow">
           <button
             type="button"
             className="btn btn-gold"
@@ -528,7 +571,7 @@ export default function SkillChamber({
           >
             Skill Inventory
           </button>
-        </div>
+        </div>}
       </div>
 
       <section className="skillInventoryPanel" aria-label="Battle skills">
@@ -549,15 +592,21 @@ export default function SkillChamber({
           <div className="skillChamberBars" aria-label="Pet battle vitals">
             <div className="skillChamberBarLine">
               <span>HP</span>
-              <div className="skillChamberBarTrack">
-                <i className="skillChamberBarFill skillChamberBarFill--hp" />
+              <div className="skillChamberMp">
+                <div className="skillChamberBarTrack"><i className="skillChamberBarFill skillChamberBarFill--hp" style={battleHp ? { width: battleHp.hpMax > 0 ? (battleHp.hpCur / battleHp.hpMax * 100) + "%" : "0%" } : undefined} /></div>
+                {battleHp && <small>{battleHp.hpCur} / {battleHp.hpMax}</small>}
               </div>
             </div>
 
             <div className="skillChamberBarLine">
               <span>MP</span>
-              <div className="skillChamberBarTrack">
-                <i className="skillChamberBarFill skillChamberBarFill--mp" />
+              <div className="skillChamberMp" aria-label={`MP: ${mpLabel}`}>
+                <div className="skillChamberBarTrack" aria-hidden="true">
+                  <i className="skillChamberBarFill skillChamberBarFill--mp"
+                    style={{ width: resource && resource.mpMax > 0
+                      ? `${resource.mpCur / resource.mpMax * 100}%` : "0%" }} />
+                </div>
+                <small>{mpLabel}</small>
               </div>
             </div>
           </div>
@@ -572,6 +621,7 @@ export default function SkillChamber({
             {petPreviewUrl ? (
               <img
                 className="skillChamberCommandOrbImage"
+                style={{ transform: portraitTransform }}
                 src={petPreviewUrl}
                 alt={petName}
               />
@@ -588,6 +638,7 @@ export default function SkillChamber({
               return (
                 <button
                   type="button"
+                  disabled={Boolean(combat)}
                   className={[
                     "skillChamberBattleSlot",
                     skill ? "is-filled" : "is-empty",
@@ -605,7 +656,9 @@ export default function SkillChamber({
         </div>
       </section>
 
-      {selectedSkill &&
+      {combat?.controls}
+
+      {!combat && selectedSkill &&
         createPortal(
           <div
             className="skillPopupBackdrop"
@@ -723,7 +776,7 @@ export default function SkillChamber({
           document.body,
         )}
 
-      {showInventory &&
+      {!combat && showInventory &&
         createPortal(
           <PetSkillsInventory
             inventorySkills={inventorySkills}

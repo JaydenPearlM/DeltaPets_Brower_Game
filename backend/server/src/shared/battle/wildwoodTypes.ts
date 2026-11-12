@@ -20,6 +20,7 @@ export type WildwoodTeamMember = BattleParticipantInput & {
   displayHp: number | null;
 };
 export type WildwoodRoomView = {
+  pveEnabled?: boolean;
   id: string;
   sequence: number;
   message: string;
