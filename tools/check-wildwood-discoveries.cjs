@@ -100,7 +100,7 @@ async function invoke(path, body = {}) {
   assert.equal(failure.statusCode, 500);
   assert(!JSON.stringify(failure.body).includes('private database details'));
 
-  const sql = fs.readFileSync('supabase/migrations/20261110181755_wildwood_kithna_discovery_catalog.sql', 'utf8');
+  const sql = fs.readFileSync('supabase/migrations/20261111184310_wildwood_kithna_discovery_catalog.sql', 'utf8');
   const migrationCatalog = JSON.parse(sql.split('$items$')[1]);
   assert.deepEqual(migrationCatalog, catalog, 'Migration and JSON catalogs must agree exactly');
   // Static safeguards only; live transaction/concurrency testing remains blocked.

@@ -37,7 +37,8 @@ let started = false;
     INSERT INTO wildwood_expeditions VALUES ('${user}','${user}','active');
     GRANT USAGE ON SCHEMA public TO service_role;
     GRANT SELECT,INSERT,UPDATE ON ALL TABLES IN SCHEMA public TO service_role;`);
-  for (const file of ['20261110181755_wildwood_kithna_discovery_catalog.sql','20261111170000_wildwood_visit_treasure.sql','20261111181527_wildwood_treasure_readiness.sql'])
+  // Historical remote timestamps differ from dependency order. Test prerequisites first.
+  for (const file of ['20261111184310_wildwood_kithna_discovery_catalog.sql','20261111184319_wildwood_visit_treasure.sql','20261111181527_wildwood_treasure_readiness.sql'])
     sql(fs.readFileSync(path.join('supabase/migrations', file), 'utf8'));
   assert.equal(JSON.parse(sql('SELECT wildwood_discovery_readiness()')).version, 2);
   room(10);
