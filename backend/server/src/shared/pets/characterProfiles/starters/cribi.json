@@ -777,6 +777,1450 @@
     "never_describe_all_cribi_as_having_the_same_personality": true
   },
 
+  "progression": {
+    "contract_version": 1,
+    "status": "design_contract_requires_backend_integration",
+    "species_definition_is_authoritative_for_base_stats": false,
+    "base_stats_reference": "egg.base_stats (intended future source; live starter-species.ts still differs)",
+    "preserve_existing_hatch_bonus_and_individual_stat_rolls": true,
+    "experience": {
+      "progression_group": "starter_shared",
+      "same_progression_rules_for_all_starters": true,
+      "non_starter_progression": "species_specific",
+      "level_1_to_2": {
+        "method": "complete_server_verified_hatching_and_care_requirements",
+        "required_activities": [
+          "owner_hatches_eggs",
+          "owner_maintains_this_kith_in_good_health"
+        ],
+        "activity_rules": {
+          "owner_hatches_eggs": {
+            "count_required": null,
+            "count_scope": "owner_account; whether starter hatch counts is undecided",
+            "only_successful_hatches_count": null,
+            "source_of_truth": "server_verified_owner_hatch_events",
+            "do_not_count_repeated_client_clicks": true
+          },
+          "owner_maintains_this_kith_in_good_health": {
+            "health_definition": "undecided; derived from actual runtime care metrics, not invented values",
+            "care_dimensions_to_evaluate": [
+              "hunger",
+              "clean",
+              "happy",
+              "comfort",
+              "rest",
+              "energy"
+            ],
+            "minimum_values": null,
+            "healthy_duration_required": null,
+            "source_of_truth": "server_verified_pet_care_and_health_state",
+            "care_refusals_do_not_consume_items": true
+          }
+        },
+        "both_conditions_required": true,
+        "xp_target": null,
+        "xp_per_hatch": null,
+        "xp_per_care_action": null,
+        "xp_from_other_sources": "existing_game_rules_unchanged",
+        "level_2_award_trigger": "only_after_approved_hatch_and_care_requirements_are_met",
+        "repeat_award_prevention": true
+      },
+      "levels_after_2": {
+        "rules": "undecided",
+        "xp_curve": null,
+        "do_not_generate_unapproved_requirements": true
+      },
+      "xp_schedule": {
+        "unit": "XP",
+        "interpretation": "xp_to_reach_level is the additional XP required since previous level; cumulative_xp_to_reach_level is total lifetime XP needed",
+        "starting_level": 1,
+        "starting_cumulative_xp": 0,
+        "levels_defined_for_planning": "1 through 30; approved maximum level is 30",
+        "values_status": "undecided: null entries require game-design approval",
+        "shared_schedule_key": "starter_shared",
+        "entries": [
+          {
+            "level": 1,
+            "xp_from_previous_level": 0,
+            "cumulative_xp_to_reach_level": 0,
+            "progression_requirements": "initial_hatch",
+            "stat_points_awarded": 0,
+            "notes": null
+          },
+          {
+            "level": 2,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": "hatch_eggs_and_maintain_health",
+            "stat_points_awarded": 2,
+            "notes": "Level 2 requirements pending exact amounts"
+          },
+          {
+            "level": 3,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 4,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 5,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 6,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 7,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 8,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 9,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 10,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 11,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 12,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 13,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 14,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 15,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 16,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 17,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 18,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 19,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 20,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 21,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 22,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 23,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 24,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 25,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 26,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 27,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 28,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 29,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 30,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          }
+        ],
+        "invariant": "Do not treat null XP as zero, and do not award levels from this proposal until implemented and validated",
+        "maximum_level": 30
+      }
+    },
+    "stat_growth": {
+      "starting_level": 1,
+      "starting_stats": "species_base_plus_existing_level_1_hatch_allocation",
+      "base_stats_immutable_after_hatch": true,
+      "preserve_individual_strong_and_weak_stat_traits": true,
+      "player_allocation": {
+        "unlocks_at_level": 2,
+        "source": "new_level_up_points_only",
+        "stat_keys": [
+          "hp",
+          "atk",
+          "magi",
+          "def",
+          "spd",
+          "mana"
+        ],
+        "points_per_later_level": null,
+        "per_stat_caps": null,
+        "do_not_reallocate_base_stats": true,
+        "do_not_reallocate_hatch_rolls": true,
+        "spending_must_be_server_validated": true,
+        "spending_must_be_atomic": true,
+        "unspent_points_persist_per_pet": true,
+        "level_1_manual_allocation": "existing_seven_point_hatch_roll_must_remain_unchanged",
+        "existing_level_1_editor": "review_if_it_is_player_controlled; never rewrite_existing_level_1_allocations",
+        "no_random_stat_allocation_from_level_2_onward": true,
+        "level_2_points_source": "experience.xp_schedule.entries (level 2).stat_points_awarded"
+      },
+      "stat_components": [
+        "species_base",
+        "level_1_hatch_allocation",
+        "level_2_and_later_player_allocations"
+      ],
+      "effective_stat_rule": "sum_components_without_mutating_existing_baseline_or_hatch_roll"
+    },
+    "skills": {
+      "progression_scope": "each_level_reviewed_individually",
+      "learned_skills_persist_per_pet": true,
+      "do_not_replace_existing_skills_on_level_up": true,
+      "other_levels": "undecided; no additional skill-learning milestones approved for levels 3 through 30",
+      "skills_after_evolution": "preserve_existing_evolution_skill_registry",
+      "skill_unlocks_require_server_validation": true,
+      "move_catalog": [
+        {
+          "skill_id": "basic-strike",
+          "display_name": "Elemental Strike",
+          "element": "derived_from_pet_element",
+          "category": "basic_combat_action",
+          "description": "Existing Ice physical basic attack; reuse approved ATK formula and elemental scaling.",
+          "power": null,
+          "accuracy": null,
+          "cost": 0,
+          "cooldown": null,
+          "target": null,
+          "effect": null,
+          "status": "existing_runtime_reference_no_new_unlock"
+        },
+        {
+          "skill_id": "guard",
+          "display_name": "Guard",
+          "element": "derived_from_pet_element",
+          "category": "basic_combat_action",
+          "description": "Existing defensive command; reuse approved battle behavior.",
+          "power": null,
+          "accuracy": null,
+          "cost": 0,
+          "cooldown": null,
+          "target": null,
+          "effect": null,
+          "status": "existing_runtime_reference_no_new_unlock"
+        },
+        {
+          "skill_id": "mend",
+          "display_name": "Mend",
+          "element": "derived_from_pet_element",
+          "category": "basic_combat_action",
+          "description": "Existing MAGI healing; reuse approved formula and 1 MP cost.",
+          "power": null,
+          "accuracy": null,
+          "cost": 1,
+          "cooldown": null,
+          "target": null,
+          "effect": null,
+          "status": "existing_runtime_reference_no_new_unlock"
+        }
+      ],
+      "skill_unlocks_by_level": [
+        {
+          "level": 1,
+          "moves": [],
+          "status": "existing_starting_abilities_referenced_in_move_catalog; no_new_unlock"
+        },
+        {
+          "level": 2,
+          "moves": [],
+          "status": "proposed_skill_choice_only; no_auto_unlock_or_learning"
+        },
+        {
+          "level": 3,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 4,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 5,
+          "moves": [],
+          "status": "undecided; old_generic_level_5_placeholder_not_an_approved_cribi_unlock"
+        },
+        {
+          "level": 6,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 7,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 8,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 9,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 10,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 11,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 12,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 13,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 14,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 15,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 16,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 17,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 18,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 19,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 20,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 21,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 22,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 23,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 24,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 25,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 26,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 27,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 28,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 29,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 30,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        }
+      ],
+      "level_milestones_reference": "skill_unlocks_by_level is the only per-level move-unlock table. Level 2 lists candidates, not automatically learned moves.",
+      "hatchling_move_design_draft": {
+        "status": "PROPOSED",
+        "implementation_approved": false,
+        "combat_enabled": false,
+        "automatic_grant": false,
+        "notes": "Ice-only design candidates. Names and descriptions only in a future selection window; never display role labels. No combat effects, costs, learning or animation activated.",
+        "candidate_moves": [
+          {
+            "proposed_skill_id": "frost-shell",
+            "name": "Frost Shell",
+            "element": "ice",
+            "role": "tank",
+            "category": "defense",
+            "description": "Cribi coats itself in hardened ice for protection.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          },
+          {
+            "proposed_skill_id": "icicle-jab",
+            "name": "Icicle Jab",
+            "element": "ice",
+            "role": "dps",
+            "category": "physical_damage",
+            "description": "Cribi strikes an opponent with a sharp piece of ice.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          },
+          {
+            "proposed_skill_id": "soothing-snow",
+            "name": "Soothing Snow",
+            "element": "ice",
+            "role": "healer",
+            "category": "healing",
+            "description": "Cribi channels restorative Ice energy to soothe injuries.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          },
+          {
+            "proposed_skill_id": "frost-puff",
+            "name": "Frost Puff",
+            "element": "ice",
+            "role": "sorcerer",
+            "category": "ranged_magic",
+            "description": "Cribi releases a puff of magical frost toward an opponent.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          }
+        ]
+      },
+      "element_restriction": "ice",
+      "available_combat_roles": [
+        "tank",
+        "healer",
+        "dps",
+        "sorcerer"
+      ],
+      "combat_roles_definition": {
+        "tank": "defensive abilities",
+        "healer": "healing abilities",
+        "dps": "physical damage abilities",
+        "sorcerer": "ranged magic abilities"
+      },
+      "skill_sources": {
+        "natural_species_progression": "species-specific choices at explicitly approved milestones",
+        "additional_compatible_skills": "eligible compatible skills obtained from discovery, purchase, or rewards; separate from natural progression"
+      },
+      "additional_skill_catalog": {
+        "status": "not_defined_here",
+        "separate_from_natural_progression": true,
+        "compatible_element": "ice",
+        "entries": []
+      },
+      "level_2_skill_choice": {
+        "level": 2,
+        "source": "natural_species_progression",
+        "status": "PROPOSED",
+        "element": "ice",
+        "offered_roles": [
+          "tank",
+          "dps",
+          "healer",
+          "sorcerer"
+        ],
+        "candidate_skill_ids": [
+          "frost-shell",
+          "icicle-jab",
+          "soothing-snow",
+          "frost-puff"
+        ],
+        "selection_count": 1,
+        "selection_method": "player_choice",
+        "milestone_key": "level-2",
+        "automatic_grant": false,
+        "eligible_does_not_mean_learned_or_equipped": true,
+        "numeric_values_undecided": true,
+        "choice_requires_approved_level_milestone_and_backend_validation": true,
+        "implementation_approved": false,
+        "combat_enabled": false
+      },
+      "level_3_to_30_skill_design_proposal": {
+        "status": "PROPOSED",
+        "implementation_approved": false,
+        "combat_enabled": false,
+        "automatic_grant": false,
+        "notes": "Ice design reference only, not an unlock table or playable registry. Descriptions are themes, not approved mechanics. Maximum MP = (base Mana + allocated Mana + applicable passive Mana) * 3. MAGI determines magical power. Physical basic attacks are free; special skills require approved MP costs. Existing Mend costs 1 MP. Proposed costs remain null.",
+        "selection_count": 1,
+        "selection_method": "player_choice",
+        "display_role_labels": false,
+        "non_milestone_levels": "No additional species skill proposed; preserve existing approved scaling.",
+        "milestones": [
+          {
+            "proposed_unlock_level": 5,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "ice-armor",
+                "name": "Ice Armor",
+                "element": "ice",
+                "role": "tank",
+                "category": "defense",
+                "description": "Cribi gathers ice into protective armor.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "frozen-claw",
+                "name": "Frozen Claw",
+                "element": "ice",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Cribi shapes ice into a striking claw.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "snowdrop-mend",
+                "name": "Snowdrop Mend",
+                "element": "ice",
+                "role": "healer",
+                "category": "healing",
+                "description": "Cribi gathers soothing snowdrops around an injury.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "chilling-mist",
+                "name": "Chilling Mist",
+                "element": "ice",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Cribi releases a mist of Ice magic.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 8,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glacier-guard",
+                "name": "Glacier Guard",
+                "element": "ice",
+                "role": "tank",
+                "category": "defense",
+                "description": "Cribi braces behind a glacier-like ice formation.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "ice-fang",
+                "name": "Ice Fang",
+                "element": "ice",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Cribi strikes with a fang-shaped piece of ice.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "frost-renewal",
+                "name": "Frost Renewal",
+                "element": "ice",
+                "role": "healer",
+                "category": "healing",
+                "description": "Cribi channels gentle frost with restorative intent.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "snow-spiral",
+                "name": "Snow Spiral",
+                "element": "ice",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Cribi guides magical snow in a spiral.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 11,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "permafrost",
+                "name": "Permafrost",
+                "element": "ice",
+                "role": "tank",
+                "category": "defense",
+                "description": "Cribi braces itself with deeply layered ice.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "shard-barrage",
+                "name": "Shard Barrage",
+                "element": "ice",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Cribi casts a spray of sharp ice shards.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "crystal-bloom",
+                "name": "Crystal Bloom",
+                "element": "ice",
+                "role": "healer",
+                "category": "healing",
+                "description": "Cribi forms a restorative bloom of ice crystals.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "arctic-pulse",
+                "name": "Arctic Pulse",
+                "element": "ice",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Cribi channels an outward pulse of Ice magic.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 14,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "winter-barrier",
+                "name": "Winter Barrier",
+                "element": "ice",
+                "role": "tank",
+                "category": "defense",
+                "description": "Cribi shapes winter ice into a protective barrier.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "razor-icicles",
+                "name": "Razor Icicles",
+                "element": "ice",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Cribi strikes with pointed icicles.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "gentle-flurry",
+                "name": "Gentle Flurry",
+                "element": "ice",
+                "role": "healer",
+                "category": "healing",
+                "description": "Cribi gathers a soothing flurry of snow.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "frozen-veil",
+                "name": "Frozen Veil",
+                "element": "ice",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Cribi unfurls a veil of shimmering Ice magic.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 17,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "frost-sentinel",
+                "name": "Frost Sentinel",
+                "element": "ice",
+                "role": "tank",
+                "category": "defense",
+                "description": "Cribi takes a watchful stance behind frosted ice.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "icebreaker",
+                "name": "Icebreaker",
+                "element": "ice",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Cribi delivers a forceful strike with solid ice.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "winters-gift",
+                "name": "Winter's Gift",
+                "element": "ice",
+                "role": "healer",
+                "category": "healing",
+                "description": "Cribi offers restorative energy in a delicate snow crystal.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "blizzard-surge",
+                "name": "Blizzard Surge",
+                "element": "ice",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Cribi channels swirling blizzard magic toward an opponent.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 20,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "glacial-bulwark",
+                "name": "Glacial Bulwark",
+                "element": "ice",
+                "role": "tank",
+                "category": "defense",
+                "description": "Cribi gathers glacial ice into a sheltering formation.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "avalanche-strike",
+                "name": "Avalanche Strike",
+                "element": "ice",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Cribi strikes with a tumbling mass of ice.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "restoring-snowfall",
+                "name": "Restoring Snowfall",
+                "element": "ice",
+                "role": "healer",
+                "category": "healing",
+                "description": "Cribi channels soothing energy through falling snow.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "polar-burst",
+                "name": "Polar Burst",
+                "element": "ice",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Cribi releases a concentrated burst of polar Ice magic.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 23,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "ancient-glacier",
+                "name": "Ancient Glacier",
+                "element": "ice",
+                "role": "tank",
+                "category": "defense",
+                "description": "Cribi evokes the steadfast shape of ancient glacial ice.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "crystal-talons",
+                "name": "Crystal Talons",
+                "element": "ice",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Cribi shapes striking talons from ice crystals.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "frozen-sanctuary",
+                "name": "Frozen Sanctuary",
+                "element": "ice",
+                "role": "healer",
+                "category": "healing",
+                "description": "Cribi creates a nurturing scene of softly gleaming ice.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mystic-blizzard",
+                "name": "Mystic Blizzard",
+                "element": "ice",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Cribi gathers Ice magic in a swirling blizzard.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 26,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "eternal-frost",
+                "name": "Eternal Frost",
+                "element": "ice",
+                "role": "tank",
+                "category": "defense",
+                "description": "Cribi draws frost into a resolute protective stance.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "thousand-shards",
+                "name": "Thousand Shards",
+                "element": "ice",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Cribi casts a dramatic flourish of ice shards.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "heart-of-winter",
+                "name": "Heart of Winter",
+                "element": "ice",
+                "role": "healer",
+                "category": "healing",
+                "description": "Cribi channels the soothing essence of winter snow.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "absolute-zero",
+                "name": "Absolute Zero",
+                "element": "ice",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Cribi concentrates Ice magic into a brilliant frozen focus.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 30,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "winter-guardian",
+                "name": "Winter Guardian",
+                "element": "ice",
+                "role": "tank",
+                "category": "defense",
+                "description": "Cribi embodies a watchful guardian behind sculpted winter ice.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "glacial-cataclysm",
+                "name": "Glacial Cataclysm",
+                "element": "ice",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Cribi delivers a sweeping strike of glacial ice.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "everlasting-snow",
+                "name": "Everlasting Snow",
+                "element": "ice",
+                "role": "healer",
+                "category": "healing",
+                "description": "Cribi evokes restorative snowfall through softly glowing crystals.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "winters-awakening",
+                "name": "Winter's Awakening",
+                "element": "ice",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Cribi brings frost, snow and Ice magic together in a wintry flourish.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          }
+        ]
+      },
+      "player_skill_decisions": {
+        "at_approved_skill_learning_milestones": [
+          "keep_current_skill",
+          "replace_selected_learned_skill_with_eligible_new_skill"
+        ],
+        "replacement_requires_confirmation": true,
+        "replacement_semantics": "Future approved flow only: existing level-up animation with unchanged timing; show four skill names and descriptions; select one and confirm. Learn once with server-validated ownership, eligibility and retry protection. If the authoritative learned-skill capacity is full, explicitly select and confirm one old skill to replace atomically. Cancellation or failure preserves old skills. Do not infer learned capacity from the four local equipped slots. Unselected skills are not learned. Persistence and database compatibility must be verified before activation.",
+        "replacement_must_persist_per_individual_kith_when_implemented": true,
+        "eligible_is_not_learned_or_equipped": true,
+        "does_not_implement_database_persistence": true,
+        "no_unapproved_milestones_from_3_through_30": true
+      }
+    },
+    "awareness_milestones": {
+      "level_1": {
+        "recognizes_owner": true,
+        "identity_source": "owner_and_individual_pet_state",
+        "initial_relationship": "unfamiliar",
+        "uses_existing_personality_bond_mood_memory_rules": true,
+        "no_automatic_love_or_trust": true
+      },
+      "level_2": {
+        "retains_personality_and_memories": true,
+        "may_react_to_level_up": true,
+        "level_up_memory_type": "proposed_not_yet_in_memory_important_types",
+        "recognition_not_gated_by_level": true
+      },
+      "runtime_status": "requires_implementation_and_testing"
+    },
+    "implementation_safety": {
+      "configuration_only": true,
+      "does_not_change_existing_players_or_pet_rows": true,
+      "do_not_modify_production_database_without_separate_approval": true,
+      "do_not_change_existing_xp_rewards_until_verified": true,
+      "single_stat_source_requires_updating_starter_species_consumers": true,
+      "does_not_implement_leveling_or_stat_allocation": true,
+      "existing_level_1_allocations_must_be_retained": true,
+      "level_2_and_later_stat_points_are_manual_not_random": true,
+      "no_existing_gameplay_changed": true
+    },
+    "maximum_level": 30
+  },
+
   "runtime_contract": {
     "species_profile_is_static": true,
 

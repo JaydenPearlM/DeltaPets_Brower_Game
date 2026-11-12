@@ -68,27 +68,6 @@
     flex-direction: column;
     padding: 12px !important;
   }
-  .ww-side {
-    padding: 8px !important;
-  }
-  .ww-lanes {
-    gap: 6px !important;
-  }
-  .ww-unit {
-    padding: 6px 3px !important;
-    font-size: 0.68rem !important;
-  }
-  .ww-unit .ww-portrait {
-    width: 54px !important;
-    height: 54px !important;
-  }
-  .ww-unit .ww-art-pending {
-    min-height: 54px !important;
-    font-size: 0.62rem;
-  }
-  .ww-unit-meta {
-    font-size: 0.6rem !important;
-  }
   .ww-command-buttons {
     gap: 8px !important;
   }
@@ -97,9 +76,6 @@
     flex: 1;
     padding: 10px 6px !important;
     font-size: 0.8rem !important;
-  }
-  .ww-page .ww-affinity {
-    font-size: 0.68rem;
   }
   .ww-page .ww-explore-viewport {
     min-height: 0;

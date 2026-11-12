@@ -35,7 +35,7 @@ async function main(){
  INSERT INTO pets(id,user_id,xp) VALUES('${pet}','${owner}',575);
  INSERT INTO pet_stats(pet_id) VALUES('${pet}');
  INSERT INTO wildwood_expeditions VALUES('${owner}','${owner}');`);
- sql(fs.readFileSync('supabase/migrations/20261104134447_wildwood_victory_progression.sql','utf8'));
+ sql(fs.readFileSync('supabase/migrations/20261104165826_wildwood_victory_progression.sql','utf8'));
  const proposal=fs.readFileSync('supabase/review/level-2-foundation.proposed.sql','utf8');
  assert.ok(proposal.trimEnd().endsWith('ROLLBACK;'));
  // Commit ONLY in this newly-created disposable loopback cluster. Source stays ROLLBACK.

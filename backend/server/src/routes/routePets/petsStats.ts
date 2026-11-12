@@ -2,6 +2,7 @@
 
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import type { BaseStatsTemplate } from "./petsType";
+import { maximumMp } from "../../shared/battle/mana";
 
 /** Shape of a row from the pet_stats table */
 type PetStatsRow = {
@@ -179,5 +180,6 @@ export async function fetchTotalPoints(petId: string) {
   // Your rule: displayed HP = (hp stat) * 2
   const hp_display = total.hp * 2;
 
-  return { base, alloc, total, total_points, hp_display };
+  return { base, alloc, total, total_points, hp_display,
+    mpMax: maximumMp(total.mana, passiveEffects.mana ?? 0) };
 }

@@ -18,6 +18,9 @@ export type BattleParticipantInput = {
   level: number;
   hpMax: number;
   hpCur: number;
+  // Optional only for snapshots created before battle MP was introduced.
+  mpMax?: number;
+  mpCur?: number;
   atk: number;
   def: number;
   magi: number;

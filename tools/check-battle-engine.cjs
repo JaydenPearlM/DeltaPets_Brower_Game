@@ -2,6 +2,7 @@
 const assert = require("node:assert/strict");
 const { createBattle, resolveBattleAction, BattleRuleError } = require("../backend/server/dist/battle/battleEngine.js");
 const { calculateDamage, calculateMend, getElementMultiplier } = require("../backend/server/dist/battle/battleMath.js");
+const { maximumMp, hasBattleMp } = require("../backend/server/dist/shared/battle/mana.js");
 
 let checks = 0;
 function check(name, run) {
@@ -14,6 +15,7 @@ function pet(id, side, overrides = {}) {
     id, speciesId: side === "player" ? "fire_starter" : "kithna_pebelin",
     name: id, side, row: "middle", element: "fire", level: 1,
     hpMax: 40, hpCur: 40, atk: 8, def: 4, magi: 8, spd: 4,
+    mpMax: 6, mpCur: 6,
     ...overrides,
   };
 }
@@ -178,6 +180,66 @@ check("Wildwood opt-in accepts levels through 30 without changing the default ca
     assert.throws(() => createBattle("invalid", [pet("p", "player", { level }), pet("e", "enemy")], 1, 30), BattleRuleError);
   }
   assert.throws(() => createBattle("invalid-cap", [pet("p", "player"), pet("e", "enemy")], 1, 100), /Invalid battle level cap/);
+});
+
+check("Mana capacity examples, passive bonus once, and invalid data", () => {
+  for (const [mana, expected] of [[5, 15], [2, 6], [1, 3], [0, 0]]) {
+    assert.equal(maximumMp(mana), expected);
+  }
+  assert.equal(maximumMp(2 + 1, 2), 15);
+  for (const bad of [undefined, null, NaN, Infinity, "5"]) {
+    assert.equal(maximumMp(bad), null);
+    assert.equal(maximumMp(5, bad), bad === undefined ? 15 : null);
+  }
+});
+
+check("MP survives serialization and free actions; invalid/replayed actions cannot spend it", () => {
+  const state = pair({ mpMax: 15, mpCur: 4 });
+  const recovered = JSON.parse(JSON.stringify(state));
+  assert.equal(hasBattleMp(recovered.participants[0]), true);
+  const action = { actorId: "p", turnNumber: state.turnNumber, action: "basic_attack", targetId: "e" };
+  const next = resolveBattleAction(recovered, action);
+  assert.equal(next.participants[0].mpCur, 4);
+  assert.equal(act(next, "guard").participants[0].mpCur, 4);
+  const before = structuredClone(next);
+  assert.throws(() => resolveBattleAction(next, action), /Stale battle turn/);
+  assert.throws(() => act(next, "basic_attack", "missing"), /Target does not exist/);
+  assert.deepEqual(next, before);
+  const legacy = pair({ mpMax: undefined, mpCur: undefined });
+  assert.equal(hasBattleMp(legacy.participants[0]), false);
+  assert.equal(act(legacy, "guard").participants[0].mpCur, undefined);
+  for (const mp of [{ mpMax: 6 }, { mpCur: 1 }, { mpMax: 6, mpCur: 7 }, { mpMax: 6, mpCur: -1 }]) {
+    assert.throws(() => pair({ mpMax: undefined, mpCur: undefined, ...mp }), BattleRuleError);
+  }
+});
+
+check("Element Strike uses ATK and existing elemental power, even at zero MP", () => {
+  const state = pair({ atk: 20, magi: 100, mpCur: 0 }, { element: "earth", def: 4 });
+  const next = act(state, "skill", "e", "basic-strike");
+  assert.equal(next.participants[1].hpCur, 11); // round(20 * 1.25 * 1.25 - 4 * .45) = 29
+  assert.equal(next.participants[0].mpCur, 0);
+});
+
+check("Mend spends exactly 1 MP; insufficient, invalid, stale and legacy casts preserve state", () => {
+  const state = pair({ hpCur: 20, mpCur: 1 });
+  const action = { actorId: "p", turnNumber: state.turnNumber, action: "skill", skillId: "mend", targetId: "p" };
+  const next = resolveBattleAction(state, action);
+  assert.equal(next.participants[0].mpCur, 0);
+  assert.equal(next.log.find(event => event.type === "heal").amount, 12);
+  assert.equal(state.participants[0].mpCur, 1);
+  const recovered = JSON.parse(JSON.stringify(next));
+  const before = structuredClone(recovered);
+  assert.throws(() => resolveBattleAction(recovered, action), /Stale battle turn/);
+  assert.throws(() => act(recovered, "skill", "p", "mend"), /Not enough MP/);
+  assert.deepEqual(recovered, before);
+  for (const target of ["missing", "e"]) {
+    assert.throws(() => act(state, "skill", target, "mend"), BattleRuleError);
+    assert.equal(state.participants[0].mpCur, 1);
+  }
+  const legacy = pair({ mpMax: undefined, mpCur: undefined });
+  const legacyBefore = structuredClone(legacy);
+  assert.throws(() => act(legacy, "skill", "p", "mend"), /MP is unavailable/);
+  assert.deepEqual(legacy, legacyBefore);
 });
 
 console.log(`${checks} battle engine checks passed.`);

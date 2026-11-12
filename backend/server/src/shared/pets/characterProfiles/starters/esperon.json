@@ -6,7 +6,7 @@
 
   "species_ids": ["shadow_night_bad", "shadow_day_good"],
 
-  "display_name": "Esperon",
+  "display_name": "Espyr",
   "element": "shadow",
   "rarity": "epic",
   "asset_key": "esperon",
@@ -36,7 +36,7 @@
       },
 
       "evolution": {
-        "hatchling": "Esperon",
+        "hatchling": "Espyr",
         "lowform": "Esperion",
         "highform": "Nightmareimp",
         "legion": "Espereonite",
@@ -62,7 +62,7 @@
       },
 
       "evolution": {
-        "hatchling": "Esperon",
+        "hatchling": "Espyr",
         "lowform": "Esperion",
         "highform": "Shadeclaw",
         "legion": "Nightvielclaw",
@@ -77,8 +77,8 @@
     "summary": "",
 
     "species_locked_facts": [
-      "Esperon are Shadow-element Kith.",
-      "Esperon can belong to either the night-aligned starter path or the day-aligned starter path."
+      "Espyr are Shadow-element Kith.",
+      "Espyr can belong to either the night-aligned starter path or the day-aligned starter path."
     ]
   },
 
@@ -100,9 +100,9 @@
       "current_needs"
     ],
 
-    "individuality_rule": "Two Esperon are not required to share personality, temperament, affection style, social behavior, preferences, fears, habits, morality, or reactions.",
+    "individuality_rule": "Two Espyr are not required to share personality, temperament, affection style, social behavior, preferences, fears, habits, morality, or reactions.",
 
-    "path_rule": "The Esperon evolution path does not automatically determine the individual Esperon's personality.",
+    "path_rule": "The Espyr evolution path does not automatically determine the individual Espyr's personality.",
 
     "self_awareness": {
       "recognizes_self_as_individual": true,
@@ -157,7 +157,7 @@
       "impulsiveness"
     ],
 
-    "behavior_rule": "Personality rolls change how this individual Esperon expresses an intent. They do not change the underlying biological need.",
+    "behavior_rule": "Personality rolls change how this individual Espyr expresses an intent. They do not change the underlying biological need.",
 
     "examples": {
       "grumpy": {
@@ -247,7 +247,7 @@
     "mood_can_influence_experience": true,
     "personality_can_influence_experience": true,
 
-    "discovery_rule": "Repeated experiences gradually establish the individual Esperon's preferences rather than assigning universal species favorites."
+    "discovery_rule": "Repeated experiences gradually establish the individual Espyr's preferences rather than assigning universal species favorites."
   },
 
   "relationship": {
@@ -550,7 +550,7 @@
 
     "high_bond_does_not_remove_personality": true,
 
-    "rule": "High bond can increase trust and willingness, but does not force an individual Esperon to become cheerful, social, affectionate, energetic, obedient, good, or bad."
+    "rule": "High bond can increase trust and willingness, but does not force an individual Espyr to become cheerful, social, affectionate, energetic, obedient, good, or bad."
   },
 
   "bond_behavior": {
@@ -867,12 +867,12 @@
     "path_facts": {
       "shadow_night_bad": {
         "preferred_time": "night",
-        "evolution": ["Esperon", "Esperion", "Nightmareimp", "Espereonite"]
+        "evolution": ["Espyr", "Esperion", "Nightmareimp", "Espereonite"]
       },
 
       "shadow_day_good": {
         "preferred_time": "day",
-        "evolution": ["Esperon", "Esperion", "Shadeclaw", "Nightvielclaw"]
+        "evolution": ["Espyr", "Esperion", "Shadeclaw", "Nightvielclaw"]
       }
     },
 
@@ -882,6 +882,2082 @@
 
     "never_describe_all_esperon_as_having_the_same_personality": true,
     "never_use_registry_variant_as_personality_description": true
+  },
+
+  "progression": {
+    "contract_version": 1,
+    "status": "design_contract_requires_backend_integration",
+    "species_definition_is_authoritative_for_base_stats": false,
+    "base_stats_reference": "Preserve evolution_paths.*.egg_base_stats as profile references. Live starter-species.ts remains authoritative; values differ and have not been reconciled.",
+    "preserve_existing_hatch_bonus_and_individual_stat_rolls": true,
+    "experience": {
+      "progression_group": "starter_shared",
+      "same_progression_rules_for_all_starters": true,
+      "non_starter_progression": "species_specific",
+      "level_1_to_2": {
+        "method": "complete_server_verified_hatching_and_care_requirements",
+        "required_activities": [
+          "owner_hatches_eggs",
+          "owner_maintains_this_kith_in_good_health"
+        ],
+        "activity_rules": {
+          "owner_hatches_eggs": {
+            "count_required": null,
+            "count_scope": "owner_account; whether starter hatch counts is undecided",
+            "only_successful_hatches_count": null,
+            "source_of_truth": "server_verified_owner_hatch_events",
+            "do_not_count_repeated_client_clicks": true
+          },
+          "owner_maintains_this_kith_in_good_health": {
+            "health_definition": "undecided; derived from actual runtime care metrics, not invented values",
+            "care_dimensions_to_evaluate": [
+              "hunger",
+              "clean",
+              "happy",
+              "comfort",
+              "rest",
+              "energy"
+            ],
+            "minimum_values": null,
+            "healthy_duration_required": null,
+            "source_of_truth": "server_verified_pet_care_and_health_state",
+            "care_refusals_do_not_consume_items": true
+          }
+        },
+        "both_conditions_required": true,
+        "xp_target": null,
+        "xp_per_hatch": null,
+        "xp_per_care_action": null,
+        "xp_from_other_sources": "existing_game_rules_unchanged",
+        "level_2_award_trigger": "only_after_approved_hatch_and_care_requirements_are_met",
+        "repeat_award_prevention": true
+      },
+      "levels_after_2": {
+        "rules": "undecided",
+        "xp_curve": null,
+        "do_not_generate_unapproved_requirements": true
+      },
+      "xp_schedule": {
+        "unit": "XP",
+        "interpretation": "xp_to_reach_level is the additional XP required since previous level; cumulative_xp_to_reach_level is total lifetime XP needed",
+        "starting_level": 1,
+        "starting_cumulative_xp": 0,
+        "levels_defined_for_planning": "1 through 30; approved maximum level is 30",
+        "values_status": "undecided: null entries require game-design approval",
+        "shared_schedule_key": "starter_shared",
+        "entries": [
+          {
+            "level": 1,
+            "xp_from_previous_level": 0,
+            "cumulative_xp_to_reach_level": 0,
+            "progression_requirements": "initial_hatch",
+            "stat_points_awarded": 0,
+            "notes": null
+          },
+          {
+            "level": 2,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": "hatch_eggs_and_maintain_health",
+            "stat_points_awarded": 2,
+            "notes": "Level 2 requirements pending exact amounts"
+          },
+          {
+            "level": 3,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 4,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 5,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 6,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 7,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 8,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 9,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 10,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 11,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 12,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 13,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 14,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 15,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 16,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 17,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 18,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 19,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 20,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 21,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 22,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 23,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 24,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 25,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 26,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 27,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 28,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 29,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 30,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          }
+        ],
+        "invariant": "Do not treat null XP as zero, and do not award levels from this proposal until implemented and validated",
+        "maximum_level": 30
+      }
+    },
+    "stat_growth": {
+      "starting_level": 1,
+      "starting_stats": "species_base_plus_existing_level_1_hatch_allocation",
+      "base_stats_immutable_after_hatch": true,
+      "preserve_individual_strong_and_weak_stat_traits": true,
+      "player_allocation": {
+        "unlocks_at_level": 2,
+        "source": "new_level_up_points_only",
+        "stat_keys": [
+          "hp",
+          "atk",
+          "magi",
+          "def",
+          "spd",
+          "mana"
+        ],
+        "points_per_later_level": null,
+        "per_stat_caps": null,
+        "do_not_reallocate_base_stats": true,
+        "do_not_reallocate_hatch_rolls": true,
+        "spending_must_be_server_validated": true,
+        "spending_must_be_atomic": true,
+        "unspent_points_persist_per_pet": true,
+        "level_1_manual_allocation": "existing_seven_point_hatch_roll_must_remain_unchanged",
+        "existing_level_1_editor": "review_if_it_is_player_controlled; never rewrite_existing_level_1_allocations",
+        "no_random_stat_allocation_from_level_2_onward": true,
+        "level_2_points_source": "experience.xp_schedule.entries (level 2).stat_points_awarded"
+      },
+      "stat_components": [
+        "species_base",
+        "level_1_hatch_allocation",
+        "level_2_and_later_player_allocations"
+      ],
+      "effective_stat_rule": "sum_components_without_mutating_existing_baseline_or_hatch_roll"
+    },
+    "skills": {
+      "progression_scope": "each_level_reviewed_individually",
+      "learned_skills_persist_per_pet": true,
+      "do_not_replace_existing_skills_on_level_up": true,
+      "other_levels": "undecided; no additional skill-learning milestones approved for levels 3 through 30",
+      "skills_after_evolution": "preserve_existing_evolution_skill_registry",
+      "skill_unlocks_require_server_validation": true,
+      "move_catalog": [
+        {
+          "skill_id": "basic-strike",
+          "display_name": "Elemental Strike",
+          "element": "derived_from_pet_element",
+          "category": "basic_combat_action",
+          "description": "Existing Shadow physical basic attack; reuse approved ATK formula and elemental scaling.",
+          "power": null,
+          "accuracy": null,
+          "cost": 0,
+          "cooldown": null,
+          "target": null,
+          "effect": null,
+          "status": "existing_runtime_reference_no_new_unlock"
+        },
+        {
+          "skill_id": "guard",
+          "display_name": "Guard",
+          "element": "derived_from_pet_element",
+          "category": "basic_combat_action",
+          "description": "Existing defensive command; reuse approved battle behavior.",
+          "power": null,
+          "accuracy": null,
+          "cost": 0,
+          "cooldown": null,
+          "target": null,
+          "effect": null,
+          "status": "existing_runtime_reference_no_new_unlock"
+        },
+        {
+          "skill_id": "mend",
+          "display_name": "Mend",
+          "element": "derived_from_pet_element",
+          "category": "basic_combat_action",
+          "description": "Existing MAGI healing; reuse approved formula and 1 MP cost.",
+          "power": null,
+          "accuracy": null,
+          "cost": 1,
+          "cooldown": null,
+          "target": null,
+          "effect": null,
+          "status": "existing_runtime_reference_no_new_unlock"
+        }
+      ],
+      "skill_unlocks_by_level": [
+        {
+          "level": 1,
+          "moves": [],
+          "status": "existing_starting_abilities_referenced_in_move_catalog; no_new_unlock"
+        },
+        {
+          "level": 2,
+          "moves": [],
+          "status": "proposed_skill_choice_only; no_auto_unlock_or_learning"
+        },
+        {
+          "level": 3,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 4,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 5,
+          "moves": [],
+          "status": "undecided; old_generic_level_5_placeholder_not_an_approved_esperon_unlock"
+        },
+        {
+          "level": 6,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 7,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 8,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 9,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 10,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 11,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 12,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 13,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 14,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 15,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 16,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 17,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 18,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 19,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 20,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 21,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 22,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 23,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 24,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 25,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 26,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 27,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 28,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 29,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 30,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        }
+      ],
+      "level_milestones_reference": "skill_unlocks_by_level is the only per-level move-unlock table. Level 2 lists candidates, not automatically learned moves.",
+      "hatchling_move_design_draft": {
+        "status": "PROPOSED",
+        "implementation_approved": false,
+        "combat_enabled": false,
+        "automatic_grant": false,
+        "notes": "Four Shadow-only design candidates. Display names and descriptions, not roles. Choose one; no production learning activated.",
+        "candidate_moves": [
+          {
+            "proposed_skill_id": "dusk-mantle",
+            "name": "Dusk Mantle",
+            "element": "shadow",
+            "role": "tank",
+            "category": "defense",
+            "description": "Espyr gathers shadow into a protective mantle.",
+            "intended_effect": "Defensive ability; mechanics undecided.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null,
+            "branch_eligibility": {
+              "status": "PROPOSED",
+              "starting_esperon": true,
+              "esperia": true,
+              "espyrian": true,
+              "light_variant_eligible_branch": "espyrian",
+              "light_variant_implementation_approved": false,
+              "light_variant_unlock_level": null,
+              "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+            }
+          },
+          {
+            "proposed_skill_id": "shade-talon",
+            "name": "Shade Talon",
+            "element": "shadow",
+            "role": "dps",
+            "category": "physical_damage",
+            "description": "Espyr delivers a physical talon strike.",
+            "intended_effect": "Physical offense; mechanics undecided.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null,
+            "branch_eligibility": {
+              "status": "PROPOSED",
+              "starting_esperon": true,
+              "esperia": true,
+              "espyrian": true,
+              "light_variant_eligible_branch": "espyrian",
+              "light_variant_implementation_approved": false,
+              "light_variant_unlock_level": null,
+              "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+            }
+          },
+          {
+            "proposed_skill_id": "quiet-solace",
+            "name": "Quiet Solace",
+            "element": "shadow",
+            "role": "healer",
+            "category": "healing",
+            "description": "Espyr channels gentle restorative Shadow energy.",
+            "intended_effect": "MAGI-based restoration; mechanics undecided.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null,
+            "branch_eligibility": {
+              "status": "PROPOSED",
+              "starting_esperon": true,
+              "esperia": true,
+              "espyrian": true,
+              "light_variant_eligible_branch": "espyrian",
+              "light_variant_implementation_approved": false,
+              "light_variant_unlock_level": null,
+              "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+            }
+          },
+          {
+            "proposed_skill_id": "umbral-wisp",
+            "name": "Umbral Wisp",
+            "element": "shadow",
+            "role": "sorcerer",
+            "category": "ranged_magic",
+            "description": "Espyr directs a wisp of Shadow magic.",
+            "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null,
+            "branch_eligibility": {
+              "status": "PROPOSED",
+              "starting_esperon": true,
+              "esperia": true,
+              "espyrian": true,
+              "light_variant_eligible_branch": "espyrian",
+              "light_variant_implementation_approved": false,
+              "light_variant_unlock_level": null,
+              "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+            }
+          }
+        ]
+      },
+      "element_restriction": "shadow",
+      "available_combat_roles": [
+        "tank",
+        "healer",
+        "dps",
+        "sorcerer"
+      ],
+      "combat_roles_definition": {
+        "tank": "defensive abilities",
+        "healer": "healing abilities",
+        "dps": "physical damage abilities",
+        "sorcerer": "ranged magic abilities"
+      },
+      "skill_sources": {
+        "natural_species_progression": "species-specific choices at explicitly approved milestones",
+        "additional_compatible_skills": "eligible compatible skills obtained from discovery, purchase, or rewards; separate from natural progression"
+      },
+      "additional_skill_catalog": {
+        "status": "not_defined_here",
+        "separate_from_natural_progression": true,
+        "compatible_element": "shadow",
+        "entries": []
+      },
+      "level_2_skill_choice": {
+        "level": 2,
+        "source": "natural_species_progression",
+        "status": "PROPOSED",
+        "element": "shadow",
+        "offered_roles": [
+          "tank",
+          "dps",
+          "healer",
+          "sorcerer"
+        ],
+        "candidate_skill_ids": [
+          "dusk-mantle",
+          "shade-talon",
+          "quiet-solace",
+          "umbral-wisp"
+        ],
+        "selection_count": 1,
+        "selection_method": "player_choice",
+        "milestone_key": "level-2",
+        "automatic_grant": false,
+        "eligible_does_not_mean_learned_or_equipped": true,
+        "numeric_values_undecided": true,
+        "choice_requires_approved_level_milestone_and_backend_validation": true,
+        "implementation_approved": false,
+        "combat_enabled": false
+      },
+      "level_3_to_30_skill_design_proposal": {
+        "status": "PROPOSED",
+        "implementation_approved": false,
+        "combat_enabled": false,
+        "automatic_grant": false,
+        "notes": "Shadow design reference only, not an unlock table or playable registry. Descriptions are themes, not approved mechanics. Maximum MP = (base Mana + allocated Mana + applicable passive Mana) * 3. MAGI determines magical power. Physical basic attacks are free; special skills require approved MP costs. Existing Mend costs 1 MP. Proposed costs remain null.",
+        "selection_count": 1,
+        "selection_method": "player_choice",
+        "display_role_labels": false,
+        "non_milestone_levels": "No additional species skill proposed; preserve existing approved scaling.",
+        "milestones": [
+          {
+            "proposed_unlock_level": 5,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "gloam-guard",
+                "name": "Gloam Guard",
+                "element": "shadow",
+                "role": "tank",
+                "category": "defense",
+                "description": "Espyr folds dusk-like shadows around itself defensively.",
+                "intended_effect": "Defensive ability; mechanics undecided.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "dusktip-slash",
+                "name": "Dusktip Slash",
+                "element": "shadow",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Espyr delivers a focused physical slash.",
+                "intended_effect": "Physical offense; mechanics undecided.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "twilight-comfort",
+                "name": "Twilight Comfort",
+                "element": "shadow",
+                "role": "healer",
+                "category": "healing",
+                "description": "Espyr gathers soothing energy in a twilight glow.",
+                "intended_effect": "MAGI-based restoration; mechanics undecided.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "dusklight-spark",
+                "name": "Dusklight Spark",
+                "element": "shadow",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Espyr releases a spark of Shadow magic.",
+                "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 8,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "silhouette-ward",
+                "name": "Silhouette Ward",
+                "element": "shadow",
+                "role": "tank",
+                "category": "defense",
+                "description": "Espyr shapes its silhouette into a protective stance.",
+                "intended_effect": "Defensive ability; mechanics undecided.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "crescent-rend",
+                "name": "Crescent Rend",
+                "element": "shadow",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Espyr traces a crescent with a physical strike.",
+                "intended_effect": "Physical offense; mechanics undecided.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "hushed-renewal",
+                "name": "Hushed Renewal",
+                "element": "shadow",
+                "role": "healer",
+                "category": "healing",
+                "description": "Espyr channels quiet restorative energy.",
+                "intended_effect": "MAGI-based restoration; mechanics undecided.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "velvet-spiral",
+                "name": "Velvet Spiral",
+                "element": "shadow",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Espyr gathers Shadow magic into a spiraling ribbon.",
+                "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 11,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "midnight-bastion",
+                "name": "Midnight Bastion",
+                "element": "shadow",
+                "role": "tank",
+                "category": "defense",
+                "description": "Espyr draws midnight shadows into a defensive formation.",
+                "intended_effect": "Defensive ability; mechanics undecided.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "umbra-pounce",
+                "name": "Umbra Pounce",
+                "element": "shadow",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Espyr lunges into a physical strike.",
+                "intended_effect": "Physical offense; mechanics undecided.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "moonshade-balm",
+                "name": "Moonshade Balm",
+                "element": "shadow",
+                "role": "healer",
+                "category": "healing",
+                "description": "Espyr offers soothing energy in a moonlit shadow.",
+                "intended_effect": "MAGI-based restoration; mechanics undecided.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "penumbra-pulse",
+                "name": "Penumbra Pulse",
+                "element": "shadow",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Espyr sends a pulse of Shadow magic outward.",
+                "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 14,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "eclipse-shelter",
+                "name": "Eclipse Shelter",
+                "element": "shadow",
+                "role": "tank",
+                "category": "defense",
+                "description": "Espyr shapes eclipse-like shadows into shelter.",
+                "intended_effect": "Defensive ability; mechanics undecided.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "nightarc-cleave",
+                "name": "Nightarc Cleave",
+                "element": "shadow",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Espyr delivers an arcing physical blow.",
+                "intended_effect": "Physical offense; mechanics undecided.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "stillnight-grace",
+                "name": "Stillnight Grace",
+                "element": "shadow",
+                "role": "healer",
+                "category": "healing",
+                "description": "Espyr channels the restorative calm of still night.",
+                "intended_effect": "MAGI-based restoration; mechanics undecided.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "eclipse-weave",
+                "name": "Eclipse Weave",
+                "element": "shadow",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Espyr weaves Shadow magic into an eclipse motif.",
+                "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 17,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "veil-sentinel",
+                "name": "Veil Sentinel",
+                "element": "shadow",
+                "role": "tank",
+                "category": "defense",
+                "description": "Espyr assumes a watchful stance within a shadowed veil.",
+                "intended_effect": "Defensive ability; mechanics undecided.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "duskfang-rush",
+                "name": "Duskfang Rush",
+                "element": "shadow",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Espyr advances with a forceful physical strike.",
+                "intended_effect": "Physical offense; mechanics undecided.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "soulshade-mend",
+                "name": "Soulshade Mend",
+                "element": "shadow",
+                "role": "healer",
+                "category": "healing",
+                "description": "Espyr gathers restorative Shadow energy around an injury.",
+                "intended_effect": "MAGI-based restoration; mechanics undecided.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "astral-gloom",
+                "name": "Astral Gloom",
+                "element": "shadow",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Espyr concentrates Shadow magic in a starless pattern.",
+                "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 20,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "obsidian-aegis",
+                "name": "Obsidian Aegis",
+                "element": "shadow",
+                "role": "tank",
+                "category": "defense",
+                "description": "Espyr shapes deep shadows into a resolute guard.",
+                "intended_effect": "Defensive ability; mechanics undecided.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "nightfall-rake",
+                "name": "Nightfall Rake",
+                "element": "shadow",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Espyr delivers a sweeping physical rake.",
+                "intended_effect": "Physical offense; mechanics undecided.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "eventide-refuge",
+                "name": "Eventide Refuge",
+                "element": "shadow",
+                "role": "healer",
+                "category": "healing",
+                "description": "Espyr offers a restorative gathering of evening shadows.",
+                "intended_effect": "MAGI-based restoration; mechanics undecided.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "horizon-surge",
+                "name": "Horizon Surge",
+                "element": "shadow",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Espyr channels Shadow magic along a horizon-like arc.",
+                "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 23,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "deepnight-guardian",
+                "name": "Deepnight Guardian",
+                "element": "shadow",
+                "role": "tank",
+                "category": "defense",
+                "description": "Espyr gathers deep-night shadows into a guardian stance.",
+                "intended_effect": "Defensive ability; mechanics undecided.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "shadowcrest-flurry",
+                "name": "Shadowcrest Flurry",
+                "element": "shadow",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Espyr delivers a flourish of physical strikes.",
+                "intended_effect": "Physical offense; mechanics undecided.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "lunar-reprieve",
+                "name": "Lunar Reprieve",
+                "element": "shadow",
+                "role": "healer",
+                "category": "healing",
+                "description": "Espyr channels soothing energy beneath a lunar motif.",
+                "intended_effect": "MAGI-based restoration; mechanics undecided.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "eclipse-convergence",
+                "name": "Eclipse Convergence",
+                "element": "shadow",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Espyr brings strands of Shadow magic together.",
+                "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 26,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "nightbound-citadel",
+                "name": "Nightbound Citadel",
+                "element": "shadow",
+                "role": "tank",
+                "category": "defense",
+                "description": "Espyr evokes a protective citadel of shadow.",
+                "intended_effect": "Defensive ability; mechanics undecided.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "umbral-requiem",
+                "name": "Umbral Requiem",
+                "element": "shadow",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Espyr delivers a sweeping physical flourish.",
+                "intended_effect": "Physical offense; mechanics undecided.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "starlit-solace",
+                "name": "Starlit Solace",
+                "element": "shadow",
+                "role": "healer",
+                "category": "healing",
+                "description": "Espyr gathers restorative energy amid star-like glimmers.",
+                "intended_effect": "MAGI-based restoration; mechanics undecided.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "dusk-zenith",
+                "name": "Dusk Zenith",
+                "element": "shadow",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Espyr concentrates Shadow magic at a darkened zenith.",
+                "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 30,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "combat_enabled": false,
+            "automatic_grant": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "eclipse-sovereign",
+                "name": "Eclipse Sovereign",
+                "element": "shadow",
+                "role": "tank",
+                "category": "defense",
+                "description": "Espyr embodies a steadfast guardian beneath an eclipse motif.",
+                "intended_effect": "Defensive ability; mechanics undecided.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "midnight-crescendo",
+                "name": "Midnight Crescendo",
+                "element": "shadow",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Espyr delivers a climactic physical flourish.",
+                "intended_effect": "Physical offense; mechanics undecided.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "evernight-sanctuary",
+                "name": "Evernight Sanctuary",
+                "element": "shadow",
+                "role": "healer",
+                "category": "healing",
+                "description": "Espyr channels restorative energy through gentle shadows.",
+                "intended_effect": "MAGI-based restoration; mechanics undecided.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              },
+              {
+                "proposed_skill_id": "celestial-twilight",
+                "name": "Celestial Twilight",
+                "element": "shadow",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Espyr brings Shadow magic together in a celestial twilight motif.",
+                "intended_effect": "MAGI-based Shadow ability; mechanics undecided.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "implementation_approved": false,
+                "combat_enabled": false,
+                "automatic_grant": false,
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null,
+                "branch_eligibility": {
+                  "status": "PROPOSED",
+                  "starting_esperon": true,
+                  "esperia": true,
+                  "espyrian": true,
+                  "light_variant_eligible_branch": "espyrian",
+                  "light_variant_implementation_approved": false,
+                  "light_variant_unlock_level": null,
+                  "notes": "Shared Shadow choice in either branch. A Light + Shadow adaptation is proposed only for finalized Espyrian; never grant Light to Espyr or Esperia. Adaptation effects and timing undecided."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "player_skill_decisions": {
+        "at_approved_skill_learning_milestones": [
+          "keep_current_skill",
+          "replace_selected_learned_skill_with_eligible_new_skill"
+        ],
+        "replacement_requires_confirmation": true,
+        "replacement_semantics": "Future approved flow only: existing level-up animation with unchanged timing; show four skill names and descriptions; select one and confirm. Learn once with server-validated ownership, eligibility and retry protection. If the authoritative learned-skill capacity is full, explicitly select and confirm one old skill to replace atomically. Cancellation or failure preserves old skills. Do not infer learned capacity from the four local equipped slots. Unselected skills are not learned. Persistence and database compatibility must be verified before activation.",
+        "replacement_must_persist_per_individual_kith_when_implemented": true,
+        "eligible_is_not_learned_or_equipped": true,
+        "does_not_implement_database_persistence": true,
+        "no_unapproved_milestones_from_3_through_30": true
+      }
+    },
+    "awareness_milestones": {
+      "level_1": {
+        "recognizes_owner": true,
+        "identity_source": "owner_and_individual_pet_state",
+        "initial_relationship": "unfamiliar",
+        "uses_existing_personality_bond_mood_memory_rules": true,
+        "no_automatic_love_or_trust": true
+      },
+      "level_2": {
+        "retains_personality_and_memories": true,
+        "may_react_to_level_up": true,
+        "level_up_memory_type": "proposed_not_yet_in_memory_important_types",
+        "recognition_not_gated_by_level": true
+      },
+      "runtime_status": "requires_implementation_and_testing"
+    },
+    "implementation_safety": {
+      "configuration_only": true,
+      "does_not_change_existing_players_or_pet_rows": true,
+      "do_not_modify_production_database_without_separate_approval": true,
+      "do_not_change_existing_xp_rewards_until_verified": true,
+      "single_stat_source_requires_updating_starter_species_consumers": true,
+      "does_not_implement_leveling_or_stat_allocation": true,
+      "existing_level_1_allocations_must_be_retained": true,
+      "level_2_and_later_stat_points_are_manual_not_random": true,
+      "no_existing_gameplay_changed": true
+    },
+    "maximum_level": 30
+  },
+
+  "split_evolution_design_contract": {
+    "status": "PROPOSED",
+    "implementation_approved": false,
+    "combat_enabled": false,
+    "automatic_grant": false,
+    "stage": "lowform",
+    "selection_source": "individual_persisted_personality",
+    "excluded_selection_inputs": [
+      "species_default",
+      "registry_variant",
+      "preferred_time",
+      "mood",
+      "happiness",
+      "bond",
+      "affection"
+    ],
+    "classification_thresholds": null,
+    "neutral_personality_behavior": null,
+    "branch_unlock_timing": null,
+    "requirements": "Preserve existing runtime evolution requirements and timing; do not activate a new selector.",
+    "branches": [
+      {
+        "personality_classification": "negative",
+        "lowform": "Esperia",
+        "elements": [
+          "shadow"
+        ],
+        "asset_filename": "lowform_BadP_Espyrian.png",
+        "asset_path": "frontend/web/src/kith/assets/startepets/lowform/lowform_BadP_Espyrian.png",
+        "asset_status": "verified_exact_case; previously user-confirmed for Esperia; requested lowform_esperia.png is missing, so no replacement was made"
+      },
+      {
+        "personality_classification": "positive",
+        "lowform": "Espyrian",
+        "elements": [
+          "light",
+          "shadow"
+        ],
+        "asset_filename": "lowform_GoodP_Espyrian.png",
+        "asset_path": "frontend/web/src/kith/assets/startepets/lowform/lowform_GoodP_Espyrian.png",
+        "asset_status": "verified_exact_case"
+      }
+    ],
+    "preserve_personality": true,
+    "reroll_personality": false,
+    "preserve_memories": true,
+    "preserve_individual_identity": true,
+    "finalized_branch_must_remain_consistent": true,
+    "branch_persistence": "Requires separately verified persistence; no database changes.",
+    "existing_evolution_paths_unchanged": true,
+    "highform_and_legion_branch_mapping": null,
+    "notes": "Existing night/day variants are not personality. Preserve Esperion, Nightmareimp/Espereonite and Shadeclaw/Nightvielclaw in existing paths. Later-form mapping is undecided. Profile display name matches live registry Espyr; retain legacy esperon metadata and species identifiers for compatibility. Multi-element runtime support needs separate approval. Neutral handling and positive/negative personality thresholds are UNDECIDED; do not infer classification from mood, happiness, bond or registry variant."
   },
 
   "runtime_contract": {

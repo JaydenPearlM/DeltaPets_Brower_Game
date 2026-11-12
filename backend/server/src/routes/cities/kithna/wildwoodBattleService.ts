@@ -1,13 +1,14 @@
 import { randomInt, randomUUID } from "node:crypto";
-import { z } from "zod";
-import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { getDeltaTime } from "../../../lib/deltaTime";
 import { rollIV } from "../../../lib/stats/individualValues";
+import { getKithnaEggsForTime } from "../../../shared/pets/species/kithna-species";
+import { z } from "zod";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../../routePets/petsStats";
 import {
   createBattle,
-  previewBattleOrder,
   resolveBattleAction,
+  previewBattleOrder,
 } from "../../../battle/battleEngine";
 import type {
   BattleParticipantInput,
@@ -21,7 +22,6 @@ import type {
   WildwoodXpReward,
 } from "../../../shared/battle/wildwoodTypes";
 import { findPetSpeciesById } from "../../../shared/pets/species/all-species";
-import { getKithnaEggsForTime } from "../../../shared/pets/species/kithna-species";
 import { VELUNE } from "../../../shared/pets/species/legendary-species";
 import {
   ASSANTI_FOOD_QUEST_KEY,
@@ -58,6 +58,7 @@ export const exploreSchema = z
 
 type RoomPayload = {
   version: 1;
+  pveVersion?: 1;
   revision: number;
   requestId: string;
   message: string;
@@ -96,6 +97,7 @@ function view(room: Room | null): WildwoodRoomView | null {
   if (!room) return null;
   const data = payload(room);
   return {
+    pveEnabled: data.pveVersion === 1,
     id: room.id,
     sequence: room.sequence_number,
     message: data.message,
@@ -386,6 +388,8 @@ async function loadTeam(userId: string): Promise<WildwoodTeamMember[]> {
         throw new WildwoodError("A team member has an unsupported element.");
 
       const points = await fetchTotalPoints(pet.id);
+      if (points?.mpMax == null)
+        throw new WildwoodError("A team member's Mana is unavailable. Check your team in the Hatchery.");
 
       return {
         id: pet.id,
@@ -402,6 +406,8 @@ async function loadTeam(userId: string): Promise<WildwoodTeamMember[]> {
         level: pet.level,
         hpMax: pet.hp_max,
         hpCur: Math.min(pet.hp_cur, pet.hp_max),
+        mpMax: points.mpMax,
+        mpCur: points.mpMax,
         atk: pet.atk,
         def: pet.def,
         magi: pet.magi,
@@ -488,7 +494,7 @@ export async function exploreWildwood(
     );
 
   if (previous && payload(previous).battle?.status === "active")
-    throw new WildwoodError("Finish your current battle before exploring.");
+    throw new WildwoodError(payload(previous).pveVersion === 1 ? "Finish your current battle before exploring." : "An unfinished legacy battle blocks exploration until encounter recovery is supported.");
 
   await settleBattleResults(userId, previous);
   await settleXp(userId, previous);
@@ -546,6 +552,7 @@ export async function exploreWildwood(
 
   const data: RoomPayload = {
     version: 1,
+    pveVersion: 1,
     revision: 0,
     requestId: request.requestId,
     battle,
@@ -577,8 +584,7 @@ export async function exploreWildwood(
       event_payload: data,
       battle_id: battle?.id ?? null,
       status: battle?.status === "active" ? "unresolved" : "resolved",
-      resolved_at:
-        battle?.status === "active" ? null : new Date().toISOString(),
+      resolved_at: battle?.status === "active" ? null : new Date().toISOString(),
     })
     .select(roomColumns)
     .returns<Room[]>()
@@ -614,6 +620,12 @@ export async function actInWildwood(
   const data = payload(room);
 
   if (!data.battle) throw new WildwoodError("Battle not found.", 404);
+
+  if (data.pveVersion !== 1) throw new WildwoodError("This legacy encounter requires recovery support; it has not been changed.");
+
+  const owned = await supabaseAdmin.from("pets").select("id").eq("user_id", userId).in("id", data.battle.participants.filter(p => p.side === "player").map(p => p.sourcePetId ?? p.id));
+  if (owned.error) throw owned.error;
+  if (data.battle.participants.filter(p => p.side === "player").some(p => !owned.data?.some(o => o.id === (p.sourcePetId ?? p.id)))) throw new WildwoodError("Battle participant ownership changed.", 403);
 
   const next = resolveBattleAction(data.battle, input);
 

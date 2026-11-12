@@ -1,0 +1,258 @@
+[
+  {
+    "slug": "ripple-might-etching",
+    "name": "Ripple Might Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A water-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Physical Attack capability.",
+    "element": "water",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "physical_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "ripple-arcana-etching",
+    "name": "Ripple Arcana Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A water-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Magic Attack capability.",
+    "element": "water",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "magic_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "ember-might-etching",
+    "name": "Ember Might Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A fire-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Physical Attack capability.",
+    "element": "fire",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "physical_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "ember-arcana-etching",
+    "name": "Ember Arcana Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A fire-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Magic Attack capability.",
+    "element": "fire",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "magic_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "root-might-etching",
+    "name": "Root Might Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A earth-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Physical Attack capability.",
+    "element": "earth",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "physical_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "root-arcana-etching",
+    "name": "Root Arcana Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A earth-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Magic Attack capability.",
+    "element": "earth",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "magic_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "gale-might-etching",
+    "name": "Gale Might Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A air-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Physical Attack capability.",
+    "element": "air",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "physical_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "gale-arcana-etching",
+    "name": "Gale Arcana Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A air-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Magic Attack capability.",
+    "element": "air",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "magic_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "frost-might-etching",
+    "name": "Frost Might Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A ice-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Physical Attack capability.",
+    "element": "ice",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "physical_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "frost-arcana-etching",
+    "name": "Frost Arcana Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A ice-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Magic Attack capability.",
+    "element": "ice",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "magic_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "thunder-might-etching",
+    "name": "Thunder Might Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A storm-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Physical Attack capability.",
+    "element": "storm",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "physical_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "thunder-arcana-etching",
+    "name": "Thunder Arcana Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A storm-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Magic Attack capability.",
+    "element": "storm",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "magic_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "dawn-might-etching",
+    "name": "Dawn Might Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A light-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Physical Attack capability.",
+    "element": "light",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "physical_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "dawn-arcana-etching",
+    "name": "Dawn Arcana Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A light-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Magic Attack capability.",
+    "element": "light",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "magic_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "dusk-might-etching",
+    "name": "Dusk Might Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A shadow-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Physical Attack capability.",
+    "element": "shadow",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "physical_attack",
+      "value": null,
+      "calculation": null
+    }
+  },
+  {
+    "slug": "dusk-arcana-etching",
+    "name": "Dusk Arcana Etching",
+    "type": "material",
+    "category": "etching",
+    "description": "A shadow-aligned inscription from Kithna’s Wildwood, intended to strengthen a matching Relic’s existing Magic Attack capability.",
+    "element": "shadow",
+    "region": "kithna",
+    "rarity": 2,
+    "stack_limit": 99,
+    "enhancement": {
+      "target": "magic_attack",
+      "value": null,
+      "calculation": null
+    }
+  }
+]

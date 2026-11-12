@@ -12,10 +12,11 @@ const tables = {
   pets: [{ id: petId, user_id: user, name: "Kindlekin", species: "fire_starter", line: "fire", level: 1, stage: "hatchling", ran_away: false, hp_max: 100, hp_cur: 100, atk: 30, def: 10, magi: 10, spd: 20 }],
   profiles: [{ user_id: user, active_title: null }],
   trainer_progression: [{ user_id: user, trainer_level: 5 }],
-  pet_stats: [{ pet_id: petId, base_hp: 3 }],
+  pet_stats: [{ pet_id: petId, base_hp: 3, base_mana: 2 }],
+  passive_traits: [{ key: "test-mana", is_active: true, effects: { mana: 2 } }],
   pet_stat_allocations: [
     { pet_id: petId, level: 0, hp: 100 },
-    { pet_id: petId, level: 1, hp: 2 },
+    { pet_id: petId, level: 1, hp: 2, mana: 1 },
   ],
 };
 let failQuestWrite = false;
@@ -126,7 +127,11 @@ async function main() {
   assert.equal(pausedClaim.body.error, "Wildwood item collection is temporarily unavailable.");
   assert.deepEqual(tables, beforePausedClaim, "Paused collection must not write any data");
   const petBefore = structuredClone(tables.pets);
+  tables.pets[0].passive_trait_key = "test-mana";
   const initial = await service.getWildwoodSession(user);
+  assert.equal(initial.team[0].mpMax, 15, "Base 2 + allocated 1 + passive 2, multiplied by 3 once");
+  assert.equal(initial.team[0].mpCur, 15);
+  delete tables.pets[0].passive_trait_key;
   assert.equal(initial.team.length, 1);
   assert.equal(initial.team[0].displayHp, 5, "HP display includes level-one allocations, excluding level zero");
   const requestFor = previousRoomId => ({ requestId: crypto.randomUUID(), previousRoomId, formation: [{ petId, row: "back" }] });
@@ -138,6 +143,9 @@ async function main() {
     const request = { requestId: crypto.randomUUID(), previousRoomId, formation: [{ petId, row: "back" }] };
     const session = await service.exploreWildwood(user, request);
     const room = session.room;
+    assert.equal(room.battle.participants[0].mpMax, 9);
+    assert.equal(room.battle.participants[0].mpCur, 9);
+    assert.equal((await service.getWildwoodSession(user)).room.battle.participants[0].mpCur, 9);
     assert.equal(room.battle.participants[0].row, "back");
     assert.equal(tables.player_quests[0].progress, win - 1, "Spawning must not credit a victory");
     assert.equal((await service.exploreWildwood(user, request)).room.id, room.id);
@@ -145,6 +153,21 @@ async function main() {
     await assert.rejects(service.actInWildwood("another-user", room.battle.id, {}), /Battle not found/);
     await assert.rejects(service.exploreWildwood(user, { ...request, requestId: crypto.randomUUID(), previousRoomId: room.id }), /Finish your current battle/);
     const enemy = room.battle.participants.find(p => p.side === "enemy");
+    if (win === 1) {
+      const mend = { actorId: petId, turnNumber: room.battle.turnNumber, action: "skill", skillId: "mend", targetId: petId };
+      const beforeInvalid = structuredClone(tables.wildwood_rooms);
+      await assert.rejects(service.actInWildwood(user, room.battle.id, { ...mend, targetId: enemy.id }), /living ally/);
+      assert.deepEqual(tables.wildwood_rooms, beforeInvalid);
+      const casts = await Promise.allSettled([
+        service.actInWildwood(user, room.battle.id, mend),
+        service.actInWildwood(user, room.battle.id, mend),
+      ]);
+      assert.equal(casts.filter(result => result.status === "fulfilled").length, 1);
+      room.battle = (await service.getWildwoodSession(user)).room.battle;
+      assert.equal(room.battle.participants[0].mpCur, 8, "Concurrent Mend spends exactly 1 MP and recovers without refill");
+      await assert.rejects(service.actInWildwood(user, room.battle.id, mend), /Stale battle turn/);
+      assert.equal((await service.getWildwoodSession(user)).room.battle.participants[0].mpCur, 8);
+    }
     const action = { actorId: petId, turnNumber: room.battle.turnNumber, action: "basic_attack", targetId: enemy.id };
     if (win === 1) {
       const results = await Promise.allSettled([service.actInWildwood(user, room.battle.id, action), service.actInWildwood(user, room.battle.id, action)]);
@@ -219,6 +242,18 @@ async function main() {
   assert.equal((await service.getWildwoodSession(user)).room.battle.id, fight.room.battle.id, "Leaving/re-entering preserves active battle");
   await assert.rejects(service.actInWildwood(user, fight.room.battle.id, { actorId: petId, turnNumber: fight.room.battle.turnNumber, action: "retreat" }));
   assert.equal(tables.player_quests[1].progress, 0, "Unsupported retreat cannot credit a victory");
+  const savedRoom = tables.wildwood_rooms.find(r => r.id === fight.room.id);
+  delete savedRoom.event_payload.pveVersion;
+  const legacyBefore = structuredClone(tables);
+  await assert.rejects(service.actInWildwood(user, fight.room.battle.id, { actorId: petId, turnNumber: fight.room.battle.turnNumber, action: "guard" }), /legacy encounter/);
+  await assert.rejects(service.exploreWildwood(user, requestFor(fight.room.id)), /unfinished legacy battle/);
+  assert.deepEqual(tables, legacyBefore, "Legacy encounters must not mutate or award rewards");
+  savedRoom.event_payload.pveVersion = 1;
+  const originalOwner = tables.pets[0].user_id;
+  tables.pets[0].user_id = "another-owner";
+  await assert.rejects(service.actInWildwood(user, fight.room.battle.id, { actorId: petId, turnNumber: fight.room.battle.turnNumber, action: "guard" }), /ownership changed/);
+  tables.pets[0].user_id = originalOwner;
+  console.log("PASS: legacy recovery boundary and current participant ownership enforced");
   let battle = fight.room.battle;
   for (let turn = 0; battle.status === "active" && turn < 500; turn++) {
     battle = (await service.actInWildwood(user, battle.id, { actorId: petId, turnNumber: battle.turnNumber, action: "guard" })).room.battle;

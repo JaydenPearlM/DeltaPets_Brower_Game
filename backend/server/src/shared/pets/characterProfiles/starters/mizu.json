@@ -30,7 +30,7 @@
 
   "evolution": {
     "hatchling": "Mizu",
-    "lowform": "Mizule",
+    "lowform": "Mizulite",
     "highform": "Zulelon",
     "legion": "Aquilyth",
     "mythical_legendary": null
@@ -870,6 +870,1402 @@
     "relationship_descriptions_are_generated_from_bond_and_memory": true,
 
     "never_describe_all_mizu_as_having_the_same_personality": true
+  },
+
+  "progression": {
+    "contract_version": 1,
+    "status": "PROPOSED",
+    "species_definition_is_authoritative_for_base_stats": false,
+    "base_stats_reference": "Preserve existing egg.base_stats; live starter-species.ts remains authoritative. No stats or XP reconciliation performed.",
+    "preserve_existing_hatch_bonus_and_individual_stat_rolls": true,
+    "experience": {
+      "progression_group": "starter_shared",
+      "same_progression_rules_for_all_starters": true,
+      "non_starter_progression": "species_specific",
+      "level_1_to_2": {
+        "method": "existing_server_verified_starter_rules_unchanged",
+        "required_activities": [],
+        "activity_rules": {},
+        "both_conditions_required": true,
+        "xp_target": null,
+        "xp_per_hatch": null,
+        "xp_per_care_action": null,
+        "xp_from_other_sources": "existing_game_rules_unchanged",
+        "level_2_award_trigger": "existing_authoritative_starter_progression_only",
+        "repeat_award_prevention": true
+      },
+      "levels_after_2": {
+        "rules": "undecided",
+        "xp_curve": null,
+        "do_not_generate_unapproved_requirements": true
+      },
+      "xp_schedule": {
+        "unit": "XP",
+        "interpretation": "xp_to_reach_level is the additional XP required since previous level; cumulative_xp_to_reach_level is total lifetime XP needed",
+        "starting_level": 1,
+        "starting_cumulative_xp": 0,
+        "levels_defined_for_planning": "1 through 30; approved maximum level is 30",
+        "values_status": "undecided: null entries require game-design approval",
+        "shared_schedule_key": "starter_shared",
+        "entries": [
+          {
+            "level": 1,
+            "xp_from_previous_level": 0,
+            "cumulative_xp_to_reach_level": 0,
+            "progression_requirements": "initial_hatch",
+            "stat_points_awarded": 0,
+            "notes": null
+          },
+          {
+            "level": 2,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": "Level 2 requirements pending exact amounts"
+          },
+          {
+            "level": 3,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 4,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 5,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 6,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 7,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 8,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 9,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 10,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 11,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 12,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 13,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 14,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 15,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 16,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 17,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 18,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 19,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 20,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 21,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 22,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 23,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 24,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 25,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 26,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 27,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 28,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 29,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          },
+          {
+            "level": 30,
+            "xp_from_previous_level": null,
+            "cumulative_xp_to_reach_level": null,
+            "progression_requirements": null,
+            "stat_points_awarded": null,
+            "notes": null
+          }
+        ],
+        "invariant": "Do not treat null XP as zero, and do not award levels from this proposal until implemented and validated",
+        "maximum_level": 30
+      }
+    },
+    "stat_growth": {
+      "starting_level": 1,
+      "starting_stats": "species_base_plus_existing_level_1_hatch_allocation",
+      "base_stats_immutable_after_hatch": true,
+      "preserve_individual_strong_and_weak_stat_traits": true,
+      "player_allocation": {
+        "unlocks_at_level": 2,
+        "source": "new_level_up_points_only",
+        "stat_keys": [
+          "hp",
+          "atk",
+          "magi",
+          "def",
+          "spd",
+          "mana"
+        ],
+        "points_per_later_level": null,
+        "per_stat_caps": null,
+        "do_not_reallocate_base_stats": true,
+        "do_not_reallocate_hatch_rolls": true,
+        "spending_must_be_server_validated": true,
+        "spending_must_be_atomic": true,
+        "unspent_points_persist_per_pet": true,
+        "level_1_manual_allocation": "existing_seven_point_hatch_roll_must_remain_unchanged",
+        "existing_level_1_editor": "review_if_it_is_player_controlled; never rewrite_existing_level_1_allocations",
+        "no_random_stat_allocation_from_level_2_onward": true,
+        "level_2_points_source": "experience.xp_schedule.entries (level 2).stat_points_awarded"
+      },
+      "stat_components": [
+        "species_base",
+        "level_1_hatch_allocation",
+        "level_2_and_later_player_allocations"
+      ],
+      "effective_stat_rule": "sum_components_without_mutating_existing_baseline_or_hatch_roll"
+    },
+    "skills": {
+      "progression_scope": "each_level_reviewed_individually",
+      "learned_skills_persist_per_pet": true,
+      "do_not_replace_existing_skills_on_level_up": true,
+      "other_levels": "undecided; proposed milestone levels are not approved",
+      "skills_after_evolution": "preserve_existing_evolution_skill_registry",
+      "skill_unlocks_require_server_validation": true,
+      "move_catalog": [
+        {
+          "skill_id": "basic-strike",
+          "display_name": "Elemental Strike",
+          "element": "water",
+          "category": "existing_combat_action",
+          "description": "Physical water attack; retain approved ATK and elemental formula.",
+          "status": "existing_runtime_reference_no_new_unlock"
+        },
+        {
+          "skill_id": "guard",
+          "display_name": "Guard",
+          "element": "water",
+          "category": "existing_combat_action",
+          "description": "Retain approved defensive command.",
+          "status": "existing_runtime_reference_no_new_unlock"
+        },
+        {
+          "skill_id": "mend",
+          "display_name": "Mend",
+          "element": "water",
+          "category": "existing_combat_action",
+          "description": "Retain approved MAGI healing formula and 1 MP cost.",
+          "status": "existing_runtime_reference_no_new_unlock"
+        }
+      ],
+      "skill_unlocks_by_level": [
+        {
+          "level": 1,
+          "moves": [],
+          "status": "review_level_1_basics_for_this_species"
+        },
+        {
+          "level": 2,
+          "moves": [],
+          "status": "review_level_2_skill_choice_for_this_species"
+        },
+        {
+          "level": 3,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 4,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 5,
+          "moves": [],
+          "status": "undecided; old_generic_level_5_placeholder_not_an_approved_{species_key}_unlock"
+        },
+        {
+          "level": 6,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 7,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 8,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 9,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 10,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 11,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 12,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 13,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 14,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 15,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 16,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 17,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 18,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 19,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 20,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 21,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 22,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 23,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 24,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 25,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 26,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 27,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 28,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 29,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        },
+        {
+          "level": 30,
+          "moves": [],
+          "status": "undecided; no_approved_natural_species_unlock"
+        }
+      ],
+      "level_milestones_reference": "Approved unlocks only belong in skill_unlocks_by_level. Proposal milestones below are not live unlocks.",
+      "hatchling_move_design_draft": {
+        "status": "PROPOSED",
+        "implementation_approved": false,
+        "notes": "Four design-only candidates. Suitable existing names reused from docs/design/elemental_skill_compendium_full.html; its numeric mechanics are not adopted. Show names/descriptions only; choose one. Maximum MP = (base Mana + allocated Mana + applicable passive Mana) * 3. MAGI controls magical power; special skills require approved MP costs; physical basic attacks are free. Proposed numeric effects and costs remain null.",
+        "candidate_moves": [
+          {
+            "proposed_skill_id": "mizu-aqua-barrier",
+            "name": "Aqua Barrier",
+            "element": "water",
+            "role": "tank",
+            "category": "defense",
+            "description": "Mizu shapes protective water around a guarding stance with the Aqua Barrier technique. Exact effects remain undecided.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          },
+          {
+            "proposed_skill_id": "mizu-ripple-jab",
+            "name": "Ripple Jab",
+            "element": "water",
+            "role": "dps",
+            "category": "physical_damage",
+            "description": "Mizu delivers a water-assisted physical strike with the Ripple Jab technique. Exact effects remain undecided.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          },
+          {
+            "proposed_skill_id": "mizu-healing-current",
+            "name": "Healing Current",
+            "element": "water",
+            "role": "healer",
+            "category": "healing",
+            "description": "Mizu channels soothing restorative water with the Healing Current technique. Exact effects remain undecided.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          },
+          {
+            "proposed_skill_id": "mizu-water-jet",
+            "name": "Water Jet",
+            "element": "water",
+            "role": "sorcerer",
+            "category": "ranged_magic",
+            "description": "Mizu directs Water magic through flowing currents with the Water Jet technique. Exact effects remain undecided.",
+            "proposed_unlock_level": 2,
+            "status": "PROPOSED",
+            "damage": null,
+            "healing_amount": null,
+            "defense_modifier": null,
+            "duration_turns": null,
+            "accuracy": null,
+            "mana_cost": null,
+            "cooldown": null,
+            "target": null
+          }
+        ]
+      },
+      "element_restriction": "water",
+      "available_combat_roles": [
+        "tank",
+        "healer",
+        "dps",
+        "sorcerer"
+      ],
+      "combat_roles_definition": {
+        "tank": "defensive abilities",
+        "healer": "healing abilities",
+        "dps": "physical damage abilities",
+        "sorcerer": "ranged magic abilities"
+      },
+      "skill_sources": {
+        "natural_species_progression": "species-specific choices at explicitly approved milestones",
+        "additional_compatible_skills": "eligible compatible skills obtained from discovery, purchase, or rewards; separate from natural progression"
+      },
+      "additional_skill_catalog": {
+        "status": "not_defined_here",
+        "separate_from_natural_progression": true,
+        "compatible_element": "water",
+        "entries": []
+      },
+      "level_2_skill_choice": {
+        "level": 2,
+        "source": "natural_species_progression",
+        "status": "PROPOSED",
+        "element": "water",
+        "offered_roles": [
+          "tank",
+          "dps",
+          "healer",
+          "sorcerer"
+        ],
+        "candidate_skill_ids": [
+          "mizu-aqua-barrier",
+          "mizu-ripple-jab",
+          "mizu-healing-current",
+          "mizu-water-jet"
+        ],
+        "selection_count": 1,
+        "selection_method": "player_choice",
+        "milestone_key": "level-2",
+        "automatic_grant": false,
+        "eligible_does_not_mean_learned_or_equipped": true,
+        "numeric_values_undecided": true,
+        "choice_requires_approved_level_milestone_and_backend_validation": true
+      },
+      "level_3_to_30_skill_design_proposal": {
+        "status": "PROPOSED",
+        "implementation_approved": false,
+        "combat_enabled": false,
+        "automatic_grant": false,
+        "notes": "Maximum MP = (base Mana + allocated Mana + applicable passive Mana) * 3. MAGI controls magical power; special skills require approved MP costs; physical basic attacks are free. Proposed numeric effects and costs remain null. All listed names/milestones remain proposals, not runtime definitions. Design Lowform Mizulite uses verified frontend/web/src/kith/assets/startepets/lowform/lowform_mizulite.png. Live registry still uses Mizule; runtime mapping unchanged.",
+        "selection_count": 1,
+        "selection_method": "player_choice",
+        "display_role_labels": false,
+        "non_milestone_levels": "No additional species skill proposed; preserve existing approved scaling.",
+        "milestones": [
+          {
+            "proposed_unlock_level": 5,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "mizu-foam-guard",
+                "name": "Foam Guard",
+                "element": "water",
+                "role": "tank",
+                "category": "defense",
+                "description": "Mizu shapes protective water around a guarding stance with the Foam Guard technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-stream-strike",
+                "name": "Stream Strike",
+                "element": "water",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Mizu delivers a water-assisted physical strike with the Stream Strike technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-dew-renewal",
+                "name": "Dew Renewal",
+                "element": "water",
+                "role": "healer",
+                "category": "healing",
+                "description": "Mizu channels soothing restorative water with the Dew Renewal technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-whirlpool",
+                "name": "Whirlpool",
+                "element": "water",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Mizu directs Water magic through flowing currents with the Whirlpool technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 5,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 8,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "mizu-tide-shelter",
+                "name": "Tide Shelter",
+                "element": "water",
+                "role": "tank",
+                "category": "defense",
+                "description": "Mizu shapes protective water around a guarding stance with the Tide Shelter technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-current-slash",
+                "name": "Current Slash",
+                "element": "water",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Mizu delivers a water-assisted physical strike with the Current Slash technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-wellspring",
+                "name": "Wellspring",
+                "element": "water",
+                "role": "healer",
+                "category": "healing",
+                "description": "Mizu channels soothing restorative water with the Wellspring technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-riptide-surge",
+                "name": "Riptide Surge",
+                "element": "water",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Mizu directs Water magic through flowing currents with the Riptide Surge technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 8,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 11,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "mizu-reef-ward",
+                "name": "Reef Ward",
+                "element": "water",
+                "role": "tank",
+                "category": "defense",
+                "description": "Mizu shapes protective water around a guarding stance with the Reef Ward technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-wave-rush",
+                "name": "Wave Rush",
+                "element": "water",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Mizu delivers a water-assisted physical strike with the Wave Rush technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-neruva-balm",
+                "name": "Neruva Balm",
+                "element": "water",
+                "role": "healer",
+                "category": "healing",
+                "description": "Mizu channels soothing restorative water with the Neruva Balm technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-tidal-wave",
+                "name": "Tidal Wave",
+                "element": "water",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Mizu directs Water magic through flowing currents with the Tidal Wave technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 11,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 14,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "mizu-ocean-bulwark",
+                "name": "Ocean Bulwark",
+                "element": "water",
+                "role": "tank",
+                "category": "defense",
+                "description": "Mizu shapes protective water around a guarding stance with the Ocean Bulwark technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-torrent-thrust",
+                "name": "Torrent Thrust",
+                "element": "water",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Mizu delivers a water-assisted physical strike with the Torrent Thrust technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-lagoon-comfort",
+                "name": "Lagoon Comfort",
+                "element": "water",
+                "role": "healer",
+                "category": "healing",
+                "description": "Mizu channels soothing restorative water with the Lagoon Comfort technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-deepwater-pulse",
+                "name": "Deepwater Pulse",
+                "element": "water",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Mizu directs Water magic through flowing currents with the Deepwater Pulse technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 14,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 17,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "mizu-tide-sentinel",
+                "name": "Tide Sentinel",
+                "element": "water",
+                "role": "tank",
+                "category": "defense",
+                "description": "Mizu shapes protective water around a guarding stance with the Tide Sentinel technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-surging-sweep",
+                "name": "Surging Sweep",
+                "element": "water",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Mizu delivers a water-assisted physical strike with the Surging Sweep technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-renewing-spring",
+                "name": "Renewing Spring",
+                "element": "water",
+                "role": "healer",
+                "category": "healing",
+                "description": "Mizu channels soothing restorative water with the Renewing Spring technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-ocean-spiral",
+                "name": "Ocean Spiral",
+                "element": "water",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Mizu directs Water magic through flowing currents with the Ocean Spiral technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 17,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 20,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "mizu-living-reef",
+                "name": "Living Reef",
+                "element": "water",
+                "role": "tank",
+                "category": "defense",
+                "description": "Mizu shapes protective water around a guarding stance with the Living Reef technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-breaker-strike",
+                "name": "Breaker Strike",
+                "element": "water",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Mizu delivers a water-assisted physical strike with the Breaker Strike technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-restoring-lagoon",
+                "name": "Restoring Lagoon",
+                "element": "water",
+                "role": "healer",
+                "category": "healing",
+                "description": "Mizu channels soothing restorative water with the Restoring Lagoon technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-abyssal-current",
+                "name": "Abyssal Current",
+                "element": "water",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Mizu directs Water magic through flowing currents with the Abyssal Current technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 20,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 23,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "mizu-pearl-bastion",
+                "name": "Pearl Bastion",
+                "element": "water",
+                "role": "tank",
+                "category": "defense",
+                "description": "Mizu shapes protective water around a guarding stance with the Pearl Bastion technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-piercing-torrent",
+                "name": "Piercing Torrent",
+                "element": "water",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Mizu delivers a water-assisted physical strike with the Piercing Torrent technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-neruva-sanctuary",
+                "name": "Neruva Sanctuary",
+                "element": "water",
+                "role": "healer",
+                "category": "healing",
+                "description": "Mizu channels soothing restorative water with the Neruva Sanctuary technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-mystic-tide",
+                "name": "Mystic Tide",
+                "element": "water",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Mizu directs Water magic through flowing currents with the Mystic Tide technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 23,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 26,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "mizu-eternal-ocean",
+                "name": "Eternal Ocean",
+                "element": "water",
+                "role": "tank",
+                "category": "defense",
+                "description": "Mizu shapes protective water around a guarding stance with the Eternal Ocean technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-thousand-waves",
+                "name": "Thousand Waves",
+                "element": "water",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Mizu delivers a water-assisted physical strike with the Thousand Waves technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-heart-of-the-sea",
+                "name": "Heart of the Sea",
+                "element": "water",
+                "role": "healer",
+                "category": "healing",
+                "description": "Mizu channels soothing restorative water with the Heart of the Sea technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-oceanic-convergence",
+                "name": "Oceanic Convergence",
+                "element": "water",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Mizu directs Water magic through flowing currents with the Oceanic Convergence technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 26,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          },
+          {
+            "proposed_unlock_level": 30,
+            "status": "PROPOSED",
+            "implementation_approved": false,
+            "candidate_moves": [
+              {
+                "proposed_skill_id": "mizu-guardian-of-depths",
+                "name": "Guardian of Depths",
+                "element": "water",
+                "role": "tank",
+                "category": "defense",
+                "description": "Mizu shapes protective water around a guarding stance with the Guardian of Depths technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-tidal-crescendo",
+                "name": "Tidal Crescendo",
+                "element": "water",
+                "role": "dps",
+                "category": "physical_damage",
+                "description": "Mizu delivers a water-assisted physical strike with the Tidal Crescendo technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-everlasting-springwater",
+                "name": "Everlasting Springwater",
+                "element": "water",
+                "role": "healer",
+                "category": "healing",
+                "description": "Mizu channels soothing restorative water with the Everlasting Springwater technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              },
+              {
+                "proposed_skill_id": "mizu-sea-awakening",
+                "name": "Sea Awakening",
+                "element": "water",
+                "role": "sorcerer",
+                "category": "ranged_magic",
+                "description": "Mizu directs Water magic through flowing currents with the Sea Awakening technique. Exact effects remain undecided.",
+                "proposed_unlock_level": 30,
+                "status": "PROPOSED",
+                "damage": null,
+                "healing_amount": null,
+                "defense_modifier": null,
+                "duration_turns": null,
+                "accuracy": null,
+                "mana_cost": null,
+                "cooldown": null,
+                "target": null
+              }
+            ]
+          }
+        ]
+      },
+      "player_skill_decisions": {
+        "at_approved_skill_learning_milestones": [
+          "keep_current_skill",
+          "replace_selected_learned_skill_with_eligible_new_skill"
+        ],
+        "replacement_requires_confirmation": true,
+        "replacement_semantics": "Future approved milestones only: preserve existing animation timing; show four eligible skill names/descriptions, never role labels; select and confirm one. Validate ownership, eligibility and retry identity to prevent duplicate learning/rewards. Replacement must respect authoritative learned capacity, explicitly confirm the old skill and commit atomically. Four local equipped slots do not establish learned capacity. Cancel/failure preserves old skills; unselected skills are not learned. No UI or persistence activated.",
+        "replacement_must_persist_per_individual_kith_when_implemented": true,
+        "eligible_is_not_learned_or_equipped": true,
+        "does_not_implement_database_persistence": true,
+        "no_unapproved_milestones_from_3_through_30": true
+      }
+    },
+    "awareness_milestones": {
+      "level_1": {
+        "recognizes_owner": true,
+        "identity_source": "owner_and_individual_pet_state",
+        "initial_relationship": "unfamiliar",
+        "uses_existing_personality_bond_mood_memory_rules": true,
+        "no_automatic_love_or_trust": true
+      },
+      "level_2": {
+        "retains_personality_and_memories": true,
+        "may_react_to_level_up": true,
+        "level_up_memory_type": "proposed_not_yet_in_memory_important_types",
+        "recognition_not_gated_by_level": true
+      },
+      "runtime_status": "requires_implementation_and_testing"
+    },
+    "implementation_safety": {
+      "configuration_only": true,
+      "does_not_change_existing_players_or_pet_rows": true,
+      "do_not_modify_production_database_without_separate_approval": true,
+      "do_not_change_existing_xp_rewards_until_verified": true,
+      "single_stat_source_requires_updating_starter_species_consumers": true,
+      "does_not_implement_leveling_or_stat_allocation": true,
+      "existing_level_1_allocations_must_be_retained": true,
+      "level_2_and_later_stat_points_are_manual_not_random": true,
+      "no_existing_gameplay_changed": true
+    },
+    "maximum_level": 30
   },
 
   "runtime_contract": {

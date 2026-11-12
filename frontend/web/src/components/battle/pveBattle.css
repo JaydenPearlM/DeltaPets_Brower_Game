@@ -1,0 +1,812 @@
+.pve-battle {
+  width: 100%;
+  min-width: 0;
+  container-type: inline-size;
+}
+.pve-stage {
+  position: relative;
+}
+/* Anchor to existing 16:9 artwork, excluding its caption. */
+.pve-field {
+  position: absolute;
+  inset: 0 0 auto;
+  aspect-ratio: 16 / 9;
+  pointer-events: none;
+}
+.pve-enemies,
+.pve-players {
+  position: absolute;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 3%;
+}
+.pve-enemies {
+  right: 5%;
+  bottom: 39%;
+  width: 40%;
+}
+.pve-players {
+  left: 4%;
+  bottom: 5%;
+  width: 48%;
+}
+.pve-slot {
+  position: relative;
+  min-width: 0;
+}
+.pve-slot:has(.pve-sprite)::before {
+  content: "";
+  position: absolute;
+  inset: auto 12% 1%;
+  height: 10%;
+  border-radius: 50%;
+  background: #0005;
+  filter: blur(2px);
+}
+.pve-sprite {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  filter: drop-shadow(0 3px 2px #0006);
+}
+button.pve-sprite {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.pve-sprite img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.pve-sprite[aria-pressed="true"] {
+  filter: drop-shadow(0 0 4px #ffdf75);
+}
+.pve-sprite:focus-visible {
+  outline: 2px solid var(--dp-title-gold, #ffdf75);
+  outline-offset: 2px;
+}
+.pve-information,
+.pve-bottom {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px;
+}
+.pve-info {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--dp-panel-border);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.pve-info h3 {
+  margin: 0 0 8px;
+  color: var(--dp-title-gold, #ffdf75);
+  font-size: 14px;
+}
+.pve-info p {
+  margin: 5px 0;
+}
+.pve-info progress {
+  width: 100%;
+  height: 6px;
+  accent-color: #68d58a;
+}
+.pve-info .pve-mp {
+  accent-color: #60baff;
+}
+.pve-info ol {
+  padding-left: 18px;
+}
+.pve-info [aria-current="step"] {
+  color: var(--dp-title-gold, #ffdf75);
+  font-weight: bold;
+}
+.pve-log {
+  max-height: 210px;
+  overflow-y: auto;
+  margin: 0;
+}
+.pve-log li {
+  margin-bottom: 6px;
+}
+.pve-battle fieldset {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+}
+.pve-battle fieldset label {
+  width: 100%;
+}
+.pve-battle select,
+.pve-controls button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.pve-controls button[aria-pressed="true"] {
+  outline: 2px solid #ffdc78;
+}
+@container (max-width: 500px) {
+  .pve-information {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pve-information > :last-child {
+    grid-column: 1 / -1;
+  }
+  .pve-bottom {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pve-controls {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Relocated information only; sprite anchors and scenery remain unchanged. */
+.pve-priority-overlay,
+.pve-enemy-overlay {
+  position: absolute;
+  pointer-events: auto;
+  background: #031426d9;
+  font-size: clamp(8px, 1.7cqi, 12px);
+  padding: 4px;
+  overflow-y: auto;
+}
+.pve-priority-overlay {
+  right: 1%;
+  top: 1%;
+  width: 29%;
+  max-height: 30%;
+}
+.pve-enemy-overlay {
+  right: 33%;
+  top: 1%;
+  width: 29%;
+  max-height: 30%;
+}
+.pve-field .pve-info h3 {
+  font-size: inherit;
+  margin: 0 0 3px;
+}
+.pve-field .pve-info p,
+.pve-field .pve-info ol {
+  margin: 2px 0;
+}
+.pve-field .pve-info small {
+  font-size: inherit;
+}
+.pve-controls > .pve-chamber {
+  margin-bottom: 10px;
+}
+.pve-arena {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  align-items: stretch;
+}
+.pve-stage {
+  min-width: 0;
+}
+.pve-enemy-hud {
+  position: absolute;
+  top: 2%;
+  left: 2%;
+  right: 2%;
+  display: flex;
+  gap: 6px;
+}
+.pve-enemy-status {
+  flex: 1;
+  max-width: 220px;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid #4895b7;
+  border-radius: 8px;
+  background: #031426e8;
+  color: #e2f5ff;
+  font-size: clamp(9px, 1.5cqi, 12px);
+}
+.pve-enemy-status strong,
+.pve-enemy-status > span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.pve-enemy-status > span {
+  margin: 4px 0;
+  color: #adc8dc;
+}
+.pve-enemy-status[data-target="true"] {
+  border-color: #ffdf75;
+  box-shadow: 0 0 8px #ffdf7533;
+}
+.pve-hp-track {
+  height: 5px;
+  overflow: hidden;
+  background: #24374b;
+  border-radius: 4px;
+}
+.pve-hp-track > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2db994, #99f5a2);
+  transition: width 300ms ease;
+}
+.pve-priority {
+  min-width: 0;
+  padding: 10px;
+  border-left: 1px solid #49cee9;
+  background: linear-gradient(160deg, #102844, #061321);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.pve-priority h3 {
+  margin: 0 0 10px;
+  color: var(--dp-title-gold, #ffdf75);
+  font-size: 12px;
+}
+.pve-turn-status {
+  margin: 0 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #487c9b;
+  color: #ffdf75;
+}
+.pve-priority ol {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.pve-priority li {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin: 0 0 6px;
+  padding: 7px 5px;
+  border-left: 2px solid #65d8ed;
+  background: #12334e;
+  border-radius: 0 5px 5px 0;
+}
+.pve-priority li[data-side="enemy"] {
+  border-left-color: #c285ef;
+  background: #292444;
+}
+.pve-priority li[aria-current="step"] {
+  outline: 1px solid #ffdf75;
+  outline-offset: -1px;
+  color: #ffdf75;
+}
+.pve-priority small {
+  display: block;
+  color: #adc8dc;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.pve-order-number {
+  color: #adc8dc;
+  font-variant-numeric: tabular-nums;
+}
+.pve-slot[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 20%;
+  width: 60%;
+  height: 3px;
+  border-radius: 50%;
+  background: #64eeff;
+  box-shadow: 0 0 9px #64eeff;
+}
+.pve-slot[data-target="true"] .pve-sprite {
+  filter: drop-shadow(0 0 5px #ffdf75);
+}
+.pve-bottom {
+  background: #041a2bd9;
+}
+.pve-bottom > .pve-info {
+  background: #021422a6;
+  border-color: #3586ad;
+  box-shadow: inset 0 1px #6eeaff15;
+}
+.pve-bottom h3 {
+  padding-bottom: 8px;
+  border-bottom: 1px solid #3586ad66;
+}
+.pve-log {
+  max-height: 280px;
+  padding-right: 6px;
+  line-height: 1.55;
+  scrollbar-width: thin;
+  scrollbar-color: #4186aa #061a2c;
+}
+.pve-log li {
+  padding: 5px 0;
+  border-bottom: 1px solid #3586ad33;
+}
+.pve-battle fieldset legend {
+  margin-bottom: 8px;
+  color: #ffdf75;
+}
+.pve-battle fieldset label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.pve-battle fieldset select {
+  flex: 1;
+  min-width: 0;
+  background: #09243d;
+  color: #e2f5ff;
+  border: 1px solid #57cdeb;
+  border-radius: 4px;
+  padding: 6px;
+}
+@container (max-width: 650px) {
+  .pve-arena {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pve-priority {
+    border-left: 0;
+    border-top: 1px solid #49cee9;
+  }
+  .pve-priority ol {
+    display: flex;
+    gap: 6px;
+    max-height: 140px;
+  }
+  .pve-priority li {
+    flex: 0 0 130px;
+  }
+  .pve-bottom {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pve-controls {
+    grid-column: 1 / -1;
+  }
+}
+@container (max-width: 380px) {
+  .pve-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pve-enemy-status {
+    padding: 4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pve-battle .pve-hp-track > span {
+    transition: none;
+  }
+}
+.pve-battle .skillChamberCommand[aria-pressed="true"] {
+  outline: 2px solid #ffcb52;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.pve-battle .skillChamberCommand:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: saturate(0.4);
+}
+.pve-battle .skillChamberCommand:focus-visible {
+  outline: 3px solid #7af4ff;
+  outline-offset: 3px;
+}
+.pve-battle .skillChamberCommand {
+  min-height: 40px;
+  height: auto;
+  white-space: normal;
+  transition: box-shadow 150ms ease;
+}
+.pve-battle .skillsPanel {
+  border-color: #30c7f7;
+  background: #091b30;
+  box-shadow: none;
+}
+.pve-bottom > .pve-info {
+  background-color: #031b2b66;
+  border-color: #40dcff;
+}
+.pve-battle .skillsPanel > fieldset {
+  margin-top: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pve-battle .skillChamberCommand {
+    transition: none;
+  }
+}
+
+/* Local battle palette: retain the existing grid, without the shared pink splash. */
+.pve-battle .skillsPanel::before {
+  border: 2px solid #ffcb52;
+  background-image: var(--dp-standard-panel-blue-grid);
+  background-color: #091b30;
+  background-size: var(--dp-popup-grid-size) var(--dp-popup-grid-size);
+  background-position: 0 0;
+  background-repeat: repeat;
+  box-shadow: none;
+}
+.pve-battle .skillsTitle,
+.pve-battle .pve-info h3,
+.pve-battle .pve-priority h3,
+.pve-battle fieldset legend {
+  color: #ffe29a;
+}
+.pve-battle .skillInventoryPanel[aria-label="Battle skills"] {
+  background: #091b30cc;
+  border-color: #30c7f7;
+  box-shadow: none;
+}
+.pve-battle .skillChamberPetBadge,
+.pve-battle .skillChamberBars,
+.pve-battle .skillChamberBattleSlot {
+  border-color: #30c7f7;
+  box-shadow: none;
+}
+.pve-battle .skillChamberCommandGrid {
+  gap: 8px;
+}
+.pve-battle .skillChamberCommand {
+  border: 1px solid #091b30;
+  padding: 10px 12px;
+  box-shadow: none;
+}
+.pve-battle .skillChamberCommand:focus-visible {
+  outline-color: #30c7f7;
+}
+.pve-battle .skillChamberBarFill--hp,
+.pve-battle .pve-hp-track > span {
+  background: #54d99a;
+}
+.pve-battle .skillChamberBarFill--mp {
+  background: #30c7f7;
+}
+.pve-battle .pve-priority {
+  background: #091b30;
+  border-color: #30c7f7;
+}
+.pve-battle .pve-priority li[data-side="enemy"] {
+  background: #302b20;
+  border-left-color: #ffcb52;
+}
+.pve-battle .pve-priority li[aria-current="step"],
+.pve-battle .pve-turn-status {
+  color: #ffe29a;
+}
+.pve-battle .pve-enemy-status {
+  background: #091b30ed;
+  border-color: #30c7f7;
+}
+.pve-battle .pve-enemy-status[data-target="true"] {
+  border-color: #ffcb52;
+  box-shadow: none;
+}
+
+/* DeltaPets — Wildwood battle visual polish */
+/* Presentation only: no gameplay or state changes */
+
+.pve-battle {
+  --ww-cyan: #30c7f7;
+  --ww-gold: #ffcb52;
+  --ww-purple: #ba78f3;
+  --ww-surface: #071c32;
+  --ww-surface-deep: #031426;
+  color: #e5f5ff;
+}
+
+/* Battlefield and turn-priority frame */
+.pve-battle .pve-arena {
+  gap: 8px;
+}
+
+.pve-battle .pve-stage {
+  overflow: hidden;
+  border: 1px solid var(--ww-cyan);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 12px #30c7f710,
+    0 0 10px #30c7f71a;
+}
+
+.pve-battle .pve-priority {
+  border: 1px solid var(--ww-cyan);
+  border-radius: 10px;
+  background: linear-gradient(160deg, #103453, #061629 70%);
+  box-shadow: inset 0 0 12px #30c7f70d;
+}
+
+.pve-battle .pve-priority li {
+  border: 1px solid #257da4;
+  border-left: 3px solid var(--ww-cyan);
+  border-radius: 7px;
+  background: linear-gradient(90deg, #124366, #09243b);
+  transition: border-color 150ms ease;
+}
+
+.pve-battle .pve-priority li[data-side="enemy"] {
+  background: linear-gradient(90deg, #47304d, #1c2540);
+  border-color: #81569e;
+  border-left-color: var(--ww-purple);
+}
+
+.pve-battle .pve-priority li[aria-current="step"] {
+  border-color: var(--ww-gold);
+  box-shadow: inset 0 0 9px #ffcb5220;
+  color: #ffe29a;
+}
+
+/* Enemy health overlay */
+.pve-battle .pve-enemy-status {
+  border: 1px solid #69dcf3;
+  border-radius: 9px;
+  background: #061a30ed;
+  box-shadow: 0 3px 12px #0006;
+}
+
+.pve-battle .pve-hp-track {
+  height: 8px;
+  border-radius: 999px;
+}
+
+.pve-battle .pve-hp-track > span {
+  background: linear-gradient(90deg, #24b97c, #83f6a1);
+}
+
+/* Skills Chamber outer panel */
+.pve-battle .skillsPanel {
+  border-color: var(--ww-cyan);
+  border-radius: 12px;
+  background: var(--ww-surface);
+  box-shadow: 0 0 12px #30c7f71c;
+}
+
+/* Retain the original blue-grid panel structure */
+.pve-battle .skillsPanel::before {
+  border-color: var(--ww-gold);
+  border-radius: 10px;
+  box-shadow: inset 0 0 10px #ffcb5212;
+}
+
+.pve-battle .skillInventoryPanel[aria-label="Battle skills"] {
+  border-color: var(--ww-cyan);
+  border-radius: 10px;
+  background: #061d35d9;
+}
+
+/* Action buttons */
+.pve-battle .skillChamberCommand {
+  min-height: 42px;
+  border-radius: 999px;
+  border: 1px solid #ffffff50;
+  padding: 9px 12px;
+  font-weight: 700;
+  box-shadow:
+    inset 0 2px 2px #ffffff32,
+    0 3px 8px #0004;
+}
+
+.pve-battle .skillChamberCommand:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow:
+    inset 0 2px 2px #ffffff3a,
+    0 0 10px #30c7f740;
+}
+
+.pve-battle .skillChamberCommand[aria-pressed="true"] {
+  outline: 2px solid var(--ww-gold);
+  outline-offset: 2px;
+}
+
+/* HP and MP status */
+.pve-battle .skillChamberBarFill--hp {
+  background: linear-gradient(90deg, #20b76d, #75f59c);
+}
+
+.pve-battle .skillChamberBarFill--mp {
+  background: linear-gradient(90deg, #1887e8, #56d9ff);
+}
+
+.pve-battle .skillChamberPetBadge,
+.pve-battle .skillChamberBars,
+.pve-battle .skillChamberBattleSlot {
+  border-color: #348fb7;
+  border-radius: 8px;
+}
+
+/* Damage log panels */
+.pve-battle .pve-bottom {
+  gap: 8px;
+}
+
+.pve-battle .pve-bottom > .pve-info {
+  border: 1px solid var(--ww-cyan);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #08243b, #031426);
+  box-shadow: inset 0 1px 0 #ffffff14;
+}
+
+.pve-battle .pve-info h3 {
+  color: #ffe29a;
+}
+
+.pve-battle .pve-log li {
+  border-bottom-color: #30c7f72b;
+}
+
+/* Confirmation control */
+.pve-battle .pve-controls .dp-btn--yellow {
+  border-radius: 999px;
+  box-shadow:
+    inset 0 2px 0 #ffffff60,
+    0 3px 8px #0005;
+}
+
+/* Preserve responsiveness */
+@container (max-width: 500px) {
+  .pve-battle .pve-arena {
+    gap: 6px;
+  }
+
+  .pve-battle .pve-bottom {
+    gap: 6px;
+  }
+
+  .pve-battle .skillChamberCommand {
+    padding: 8px;
+    min-height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pve-battle .pve-priority li {
+    transition: none;
+  }
+}
+
+/* Battle chamber sizing is independent of Wildwood's exploration column. */
+.pve-chamber { min-width: 0; container: chamber / inline-size; }
+.pve-chamber > .skillsPanel { margin: 0; }
+.pve-chamber > .skillsPanel::before { inset: 5px; }
+.pve-chamber .skillsTitle { font-size: 1.15rem; line-height: 1.3; letter-spacing: .02em; white-space: normal; transform: none; }
+.pve-chamber .skillsPanelHeader { margin-bottom: 10px; }
+.pve-chamber .skillChamberPetBadge, .pve-chamber .skillChamberBars { min-width: 0; min-height: 44px; padding: 6px; overflow-wrap: anywhere; }
+.pve-chamber .skillChamberPetBadge strong { font-size: .9rem; line-height: 1.2; }
+.pve-chamber .skillChamberBarLine { grid-template-columns: 24px minmax(0, 1fr); gap: 4px; }
+.pve-chamber .skillChamberBarLine span { font-size: .8rem; }
+.pve-chamber .skillChamberCommandOrb { box-sizing: border-box; }
+.pve-chamber .skillChamberBattleSlot { min-width: 0; min-height: 44px; padding: 5px; overflow-wrap: anywhere; }
+.pve-chamber .skillChamberBattleSlot strong { font-size: .75rem; line-height: 1.25; }
+
+/* Wildwood battle layout polish v2 — desktop-first, gameplay unchanged */
+.pve-battle .pve-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 10px;
+  background: transparent;
+}
+.pve-battle .pve-bottom > .pve-controls {
+  min-width: 0;
+  padding: 10px;
+  background: linear-gradient(145deg, #092744, #071829 80%);
+  border: 2px solid #3bcdf3;
+  box-shadow:
+    0 0 0 2px #a269c440,
+    inset 0 0 18px #30c7f71a;
+}
+.pve-battle .pve-controls > .pve-chamber,
+.pve-battle .pve-controls .pve-chamber > .skillsPanel {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.pve-battle .pve-controls .pve-chamber > .skillsPanel {
+  padding: 16px;
+  background: #091b30;
+}
+.pve-battle .pve-controls .skillChamberControlsRow {
+  display: block;
+}
+.pve-battle .pve-controls .skillChamberCommandGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pve-battle .pve-controls .skillChamberCommand {
+  flex: 1 1 125px;
+  min-height: 45px;
+  font-size: clamp(11px, 1.1cqi, 14px);
+  border: 1px solid #e9faff66;
+  box-shadow:
+    inset 0 2px 1px #ffffff50,
+    0 3px 7px #0006;
+}
+.pve-battle .pve-controls .skillInventoryPanel {
+  padding: 12px;
+  border: 1px solid #5bd9ff;
+  background: linear-gradient(160deg, #092b4a, #04182b);
+}
+.pve-battle .pve-controls .skillChamberStatusRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.pve-battle .pve-controls .skillChamberCommandPanel {
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 12px;
+}
+.pve-battle .pve-controls .skillChamberCommandOrb {
+  width: 84px;
+  height: 84px;
+}
+.pve-battle .pve-controls .skillChamberBattleSlots {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.pve-battle .pve-bottom > .pve-info:not(.pve-controls) {
+  min-width: 0;
+  padding: 14px 12px;
+  background: linear-gradient(165deg, #0d314f, #041628 80%);
+  border: 1px solid #37c7f0;
+  box-shadow:
+    inset 0 1px 0 #ffffff24,
+    0 0 12px #30c7f71a;
+}
+.pve-battle .pve-bottom > .pve-info:not(.pve-controls) h3 {
+  font-size: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #48b8e066;
+}
+.pve-battle .pve-priority li[aria-current="step"] {
+  background: linear-gradient(90deg, #14577c, #10344d);
+  box-shadow: 0 0 9px #35baf54d;
+}
+@container (max-width: 760px) {
+  .pve-battle .pve-bottom {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pve-battle .pve-bottom > .pve-controls {
+    grid-column: 1 / -1;
+  }
+}
+@container (max-width: 460px) {
+  .pve-battle .pve-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pve-battle .pve-bottom > .pve-controls {
+    grid-column: 1;
+  }
+
+  .pve-battle .pve-controls .skillChamberCommandPanel {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  .pve-battle .pve-controls .skillChamberCommandOrb {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@container chamber (max-width: 380px) {
+  .pve-battle .pve-controls .skillChamberBattleSlots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pve-battle .pve-controls .skillChamberCommandPanel { grid-template-columns: 64px minmax(0, 1fr); gap: 6px; }
+  .pve-battle .pve-controls .skillChamberCommandOrb { width: 64px; height: 64px; }
+  .pve-battle .pve-controls .skillInventoryPanel { padding: 8px; }
+  .pve-battle .pve-controls .skillChamberStatusRow { gap: 6px; }
+}
+@container chamber (max-width: 270px) {
+  .pve-battle .pve-controls .skillChamberStatusRow { grid-template-columns: minmax(0, 1fr); }
+}

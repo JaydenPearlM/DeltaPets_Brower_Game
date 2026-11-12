@@ -1,0 +1,987 @@
+/* Wildwood layout only: existing scenery, combat and shared panels are retained. */
+.ww-page.ww-redesign-header,
+.ww-page.ww-workspace {
+  width: calc(100% - 24px);
+  max-width: 1920px;
+  box-sizing: border-box;
+  padding: 24px;
+  margin: 10px auto;
+}
+.ww-redesign-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.ww-redesign-header::before {
+  background-image:
+    var(--dp-standard-panel-blue-grid), var(--dp-standard-panel-bg);
+  background-size:
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    var(--dp-popup-grid-size) var(--dp-popup-grid-size),
+    auto;
+  background-position: 0 0;
+  background-repeat: repeat, repeat, no-repeat;
+}
+
+.ww-redesign-header h1 {
+  font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+  line-height: 1.1;
+}
+.ww-workspace .ww-navigation {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-bottom: 14px;
+}
+.ww-workspace button {
+  font: inherit;
+}
+.ww-navigation button,
+.ww-inventory-control {
+  color: #d5f5ff;
+  border: 1px solid #377f9c;
+  background: #0b2c43;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.ww-dashboard {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+.ww-dashboard > *,
+.ww-battle-column > * {
+  min-width: 0;
+}
+.ww-team-panel {
+  grid-column: 1 / 3;
+  grid-row: 1;
+}
+.ww-dashboard > .ww-team-panel {
+  padding: 12px;
+}
+.ww-team-select {
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  letter-spacing: 0;
+  text-align: left;
+  padding: 0;
+  border: 0;
+  color: #d9f3fb;
+  background: transparent;
+  cursor: pointer;
+}
+.ww-team-card:has(.ww-team-select[aria-pressed="true"]) {
+  border-color: #ffce6a;
+  background: #13323e;
+}
+.ww-battle-column {
+  grid-column: 3 / 10;
+  grid-row: 1;
+}
+.ww-trail-column {
+  grid-column: 10 / 13;
+  grid-row: 1;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.ww-inventory {
+  grid-column: 1 / 4;
+  grid-row: 2;
+}
+.ww-skills-panel {
+  grid-column: 4 / 9;
+  grid-row: 2;
+}
+.ww-log-panel {
+  grid-column: 9 / 12;
+  grid-row: 2;
+}
+.ww-actions-column {
+  grid-column: 12 / 13;
+  grid-row: 2;
+}
+.ww-dashboard > .ww-inventory,
+.ww-skills-panel,
+.ww-log-panel,
+.ww-actions-column {
+  align-self: stretch;
+  min-height: 340px;
+  max-height: 480px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.ww-skills-panel .skillsPanel {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.ww-skills-panel .skillsPanel::before {
+  display: none;
+}
+.ww-skills-panel .pve-info {
+  padding: 0;
+  border: 0;
+}
+.ww-skills-panel .pve-chamber {
+  margin: 0;
+}
+.ww-skills-panel .skillChamberStatusRow {
+  margin-bottom: 8px;
+}
+.ww-log-panel .pve-info {
+  padding: 0;
+  border: 0;
+}
+.ww-actions-column {
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ww-actions-column h2 {
+  font-size: 14px;
+}
+.ww-actions-column button {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 6px;
+  font-size: 12px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.ww-actions-column .ww-explore-control {
+  margin: 0;
+}
+.ww-actions-column .ww-explore-control[hidden] {
+  display: none;
+}
+.ww-actions-column .ww-panel-note {
+  font-size: 11px;
+  line-height: 1.4;
+}
+.ww-log-panel .pve-log {
+  max-height: 400px;
+}
+.ww-battle-column .pve-bottom {
+  display: none;
+}
+.ww-field-heading {
+  margin-bottom: 8px;
+}
+.ww-battle-column {
+  position: relative;
+  padding: 10px;
+  border: 1px solid #4bbda6;
+  border-radius: 16px;
+  background: linear-gradient(150deg, #0c3436, #0a1831 45%, #34234c);
+  box-shadow:
+    inset 0 0 18px #30ddab12,
+    0 0 15px #38c0bb18;
+}
+.ww-workspace .ww-art-panel .ww-scene > svg.ww-scene__art {
+  height: clamp(250px, 36vh, 420px);
+  aspect-ratio: auto;
+}
+.ww-workspace .pve-field {
+  height: clamp(250px, 36vh, 420px);
+  aspect-ratio: auto;
+}
+.ww-workspace .ww-scene__caption {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.ww-workspace .ww-scene__caption span {
+  display: none;
+}
+.ww-path-panel {
+  position: relative;
+  border-color: #54b89b;
+  background-color: #08272c;
+}
+/* Place the Wildwood legend beneath the trail without altering its progress UI. */
+.ww-wildwood-lore {
+  border-color: #54b89b;
+  background-color: #08272c;
+}
+
+.ww-wildwood-lore h2 {
+  margin: 0 0 12px;
+}
+
+.ww-wildwood-lore p {
+  margin: 0 0 12px;
+  color: #c2e1df;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.ww-wildwood-lore p:last-child {
+  margin-bottom: 0;
+}
+
+.ww-priority-panel:empty {
+  display: none;
+}
+.ww-priority-panel .pve-priority {
+  padding: 10px 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+.ww-priority-panel .pve-priority ol {
+  flex-direction: column;
+  max-height: 155px;
+}
+.ww-priority-panel .pve-priority li {
+  flex: none;
+  padding: 6px;
+}
+.ww-priority-panel .pve-priority > small {
+  display: none;
+}
+.ww-workspace {
+  font-size: 15px;
+}
+.ww-card {
+  padding: 18px;
+  border: 1px solid #328fb0;
+  border-radius: 12px;
+  background-color: #061b2e;
+  background-image: var(--dp-standard-panel-blue-grid);
+  background-size: var(--dp-popup-grid-size) var(--dp-popup-grid-size);
+  box-shadow:
+    inset 0 1px #83e9ff22,
+    0 8px 20px #0002;
+  overflow-wrap: anywhere;
+}
+.ww-card h2,
+.ww-field-heading h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.ww-card-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.ww-card-heading > span {
+  font-size: 0.8rem;
+  color: #a7d3dc;
+}
+.ww-panel-note {
+  font-size: 0.85rem;
+  color: #b7d2e1;
+  line-height: 1.55;
+}
+.ww-workspace .ww-panel-note,
+.ww-workspace .ww-eyebrow,
+.ww-card-heading > span,
+.ww-team-copy span,
+.ww-team-copy small,
+.ww-path-markers {
+  font-size: 12px;
+}
+.ww-team-cards {
+  list-style: none;
+  margin: 18px 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.ww-team-card {
+  display: grid;
+  grid-template-columns: 16px 44px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  border: 1px solid #275978;
+  border-radius: 9px;
+  background: #071e33;
+}
+.ww-team-card[aria-current="true"] {
+  border-color: #ffce6a;
+  box-shadow: 0 0 12px #ffce6a20;
+}
+.ww-team-number {
+  color: #85c1cc;
+  font-size: 0.85rem;
+}
+.ww-team-portrait .ww-portrait {
+  width: 48px;
+  height: 48px;
+}
+.ww-team-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.ww-team-copy strong {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.ww-team-copy span,
+.ww-team-copy small {
+  font-size: 0.8rem;
+  color: #a9d7e6;
+}
+.ww-team-moves {
+  grid-column: 4;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ww-team-moves button {
+  flex: 1;
+  min-height: 30px;
+  background: #123752;
+  border: 1px solid #337d9a;
+  border-radius: 6px;
+  color: #d7f5ff;
+  cursor: pointer;
+}
+.ww-workspace button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ww-workspace button:focus-visible,
+.ww-workspace a:focus-visible {
+  outline: 2px solid #ffe091;
+  outline-offset: 3px;
+}
+.ww-field-heading {
+  padding: 4px 2px;
+}
+.ww-workspace .ww-art-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #43b7c5;
+  border-radius: 12px;
+}
+.ww-workspace .ww-exploration-chamber {
+  margin-top: 16px;
+}
+.ww-workspace .ww-exploration-chamber > .skillsPanel {
+  margin: 0;
+}
+.ww-workspace .skillsPanel {
+  min-width: 0;
+  padding: 18px;
+}
+.ww-workspace .skillsTitle {
+  font-size: clamp(1.1rem, 2vw, 1.5rem) !important;
+  white-space: normal !important;
+  letter-spacing: 0.02em !important;
+  transform: none;
+}
+.ww-workspace .skillChamberControlsRow {
+  flex-wrap: wrap !important;
+}
+.ww-workspace .skillCenterActionRow {
+  display: none;
+}
+.ww-workspace .skillInventoryPanel {
+  min-width: 0;
+}
+.ww-workspace .skillChamberBattleSlots {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ww-workspace .skillChamberBattleSlot {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ww-workspace .skillChamberCommand {
+  min-height: 44px;
+}
+.ww-workspace .skillChamberCommand[aria-pressed="true"] {
+  outline: 2px solid #ffd66c;
+  outline-offset: 2px;
+}
+.ww-workspace .pve-arena {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+.ww-workspace .pve-priority {
+  border-radius: 0;
+  padding: 12px;
+  font-size: 0.85rem;
+}
+.ww-workspace .pve-priority h3 {
+  font-size: 0.95rem;
+}
+.ww-workspace .pve-priority ol {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  max-height: 130px;
+  margin-bottom: 8px;
+}
+.ww-workspace .pve-priority li {
+  min-width: 0;
+}
+.ww-workspace .pve-priority small {
+  font-size: 0.75rem;
+}
+.ww-workspace .pve-turn-status {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+}
+.ww-workspace .pve-bottom {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 12px;
+  gap: 12px;
+}
+.ww-workspace .pve-bottom .pve-info {
+  font-size: 0.9rem;
+  padding: 12px;
+}
+.ww-workspace .pve-bottom .pve-controls {
+  grid-column: auto;
+  padding: 0;
+  border: 0;
+}
+.ww-workspace .pve-enemy-status {
+  font-size: clamp(0.7rem, 1.7cqi, 0.9rem);
+}
+.ww-workspace .pve-log {
+  max-height: 180px;
+  font-size: 0.85rem;
+}
+.ww-workspace .pve-log li > span {
+  color: #8edbd9;
+  font-variant-numeric: tabular-nums;
+}
+.ww-workspace .pve-ally-hud {
+  padding: 7px 12px;
+  background: #071d31;
+}
+.ww-workspace .pve-ally-status {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 12px;
+}
+.ww-workspace .pve-ally-status .pve-hp-track {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.ww-workspace .pve-ally-status[data-active="true"] {
+  border-color: #ffe091;
+}
+.ww-workspace .pve-ally-status small {
+  color: #98d9ff;
+}
+.ww-path-panel .ww-card-heading {
+  align-items: start;
+  flex-wrap: wrap;
+}
+.ww-path-panel .ww-card-heading > strong {
+  font-size: 1.8rem;
+  color: #ffe091;
+}
+.ww-path-panel .ww-card-heading small {
+  font-size: 0.85rem;
+  color: #b7d2e1;
+}
+.ww-path-track {
+  height: 12px;
+  border: 1px solid #377f87;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #041421;
+}
+.ww-path-track > span {
+  height: 100%;
+  display: block;
+  background: linear-gradient(90deg, #32ab9b, #bce88a);
+  transition: width 0.2s ease;
+}
+.ww-path-markers {
+  display: flex;
+  justify-content: space-between;
+  margin: 9px 0 20px;
+  color: #8daebc;
+  font-size: 0.8rem;
+}
+.ww-path-markers span {
+  position: relative;
+}
+.ww-path-markers span::before {
+  content: "";
+  display: block;
+  width: 7px;
+  height: 7px;
+  margin: 0 auto 5px;
+  transform: rotate(45deg);
+  background: #58c4b2;
+  box-shadow: 0 0 8px #58c4b2;
+}
+.ww-path-markers span[data-reached="true"] {
+  color: #ffe29a;
+}
+.ww-path-markers span[data-reached="true"]::before {
+  background: #ffe29a;
+  box-shadow: 0 0 10px #ffe29a;
+}
+.ww-path-panel .ww-explore-result {
+  border-top: 1px solid #2b576c;
+  padding-top: 16px;
+}
+.ww-path-panel .ww-path-heading {
+  font-size: 1rem;
+}
+.ww-path-panel .ww-explore-result p {
+  font-size: 0.9rem;
+}
+.ww-path-panel .ww-explore-control {
+  margin: 16px 0;
+}
+.ww-path-panel .ww-explore-control button,
+.ww-path-panel .ww-inventory-control {
+  width: 100%;
+}
+.ww-confirmed-reward {
+  padding: 12px;
+  border-left: 3px solid #bce88a;
+  background: #102e2f;
+}
+
+.ww-inventory-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #2a617c;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+}
+.ww-inventory-tabs button {
+  flex: 0 1 150px;
+  min-height: 44px;
+  border: 1px solid #3a6b8b;
+  border-radius: 8px;
+  background: #09243b;
+  color: #cdeaf7;
+  cursor: pointer;
+}
+.ww-inventory-tabs button[aria-selected="true"] {
+  background: #184353;
+  color: #ffdf8c;
+  border-color: #ffdf8c;
+}
+.ww-inventory-tabs span {
+  font-size: 0.8rem;
+  margin-left: 5px;
+}
+.ww-inventory-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  max-height: 310px;
+  overflow-y: auto;
+  padding: 4px;
+  scrollbar-width: thin;
+}
+.ww-inventory-item {
+  flex: 0 0 140px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  padding: 12px;
+  background: #081e32;
+  border: 1px solid #316681;
+  border-radius: 8px;
+  color: #dceff9;
+  cursor: pointer;
+}
+.ww-inventory-item[aria-pressed="true"] {
+  border-color: #ffdf8c;
+  box-shadow: inset 0 0 0 1px #ffdf8c;
+}
+.ww-inventory-item img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+.ww-inventory-item strong {
+  font-size: 0.85rem;
+}
+.ww-item-art-note {
+  display: grid;
+  place-items: center;
+  min-height: 60px;
+  font-size: 0.75rem;
+  color: #89aaba;
+}
+.ww-inventory-detail {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.ww-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (min-width: 721px) and (max-width: 1150px) {
+  .ww-dashboard {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .ww-team-panel {
+    grid-column: 1 / 3;
+    grid-row: 1;
+  }
+  .ww-battle-column {
+    grid-column: 3 / 7;
+    grid-row: 1;
+  }
+  .ww-trail-column {
+    grid-column: 1 / 3;
+    grid-row: 2;
+  }
+  .ww-skills-panel {
+    grid-column: 3 / 7;
+    grid-row: 2;
+  }
+  .ww-inventory {
+    grid-column: 1 / 3;
+    grid-row: 3;
+  }
+  .ww-log-panel {
+    grid-column: 3 / 6;
+    grid-row: 3;
+  }
+  .ww-actions-column {
+    grid-column: 6 / 7;
+    grid-row: 3;
+  }
+}
+@media (max-width: 720px) {
+  .ww-page.ww-redesign-header,
+  .ww-page.ww-workspace {
+    width: calc(100% - 16px);
+    margin: 8px auto;
+    padding: 12px;
+  }
+  .ww-redesign-header h1 {
+    font-size: 28px;
+  }
+  .ww-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .ww-dashboard > * {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .ww-battle-column {
+    order: 0;
+  }
+  .ww-skills-panel {
+    order: 1;
+  }
+  .ww-actions-column {
+    order: 2;
+  }
+  .ww-trail-column {
+    order: 3;
+  }
+  .ww-team-panel {
+    order: 4;
+  }
+  .ww-inventory {
+    order: 5;
+  }
+  .ww-log-panel {
+    order: 6;
+  }
+  .ww-dashboard > .ww-inventory,
+  .ww-skills-panel,
+  .ww-log-panel,
+  .ww-actions-column {
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+  .ww-actions-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .ww-actions-column h2,
+  .ww-actions-column .ww-panel-note {
+    grid-column: 1 / -1;
+  }
+  .ww-actions-column .ww-confirm-action {
+    grid-column: 1 / -1;
+  }
+  .ww-actions-column button {
+    font-size: 14px;
+  }
+  .ww-workspace .pve-ally-status {
+    grid-template-columns: 1fr;
+  }
+  .ww-workspace .pve-ally-status .pve-hp-track {
+    grid-row: auto;
+  }
+  .ww-workspace .pve-ally-status small {
+    display: none;
+  }
+  .ww-inventory-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ww-card {
+    padding: 14px;
+  }
+  .ww-team-card {
+    grid-template-columns: 24px 48px minmax(0, 1fr) 44px;
+  }
+  .ww-team-moves {
+    grid-column: 4;
+    grid-row: 1;
+    flex-direction: column;
+  }
+  .ww-team-moves button {
+    min-height: 38px;
+  }
+  .ww-workspace .pve-battle {
+    display: flex;
+    flex-direction: column;
+  }
+  .ww-workspace .pve-arena {
+    display: contents;
+  }
+  .ww-workspace .pve-stage {
+    order: 0;
+  }
+  .ww-workspace .pve-ally-hud {
+    order: 1;
+  }
+  .ww-workspace .pve-bottom {
+    order: 2;
+  }
+  .ww-workspace .pve-priority {
+    order: 3;
+  }
+  .ww-workspace .pve-bottom,
+  .ww-workspace .skillsPanel {
+    padding: 10px;
+  }
+  .ww-workspace .skillChamberStatusRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ww-workspace .skillChamberCommandPanel {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  .ww-workspace .skillChamberCommandOrb {
+    width: 64px;
+    height: 64px;
+  }
+  .ww-workspace .skillChamberCommandGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ww-workspace .skillChamberBattleSlot strong {
+    font-size: 0.8rem;
+  }
+  .ww-workspace .pve-enemy-status {
+    font-size: 0.8rem;
+    padding: 6px;
+    max-width: none;
+  }
+  .ww-workspace .pve-enemy-hud {
+    left: 2%;
+    right: 35%;
+  }
+  .ww-workspace .ww-navigation {
+    gap: 10px 16px;
+    font-size: 0.9rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ww-path-track > span {
+    transition: none;
+  }
+}
+
+/* Kith Companions: position markers and species-element card colors. */
+.ww-team-panel .ww-card-heading {
+  margin-bottom: 12px;
+}
+
+.ww-team-panel .ww-team-cards {
+  margin-top: 0;
+}
+
+.ww-team-panel .ww-team-card {
+  --ww-element: #4796b9;
+  --ww-element-surface: #0b293e;
+  position: relative;
+  grid-template-columns: 48px minmax(0, 1fr) 30px;
+  gap: 6px;
+  padding: 8px 6px;
+  border-color: var(--ww-element);
+  background: var(--ww-element-surface);
+}
+
+.ww-team-panel .ww-team-card[data-element="water"] {
+  --ww-element: #3aa7e7;
+  --ww-element-surface: #082b49;
+}
+
+.ww-team-panel .ww-team-card[data-element="fire"] {
+  --ww-element: #f18449;
+  --ww-element-surface: #40231e;
+}
+
+.ww-team-panel .ww-team-card[data-element="earth"] {
+  --ww-element: #83b76a;
+  --ww-element-surface: #203626;
+}
+
+.ww-team-panel .ww-team-card[data-element="air"] {
+  --ww-element: #7bd5c7;
+  --ww-element-surface: #17373c;
+}
+
+.ww-team-panel .ww-team-card[data-element="ice"] {
+  --ww-element: #92dced;
+  --ww-element-surface: #1b354c;
+}
+
+.ww-team-panel .ww-team-card[data-element="storm"] {
+  --ww-element: #f5ce42;
+  --ww-element-surface: #403718;
+}
+
+.ww-team-panel .ww-team-card[data-element="light"] {
+  --ww-element: #f4ce70;
+  --ww-element-surface: #3b3322;
+}
+
+.ww-team-panel .ww-team-card[data-element="shadow"] {
+  --ww-element: #a77ad0;
+  --ww-element-surface: #2b203e;
+}
+
+.ww-team-panel .ww-team-card[data-element="null_element"] {
+  --ww-element: #b6a5bb;
+  --ww-element-surface: #292833;
+}
+
+.ww-team-panel .ww-team-card:has(.ww-team-select[aria-pressed="true"]) {
+  background: var(--ww-element-surface);
+  border-color: #ffce6a;
+  box-shadow: 0 0 0 1px var(--ww-element);
+}
+
+.ww-team-panel .ww-team-number {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 2px solid var(--ww-element);
+  border-radius: 50%;
+  background: #061b2c;
+  color: #f1faff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ww-team-panel .ww-team-moves {
+  grid-column: 3;
+}
+
+/* Shift only the Kith Companions pet portraits down by 10px. */
+.ww-team-panel .ww-team-portrait {
+  transform: translateY(10px);
+}
+
+/* Wildwood Treasure: numbered, selectable eggs awaiting Hatchery Storage. */
+.ww-treasure-egg-list {
+  display: grid;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 2px;
+  margin: 0 0 12px;
+}
+.ww-treasure-egg-list li {
+  min-width: 0;
+}
+.ww-treasure-egg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 6px 8px;
+  border: 1px solid #316681;
+  border-radius: 8px;
+  background: #081e32;
+  color: #dceff9;
+  cursor: pointer;
+}
+.ww-treasure-egg input {
+  flex: 0 0 auto;
+  accent-color: #ffdf8c;
+}
+.ww-treasure-egg-number {
+  min-width: 1.5em;
+  color: #ffdf8c;
+}
+.ww-treasure-egg img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+.ww-treasure-egg strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ww-treasure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ww-treasure-actions button {
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid #3a97b5;
+  border-radius: 8px;
+  background: #0b2c43;
+  color: #e8f7ff;
+  cursor: pointer;
+}
+.ww-treasure-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ww-treasure-note {
+  font-size: 0.8rem;
+  color: #adc8dc;
+}

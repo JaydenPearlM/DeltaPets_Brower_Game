@@ -1,12 +1,10 @@
 import { apiFetch } from "../api/baseClient";
 import type {
-  BattleAction,
   WildwoodExploreRequest,
   WildwoodSession,
 } from "@shared/battle/wildwoodTypes";
 
 export type {
-  BattleAction,
   BattleRow,
   BattleState,
   WildwoodSession,
@@ -21,13 +19,6 @@ export function exploreWildwood(request: WildwoodExploreRequest) {
     method: "POST",
     json: request,
   });
-}
-
-export function submitWildwoodAction(battleId: string, action: BattleAction) {
-  return apiFetch<WildwoodSession>(
-    `/api/kithna/wildwood/battle/${encodeURIComponent(battleId)}/action`,
-    { method: "POST", json: action },
-  );
 }
 
 export type SomethingsAfootStatus =
@@ -89,4 +80,8 @@ export function turnInAssantiFoodQuest() {
   return apiFetch<WildwoodStatus>("/api/kithna/wildwood/food-quest/turn-in", {
     method: "POST",
   });
+}
+
+export function actInWildwood(battleId: string, action: import("@shared/battle/wildwoodTypes").BattleAction) {
+  return apiFetch<WildwoodSession>("/api/kithna/wildwood/battle/" + encodeURIComponent(battleId) + "/action", { method: "POST", json: action });
 }

@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import DpPopupWindow from "@/pages/petsPage/components/DpPopupWindow";
+import { getInventoryChangeEventName } from "@/components/inventory/inventory";
 import type { WildwoodRoomView } from "@shared/battle/wildwoodTypes";
 import { apiFetch } from "@/lib/api/baseClient";
-import { KithPortrait } from "./WildwoodBattle";
 
 import type { BackendInventoryItem } from "@/components/inventory/inventory";
 
-export type WildwoodCollectedItem = Omit<BackendInventoryItem, "qty" | "updatedAt">;
+export type WildwoodCollectedItem = Omit<BackendInventoryItem, "qty" | "updatedAt"> & {
+  category?: "relic" | "etching";
+};
 
 type CollectItemResponse = {
   item: WildwoodCollectedItem;
@@ -14,17 +18,15 @@ type CollectItemResponse = {
 
 type ExploreResult =
   | { kind: "item" }
-  | {
-      kind: "encounter";
-      battle: NonNullable<WildwoodRoomView["battle"]>;
-    }
   | { kind: "event"; message: string };
 
-function resultFor(room: WildwoodRoomView): ExploreResult {
+function resultFor(room: WildwoodRoomView, enabled: boolean): ExploreResult {
   if (room.battle?.status === "active") {
     return {
-      kind: "encounter",
-      battle: room.battle,
+      kind: "event",
+      message: room.pveEnabled
+        ? "Battle in progress. Choose a skill and confirm your action below the battlefield."
+        : "An unfinished legacy battle is saved. Exploration awaits encounter recovery.",
     };
   }
 
@@ -38,8 +40,9 @@ function resultFor(room: WildwoodRoomView): ExploreResult {
     };
   }
 
+  if (enabled && room.eventKind === "flavor") return { kind: "item" };
+
   return {
-    // Item discovery is paused until the Wildwood item lineup is ready.
     kind: "event",
     message: room.message || "The trees rustle softly around you.",
   };
@@ -49,18 +52,22 @@ export default function WildwoodExploreResult({
   room,
   busy,
   step,
-  onBattle,
   onCollected,
   onCollectingChange,
+  shinyTarget,
 }: {
   room: WildwoodRoomView;
   busy: boolean;
   step: number;
-  onBattle: () => void;
   onCollected: (item: WildwoodCollectedItem) => void;
   onCollectingChange: (collecting: boolean) => void;
+  shinyTarget: HTMLElement | null;
 }) {
-  const result = resultFor(room);
+  const [enabled, setEnabled] = useState(false);
+  const result = resultFor(room, enabled);
+  const pending = useRef(false);
+  const mounted = useRef(true);
+  const [popupOpen, setPopupOpen] = useState(false);
 
   const [collectedItem, setCollectedItem] =
     useState<WildwoodCollectedItem | null>(null);
@@ -68,6 +75,15 @@ export default function WildwoodExploreResult({
   const [notice, setNotice] = useState("");
   const [collecting, setCollecting] = useState(false);
   const isCollected = room.itemClaimed || collectedItem !== null;
+
+  useEffect(() => {
+    mounted.current = true;
+    let current = true;
+    void apiFetch<{ enabled: boolean }>("/api/kithna/wildwood/discoveries/status")
+      .then(data => { if (current) setEnabled(data.enabled === true); })
+      .catch(() => { if (current) setNotice("Discoveries are temporarily unavailable."); });
+    return () => { current = false; mounted.current = false; };
+  }, []);
 
   useEffect(() => {
     onCollectingChange(collecting);
@@ -78,10 +94,12 @@ export default function WildwoodExploreResult({
   }, [collecting, onCollectingChange]);
 
   async function collect() {
-    if (result.kind !== "item" || busy || collecting || isCollected) {
+    if (result.kind !== "item" || busy || pending.current || isCollected) {
       return;
     }
 
+    pending.current = true;
+    onCollectingChange(true);
     setCollecting(true);
     setNotice("");
 
@@ -96,19 +114,27 @@ export default function WildwoodExploreResult({
         },
       );
 
+      if (!response?.item?.slug || !response.item.name || typeof response.item.description !== "string" ||
+          !Number.isInteger(response.qty) || response.qty < 1) {
+        throw new Error("Could not confirm the reward. Reload before trying again.");
+      }
+      window.dispatchEvent(new Event(getInventoryChangeEventName()));
+      if (!mounted.current) return;
       setCollectedItem(response.item);
+      setPopupOpen(true);
 
       setNotice(`${response.item.name} was added to your inventory.`);
 
-      if (response.qty > 0) onCollected(response.item);
+      onCollected(response.item);
     } catch (problem) {
-      setNotice(
+      if (mounted.current) setNotice(
         problem instanceof Error
           ? problem.message
           : "Could not collect this Wildwood item.",
       );
     } finally {
-      setCollecting(false);
+      pending.current = false;
+      if (mounted.current) setCollecting(false);
     }
   }
 
@@ -116,6 +142,21 @@ export default function WildwoodExploreResult({
     <div className="ww-explore-result">
       <h2 className="ww-path-heading">Path {Math.min(100, Math.max(0, step))} / 100</h2>
       <p role="status">{result.kind === "event" ? result.message : room.message}</p>
+      {result.kind === "event" && notice && <p role="status">{notice}</p>}
+
+      {result.kind === "item" && !isCollected && shinyTarget && createPortal(
+        <button type="button" className="ww-discovery-shiny" aria-label="Collect shiny discovery"
+          disabled={busy || collecting} onClick={() => void collect()}>
+          <span aria-hidden="true">✦</span>
+        </button>, shinyTarget,
+      )}
+
+      <DpPopupWindow open={popupOpen && collectedItem !== null} onClose={() => setPopupOpen(false)}
+        label="Wildwood discovery" size="compact">
+        <h2>{collectedItem?.name}</h2>
+        <p>{collectedItem?.description}</p>
+        <p>Added to your inventory.</p>
+      </DpPopupWindow>
 
       {result.kind === "item" ? (
         <>
@@ -154,45 +195,6 @@ export default function WildwoodExploreResult({
           </div>
 
           {!isCollected && <p>Exploring again leaves this discovery behind.</p>}
-        </>
-      ) : result.kind === "encounter" && !room.corrupted ? (
-        <>
-          <h2>
-            {room.corrupted ? "Corrupted Kith encounter" : "Kith encounter"}
-          </h2>
-
-          <div className="ww-encounter-portraits">
-            {result.battle.participants
-              .filter((pet) => pet.side === "enemy")
-              .map((pet) => (
-                <div key={pet.id}>
-                  <span
-                    className={
-                      room.corrupted ? "ww-corrupted-portrait" : undefined
-                    }
-                  >
-                    <KithPortrait
-                      name={pet.name}
-                      speciesId={pet.speciesId}
-                      imageUrl={room.images[pet.id]}
-                      enemy={room.corrupted}
-                    />
-                  </span>
-
-                  <h3>{pet.name}</h3>
-                </div>
-              ))}
-          </div>
-
-          {!room.corrupted && (
-            <button
-              className="dp-btn dp-btn--yellow"
-              disabled={busy}
-              onClick={onBattle}
-            >
-              Continue to battle
-            </button>
-          )}
         </>
       ) : null}
     </div>

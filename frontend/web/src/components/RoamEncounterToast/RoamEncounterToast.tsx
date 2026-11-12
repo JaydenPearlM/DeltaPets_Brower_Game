@@ -17,6 +17,7 @@ type RoamEncounterToastProps = {
   result: RoamEncounterResult | null;
   onDismiss: () => void;
   onTaken?: (egg: { egg_id: string; egg_name: string }) => void;
+  onWorkingChange?: (working: boolean) => void;
 };
 
 function getEggElementClass(eggName?: string): string {
@@ -73,6 +74,7 @@ export function RoamEncounterToast({
   result,
   onDismiss,
   onTaken,
+  onWorkingChange,
 }: RoamEncounterToastProps) {
   const [workingAction, setWorkingAction] = useState<"take" | "leave" | null>(
     null,
@@ -82,6 +84,7 @@ export function RoamEncounterToast({
 
   async function handleDecision(action: "take" | "leave") {
     setWorkingAction(action);
+    onWorkingChange?.(true);
     setError("");
 
     try {
@@ -101,6 +104,7 @@ export function RoamEncounterToast({
       );
     } finally {
       setWorkingAction(null);
+      onWorkingChange?.(false);
     }
   }
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { calculateDamage, calculateMend } from "./battleMath";
+import { hasBattleMp, MEND_MP_COST } from "../shared/battle/mana";
 import type {
   BattleAction, BattleEvent, BattleParticipant, BattleParticipantInput, BattleState,
 } from "./battleTypes";
@@ -23,11 +24,16 @@ const participantSchema = (maxLevel: number) => z.object({
   level: z.number().int().min(1).max(maxLevel),
   hpMax: statSchema.positive(),
   hpCur: statSchema,
+  mpMax: statSchema.optional(),
+  mpCur: statSchema.optional(),
   atk: statSchema,
   def: statSchema,
   magi: statSchema,
   spd: statSchema.positive(),
-}).strict().refine((pet) => pet.hpCur <= pet.hpMax, "HP exceeds maximum");
+}).strict().refine((pet) => pet.hpCur <= pet.hpMax, "HP exceeds maximum")
+  .refine((pet) => pet.mpMax === undefined && pet.mpCur === undefined
+    || pet.mpMax !== undefined && pet.mpCur !== undefined && pet.mpCur <= pet.mpMax,
+  "MP requires a current value bounded by its maximum");
 
 const actorFields = { actorId: idSchema, turnNumber: statSchema.positive() };
 const actionSchema = z.discriminatedUnion("action", [
@@ -107,9 +113,12 @@ function performAction(state: BattleState, action: BattleAction) {
   );
 
   if (healing) {
+    requireRule(hasBattleMp(actor), "MP is unavailable for this older battle. Finish it with Attack or Guard.");
+    requireRule(actor.mpCur >= MEND_MP_COST, "Not enough MP. Mend requires 1 MP.");
     const amount = Math.min(target.hpMax - target.hpCur, calculateMend(
       actor.magi, actor.level, actor.side === "player" ? state.mendMultiplier : 1,
     ));
+    actor.mpCur -= MEND_MP_COST;
     target.hpCur += amount;
     record(state, { type: "heal", actorId: actor.id, targetId: target.id, skillId: "mend", amount });
     return;
@@ -118,7 +127,7 @@ function performAction(state: BattleState, action: BattleAction) {
   const skill = action.action === "skill";
   const amount = Math.min(target.hpCur, calculateDamage({
     attacker: actor, defender: target, power: skill ? 1.25 : 1,
-    useMagi: skill, elemental: skill,
+    useMagi: false, elemental: skill,
   }));
   target.hpCur -= amount;
   target.defeated = target.hpCur === 0;

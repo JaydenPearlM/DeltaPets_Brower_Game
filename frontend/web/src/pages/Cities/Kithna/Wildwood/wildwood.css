@@ -1,5 +1,31 @@
 @import url("https://fonts.googleapis.com/css2?family=Rubik+Glitch&display=swap");
 
+.ww-discovery-shiny {
+  position: absolute;
+  left: 62%;
+  top: 45%;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff3a8;
+  font-size: 38px;
+  cursor: pointer;
+  text-shadow: 0 0 8px #fff, 0 0 18px #ffd45c;
+  animation: ww-discovery-glow 1.6s ease-in-out infinite alternate;
+}
+.ww-discovery-shiny:focus-visible { outline: 2px solid #fff; }
+.ww-discovery-shiny:disabled { cursor: wait; }
+@keyframes ww-discovery-glow {
+  from { opacity: .65; transform: scale(.9); }
+  to { opacity: 1; transform: scale(1.1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ww-discovery-shiny { animation: none; }
+}
+
 .ww-page {
   max-width: 1120px;
   margin: 24px auto;
@@ -171,10 +197,11 @@
 .ww-find-columns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
-  gap: 8px;
+  gap: 5px;
 }
 
 .ww-find-columns > section {
+  overflow-wrap: anywhere;
   min-width: 0;
   padding: 8px;
   border: 1px solid var(--dp-panel-border);
@@ -213,8 +240,7 @@
   color: var(--dp-title-gold, #ffdf75);
 }
 
-.ww-page-heading,
-.ww-battle-heading {
+.ww-page-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -371,33 +397,6 @@
   object-fit: contain;
 }
 
-.ww-encounter-portraits {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 24px;
-  margin: 24px 0;
-}
-
-/* Only explicitly marked Wildwood enemy portraits receive the aura.
-   The artwork itself has no filters, tint, or replacement asset. */
-.ww-page .ww-corrupted-portrait {
-  display: inline-grid;
-  position: relative;
-  isolation: isolate;
-}
-
-.ww-page .ww-corrupted-portrait::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 7% 2% 3% 6%;
-  border-radius: 43% 57% 61% 39% / 62% 38% 58% 42%;
-  background: radial-gradient(ellipse, rgba(79, 28, 19, 0.5), rgba(147, 71, 35, 0.3) 55%, transparent 73%);
-  box-shadow: -5px 3px 13px rgba(153, 76, 38, 0.5), 4px -3px 9px rgba(101, 41, 26, 0.6);
-  pointer-events: none;
-}
-
 .ww-formation {
   margin-top: 24px;
 }
@@ -473,423 +472,11 @@
   border-left: 3px solid var(--dp-panel-border);
 }
 
-.ww-affinity {
-  font-size: 0.75rem;
-  border: 1px solid var(--dp-panel-border);
-  border-radius: 20px;
-  padding: 8px 12px;
-}
-
-.ww-turn {
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
-.ww-turn-order {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.ww-turn-order span {
-  padding: 5px 8px;
-  border: 1px solid var(--dp-panel-border);
-  border-radius: 5px;
-  font-size: 0.72rem;
-}
-
-.ww-next-now {
-  color: #ffdf75;
-}
-
-.ww-field {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.ww-side {
-  min-width: 0;
-  width: 100%;
-  max-width: 320px;
-  box-sizing: border-box;
-  padding: 12px;
-  border: 1px solid var(--dp-panel-border);
-  border-radius: 10px;
-  background: rgba(3, 20, 38, 0.65);
-}
-
-.ww-side-enemy {
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
-  border-color: var(--dp-panel-purple-border);
-}
-
-.ww-side h3 {
-  margin: 0 0 12px;
-  font-size: 0.85rem;
-}
-
-.ww-side-player {
-  grid-column: 1;
-  grid-row: 2;
-  justify-self: start;
-}
-
-.ww-field .ww-portrait {
-  width: clamp(84px, 14vw, 144px);
-  height: clamp(84px, 14vw, 144px);
-}
-
-@media (max-width: 600px) {
-  .ww-field {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .ww-field .ww-side {
-    padding: 8px;
-  }
-
-  .ww-field .ww-side-enemy {
-    grid-column: 2 / 4;
-  }
-
-  .ww-field .ww-side-player {
-    grid-column: 1 / 3;
-  }
-
-  .ww-field .ww-unit {
-    padding: 8px;
-  }
-}
-
-.ww-unit {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  width: 100%;
-  min-width: 0;
-  padding: 10px;
-  border: 2px solid var(--dp-panel-border);
-  border-radius: 8px;
-  background: #06274e;
-  color: var(--dp-panel-text);
-  font: inherit;
-  font-size: 0.8rem;
-}
-
-.ww-unit:disabled {
-  opacity: 1;
-  cursor: default;
-}
-
-.ww-unit:not(:disabled) {
-  cursor: pointer;
-}
-
-.ww-unit:not(:disabled):hover,
-.ww-unit:focus-visible {
-  outline: 3px solid #ffdf75;
-  outline-offset: 2px;
-}
-
-.ww-unit-active {
-  border-color: #ffdf75;
-  box-shadow: 0 0 12px rgba(255, 223, 117, 0.25);
-}
-
-.ww-unit.ww-unit-defeated {
-  opacity: 0.55;
-}
-
-.ww-unit-name {
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-
-.ww-unit-meta {
-  font-size: 0.7rem;
-  text-transform: capitalize;
-}
-
-.ww-hp {
-  display: block;
-  width: 100%;
-  height: 7px;
-  background: #031426;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.ww-hp > span {
-  display: block;
-  height: 100%;
-  background: #8cff72;
-}
-
-.ww-actions,
-.ww-result {
-  padding: 20px 0;
-  text-align: center;
-}
-
 .ww-command-buttons {
   display: flex;
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.ww-command-buttons [aria-pressed="true"] {
-  outline: 2px solid #fff5ce;
-  outline-offset: 3px;
-}
-
-.ww-actions p,
-.ww-result p {
-  font-size: 0.82rem;
-}
-
-.ww-skill-select {
-  max-width: 280px;
-  margin: 16px auto;
-}
-
-.ww-log {
-  border-top: 1px solid var(--dp-panel-border);
-  padding-top: 14px;
-}
-
-.ww-log summary {
-  cursor: pointer;
-  font-family: var(--font-heading);
-}
-
-.ww-log ol {
-  max-height: 180px;
-  overflow-y: auto;
-  padding-left: 24px;
-  font-size: 0.8rem;
-  line-height: 1.6;
-}
-
-/* Quest progress flash */
-
-.ww-quest-progress-flash {
-  position: fixed;
-  z-index: 1000;
-  left: 50%;
-  top: 50%;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-
-  min-width: min(320px, calc(100vw - 40px));
-  padding: 18px 28px;
-
-  transform: translate(-50%, -50%);
-
-  border: 2px solid var(--dp-cyan, #67e8f9);
-  border-radius: 14px;
-
-  background: rgba(3, 20, 38, 0.94);
-
-  box-shadow:
-    0 0 0 3px rgba(192, 132, 252, 0.5),
-    0 0 28px rgba(103, 232, 249, 0.3);
-
-  text-align: center;
-  pointer-events: none;
-
-  animation: wwQuestProgressFlash 1800ms ease forwards;
-}
-
-.ww-quest-progress-flash--complete {
-  animation-duration: 2800ms;
-}
-
-.ww-quest-progress-flash__label {
-  font-family: var(--font-heading);
-  font-size: 0.78rem;
-  font-weight: 900;
-
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-
-  color: var(--dp-cyan, #67e8f9);
-}
-
-.ww-quest-progress-flash__count {
-  font-family: var(--font-heading);
-  font-size: clamp(2rem, 8vw, 3.4rem);
-  line-height: 1;
-
-  color: var(--dp-title-gold, #ffdf75);
-}
-
-.ww-quest-progress-flash__complete {
-  margin-top: 4px;
-
-  font-family: var(--font-heading);
-  font-size: 0.9rem;
-  font-weight: 900;
-
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-
-  color: #ffffff;
-}
-
-/* Quest progress animation */
-
-@keyframes wwQuestProgressFlash {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -46%) scale(0.94);
-  }
-
-  12% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-
-  78% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -54%) scale(0.98);
-  }
-}
-
-/* Reduced motion */
-
-@media (prefers-reduced-motion: reduce) {
-  .ww-quest-progress-flash,
-  .ww-quest-progress-flash--complete {
-    animation: none;
-  }
-}
-
-/* Scene-only battle introduction: one surge, impact, pulse and reveal. */
-.ww-art-panel > .ww-battle-intro {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border-radius: inherit;
-  background: rgba(3, 12, 32, 0.78);
-  container-type: inline-size;
-  animation: wwIntroReveal 1500ms ease both;
-}
-
-.ww-battle-intro__title {
-  z-index: 2;
-  color: #ed393f;
-  font-family: "Rubik Glitch", Impact, fantasy;
-  font-size: clamp(1.5rem, 17cqw, 6rem);
-  font-weight: 400;
-  font-synthesis: none;
-  line-height: 1;
-  letter-spacing: 0.015em;
-  rotate: -2deg;
-  background-color: #ed393f;
-  background-image:
-    radial-gradient(ellipse at 18% 24%, #290b15 0 4%, transparent 6%),
-    radial-gradient(ellipse at 72% 68%, #400c18 0 6%, transparent 9%),
-    radial-gradient(ellipse at 44% 40%, #170b15 0 3%, transparent 5%),
-    radial-gradient(ellipse at 88% 18%, #4a111e 0 5%, transparent 7%),
-    linear-gradient(#ff5554, #c31329);
-  background-size: 43px 37px, 67px 51px, 29px 41px, 83px 61px, 100% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: none;
-  filter: drop-shadow(2px 3px 0 #100b18) drop-shadow(0 0 9px #b51c38) drop-shadow(0 0 18px #65295e);
-  animation: wwIntroImpact 1500ms ease both;
-}
-
-.ww-battle-intro__streak {
-  position: absolute;
-  top: 50%;
-  width: 80%;
-  height: 3px;
-  background: #67e8f9;
-  box-shadow: 0 0 12px currentColor;
-  color: #67e8f9;
-  animation: wwIntroStreak 1500ms ease both;
-}
-
-.ww-battle-intro__streak--purple {
-  color: #c084fc;
-  background: #c084fc;
-  top: calc(50% + 6px);
-  animation-name: wwIntroStreakReverse;
-}
-
-.ww-battle-intro__pulse {
-  position: absolute;
-  width: 42%;
-  aspect-ratio: 1;
-  border: 2px solid #67e8f9;
-  border-radius: 50%;
-  background: radial-gradient(circle, #a970ed55, transparent 70%);
-  box-shadow: 0 0 22px #a970ed;
-  animation: wwIntroPulse 1500ms ease-out both;
-}
-
-@keyframes wwIntroReveal {
-  0% { opacity: 0; }
-  12%, 75% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-@keyframes wwIntroImpact {
-  0%, 16% { opacity: 0; transform: scale(0.45); }
-  25% { opacity: 1; transform: scale(1.12); }
-  36%, 73% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.2); }
-}
-
-@keyframes wwIntroStreak {
-  0% { opacity: 0; transform: translateX(-130%) scaleX(0.3); }
-  17%, 73% { opacity: 1; transform: translateX(0) scaleX(1); }
-  100% { opacity: 0; transform: scaleX(0); }
-}
-
-@keyframes wwIntroStreakReverse {
-  0% { opacity: 0; transform: translateX(130%) scaleX(0.3); }
-  17%, 73% { opacity: 1; transform: translateX(0) scaleX(1); }
-  100% { opacity: 0; transform: scaleX(0); }
-}
-
-@keyframes wwIntroPulse {
-  0%, 15% { opacity: 0; transform: scale(0.1); }
-  18% { opacity: 0.65; transform: scale(0.4); }
-  28%, 43% { opacity: 0; transform: scale(0.5); }
-  47% { opacity: 0.75; transform: scale(0.6); }
-  73%, 100% { opacity: 0; transform: scale(1.8); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ww-art-panel > .ww-battle-intro,
-  .ww-battle-intro > * {
-    animation: none;
-  }
-  .ww-battle-intro__streak,
-  .ww-battle-intro__pulse {
-    display: none;
-  }
 }
 
 .ww-middle-column { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
@@ -988,4 +575,20 @@
 .ww-middle-column .skillChamberBattleSlot strong {
   font-size: 0.75rem;
   line-height: 1.25;
+}
+
+/* Wildwood-only stat disclosure; portal avoids panel clipping on small screens. */
+.ww-team-summary li > .ww-stat-info { grid-column: 1; grid-row: 1 / 3; min-width: 0; }
+.ww-stat-trigger {
+  display: block; max-width: 100%; padding: 0; border: 0; background: transparent; color: var(--dp-panel-muted);
+  font: inherit; font-size: 0.8rem; cursor: help;
+}
+.ww-stat-trigger:focus-visible { outline: 2px solid cyan; outline-offset: 2px; }
+.ww-stat-tooltip {
+  position: fixed; z-index: 10000; bottom: 16px; left: 50%; transform: translateX(-50%);
+  box-sizing: border-box; width: max-content; max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 32px); overflow: auto; overflow-wrap: anywhere;
+  display: grid; gap: 4px; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--dp-panel-border, cyan); background: #031426; color: #e5f7ff;
+  font-size: 0.85rem; box-shadow: 0 4px 16px #0008;
 }

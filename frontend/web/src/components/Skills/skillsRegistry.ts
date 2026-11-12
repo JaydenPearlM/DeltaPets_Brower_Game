@@ -30,7 +30,7 @@ export const CORE_SKILLS: PetSkill[] = [
     name: "Storm Strike",
     tree: "combat",
     description:
-      "A level 1 elemental starter attack shaped by the Kith's element.",
+      "A level 1 physical elemental attack using ATK. Costs no MP.",
     sellable: false,
   },
   {
@@ -44,7 +44,7 @@ export const CORE_SKILLS: PetSkill[] = [
     id: "mend",
     name: "Mend",
     tree: "magic",
-    description: "Restores a small amount of health.",
+    description: "Restores health using MAGI. Costs 1 MP.",
     sellable: false,
   },
 ];
