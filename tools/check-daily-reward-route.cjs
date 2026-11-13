@@ -48,6 +48,8 @@ const express = {
 };
 const auth = load("backend/server/src/middleware/auth.ts", {
   express, "../lib/supabaseAdmin": { supabaseAdmin: db }, "../lib/logger": { logger },
+  zod, "../env.server": { env: {} },
+  "@supabase/supabase-js": { createClient() { throw new Error("Unexpected auth client creation"); } },
 });
 load("backend/server/src/routes/rewards/rewards.ts", {
   express, zod, "../../middleware/auth": auth,
