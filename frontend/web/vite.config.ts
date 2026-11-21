@@ -9,7 +9,11 @@ const pkg = JSON.parse(
 
 const APP_VERSION = pkg.version ?? "0.0.0";
 
-export default defineConfig({
+export default defineConfig(({ command }) => {
+  // A deployment's runtime NODE_ENV must not ship development React in build assets.
+  if (command === "build") process.env.NODE_ENV = "production";
+
+  return {
   plugins: [react()],
   define: {
     __APP_VERSION__: JSON.stringify(APP_VERSION),
@@ -47,4 +51,5 @@ export default defineConfig({
       },
     },
   },
+  };
 });
