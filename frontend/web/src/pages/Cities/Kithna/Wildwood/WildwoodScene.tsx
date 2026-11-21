@@ -1,4 +1,7 @@
 import type { WildwoodRoomView } from "@shared/battle/wildwoodTypes";
+import { useState } from "react";
+import { useDeltaTime } from "@/lib/timers/useDeltaTime";
+import { selectWildwoodArt, type WildwoodSceneId } from "./wildwoodArt";
 
 const scenes = {
   entrance: "",
@@ -9,15 +12,19 @@ const scenes = {
   corrupted: "Corrupted Clearing",
 } as const;
 
-export type WildwoodSceneId = keyof typeof scenes;
+export type { WildwoodSceneId } from "./wildwoodArt";
+
+export function wildwoodRoomHeading(step: number, room?: WildwoodRoomView | null) {
+  return room?.corrupted ? scenes.corrupted : step === 0 ? "Wildwood Entrance" : scenes[sceneFor(step, room)];
+}
 
 // Decorative only: stable room scenery, with no changes to exploration state.
 function sceneFor(
   step: number,
   room?: WildwoodRoomView | null,
 ): WildwoodSceneId {
-  if (step === 0) return "entrance";
   if (room?.corrupted) return "corrupted";
+  if (step === 0) return "entrance";
   const locations = ["brush", "clearing", "creek", "ancient"] as const;
   return locations[
     (Math.max(1, room?.sequence ?? step) - 1) % locations.length
@@ -35,11 +42,16 @@ export default function WildwoodScene({
   sceneId?: WildwoodSceneId;
   panoramic?: boolean;
 }) {
-  const scene = step === 0 ? "entrance" : (sceneId ?? sceneFor(step, room));
+  const scene = room?.corrupted ? "corrupted" : step === 0 ? "entrance" : (sceneId ?? sceneFor(step, room));
   const clearing = scene === "clearing" || scene === "corrupted";
+  const { phase } = useDeltaTime();
+  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const image = selectWildwoodArt(scene, phase);
+  const imageUrl = image !== failedImage ? image : null;
 
   return (
-    <figure className={`ww-scene ww-scene--${scene}`}>
+    <figure className={`ww-scene ww-scene--${scene}`} data-aliune-phase={phase}
+      data-art-source={imageUrl ? "image" : "svg-placeholder"}>
       <svg
         className="ww-scene__art"
         viewBox="0 0 800 450"
@@ -212,6 +224,8 @@ export default function WildwoodScene({
           <path d="M179 349L191 331L214 329L230 348Z" />
           <path d="M551 376L564 356L590 362L600 377Z" />
         </g>
+        {imageUrl && <image href={imageUrl} width="800" height="450"
+          preserveAspectRatio="xMidYMid slice" onError={() => setFailedImage(imageUrl)} />}
       </svg>
       {scene !== "entrance" && (
         <figcaption className="ww-scene__caption">

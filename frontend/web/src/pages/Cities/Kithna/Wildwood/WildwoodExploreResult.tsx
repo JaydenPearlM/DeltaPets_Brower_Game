@@ -20,6 +20,15 @@ type ExploreResult =
   | { kind: "item" }
   | { kind: "event"; message: string };
 
+export function itemOpportunityRemaining(room: WildwoodRoomView, now = Date.now()): number {
+  if (!room.itemOpportunity) return Infinity; // Legacy untimed discovery.
+  const availableAt = Date.parse(room.itemOpportunity.availableAt);
+  const expiresAt = Date.parse(room.itemOpportunity.expiresAt);
+  if (!Number.isFinite(availableAt) || !Number.isFinite(expiresAt) ||
+      expiresAt - availableAt !== 5_000 || now < availableAt) return 0;
+  return Math.max(0, expiresAt - now);
+}
+
 function resultFor(room: WildwoodRoomView, enabled: boolean): ExploreResult {
   if (room.battle?.status === "active") {
     return {
@@ -75,6 +84,19 @@ export default function WildwoodExploreResult({
   const [notice, setNotice] = useState("");
   const [collecting, setCollecting] = useState(false);
   const isCollected = room.itemClaimed || collectedItem !== null;
+  const [, refreshClock] = useState(0);
+  const remaining = itemOpportunityRemaining(room);
+  const eligible = result.kind === "item" && step > 0 && !room.corrupted &&
+    !room.battle && !busy && !collecting && !isCollected;
+  const canCollect = eligible && remaining > 0;
+
+  useEffect(() => {
+    if (!eligible || !room.itemOpportunity) return;
+    const delay = itemOpportunityRemaining(room);
+    if (delay <= 0) return;
+    const timer = window.setTimeout(() => refreshClock(value => value + 1), delay);
+    return () => window.clearTimeout(timer);
+  }, [room.id, room.itemOpportunity?.availableAt, room.itemOpportunity?.expiresAt, eligible, remaining]);
 
   useEffect(() => {
     mounted.current = true;
@@ -94,7 +116,7 @@ export default function WildwoodExploreResult({
   }, [collecting, onCollectingChange]);
 
   async function collect() {
-    if (result.kind !== "item" || busy || pending.current || isCollected) {
+    if (!canCollect || pending.current || itemOpportunityRemaining(room) <= 0) {
       return;
     }
 
@@ -144,7 +166,7 @@ export default function WildwoodExploreResult({
       <p role="status">{result.kind === "event" ? result.message : room.message}</p>
       {result.kind === "event" && notice && <p role="status">{notice}</p>}
 
-      {result.kind === "item" && !isCollected && shinyTarget && createPortal(
+      {canCollect && room.itemOpportunity && shinyTarget && createPortal(
         <button type="button" className="ww-discovery-shiny" aria-label="Collect shiny discovery"
           disabled={busy || collecting} onClick={() => void collect()}>
           <span aria-hidden="true">✦</span>
@@ -179,14 +201,16 @@ export default function WildwoodExploreResult({
             {notice ||
               (isCollected
                 ? "Collected."
-                : "You can take the item or continue exploring.")}
+                : remaining <= 0
+                  ? "This discovery has expired. Continue exploring."
+                  : "You can take the item or continue exploring.")}
           </p>
 
           <div className="ww-command-buttons">
             {!isCollected && (
               <button
                 className="dp-btn dp-btn--yellow"
-                disabled={busy || collecting}
+                disabled={!canCollect}
                 onClick={() => void collect()}
               >
                 {collecting ? "Taking…" : "Take"}

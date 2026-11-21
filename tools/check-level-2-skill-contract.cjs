@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
-const twiglet = require('../backend/server/src/shared/pets/characterProfiles/starters/twiglet.json');
+const { resolveProfileSkills } = require('../backend/server/dist/shared/pets/characterProfiles/skillCatalog.js');
+const twiglet = resolveProfileSkills(require('../backend/server/src/shared/pets/characterProfiles/starters/twiglet.json'));
 const skills = twiglet.progression.skills;
 const choice = skills.level_2_skill_choice;
 assert.equal(choice.level, 2);

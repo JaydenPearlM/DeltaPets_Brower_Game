@@ -31,7 +31,10 @@ export type WildwoodRoomView = {
   images: Record<string, string | null>;
   questProgressTarget: number | null;
   itemClaimed: boolean;
+  // Null/absent preserves discoveries created before timed opportunities shipped.
+  itemOpportunity?: { availableAt: string; expiresAt: string } | null;
   xpReward?: WildwoodXpReward | null;
+  xpRewards?: WildwoodXpReward[];
 };
 export type WildwoodSession = {
   team: WildwoodTeamMember[];

@@ -21,8 +21,9 @@ const candidateSchema = z.object({
   proposed_skill_id: z.string(), name: z.string(), element: z.string(),
   role: combatRoleSchema, category: z.string(), description: z.string(),
   proposed_unlock_level: z.literal(2),
-  damage: z.null(), healing_amount: z.null(), defense_modifier: z.null(),
-  duration_turns: z.null(), accuracy: z.null(), mana_cost: z.null(), cooldown: z.null(),
+  damage: z.literal("calculateDamage").nullable(), healing_amount: z.literal("calculateMend").nullable(), defense_modifier: z.literal(1.35).nullable(),
+  duration_turns: z.union([z.literal("until_next_actor_turn"), z.literal(0)]).nullable(),
+  accuracy: z.literal(100).nullable(), mana_cost: z.union([z.literal(0), z.literal(1)]).nullable(), cooldown: z.literal(0).nullable(),
 });
 const designSchema = z.object({ skills: z.object({
   level_2_skill_choice: z.object({
@@ -31,7 +32,7 @@ const designSchema = z.object({ skills: z.object({
     candidate_skill_ids: z.array(z.string()).length(4),
   }),
   hatchling_move_design_draft: z.object({
-    implementation_approved: z.literal(false), candidate_moves: z.array(candidateSchema).length(4),
+    implementation_approved: z.boolean(), candidate_moves: z.array(candidateSchema).length(4),
   }),
 }) });
 

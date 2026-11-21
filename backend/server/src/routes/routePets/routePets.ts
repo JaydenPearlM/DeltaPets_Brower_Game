@@ -22,6 +22,7 @@ import {
 } from "../../pets/growthTraits";
 import { rollPersonality, getAllPersonalities } from "../../pets/personalities";
 import { logger } from "../../lib/logger";
+import { rescueGate } from "../../lib/rescueGate";
 import {
   fetchBaseStatsMapped,
   fetchTotalPoints,
@@ -558,7 +559,7 @@ petsRouter.post(
 petsRouter.post(
   "/rescue-egg",
   requireUser,
-  async (req: AuthedRequest, res: Response) => {
+  rescueGate.wrap(async (req: AuthedRequest, res: Response) => {
     try {
       const userId = req.user!.id;
 
@@ -625,7 +626,7 @@ petsRouter.post(
         error: err?.message ?? "Failed to grant rescue egg.",
       });
     }
-  },
+  }),
 );
 
 // ============================================================

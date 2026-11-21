@@ -1,4 +1,5 @@
 import type { CharacterProfile } from "./characterProfile.types";
+import { resolveProfileSkills } from "./skillCatalog";
 
 import mizu from "./starters/mizu.json";
 import kindlekin from "./starters/kindlekin.json";
@@ -31,7 +32,7 @@ export const CHARACTER_PROFILES: CharacterProfile[] = [
   shade,
   glimmer,
   velune,
-];
+].map(resolveProfileSkills);
 
 export function findCharacterProfileBySpeciesId(
   speciesId: string | null | undefined,

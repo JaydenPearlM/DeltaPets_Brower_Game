@@ -4,6 +4,7 @@ import SkillsChamber, { type CombatCommands } from "@/components/skillChamber/sk
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
 import { useAuth } from "@/app/providers/useAuth";
 import type { BattleMp } from "@shared/battle/mana";
+import KithProgression from "@/components/Skills/KithProgression";
 
 const knownStages = new Set([
   "hatchling", "lowform", "highform", "legion",
@@ -75,7 +76,18 @@ export default function WildwoodSkillsChamber({ petId, refreshSignal, battleMp, 
 
   const traitReady = trait?.key === traitKey && !traitError;
   return <SkillsChamber key={pet.id}
-    combat={combat}
+    progressionControl={!combat && ["light_starter","kithna_clodian"].includes(pet.species ?? "") ? <KithProgression key={pet.id} petId={pet.id} onSaved={() => void reload()} /> : undefined}
+    combat={combat ? {
+      ...combat,
+      commandAction: combat.commandAction ?? <button type="button" className="dp-btn dp-btn--yellow" disabled>Battle</button>,
+    } : {
+      selected: "basic-strike",
+      disabled: true,
+      mendDisabled: true,
+      onSelect: () => {},
+      controls: null,
+      commandAction: <button type="button" className="dp-btn dp-btn--yellow" disabled>Battle</button>,
+    }}
     battleHp={battleHp}
     battleMp={battleMp}
     pet={{ ...pet, passive_trait_effects: traitReady ? trait.effects : undefined }} stats={pet}

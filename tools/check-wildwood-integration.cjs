@@ -1,4 +1,5 @@
 // Isolated repository-double checks. No network, credentials, or player data.
+process.env.WILDWOOD_PARTY_COMBAT_ENABLED = 'false'; // Exercise legacy recovery before default party mode.
 const assert = require("node:assert/strict");
 const Module = require("node:module");
 const crypto = require("node:crypto");
@@ -86,6 +87,18 @@ Module._load = function(request, parent, isMain) {
       const room = tables.wildwood_rooms.find(row => row.id === p_room_id);
       const data = room.event_payload;
       assert.equal(data.battle.status, 'victory');
+      if (data.xpRewardVersion === 2) {
+        if (data.xpRewards) return { data: structuredClone(data.xpRewards), error: null };
+        data.xpRewards = data.battle.participants.filter(p => p.side === 'player').map(participant => {
+          const pet = tables.pets.find(p => p.id === participant.sourcePetId && p.user_id === p_user_id);
+          assert.ok(pet);
+          assert.ok(tables.pet_battle_results.some(r => r.pet_id === pet.id && r.battle_id === data.battle.id));
+          const previousXp = pet.xp ?? 0;
+          pet.xp = previousXp + 25;
+          return { petId: pet.id, amount: 25, previousXp, xp: pet.xp, previousLevel: pet.level, level: pet.level, pointsEarned: 0 };
+        });
+        return { data: structuredClone(data.xpRewards), error: null };
+      }
       assert.equal(data.xpRewardVersion, 1);
       if (failXpWrite) { failXpWrite = false; return { data: null, error: Error('Injected XP failure') }; }
       if (data.xpReward) return { data: structuredClone(data.xpReward), error: null };
@@ -273,5 +286,52 @@ async function main() {
   console.log("PASS: participating pet earns 25 XP once per victory, reaches level 2, and preserves other fields; no live database used");
   console.log("PASS: locked access, non-combat replay, battle re-entry, defeat, and concurrent exploration");
   console.log("PASS: premature turn-in rejected; concurrent/repeated turn-in and acceptance preserve completion and unlocks");
+
+  // Opt-in party integration against isolated repositories; never executes SQL.
+  delete process.env.WILDWOOD_PARTY_COMBAT_ENABLED; // New encounters use party mode by default.
+  const template = { ...tables.pets[0], hp_cur: 100, hp_max: 100, atk: 30, spd: 20, xp: 0, level: 1 };
+  for (let size = 0; size <= 4; size++) {
+    tables.wildwood_rooms.length = 0;
+    tables.pet_battle_results.length = 0;
+    tables.party_slots.length = 0;
+    tables.pets.length = 0;
+    tables.pet_stats.length = 0;
+    for (let i = 0; i < size; i++) {
+      const id = `22222222-2222-4222-8222-${String(i + 1).padStart(12, '0')}`;
+      tables.party_slots.push({ user_id: user, pet_id: id, slot_index: i + 1 });
+      tables.pets.push({ ...template, id });
+      tables.pet_stats.push({ pet_id: id, base_hp: 3, base_mana: 2 });
+    }
+    encounterRoll = 0;
+    const request = { requestId: crypto.randomUUID(), previousRoomId: null,
+      formation: tables.party_slots.map(s => ({ petId: s.pet_id, row: 'front' })) };
+    if (!size) {
+      assert.equal((await service.getWildwoodSession(user)).team.length, 0);
+      await assert.rejects(service.exploreWildwood(user, request), /living Kith/);
+      continue;
+    }
+    if (size === 3) request.formation.reverse();
+    let result = await service.exploreWildwood(user, request);
+    let current = result.room.battle;
+    assert.deepEqual(current.participants.filter(p => p.side === "player").map(p => p.id), request.formation.slice(0,3).map(p => p.petId));
+    assert.equal(current.participants.filter(p => p.side === 'player').length, Math.min(size, 3));
+    assert.equal(current.reserves.length, Math.max(0, size - 3));
+    assert.deepEqual((await service.getWildwoodSession(user)).room.battle, current);
+    for (let turn = 0; current.status === 'active' && turn < 100; turn++) {
+      result = await service.actInWildwood(user, current.id, { action: 'skill', skillId: 'basic-strike',
+        actorId: current.activeParticipantId, turnNumber: current.turnNumber,
+        targetId: current.participants.find(p => p.side === 'enemy').id });
+      current = result.room.battle;
+    }
+    assert.equal(current.status, 'victory');
+    assert.equal(result.room.xpRewards.length, Math.min(size, 3));
+    assert.ok(result.room.xpRewards.every(r => r.amount === 25));
+    const receipt = structuredClone(result.room.xpRewards);
+    assert.deepEqual((await service.getWildwoodSession(user)).room.xpRewards, receipt);
+    assert.deepEqual(tables.pets.map(p => p.xp), Array.from({length:size}, (_,i)=>i < 3 ? 25 : 0));
+  }
+  delete process.env.WILDWOOD_PARTY_COMBAT_ENABLED;
+  console.log('PASS: opt-in Wildwood parties 0–4, saved battle recovery, per-participant XP response, unused reserve exclusion and repeated settlement (repository doubles only).');
+
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

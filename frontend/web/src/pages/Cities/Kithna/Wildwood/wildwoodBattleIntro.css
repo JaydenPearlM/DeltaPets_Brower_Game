@@ -1,0 +1,44 @@
+.ww-battle-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  overflow: hidden;
+  animation: ww-battle-overlay 1.4s ease-out both;
+}
+.ww-battle-intro strong {
+  display: flex;
+  white-space: pre;
+  color: #ffd45b;
+  font-size: clamp(2rem, 7vw, 5rem);
+  letter-spacing: .12em;
+  text-shadow: 0 3px 0 #17234c, 0 0 18px currentColor;
+}
+.ww-battle-intro strong span {
+  --ww-split: -65%;
+  animation: ww-battle-split 1.4s cubic-bezier(.2,.7,.3,1) both;
+}
+.ww-battle-intro strong span + span { --ww-split: 65%; color: #ff493e; }
+.ww-battle-intro--victory strong,
+.ww-battle-intro--victory strong span + span { color: #68ff77; }
+.ww-battle-intro--victory { background: radial-gradient(ellipse, #37d35c25, transparent 65%); }
+.ww-battle-intro--defeat strong,
+.ww-battle-intro--defeat strong span + span { color: #a92336; }
+.ww-battle-intro--defeat { background: radial-gradient(ellipse, #220812cc, transparent 75%); }
+@keyframes ww-battle-overlay {
+  0% { opacity: 0; }
+  12%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ww-battle-split {
+  0% { transform: scale(1.35); filter: brightness(1.8); }
+  18% { transform: scale(.97); filter: brightness(1.5); }
+  30%, 55% { transform: scale(1); filter: brightness(1); }
+  100% { transform: translateX(var(--ww-split)) scale(1.05); filter: brightness(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ww-battle-intro { animation-duration: .2s; }
+  .ww-battle-intro strong span { animation: none; }
+}

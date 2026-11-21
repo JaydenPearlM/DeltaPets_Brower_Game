@@ -31,6 +31,8 @@ export const env = {
   // enable /api/debug or other dev-only behavior in a live deploy.
   NODE_ENV: optional("NODE_ENV", "production")!,
   PORT: Number(optional("PORT", "4000")),
+  // Any non-false value fails closed; changing this requires a process restart.
+  RESCUE_MAINTENANCE: !["false", "0"].includes(optional("RESCUE_MAINTENANCE", "false")!.toLowerCase()),
 
   // ---------------------------------------------------------------------------
   // Supabase

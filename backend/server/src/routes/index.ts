@@ -2,8 +2,6 @@
 
 import { Router } from "express";
 import { level2Router } from "./pets/level2";
-import { localAllocationEnabled } from "../pets/level2/contracts";
-import { env } from "../env.server";
 
 import { meRouter } from "./me";
 
@@ -40,10 +38,8 @@ apiRouter.use(meRouter);
 apiRouter.use("/pets/actions", petActionsRouter);
 apiRouter.use("/pets", resonanceEvolutionRouter);
 apiRouter.use("/pets", storageActionsRouter);
-// Explicitly local-only until production schema/security review is approved.
-if (localAllocationEnabled(env.NODE_ENV, process.env.ENABLE_STARTER_ALLOCATION, env.SUPABASE_URL)) {
-  apiRouter.use("/pets/progression", level2Router);
-}
+// Authenticated handlers fail closed until the forward-only persistence migration is applied.
+apiRouter.use("/pets/progression", level2Router);
 apiRouter.use("/pets", petsRouter);
 apiRouter.use("/battle", battleRouter);
 

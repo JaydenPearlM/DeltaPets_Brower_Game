@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { speciesSkill, speciesSkillIds } from "./speciesSkills";
 import { calculateDamage, calculateMend } from "./battleMath";
 import { hasBattleMp, MEND_MP_COST } from "../shared/battle/mana";
 import type {
@@ -39,9 +40,10 @@ const actorFields = { actorId: idSchema, turnNumber: statSchema.positive() };
 const actionSchema = z.discriminatedUnion("action", [
   z.object({ ...actorFields, action: z.literal("basic_attack"), targetId: idSchema }).strict(),
   z.object({ ...actorFields, action: z.literal("guard") }).strict(),
+  z.object({ ...actorFields, action: z.literal("replace"), targetId: idSchema }).strict(),
   z.object({
     ...actorFields, action: z.literal("skill"),
-    skillId: z.enum(["basic-strike", "mend"]), targetId: idSchema,
+    skillId: z.enum(["basic-strike", "mend", ...speciesSkillIds]), targetId: idSchema,
   }).strict(),
 ]);
 
@@ -62,8 +64,8 @@ function record(state: BattleState, event: Omit<BattleEvent, "turnNumber">) {
 }
 
 function checkEnd(state: BattleState): boolean {
-  const playersAlive = state.participants.some((pet) => pet.side === "player" && !pet.defeated);
-  const enemiesAlive = state.participants.some((pet) => pet.side === "enemy" && !pet.defeated);
+  const playersAlive = state.participants.some((pet) => pet.side === "player" && !pet.defeated && !pet.withdrawn);
+  const enemiesAlive = state.participants.some((pet) => pet.side === "enemy" && !pet.defeated && !pet.withdrawn);
   if (playersAlive && enemiesAlive) return false;
   state.status = playersAlive ? "victory" : "defeat";
   state.activeParticipantId = null;
@@ -72,7 +74,7 @@ function checkEnd(state: BattleState): boolean {
 }
 
 function chooseNext(state: BattleState): BattleParticipant {
-  const living = state.participants.filter((pet) => !pet.defeated);
+  const living = state.participants.filter((pet) => !pet.defeated && !pet.withdrawn);
   // Jump directly to the next ready tick rather than looping once per tick.
   const ticks = Math.max(0, Math.min(...living.map((pet) =>
     Math.ceil((TURN_THRESHOLD - pet.turnMeter) / pet.spd),
@@ -90,6 +92,7 @@ function chooseNext(state: BattleState): BattleParticipant {
 }
 
 function performAction(state: BattleState, action: BattleAction) {
+  requireRule(action.action !== "replace" && !state.replacementForId, "Choose a reserve replacement first");
   requireRule(state.status === "active", "Battle is already finished");
   requireRule(action.turnNumber === state.turnNumber, "Stale battle turn");
   const actor = state.participants.find((pet) => pet.id === action.actorId);
@@ -97,7 +100,10 @@ function performAction(state: BattleState, action: BattleAction) {
   requireRule(actor.hpCur > 0 && !actor.defeated, "Actor is defeated");
   requireRule(actor.id === state.activeParticipantId, "It is not this participant's turn");
 
-  if (action.action === "guard") {
+  const species = action.action === "skill" ? speciesSkill(action.skillId) : undefined;
+  const role = species && "role" in species.definition ? species.definition.role : undefined;
+  if (action.action === "guard" || role === "tank") {
+    if (action.action === "skill") requireRule(action.targetId === actor.id, "Guard requires self");
     actor.guarding = true;
     record(state, { type: "guard", actorId: actor.id });
     return;
@@ -105,8 +111,8 @@ function performAction(state: BattleState, action: BattleAction) {
 
   const target = state.participants.find((pet) => pet.id === action.targetId);
   requireRule(target !== undefined, "Target does not exist");
-  requireRule(target.hpCur > 0 && !target.defeated, "Target is defeated");
-  const healing = action.action === "skill" && action.skillId === "mend";
+  requireRule(target.hpCur > 0 && !target.defeated && !target.withdrawn, "Target is defeated");
+  const healing = action.action === "skill" && (action.skillId === "mend" || role === "healer");
   requireRule(
     healing ? actor.side === target.side : actor.side !== target.side,
     healing ? "Mend requires a living ally" : "Hostile actions require an enemy",
@@ -120,20 +126,24 @@ function performAction(state: BattleState, action: BattleAction) {
     ));
     actor.mpCur -= MEND_MP_COST;
     target.hpCur += amount;
-    record(state, { type: "heal", actorId: actor.id, targetId: target.id, skillId: "mend", amount });
+    record(state, { type: "heal", actorId: actor.id, targetId: target.id, skillId: action.action === "skill" ? action.skillId : "mend", amount });
     return;
   }
 
   const skill = action.action === "skill";
+  if (role === "sorcerer") {
+    requireRule(hasBattleMp(actor) && actor.mpCur >= 1, "Not enough MP. This skill requires 1 MP.");
+    actor.mpCur -= 1;
+  }
   const amount = Math.min(target.hpCur, calculateDamage({
     attacker: actor, defender: target, power: skill ? 1.25 : 1,
-    useMagi: false, elemental: skill,
+    useMagi: role === "sorcerer", elemental: skill,
   }));
   target.hpCur -= amount;
   target.defeated = target.hpCur === 0;
   record(state, {
     type: skill ? "skill" : "attack", actorId: actor.id, targetId: target.id,
-    ...(skill ? { skillId: "basic-strike" as const } : {}),
+    ...(skill ? { skillId: action.skillId } : {}),
   });
   record(state, { type: "damage", actorId: actor.id, targetId: target.id, amount });
   if (target.defeated) record(state, { type: "participant_defeated", targetId: target.id });
@@ -142,13 +152,19 @@ function performAction(state: BattleState, action: BattleAction) {
 function advanceToPlayer(state: BattleState) {
   state.activeParticipantId = null;
   let automaticTurns = 0;
-  while (!checkEnd(state)) {
+  while (true) {
+    const vacancy = state.participants.find(p => p.side === "player" && p.defeated && !p.withdrawn);
+    if (vacancy && state.reserves?.some(p => !p.defeated && p.hpCur > 0)) {
+      state.replacementForId = vacancy.id;
+      return;
+    }
+    if (checkEnd(state)) return;
     const actor = chooseNext(state);
     if (actor.side === "player") return;
     requireRule(automaticTurns < MAX_AUTOMATIC_TURNS, "Automatic turn safety limit exceeded");
     automaticTurns += 1;
     // Same lowest-current-HP target preference as the existing PvE prototype.
-    const target = state.participants.filter((pet) => pet.side === "player" && !pet.defeated)
+    const target = state.participants.filter((pet) => pet.side === "player" && !pet.defeated && !pet.withdrawn)
       .sort((a, b) => a.hpCur - b.hpCur)[0];
     requireRule(target !== undefined, "No living player target");
     performAction(state, {
@@ -165,6 +181,7 @@ export function createBattle(
   participants: readonly BattleParticipantInput[],
   mendMultiplier = 1,
   maxLevel: 10 | 30 = 10,
+  reserves?: readonly BattleParticipantInput[],
 ): BattleState {
   requireRule(maxLevel === 10 || maxLevel === 30, "Invalid battle level cap");
   const parsed = z.array(participantSchema(maxLevel)).min(2).max(8).safeParse(participants);
@@ -172,6 +189,15 @@ export function createBattle(
   requireRule(parsed.success, `Invalid participants: require bounded HP, level 1–${maxLevel} and positive SPD`);
   requireRule(Number.isFinite(mendMultiplier) && mendMultiplier > 0, "Invalid Mend multiplier");
   const pets = parsed.data;
+  const reservePets = z.array(participantSchema(maxLevel)).max(1).parse(reserves ?? []);
+  requireRule(reservePets.every(p => p.side === "player" && p.hpCur > 0), "Reserve must be a living player Kith");
+  if (reserves !== undefined) {
+    requireRule(pets.filter(p => p.side === "player").length <= 3, "Party battle permits at most three active Kith");
+    const all = [...pets, ...reservePets];
+    requireRule(new Set(all.map(p => p.id)).size === all.length, "Duplicate reserve participant ID");
+    const ownedIds = all.flatMap(p => p.sourcePetId ? [p.sourcePetId] : []);
+    requireRule(new Set(ownedIds).size === ownedIds.length, "Duplicate reserve pet ID");
+  }
   requireRule(new Set(pets.map((pet) => pet.id)).size === pets.length, "Duplicate participant ID");
   const petIds = pets.flatMap((pet) => pet.sourcePetId ? [pet.sourcePetId] : []);
   requireRule(new Set(petIds).size === petIds.length, "Duplicate pet ID");
@@ -186,6 +212,7 @@ export function createBattle(
       ...pet, turnMeter: 0, guarding: false, defeated: pet.hpCur === 0,
     })),
     log: [],
+    ...(reserves !== undefined ? { reserves: reservePets.map(p => ({ ...p, turnMeter: 0, guarding: false, defeated: false })) } : {}),
   };
   record(state, { type: "battle_started" });
   advanceToPlayer(state);
@@ -193,11 +220,40 @@ export function createBattle(
 }
 
 /** Returns a new server snapshot; validation failures leave the input untouched. */
-export function resolveBattleAction(state: BattleState, input: unknown): BattleState {
+export function resolveBattleAction(state: BattleState, input: unknown, learnedSkillIds: readonly string[] = []): BattleState {
   const parsed = actionSchema.safeParse(input);
   requireRule(parsed.success, "Invalid battle action");
+  if (parsed.data.action === "replace") {
+    const action = parsed.data;
+    requireRule(state.status === "active" && action.turnNumber === state.turnNumber, "Stale or finished replacement");
+    const forced = Boolean(state.replacementForId);
+    requireRule(forced ? state.replacementForId === action.targetId : state.activeParticipantId === action.targetId, "Select the current Kith to switch");
+    const reserve = state.reserves?.find(p => p.id === action.actorId);
+    requireRule(reserve !== undefined && reserve.side === "player" && !reserve.defeated && reserve.hpCur > 0, "Reserve is unavailable");
+    const vacancy = state.participants.find(p => p.id === action.targetId);
+    requireRule(vacancy?.side === "player" && !vacancy.withdrawn && (forced ? vacancy.defeated && vacancy.hpCur === 0 : !vacancy.defeated && vacancy.hpCur > 0), "Replacement requires a fainted active Kith");
+    const next = structuredClone(state);
+    const index = next.participants.findIndex(p => p.id === action.targetId);
+    const departed = next.participants[index];
+    next.participants = next.participants.filter(p => p.id !== reserve.id);
+    const slot = next.participants.findIndex(p => p.id === departed.id);
+    next.participants[slot] = { ...reserve, withdrawn: false, row: departed.row, turnMeter: 0, guarding: false };
+    next.participants.push({ ...departed, withdrawn: true });
+    next.reserves = forced ? [] : [{ ...departed, withdrawn: false, turnMeter: 0, guarding: false }];
+    delete next.replacementForId;
+    advanceToPlayer(next);
+    return next;
+  }
   const actor = state.participants.find((pet) => pet.id === parsed.data.actorId);
   requireRule(actor?.side === "player", "Only player decisions may be submitted");
+  if (parsed.data.action === "skill") {
+    const entry = speciesSkill(parsed.data.skillId);
+    if (entry) {
+      requireRule(entry.species_ids.includes(actor.speciesId) && actor.level >= 2
+        && actor.element === entry.definition.element, "Species skill is ineligible");
+      requireRule(learnedSkillIds.includes(entry.skill_id), "Skill has not been learned");
+    }
+  }
   const next = structuredClone(state);
   performAction(next, parsed.data);
   advanceToPlayer(next);
@@ -206,7 +262,7 @@ export function resolveBattleAction(state: BattleState, input: unknown): BattleS
 
 /** Initiative preview only; later knockouts can change the actual order. */
 export function previewBattleOrder(state: BattleState, count = 6): string[] {
-  if (state.status !== "active") return [];
+  if (state.status !== "active" || state.replacementForId) return [];
   const copy = structuredClone(state);
   const order = copy.activeParticipantId ? [copy.activeParticipantId] : [];
   while (order.length < Math.max(0, Math.min(12, count))) order.push(chooseNext(copy).id);

@@ -4,7 +4,7 @@ export type BattleElement = SharedElementLine;
 export type BattleSide = "player" | "enemy";
 export type BattleRow = "front" | "middle" | "back";
 export type BattleStatus = "active" | "victory" | "defeat";
-export type BattleSkillId = "basic-strike" | "mend";
+export type BattleSkillId = "basic-strike" | "mend" | import("./speciesSkills").SpeciesSkillId;
 
 // Existing PvE stat names; only the combat snapshot is copied into a battle.
 export type BattleParticipantInput = {
@@ -31,6 +31,7 @@ export type BattleParticipant = BattleParticipantInput & {
   turnMeter: number;
   guarding: boolean;
   defeated: boolean;
+  withdrawn?: boolean;
 };
 
 export type BattleEvent = {
@@ -51,6 +52,8 @@ export type BattleState = {
   turnNumber: number;
   mendMultiplier: number;
   log: BattleEvent[];
+  reserves?: BattleParticipant[];
+  replacementForId?: string;
 };
 
 export type BattleAction = {
@@ -61,4 +64,5 @@ export type BattleAction = {
   | { action: "basic_attack"; targetId: string }
   | { action: "guard" }
   | { action: "skill"; skillId: BattleSkillId; targetId: string }
+  | { action: "replace"; targetId: string }
 );

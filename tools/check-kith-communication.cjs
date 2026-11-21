@@ -28,7 +28,7 @@ assert.equal(twiglet.element, 'earth');
 assert.deepEqual(Object.values(twiglet.evolution), ['Twiglet', 'Treeflip', 'Radaroot', 'Roovine', null]);
 assert.equal(twiglet.progression.maximum_level, 30);
 const skills = twiglet.progression.skills;
-assert.equal(skills.basic_combat_action.skill_id, 'basic-strike');
+assert.equal(skills.move_catalog.find(move => move.skill_id === 'basic-strike').display_name, 'Elemental Strike');
 assert.equal(skills.level_2_skill_choice.automatic_grant, false);
 assert.equal(skills.hatchling_move_design_draft.implementation_approved, false);
 assert.deepEqual(skills.hatchling_move_design_draft.candidate_moves.map(move => move.name), ['Root Brace', 'Sprout Mend', 'Seed Tap', 'Pollen Puff']);

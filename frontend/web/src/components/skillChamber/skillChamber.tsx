@@ -12,16 +12,19 @@ import "./skillChamber.css";
 import { getStarterPortrait } from "@/kith/registry/starterPortraits";
 import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
 import { maximumMp, hasBattleMp, type BattleMp } from "@shared/battle/mana";
+import type { BattleAction } from "@shared/battle/wildwoodTypes";
 
 export type CombatCommands = {
-  selected: "basic-strike" | "guard" | "mend";
+  selected: Extract<BattleAction, { action: "skill" }>["skillId"] | "guard";
   disabled: boolean;
   mendDisabled: boolean;
-  onSelect: (id: "basic-strike" | "guard" | "mend") => void;
+  onSelect: (id: CombatCommands["selected"]) => void;
   controls: ReactNode;
+  commandAction?: ReactNode;
 };
 
 type SkillChamberProps = {
+  progressionControl?: ReactNode;
   combat?: CombatCommands;
   battleMp?: BattleMp;
   battleHp?: { hpCur: number; hpMax: number };
@@ -431,6 +434,7 @@ function buildDisplaySkills(
 }
 
 export default function SkillChamber({
+  progressionControl,
   pet = null,
   stats = null,
   manaStatus = "ready",
@@ -493,22 +497,33 @@ export default function SkillChamber({
   // Saved Mana excludes passive modifiers in both existing data paths.
   const savedMana: unknown = stats?.mana ?? pet?.mana;
   const effects: unknown = pet?.passive_trait_effects;
-  const passiveMana = effects && typeof effects === "object" && "mana" in effects
-    ? effects.mana : 0;
+  const passiveMana =
+    effects && typeof effects === "object" && "mana" in effects
+      ? effects.mana
+      : 0;
   const resource = battleMp && hasBattleMp(battleMp) ? battleMp : null;
-  const maxMp = battleMp ? resource?.mpMax ?? null
-    : manaStatus === "ready" ? maximumMp(savedMana, passiveMana) : null;
-  const mpLabel = resource ? `${resource.mpCur} / ${resource.mpMax}`
-    : battleMp ? "MP unavailable"
-      : manaStatus === "loading" ? "Loading MP…" : `Max ${maxMp ?? "Unavailable"}`;
-  const portraitTransform = petPreviewUrl === getStarterPortrait("earth_starter", "hatchling")
-    ? "translateY(-22%) scale(1.5)"
-    : petPreviewUrl === getKithnaPortrait("kithna_magmado")
-      ? "translate(12%, 12%) scale(1.1)"
-      : petPreviewUrl === getKithnaPortrait("kithna_clodian")
-        ? "translate(28%, 24%) scale(1.5)"
-        : petPreviewUrl === getKithnaPortrait("kithna_pebelin")
-          ? "translateY(8%) scale(1.15)" : "none";
+  const maxMp = battleMp
+    ? (resource?.mpMax ?? null)
+    : manaStatus === "ready"
+      ? maximumMp(savedMana, passiveMana)
+      : null;
+  const mpLabel = resource
+    ? `${resource.mpCur} / ${resource.mpMax}`
+    : battleMp
+      ? "MP unavailable"
+      : manaStatus === "loading"
+        ? "Loading MP…"
+        : `Max ${maxMp ?? "Unavailable"}`;
+  const portraitTransform =
+    petPreviewUrl === getStarterPortrait("earth_starter", "hatchling")
+      ? "translateY(-22%) scale(1.5)"
+      : petPreviewUrl === getKithnaPortrait("kithna_magmado")
+        ? "translate(12%, 12%) scale(1.1)"
+        : petPreviewUrl === getKithnaPortrait("kithna_clodian")
+          ? "translate(28%, 24%) scale(1.5)"
+          : petPreviewUrl === getKithnaPortrait("kithna_pebelin")
+            ? "translateY(8%) scale(1.15)"
+            : "none";
 
   function equipSkill(skillId: SkillId) {
     if (!LOADOUT_SKILL_IDS.includes(skillId)) return;
@@ -536,6 +551,7 @@ export default function SkillChamber({
         <div className="skillsHeaderTopRow">
           <div className="skillsPanelHeaderCopy">
             <h2 className="skillsTitle">Skills Chamber</h2>
+            {progressionControl}
           </div>
         </div>
       </header>
@@ -549,29 +565,46 @@ export default function SkillChamber({
                 key={skill.id}
                 className={`skillChamberCommand skillChamberCommand--${skill.id}`}
                 style={getCommandButtonStyle(skill.id as SkillId, pet)}
-                disabled={combat ? combat.disabled || (skill.id === "mend" && combat.mendDisabled) : undefined}
+                disabled={
+                  combat
+                    ? combat.disabled ||
+                      (skill.id === "mend" && combat.mendDisabled)
+                    : undefined
+                }
                 aria-pressed={combat ? combat.selected === skill.id : undefined}
                 onClick={() => {
                   if (combat) {
-                    if (!combat.disabled && (skill.id === "basic-strike" || skill.id === "guard" || (skill.id === "mend" && !combat.mendDisabled))) combat.onSelect(skill.id);
+                    if (
+                      !combat.disabled &&
+                      (skill.id === "basic-strike" ||
+                        skill.id === "guard" ||
+                        (skill.id === "mend" && !combat.mendDisabled))
+                    )
+                      combat.onSelect(skill.id);
                   } else setSelectedSkill(skill);
                 }}
               >
-                <span>{skill.displayName}{combat && skill.id === "mend" ? " (1 MP)" : ""}</span>
+                <span>
+                  {skill.displayName}
+                  {combat && skill.id === "mend" ? " (1 MP)" : ""}
+                </span>
               </button>
             );
           })}
+          {combat?.commandAction}
         </div>
 
-        {!combat && <div className="skillCenterActionRow">
-          <button
-            type="button"
-            className="btn btn-gold"
-            onClick={() => setShowInventory(true)}
-          >
-            Skill Inventory
-          </button>
-        </div>}
+        {!combat && (
+          <div className="skillCenterActionRow">
+            <button
+              type="button"
+              className="btn btn-gold"
+              onClick={() => setShowInventory(true)}
+            >
+              Skill Inventory
+            </button>
+          </div>
+        )}
       </div>
 
       <section className="skillInventoryPanel" aria-label="Battle skills">
@@ -593,8 +626,26 @@ export default function SkillChamber({
             <div className="skillChamberBarLine">
               <span>HP</span>
               <div className="skillChamberMp">
-                <div className="skillChamberBarTrack"><i className="skillChamberBarFill skillChamberBarFill--hp" style={battleHp ? { width: battleHp.hpMax > 0 ? (battleHp.hpCur / battleHp.hpMax * 100) + "%" : "0%" } : undefined} /></div>
-                {battleHp && <small>{battleHp.hpCur} / {battleHp.hpMax}</small>}
+                <div className="skillChamberBarTrack">
+                  <i
+                    className="skillChamberBarFill skillChamberBarFill--hp"
+                    style={
+                      battleHp
+                        ? {
+                            width:
+                              battleHp.hpMax > 0
+                                ? (battleHp.hpCur / battleHp.hpMax) * 100 + "%"
+                                : "0%",
+                          }
+                        : undefined
+                    }
+                  />
+                </div>
+                {battleHp && (
+                  <small>
+                    {battleHp.hpCur} / {battleHp.hpMax}
+                  </small>
+                )}
               </div>
             </div>
 
@@ -602,9 +653,15 @@ export default function SkillChamber({
               <span>MP</span>
               <div className="skillChamberMp" aria-label={`MP: ${mpLabel}`}>
                 <div className="skillChamberBarTrack" aria-hidden="true">
-                  <i className="skillChamberBarFill skillChamberBarFill--mp"
-                    style={{ width: resource && resource.mpMax > 0
-                      ? `${resource.mpCur / resource.mpMax * 100}%` : "0%" }} />
+                  <i
+                    className="skillChamberBarFill skillChamberBarFill--mp"
+                    style={{
+                      width:
+                        resource && resource.mpMax > 0
+                          ? `${(resource.mpCur / resource.mpMax) * 100}%`
+                          : "0%",
+                    }}
+                  />
                 </div>
                 <small>{mpLabel}</small>
               </div>
@@ -658,7 +715,8 @@ export default function SkillChamber({
 
       {combat?.controls}
 
-      {!combat && selectedSkill &&
+      {!combat &&
+        selectedSkill &&
         createPortal(
           <div
             className="skillPopupBackdrop"
@@ -776,7 +834,8 @@ export default function SkillChamber({
           document.body,
         )}
 
-      {!combat && showInventory &&
+      {!combat &&
+        showInventory &&
         createPortal(
           <PetSkillsInventory
             inventorySkills={inventorySkills}
@@ -793,28 +852,63 @@ export default function SkillChamber({
 }
 
 // Wildwood catalog only: no editable loadout or inferred learned records.
-export function WildwoodSkillsCatalog({ pet }: {
-  pet: { id: string; name: string; species: string; level: number; element: string; stage?: string } | null;
+export function WildwoodSkillsCatalog({
+  pet,
+}: {
+  pet: {
+    id: string;
+    name: string;
+    species: string;
+    level: number;
+    element: string;
+    stage?: string;
+  } | null;
 }) {
   const skills = pet ? buildDisplaySkills(pet, null) : [];
   return (
-    <section className="skillsPanel skillsPanel--compact dp-standard-panel" aria-label="Skills Chamber">
+    <section
+      className="skillsPanel skillsPanel--compact dp-standard-panel"
+      aria-label="Skills Chamber"
+    >
       <h2 className="skillsTitle">Skills Chamber</h2>
       <div className="skillChamberCatalog">
-        <p>{pet ? `${pet.name} - Level ${pet.level}` : "No active Kith available."}</p>
+        <p>
+          {pet
+            ? `${pet.name} - Level ${pet.level}`
+            : "No active Kith available."}
+        </p>
         <p>Learned and equipped skills are not available yet.</p>
-        <p>Catalog requirements describe eligibility, not learned skills or combat availability. Species effects remain unapproved.</p>
-        {pet && <details>
-          <summary>Skill catalog</summary>
-          <ul>{skills.map((skill) => (
-            <li key={skill.id}>
-              <strong>{skill.displayName}</strong>
-              <span>{skill.unlockLine} - {!pet.stage && ["lowform-skill", "highform-skill", "legion-skill", "mythic-legendary-skill"].includes(skill.id)
-                ? "Stage unavailable" : skill.unlocked ? "Requirement met" : "Requirement not met"}</span>
-              <span>Learning status unavailable</span>
-            </li>
-          ))}</ul>
-        </details>}
+        <p>
+          Catalog requirements describe eligibility, not learned skills or
+          combat availability. Species effects remain unapproved.
+        </p>
+        {pet && (
+          <details>
+            <summary>Skill catalog</summary>
+            <ul>
+              {skills.map((skill) => (
+                <li key={skill.id}>
+                  <strong>{skill.displayName}</strong>
+                  <span>
+                    {skill.unlockLine} -{" "}
+                    {!pet.stage &&
+                    [
+                      "lowform-skill",
+                      "highform-skill",
+                      "legion-skill",
+                      "mythic-legendary-skill",
+                    ].includes(skill.id)
+                      ? "Stage unavailable"
+                      : skill.unlocked
+                        ? "Requirement met"
+                        : "Requirement not met"}
+                  </span>
+                  <span>Learning status unavailable</span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </div>
     </section>
   );

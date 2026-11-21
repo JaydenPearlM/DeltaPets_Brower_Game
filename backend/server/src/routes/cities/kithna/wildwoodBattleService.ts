@@ -5,6 +5,7 @@ import { getKithnaEggsForTime } from "../../../shared/pets/species/kithna-specie
 import { z } from "zod";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { fetchTotalPoints } from "../../routePets/petsStats";
+import { authorizeSpeciesSkill } from "../../../battle/learnedSpeciesSkills";
 import {
   createBattle,
   resolveBattleAction,
@@ -65,8 +66,9 @@ type RoomPayload = {
   battle: BattleState | null;
   images: Record<string, string | null>;
   recordBattleStats?: boolean;
-  xpRewardVersion?: 1;
+  xpRewardVersion?: 1 | 2;
   xpReward?: WildwoodXpReward;
+  xpRewards?: WildwoodXpReward[];
 
   questProgressTarget: number | null;
 
@@ -79,10 +81,11 @@ type Room = {
   event_kind: WildwoodRoomView["eventKind"];
   status: string;
   item_claimed_at: string | null;
+  item_available_at: string | null;
 };
 
 const roomColumns =
-  "id, sequence_number, event_payload, event_kind, status, item_claimed_at";
+  "id, sequence_number, event_payload, event_kind, status, item_claimed_at, item_available_at";
 
 // The room payload is server-written, versioned state. Never accept it in a request.
 function payload(room: Room): RoomPayload {
@@ -108,7 +111,12 @@ function view(room: Room | null): WildwoodRoomView | null {
     images: data.images,
     questProgressTarget: data.questProgressTarget,
     itemClaimed: room.item_claimed_at !== null,
+    itemOpportunity: room.item_available_at ? {
+      availableAt: room.item_available_at,
+      expiresAt: new Date(Date.parse(room.item_available_at) + 5_000).toISOString(),
+    } : null,
     xpReward: data.xpReward ?? null,
+    ...(data.xpRewards ? { xpRewards: data.xpRewards } : {}),
   };
 }
 
@@ -222,18 +230,29 @@ async function settleXp(userId: string, room: Room | null) {
   if (!room) return;
   const data = payload(room);
   // No retroactive rewards for encounters created before progression shipped.
-  if (data.xpRewardVersion !== 1 || data.battle?.status !== "victory") return;
+  if ((data.xpRewardVersion !== 1 && data.xpRewardVersion !== 2) || data.battle?.status !== "victory") return;
   const result = await supabaseAdmin.rpc("settle_wildwood_victory_xp", {
     p_user_id: userId,
     p_room_id: room.id,
   });
   if (result.error) throw result.error;
-  const reward = z.object({
+  const rewardSchema = z.object({
     petId: z.uuid(), amount: z.literal(25),
     previousXp: z.number().int().nonnegative(), xp: z.number().int().nonnegative(),
     previousLevel: z.number().int().min(1).max(30), level: z.number().int().min(1).max(30),
     pointsEarned: z.number().int().min(0).max(29),
-  }).safeParse(result.data);
+  });
+  if (data.xpRewardVersion === 2) {
+    const rewards = rewardSchema.array().min(1).max(4).safeParse(result.data);
+    const ids = data.battle.participants.filter(p => p.side === "player").map(p => p.sourcePetId ?? p.id);
+    if (!rewards.success || rewards.data.length !== ids.length ||
+        new Set(rewards.data.map(r => r.petId)).size !== ids.length ||
+        rewards.data.some(r => !ids.includes(r.petId)))
+      throw new WildwoodError("Party XP could not be confirmed. Reload to recover your rewards.");
+    data.xpRewards = rewards.data;
+    return;
+  }
+  const reward = rewardSchema.safeParse(result.data);
   if (!reward.success) throw new WildwoodError("XP could not be confirmed. Reload to recover your reward.");
   data.xpReward = reward.data;
 }
@@ -531,12 +550,19 @@ export async function exploreWildwood(
 
   if (profile.error) throw profile.error;
 
-  const players = team.filter((pet) => pet.hpCur > 0).slice(0, 1).map(
+  // Version-2 XP settlement supports party encounters.
+  const partyCombat = process.env.WILDWOOD_PARTY_COMBAT_ENABLED !== "false";
+  const living = request.formation.map(entry => team.find(pet => pet.id === entry.petId)!).filter(pet => pet.hpCur > 0);
+  const players = living.slice(0, partyCombat ? 3 : 1).map(
     ({ imageUrl: _image, displayHp: _displayHp, ...pet }) => ({
       ...pet,
       row: chosen.get(pet.id)!,
     }),
   );
+
+  const reserves = partyCombat ? living.slice(3, 4).map(
+    ({ imageUrl: _image, displayHp: _displayHp, ...pet }) => ({ ...pet, row: chosen.get(pet.id)! }),
+  ) : undefined;
 
   const battle =
     event === "corrupted_battle"
@@ -545,6 +571,7 @@ export async function exploreWildwood(
           [...players, corruptedEnemy()],
           profile.data?.active_title === "Alpha Pro" ? 1.05 : 1,
           30,
+          reserves,
         )
       : null;
 
@@ -557,7 +584,7 @@ export async function exploreWildwood(
     requestId: request.requestId,
     battle,
     recordBattleStats: battle !== null,
-    ...(battle ? { xpRewardVersion: 1 as const } : {}),
+    ...(battle ? { xpRewardVersion: partyCombat ? 2 as const : 1 as const } : {}),
     images,
 
     message: battle
@@ -623,11 +650,13 @@ export async function actInWildwood(
 
   if (data.pveVersion !== 1) throw new WildwoodError("This legacy encounter requires recovery support; it has not been changed.");
 
-  const owned = await supabaseAdmin.from("pets").select("id").eq("user_id", userId).in("id", data.battle.participants.filter(p => p.side === "player").map(p => p.sourcePetId ?? p.id));
+  const ownedParticipants = [...data.battle.participants.filter(p => p.side === "player"), ...(data.battle.reserves ?? [])];
+  const owned = await supabaseAdmin.from("pets").select("id").eq("user_id", userId).in("id", ownedParticipants.map(p => p.sourcePetId ?? p.id));
   if (owned.error) throw owned.error;
-  if (data.battle.participants.filter(p => p.side === "player").some(p => !owned.data?.some(o => o.id === (p.sourcePetId ?? p.id)))) throw new WildwoodError("Battle participant ownership changed.", 403);
+  if (ownedParticipants.some(p => !owned.data?.some(o => o.id === (p.sourcePetId ?? p.id)))) throw new WildwoodError("Battle participant ownership changed.", 403);
 
-  const next = resolveBattleAction(data.battle, input);
+  const learnedSkills = await authorizeSpeciesSkill(userId, data.battle, input);
+  const next = resolveBattleAction(data.battle, input, learnedSkills);
 
   const updated = await supabaseAdmin
     .from("wildwood_rooms")

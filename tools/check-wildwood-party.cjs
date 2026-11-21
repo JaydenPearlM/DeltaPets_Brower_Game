@@ -1,0 +1,60 @@
+const assert = require('node:assert/strict');
+const {createBattle, resolveBattleAction, previewBattleOrder} = require('../backend/server/dist/battle/battleEngine.js');
+const pet = (id, side='player', extra={}) => ({id, ...(side==='player'?{sourcePetId:id}:{}),speciesId:'earth_starter',name:id,side,row:'front',element:'earth',level:1,hpMax:100,hpCur:100,mpMax:6,mpCur:4,atk:1,def:0,magi:1,spd:10,...extra});
+for(let n=1;n<=4;n++) {
+ const party=Array.from({length:n},(_,i)=>pet('p'+i));
+ const b=createBattle('party'+n,[...party.slice(0,3),pet('enemy','enemy',{spd:1})],1,30,party.slice(3));
+ assert.equal(b.participants.filter(p=>p.side==='player').length,Math.min(3,n));
+ assert.equal(b.reserves.length,Math.max(0,n-3));
+ assert.ok(!previewBattleOrder(b,12).includes('p3'));
+ assert.deepEqual(JSON.parse(JSON.stringify(b)), b);
+}
+assert.throws(()=>createBattle('empty',[pet('enemy','enemy')],1,30,[]));
+assert.throws(()=>createBattle('duplicate',[pet('p'),pet('enemy','enemy')],1,30,[pet('p')]));
+assert.throws(()=>createBattle('fainted-reserve',[pet('p'),pet('enemy','enemy')],1,30,[pet('r','player',{hpCur:0})]));
+// Fast enemy knocks out one ally before player input; combat pauses, not defeats.
+let b=createBattle('replacement',[pet('p0','player',{hpCur:1}),pet('p1'),pet('p2'),pet('enemy','enemy',{spd:100,atk:10})],1,30,[pet('r','player',{spd:1})]);
+assert.equal(b.replacementForId,'p0');
+assert.equal(b.status,'active');
+assert.equal(b.activeParticipantId,null);
+assert.deepEqual(previewBattleOrder(b),[]);
+const before=structuredClone(b);
+assert.throws(()=>resolveBattleAction(b,{action:'guard',actorId:'p1',turnNumber:b.turnNumber}));
+assert.throws(()=>resolveBattleAction(b,{action:'replace',actorId:'p1',targetId:'p0',turnNumber:b.turnNumber}));
+assert.throws(()=>resolveBattleAction(b,{action:'replace',actorId:'r',targetId:'p1',turnNumber:b.turnNumber}));
+assert.deepEqual(b,before);
+const action={action:'replace',actorId:'r',targetId:'p0',turnNumber:b.turnNumber};
+b=resolveBattleAction(JSON.parse(JSON.stringify(b)),action);
+assert.equal(b.reserves.length,0);
+assert.equal(b.participants.find(p=>p.id==='p0').hpCur,0);
+assert.equal(b.participants.find(p=>p.id==='p0').withdrawn,true);
+assert.equal(b.participants.find(p=>p.id==='r').mpCur,4);
+assert.ok(b.participants.filter(p=>p.side==='player'&&!p.defeated).length<=3);
+assert.notEqual(b.activeParticipantId,'r','Slow reserve must not get a free turn');
+assert.throws(()=>resolveBattleAction(b,action));
+assert.ok(!previewBattleOrder(b,12).includes('p0'));
+const lost=createBattle('defeat',[pet('p','player',{hpCur:1}),pet('enemy','enemy',{spd:100,atk:10})],1,30,[]);
+assert.equal(lost.status,'defeat');
+console.log('PASS: party sizes 1–4, empty/duplicate/fainted validation, reserve exclusion from turns, saved replacement recovery, zero-meter entry without free turn, replay rejection, defeated preservation and no-reserve defeat.');
+const initial = createBattle('swap',[pet('a'),pet('b'),pet('c'),pet('enemy','enemy',{spd:1})],1,30,[pet('r','player',{spd:1})]);
+let swapped=resolveBattleAction(initial,{action:'replace',actorId:'r',targetId:initial.activeParticipantId,turnNumber:initial.turnNumber});
+assert.equal(swapped.reserves[0].id,'a');
+assert.ok(!previewBattleOrder(swapped,12).includes('a'));
+assert.equal(swapped.participants.filter(p=>p.side==='player'&&!p.withdrawn).length,3);
+assert.equal(swapped.participants.find(p=>p.id==='r').mpCur,4);
+assert.throws(()=>resolveBattleAction(swapped,{action:'replace',actorId:'a',targetId:'r',turnNumber:swapped.turnNumber}));
+swapped=resolveBattleAction(swapped,{action:'replace',actorId:'a',targetId:swapped.activeParticipantId,turnNumber:swapped.turnNumber});
+assert.equal(new Set(swapped.participants.map(p=>p.id)).size,swapped.participants.length);
+assert.equal(swapped.participants.find(p=>p.id==='a').withdrawn,false);
+assert.deepEqual(JSON.parse(JSON.stringify(swapped)),swapped);
+console.log('PASS: voluntary swap, switch back, unique participation history, reserve exclusion and saved recovery');
+for (let slot=0;slot<3;slot++) {
+ const lineup=['one','two','three'];
+ const state=createBattle('slot'+slot,[...lineup.map((id,i)=>pet(id,'player',{spd:i===slot?50:10})),pet('enemy','enemy',{spd:1})],1,30,[pet('four','player',{spd:1})]);
+ assert.equal(state.activeParticipantId,lineup[slot]);
+ const next=resolveBattleAction(state,{action:'replace',actorId:'four',targetId:lineup[slot],turnNumber:state.turnNumber});
+ const expected=[...lineup]; expected[slot]='four';
+ assert.deepEqual(next.participants.filter(p=>p.side==='player'&&!p.withdrawn).map(p=>p.id),expected);
+ assert.equal(next.reserves[0].id,lineup[slot]);
+}
+console.log('PASS: reserve exchanges with each of slots 1, 2, 3 on that slot\'s turn');

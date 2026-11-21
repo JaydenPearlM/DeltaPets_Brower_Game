@@ -13,6 +13,7 @@ import {
 import PetDetailsPanel from "@/pages/petsPage/components/petDetailsPanel/PetDetailsPanel";
 import type { PetElementsRow, PetStatsRow } from "@/pages/petsPage/petTypes";
 import SkillsChamber from "@/components/skillChamber/skillChamber";
+import KithProgression from "@/components/Skills/KithProgression";
 import StatsChamber from "@/components/StatsChamber/StatsChamber";
 import RelicEquipment from "./components/RelicEquipment";
 import OwnedCarePicker from "./components/OwnedCarePicker";
@@ -907,6 +908,7 @@ export default function PetPage() {
 
             <div className="petRepoBottomRightColumn">
               <SkillsChamber
+                progressionControl={["light_starter", "kithna_clodian"].includes(pet.species ?? "") ? <KithProgression key={pet.id} petId={pet.id} onSaved={() => void loadPetPage(false)} /> : undefined}
                 pet={{
                   ...pet,
                   portrait_url:

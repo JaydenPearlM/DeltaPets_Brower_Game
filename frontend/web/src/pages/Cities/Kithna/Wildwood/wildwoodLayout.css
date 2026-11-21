@@ -35,6 +35,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px 24px;
+  margin-top: 5px;
+  margin-left: 25px;
   margin-bottom: 14px;
 }
 .ww-workspace button {
@@ -101,17 +103,12 @@
   grid-row: 2;
 }
 .ww-log-panel {
-  grid-column: 9 / 12;
-  grid-row: 2;
-}
-.ww-actions-column {
-  grid-column: 12 / 13;
+  grid-column: 9 / 13;
   grid-row: 2;
 }
 .ww-dashboard > .ww-inventory,
 .ww-skills-panel,
-.ww-log-panel,
-.ww-actions-column {
+.ww-log-panel {
   align-self: stretch;
   min-height: 340px;
   max-height: 480px;
@@ -142,33 +139,6 @@
   padding: 0;
   border: 0;
 }
-.ww-actions-column {
-  padding: 12px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.ww-actions-column h2 {
-  font-size: 14px;
-}
-.ww-actions-column button {
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 6px;
-  font-size: 12px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-.ww-actions-column .ww-explore-control {
-  margin: 0;
-}
-.ww-actions-column .ww-explore-control[hidden] {
-  display: none;
-}
-.ww-actions-column .ww-panel-note {
-  font-size: 11px;
-  line-height: 1.4;
-}
 .ww-log-panel .pve-log {
   max-height: 400px;
 }
@@ -181,12 +151,14 @@
 .ww-battle-column {
   position: relative;
   padding: 10px;
-  border: 1px solid #4bbda6;
+  border: 1px solid var(--dp-cyber-cyan);
   border-radius: 16px;
-  background: linear-gradient(150deg, #0c3436, #0a1831 45%, #34234c);
+  background-color: var(--dp-panel-bg-bottom);
+  background-image: var(--dp-standard-panel-blue-grid);
+  background-size: var(--dp-popup-grid-size) var(--dp-popup-grid-size);
   box-shadow:
-    inset 0 0 18px #30ddab12,
-    0 0 15px #38c0bb18;
+    inset 0 0 0 1px var(--dp-panel-inner-border),
+    var(--dp-glow-cyan);
 }
 .ww-workspace .ww-art-panel .ww-scene > svg.ww-scene__art {
   height: clamp(250px, 36vh, 420px);
@@ -205,13 +177,13 @@
 }
 .ww-path-panel {
   position: relative;
-  border-color: #54b89b;
-  background-color: #08272c;
+  border-color: var(--dp-cyber-cyan);
+  background-color: var(--dp-panel-bg-bottom);
 }
 /* Place the Wildwood legend beneath the trail without altering its progress UI. */
 .ww-wildwood-lore {
-  border-color: #54b89b;
-  background-color: #08272c;
+  border-color: var(--dp-cyber-cyan);
+  background-color: var(--dp-panel-bg-bottom);
 }
 
 .ww-wildwood-lore h2 {
@@ -238,9 +210,9 @@
   border: 0;
   box-shadow: none;
 }
-.ww-priority-panel .pve-priority ol {
-  flex-direction: column;
-  max-height: 155px;
+.ww-workspace .ww-priority-panel .pve-priority ol {
+  flex-direction: column-reverse;
+  max-height: none;
 }
 .ww-priority-panel .pve-priority li {
   flex: none;
@@ -254,14 +226,14 @@
 }
 .ww-card {
   padding: 18px;
-  border: 1px solid #328fb0;
+  border: 1px solid var(--dp-cyber-cyan);
   border-radius: 12px;
-  background-color: #061b2e;
+  background-color: var(--dp-panel-bg-bottom);
   background-image: var(--dp-standard-panel-blue-grid);
   background-size: var(--dp-popup-grid-size) var(--dp-popup-grid-size);
   box-shadow:
-    inset 0 1px #83e9ff22,
-    0 8px 20px #0002;
+    inset 0 0 0 1px var(--dp-panel-inner-border),
+    var(--dp-glow-cyan);
   overflow-wrap: anywhere;
 }
 .ww-card h2,
@@ -363,6 +335,23 @@
 }
 .ww-field-heading {
   padding: 4px 2px;
+}
+
+.ww-field-heading .ww-explore-control {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.ww-field-heading .ww-explore-control[hidden] {
+  display: none;
+}
+
+.ww-field-heading .ww-explore-control .dp-btn {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
 }
 .ww-workspace .ww-art-panel {
   position: relative;
@@ -483,6 +472,13 @@
 }
 .ww-workspace .pve-ally-status small {
   color: #98d9ff;
+}
+/* The Skills Chamber is the primary ally resource display in Wildwood. */
+.ww-workspace .pve-ally-hud {
+  display: none;
+}
+.ww-workspace .skillChamberBarFill--mp {
+  background: linear-gradient(90deg, #2265d8, #529bff);
 }
 .ww-path-panel .ww-card-heading {
   align-items: start;
@@ -639,6 +635,33 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+@media (min-width: 1151px) {
+  /* The battlefield/companions set the row height, not the trail or lore. */
+  .ww-workspace .ww-trail-column {
+    contain: size;
+    align-self: stretch;
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .ww-workspace .ww-wildwood-lore {
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .ww-workspace--battle .ww-priority-panel,
+  .ww-workspace--battle .ww-priority-panel .pve-priority {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .ww-workspace--battle .ww-priority-panel .pve-priority {
+    flex: 1;
+  }
+  .ww-workspace--battle .ww-priority-panel .pve-priority ol {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
 @media (min-width: 721px) and (max-width: 1150px) {
   .ww-dashboard {
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -664,11 +687,7 @@
     grid-row: 3;
   }
   .ww-log-panel {
-    grid-column: 3 / 6;
-    grid-row: 3;
-  }
-  .ww-actions-column {
-    grid-column: 6 / 7;
+    grid-column: 3 / 7;
     grid-row: 3;
   }
 }
@@ -697,9 +716,6 @@
   .ww-skills-panel {
     order: 1;
   }
-  .ww-actions-column {
-    order: 2;
-  }
   .ww-trail-column {
     order: 3;
   }
@@ -714,25 +730,10 @@
   }
   .ww-dashboard > .ww-inventory,
   .ww-skills-panel,
-  .ww-log-panel,
-  .ww-actions-column {
+  .ww-log-panel {
     min-height: 0;
     max-height: none;
     overflow: visible;
-  }
-  .ww-actions-column {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .ww-actions-column h2,
-  .ww-actions-column .ww-panel-note {
-    grid-column: 1 / -1;
-  }
-  .ww-actions-column .ww-confirm-action {
-    grid-column: 1 / -1;
-  }
-  .ww-actions-column button {
-    font-size: 14px;
   }
   .ww-workspace .pve-ally-status {
     grid-template-columns: 1fr;
@@ -811,11 +812,124 @@
   .ww-workspace .ww-navigation {
     gap: 10px 16px;
     font-size: 0.9rem;
+    margin-top: -2px;
+    margin-left: 5px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .ww-path-track > span {
     transition: none;
+  }
+}
+
+/* Keep the portal mounted after battle without displaying it beside the lore. */
+.ww-workspace .ww-priority-panel[hidden] {
+  display: none;
+}
+
+/* Shared Wildwood composition: retain existing panels, controls and artwork. */
+.ww-workspace .ww-dashboard {
+  grid-template-columns: minmax(190px, 1fr) minmax(0, 2.7fr) minmax(
+      240px,
+      1.15fr
+    );
+}
+.ww-workspace .ww-team-panel {
+  grid-area: 1 / 1;
+}
+.ww-workspace .ww-battle-column {
+  grid-area: 1 / 2;
+}
+.ww-workspace .ww-trail-column {
+  grid-area: 1 / 3;
+}
+.ww-workspace .ww-inventory {
+  grid-area: 2 / 1;
+}
+.ww-workspace .ww-skills-panel {
+  grid-area: 2 / 2;
+}
+.ww-workspace .ww-log-panel {
+  grid-area: 2 / 3;
+}
+.ww-workspace .ww-art-panel .ww-scene > svg.ww-scene__art,
+.ww-workspace .pve-field {
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+.ww-workspace .ww-scene__caption {
+  display: none;
+}
+.ww-workspace .ww-skills-panel,
+.ww-workspace .ww-log-panel {
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+.ww-workspace .ww-log-panel .pve-log {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.ww-workspace .ww-priority-panel .pve-priority ol {
+  max-height: 240px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.ww-workspace .ww-priority-panel .pve-priority {
+  padding: 0;
+}
+
+@media (min-width: 721px) and (max-width: 1150px) {
+  .ww-workspace .ww-dashboard {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .ww-workspace .ww-battle-column {
+    grid-area: 1 / 1 / 2 / -1;
+  }
+  .ww-workspace .ww-skills-panel {
+    grid-area: 2 / 1 / 3 / -1;
+  }
+  .ww-workspace .ww-team-panel {
+    grid-area: 3 / 1;
+  }
+  .ww-workspace .ww-trail-column {
+    grid-area: 3 / 2;
+  }
+  .ww-workspace .ww-inventory {
+    grid-area: 4 / 1;
+  }
+  .ww-workspace .ww-log-panel {
+    grid-area: 4 / 2;
+  }
+}
+@media (max-width: 720px) {
+  .ww-workspace .ww-battle-column {
+    order: 0;
+  }
+  .ww-workspace .ww-skills-panel {
+    order: 1;
+  }
+  .ww-workspace .ww-trail-column {
+    order: 2;
+  }
+  .ww-workspace .ww-log-panel {
+    order: 3;
+  }
+  .ww-workspace .ww-team-panel {
+    order: 4;
+  }
+  .ww-workspace .ww-inventory {
+    order: 5;
+  }
+  .ww-workspace .skillChamberControlsRow {
+    flex-wrap: wrap;
+  }
+  .ww-workspace .skillChamberControlsRow button {
+    min-height: 44px;
+  }
+  .ww-workspace .pve-controls select {
+    max-width: 100%;
+    min-height: 44px;
   }
 }
 
@@ -895,8 +1009,8 @@
   display: grid;
   place-items: center;
   position: absolute;
-  top: 3px;
-  left: 3px;
+  top: 4px;
+  left: 6px;
   z-index: 1;
   width: 20px;
   height: 20px;
@@ -910,6 +1024,23 @@
   line-height: 1;
   text-align: center;
   font-variant-numeric: tabular-nums;
+}
+
+/* Move only the numbers, not the circles */
+.ww-team-number-text-1 {
+  transform: translate(5px, 0px);
+}
+
+.ww-team-number-text-2 {
+  transform: translate(0px, 0px);
+}
+
+.ww-team-number-text-3 {
+  transform: translate(0px, 0px);
+}
+
+.ww-team-number-text-4 {
+  transform: translate(0px, 0px);
 }
 
 .ww-team-panel .ww-team-moves {

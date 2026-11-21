@@ -1,4 +1,6 @@
 import { getBattleBackSprite } from "@/kith/registry/battleBackSprites";
+import { getStarterPortrait } from "@/kith/registry/starterPortraits";
+import { getKithnaPortrait } from "@/kith/registry/kithnaPortraits";
 import PveBattle from "@/components/battle/PveBattle";
 import clodionCorrupt from "@/kith/assets/Kithna_pets/corrupt/hatchling_clodion_corrupt.png";
 import glimmerCorrupt from "@/kith/assets/Kithna_pets/corrupt/hathcling_glimmer_corrupt.png";
@@ -8,7 +10,7 @@ import shadeCorrupt from "@/kith/assets/Kithna_pets/corrupt/hatchling_shade_corr
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePetStorage } from "@/components/Hatchery/pages/storage/usePetStorage";
-import { Link, useBlocker } from "react-router-dom";
+import { Link, useBlocker, useNavigate } from "react-router-dom";
 import { apiFetch } from "@/lib/api/baseClient";
 import type { RoamEncounterResult } from "@/lib/kithna/useRoamEncounter";
 import { RoamEncounterToast } from "@/components/RoamEncounterToast/RoamEncounterToast";
@@ -24,19 +26,22 @@ import {
 import { findPetSpeciesById } from "@shared/pets/species";
 import { KithPortrait } from "./KithPortrait";
 import WildwoodExploreResult from "./WildwoodExploreResult";
-import { useUI } from "@/app/providers/UIProvider";
 import WildwoodInventory from "./WildwoodInventory";
 import { moveTeamMember, useWildwoodVisit } from "./useWildwoodVisit";
-import WildwoodScene from "./WildwoodScene";
+import WildwoodScene, { wildwoodRoomHeading } from "./WildwoodScene";
 import WildwoodStats from "./WildwoodStats";
 import WildwoodSkillsChamber from "./WildwoodSkillsChamber";
 import "./wildwood.css";
 import "./wildwoodLayout.css";
+import "./wildwoodBattleIntro.css";
 
 export default function WildwoodPage() {
   const [session, setSession] = useState<WildwoodSession | null>(null);
+  const navigate = useNavigate();
+  const [battleTitle, setBattleTitle] = useState<{ id: string; kind: "intro" | "victory" | "defeat" } | null>(null);
+  const previousBattle = useRef<{ id: string; status: string } | null>(null);
+  const shownOutcomes = useRef(new Set<string>());
   const { user } = useAuth();
-  const { openInventory, inventoryLocked } = useUI();
   const [inventoryRevision, setInventoryRevision] = useState(0);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
   const [teamOrder, setTeamOrder] = useState<string[]>([]);
@@ -59,7 +64,7 @@ export default function WildwoodPage() {
   const [shinyTarget, setShinyTarget] = useState<HTMLElement | null>(null);
   const [skillsTarget, setSkillsTarget] = useState<HTMLDivElement | null>(null);
   const [logTarget, setLogTarget] = useState<HTMLDivElement | null>(null);
-  const [actionTarget, setActionTarget] = useState<HTMLDivElement | null>(null);
+
   const [priorityTarget, setPriorityTarget] = useState<HTMLDivElement | null>(
     null,
   );
@@ -72,23 +77,38 @@ export default function WildwoodPage() {
   const mounted = useRef(true);
   const departure = useRef(false);
   const [departureError, setDepartureError] = useState("");
-  const blocker = useBlocker(({ currentLocation, nextLocation }) =>
-    Boolean(user) && (treasurePending || collecting || Boolean(eggEncounter?.found)) && currentLocation.pathname !== nextLocation.pathname,
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      Boolean(user) &&
+      (treasurePending || collecting || Boolean(eggEncounter?.found)) &&
+      currentLocation.pathname !== nextLocation.pathname,
   );
 
   useEffect(() => {
-    if (blocker.state !== "blocked" || busy || collecting || departure.current) return;
+    if (blocker.state !== "blocked" || busy || collecting || departure.current)
+      return;
     departure.current = true;
     setDepartureError("");
-    void apiFetch<{ success: boolean }>("/api/kithna/wildwood/treasure/discard", {
-      method: "POST",
-    }).then(result => {
-      if (result.success !== true) throw new Error("Treasure departure was not confirmed.");
-      blocker.proceed();
-    }).catch(() => {
-      setDepartureError("Could not discard unclaimed Treasure. Please try leaving again.");
-      blocker.reset();
-    }).finally(() => { departure.current = false; });
+    void apiFetch<{ success: boolean }>(
+      "/api/kithna/wildwood/treasure/discard",
+      {
+        method: "POST",
+      },
+    )
+      .then((result) => {
+        if (result.success !== true)
+          throw new Error("Treasure departure was not confirmed.");
+        blocker.proceed();
+      })
+      .catch(() => {
+        setDepartureError(
+          "Could not discard unclaimed Treasure. Please try leaving again.",
+        );
+        blocker.reset();
+      })
+      .finally(() => {
+        departure.current = false;
+      });
   }, [blocker, busy, collecting]);
 
   async function reload() {
@@ -188,7 +208,7 @@ export default function WildwoodPage() {
       const next = await exploreWildwood({
         requestId: crypto.randomUUID(),
         previousRoomId: session.room?.id ?? null,
-        formation: session.team.map((pet) => ({
+        formation: orderedIds.map(id => session.team.find(pet => pet.id === id)!).map((pet) => ({
           petId: pet.id,
           row: formation[pet.id] ?? pet.row,
         })),
@@ -198,6 +218,9 @@ export default function WildwoodPage() {
 
       setSession(next);
       recordRoom(next.room?.id ?? null);
+      // Only newly explored battles get an intro; session recovery stays immediate.
+      setBattleTitle(next.room?.pveEnabled && next.room.battle?.status === "active"
+        ? { id: next.room.battle.id, kind: "intro" } : null);
       setEggEncounter(null);
 
       if (next.room && !next.room.battle) {
@@ -216,7 +239,11 @@ export default function WildwoodPage() {
             setEggEncounter(eggResult);
           }
         } catch (roamError) {
-          setError(roamError instanceof Error ? roamError.message : "Could not check the egg encounter.");
+          setError(
+            roamError instanceof Error
+              ? roamError.message
+              : "Could not check the egg encounter.",
+          );
         }
       }
 
@@ -230,12 +257,45 @@ export default function WildwoodPage() {
 
   const room = session?.room;
   const battle = room?.battle;
+  const activeBattle = battle?.status === "active";
+  const showingBattleIntro = Boolean(battleTitle && battle?.id === battleTitle.id);
+  useEffect(() => {
+    const previous = previousBattle.current;
+    previousBattle.current = battle ? { id: battle.id, status: battle.status } : null;
+    if (battleTitle && battleTitle.id !== battle?.id) setBattleTitle(null);
+    if (!room?.pveEnabled || !battle || battle.status === "active") return;
+    const key = `${battle.id}:${battle.status}`;
+    if (shownOutcomes.current.has(key)) return;
+    // Recovery never replays a victory; a recovered defeat still completes departure.
+    if (battle.status === "defeat" || previous?.id === battle.id && previous.status === "active") {
+      shownOutcomes.current.add(key);
+      setBattleTitle({ id: battle.id, kind: battle.status });
+    }
+  }, [battle?.id, battle?.status, room?.pveEnabled]);
+  useEffect(() => {
+    if (!activeBattle) return;
+    const list = priorityTarget?.querySelector("ol");
+    // In a column-reverse list, scrollTop 0 exposes the next actor at the bottom.
+    if (list) list.scrollTop = 0;
+  }, [priorityTarget, activeBattle, battle?.id, battle?.turnNumber, battle?.activeParticipantId]);
   const activeId = battle?.activeParticipantId;
+  const turnPet = battle?.participants.find(p => p.id === activeId && p.side === "player");
+  const turnPetId = turnPet ? (turnPet.sourcePetId ?? turnPet.id) : null;
+  useEffect(() => {
+    // Follow each new turn, but allow reserve selection during the current turn.
+    if (activeBattle && turnPetId) setSelectedPetId(turnPetId);
+  }, [activeBattle, battle?.id, battle?.turnNumber, turnPetId]);
   const chamberPet =
     session?.team.find((pet) => pet.id === selectedPetId) ??
     session?.team.find((pet) => pet.hpCur > 0);
   const pathStep = visit.steps;
+  const visibleTrailStart = Math.min(96, Math.max(1, pathStep - 2));
+  const visibleTrailSteps = Array.from(
+    { length: 5 },
+    (_, index) => visibleTrailStart + index,
+  );
   const canExplore =
+    !showingBattleIntro && battle?.status !== "defeat" &&
     blocker.state === "unblocked" &&
     !busy &&
     !collecting &&
@@ -243,7 +303,16 @@ export default function WildwoodPage() {
     Boolean(status?.wildwoodUnlocked) &&
     Boolean(session?.team.some((pet) => pet.hpCur > 0)) &&
     battle?.status !== "active";
-  const team = needsPartyDisplay
+  const team = (activeBattle || needsPartyDisplay) && battle?.reserves !== undefined
+    ? [...battle.participants.filter(p => !p.withdrawn), ...battle.reserves].filter(p => p.side === "player").map(p => ({
+        id: p.sourcePetId ?? p.id,
+        name: p.name,
+        speciesId: p.speciesId,
+        imageUrl: room?.images[p.id],
+        level: p.level,
+        spd: p.spd,
+      }))
+    : needsPartyDisplay
     ? partyDisplay.partySlots.flatMap((slot) =>
         slot.pet
           ? [
@@ -259,7 +328,7 @@ export default function WildwoodPage() {
           : [],
       )
     : (session?.team ?? []);
-  const orderedIds = [
+  const orderedIds = activeBattle && battle?.reserves !== undefined ? team.map(pet => pet.id) : [
     ...teamOrder.filter((id) => team.some((pet) => pet.id === id)),
     ...team.map((pet) => pet.id).filter((id) => !teamOrder.includes(id)),
   ];
@@ -267,11 +336,13 @@ export default function WildwoodPage() {
     (id) => team.find((pet) => pet.id === id) ?? [],
   );
   function reorder(id: string, destination: number) {
-    if (busy || collecting) return;
+    if (busy || collecting || activeBattle) return;
     setTeamOrder(moveTeamMember(orderedIds, id, destination));
-    setOrderNotice("Team display order updated. Combat priority is unchanged.");
+    setOrderNotice("Slots 1–3 enter the next battle; slot 4 is reserve. Select the reserve and press Battle to switch during combat.");
   }
-  const exploreReason = busy
+  const exploreReason = blocker.state !== "unblocked"
+    ? "Finish leaving Wildwood before exploring."
+    : busy
     ? "Loading the latest state…"
     : collecting
       ? "Finish collecting your discovery first."
@@ -291,13 +362,19 @@ export default function WildwoodPage() {
         <h1>Wildwood</h1>
       </header>
 
-      <main className="ww-page ww-workspace dp-standard-panel">
+      <main className={`ww-page ww-workspace dp-standard-panel${activeBattle ? " ww-workspace--battle" : ""}`}>
         <nav className="ww-navigation" aria-label="Wildwood navigation">
           <Link to="/cities/kithna">← Back to Kithna</Link>
         </nav>
 
-        {departureError && <p className="ww-error" role="alert">{departureError}</p>}
-        {blocker.state === "blocked" && <p role="status">Discarding unclaimed Treasure…</p>}
+        {departureError && (
+          <p className="ww-error" role="alert">
+            {departureError}
+          </p>
+        )}
+        {blocker.state === "blocked" && (
+          <p role="status">Discarding unclaimed Treasure…</p>
+        )}
 
         {error && (
           <div className="ww-error" role="alert">
@@ -339,7 +416,7 @@ export default function WildwoodPage() {
             ) : (
               <ol className="ww-team-cards">
                 {orderedTeam.map((pet, index) => {
-                  const unit = battle?.participants.find(
+                  const unit = [...(battle?.reserves ?? []), ...(battle?.participants ?? [])].find(
                     (participant) =>
                       participant.sourcePetId === pet.id ||
                       participant.id === pet.id,
@@ -348,6 +425,10 @@ export default function WildwoodPage() {
                     (member) => member.id === pet.id,
                   );
                   const species = findPetSpeciesById(pet.speciesId);
+                  const companionPortrait =
+                    getStarterPortrait(pet.speciesId) ||
+                    getKithnaPortrait(pet.speciesId) ||
+                    pet.imageUrl;
                   const element = species
                     ? "line" in species
                       ? species.line
@@ -364,7 +445,7 @@ export default function WildwoodPage() {
                           ? "true"
                           : undefined
                       }
-                      draggable={!busy && !collecting}
+                      draggable={!busy && !collecting && !activeBattle}
                       onDragStart={(event) =>
                         event.dataTransfer.setData("text/plain", pet.id)
                       }
@@ -383,16 +464,18 @@ export default function WildwoodPage() {
                         {stats ? (
                           <WildwoodStats pet={stats}>
                             <KithPortrait
+                              key={companionPortrait}
                               name={pet.name}
                               speciesId={pet.speciesId}
-                              imageUrl={pet.imageUrl}
+                              imageUrl={companionPortrait}
                             />
                           </WildwoodStats>
                         ) : (
                           <KithPortrait
+                            key={companionPortrait}
                             name={pet.name}
                             speciesId={pet.speciesId}
-                            imageUrl={pet.imageUrl}
+                            imageUrl={companionPortrait}
                           />
                         )}
                       </div>
@@ -437,7 +520,7 @@ export default function WildwoodPage() {
                         <button
                           type="button"
                           aria-label={"Move " + pet.name + " up"}
-                          disabled={index === 0 || busy || collecting}
+                          disabled={index === 0 || busy || collecting || activeBattle}
                           onClick={() => reorder(pet.id, index - 1)}
                         >
                           ↑
@@ -446,7 +529,7 @@ export default function WildwoodPage() {
                           type="button"
                           aria-label={"Move " + pet.name + " down"}
                           disabled={
-                            index === orderedTeam.length - 1 ||
+                            activeBattle || index === orderedTeam.length - 1 ||
                             busy ||
                             collecting
                           }
@@ -476,8 +559,27 @@ export default function WildwoodPage() {
 
           <div className="ww-battle-column">
             <div className="ww-card-heading ww-field-heading">
-              <h2>{battle ? "Battlefield" : "Wildwood Entrance"}</h2>
+              <h2>{wildwoodRoomHeading(pathStep, room)}</h2>
+
+              <div
+                className="ww-explore-control"
+                hidden={battle?.status === "active"}
+              >
+                <button
+                  type="button"
+                  className="dp-btn dp-btn--yellow"
+                  disabled={!canExplore}
+                  aria-describedby="ww-explore-reason"
+                  onClick={explore}
+                >
+                  Explore Wildwood
+                </button>
+              </div>
             </div>
+            <p id="ww-explore-reason" className={!canExplore && !activeBattle ? "ww-panel-note" : "ww-sr-only"}>
+              {exploreReason ||
+                "Explore with your first living Kith. Existing encounters are recovered automatically."}
+            </p>
 
             <section
               ref={setShinyTarget}
@@ -488,21 +590,23 @@ export default function WildwoodPage() {
                 <PveBattle
                   key={battle.id}
                   battle={battle}
+                  confirmedXpReward={room.xpReward}
+                  confirmedXpRewards={room.xpRewards}
                   turnOrder={room.turnOrder}
-                  busy={busy || Boolean(error)}
+                  busy={busy || Boolean(error) || showingBattleIntro}
                   selectedPetId={selectedPetId}
                   onSelectPet={setSelectedPetId}
                   panels={{
                     skills: skillsTarget,
                     log: logTarget,
-                    actions: actionTarget,
+                    actions: null,
                     priority: priorityTarget,
                   }}
                   scenery={
                     <WildwoodScene
                       panoramic
                       room={room}
-                      step={Math.max(1, pathStep)}
+                      step={pathStep}
                     />
                   }
                   renderSkillsChamber={(pet, combat) => (
@@ -536,6 +640,7 @@ export default function WildwoodPage() {
                     />
                   )}
                   onAction={(action) => {
+                    if (showingBattleIntro) return;
                     void run(async () => {
                       const next = await actInWildwood(battle.id, action);
                       if (!mounted.current) return;
@@ -557,9 +662,19 @@ export default function WildwoodPage() {
                   step={pathStep}
                 />
               )}
+              {showingBattleIntro && battleTitle && <div key={`${battleTitle.id}:${battleTitle.kind}`}
+                className={`ww-battle-intro ww-battle-intro--${battleTitle.kind}`} role="status"
+                aria-label={battleTitle.kind === "intro" ? "BATTLE!" : battleTitle.kind === "victory" ? "YOU WIN!" : "YOU LOSE!"}
+                onAnimationEnd={event => {
+                  if (event.target !== event.currentTarget || event.animationName !== "ww-battle-overlay") return;
+                  setBattleTitle(null);
+                  if (battleTitle.kind === "defeat") navigate("/pet", { replace: true });
+                }}>
+                <strong aria-hidden="true"><span>{battleTitle.kind === "intro" ? "BAT" : "YOU "}</span><span>{battleTitle.kind === "intro" ? "TLE!" : battleTitle.kind === "victory" ? "WIN!" : "LOSE!"}</span></strong>
+              </div>}
             </section>
 
-            {room?.xpReward && (
+            {room?.xpReward && !(room.pveEnabled && battle) && (
               <p className="ww-confirmed-reward" role="status">
                 Confirmed reward · XP +{room.xpReward.amount} · Level{" "}
                 {room.xpReward.level}
@@ -589,17 +704,20 @@ export default function WildwoodPage() {
               >
                 <span style={{ width: pathStep + "%" }} />
               </div>
-              <div className="ww-path-markers">
-                {[0, 25, 50, 75, 100].map((marker) => (
-                  <span key={marker} data-reached={pathStep >= marker}>
-                    {marker}
-                  </span>
+              <div
+                className="ww-path-markers"
+                aria-label="Nearby Wildwood steps"
+              >
+                {visibleTrailSteps.map((step) => (
+                  <span
+                    key={step}
+                    data-reached={pathStep >= step}
+                    data-current={pathStep === step}
+                    aria-current={pathStep === step ? "step" : undefined}
+                    aria-label={`Step ${step}`}
+                  />
                 ))}
               </div>
-              <div
-                ref={setPriorityTarget}
-                className="pve-battle ww-priority-panel"
-              />
               {prepared &&
               room &&
               (room.id === visit.roomId || visit.roomId === null) ? (
@@ -607,7 +725,7 @@ export default function WildwoodPage() {
                   key={room.id}
                   shinyTarget={shinyTarget}
                   room={room}
-                  busy={busy || Boolean(error)}
+                  busy={busy || Boolean(error) || Boolean(eggEncounter?.found)}
                   step={pathStep}
                   onCollected={() => setInventoryRevision((value) => value + 1)}
                   onCollectingChange={setCollecting}
@@ -619,7 +737,14 @@ export default function WildwoodPage() {
               )}
             </aside>
 
-            <aside
+            <div
+              ref={setPriorityTarget}
+              className="pve-battle ww-priority-panel ww-card"
+              hidden={!activeBattle}
+              aria-label="Turn priority; next combatant acts from the bottom"
+            />
+
+            {battle?.status !== "active" && <aside
               className="ww-wildwood-lore ww-card"
               aria-label="Wildwood lore"
             >
@@ -633,7 +758,7 @@ export default function WildwoodPage() {
                 A name passes between the branches: Velune. No one has seen her.
                 By dawn, only the eggs remain.
               </p>
-            </aside>
+            </aside>}
           </div>
 
           <WildwoodInventory
@@ -656,6 +781,7 @@ export default function WildwoodPage() {
               <WildwoodSkillsChamber
                 key={chamberPet?.id ?? "no-kith"}
                 petId={chamberPet?.id}
+                battleMp={chamberPet}
                 refreshSignal={room?.sequence ?? 0}
               />
             )}
@@ -669,46 +795,6 @@ export default function WildwoodPage() {
               </>
             )}
           </div>
-
-          <aside
-            className="pve-battle ww-actions-column ww-card"
-            aria-label="Wildwood actions"
-          >
-            <h2>Actions</h2>
-            <div ref={setActionTarget} className="ww-confirm-action" />
-            <div
-              className="ww-explore-control"
-              hidden={battle?.status === "active"}
-            >
-              <button
-                type="button"
-                className="dp-btn dp-btn--yellow"
-                disabled={!canExplore}
-                aria-describedby="ww-explore-reason"
-                onClick={prepared ? explore : () => setPrepared(true)}
-              >
-                {busy
-                  ? "Loading…"
-                  : prepared
-                    ? "Explore next path"
-                    : "Enter Wildwood"}
-              </button>
-            </div>
-            <p id="ww-explore-reason" className="ww-panel-note">
-              {exploreReason ||
-                "Explore with your first living Kith. Existing encounters are recovered automatically."}
-            </p>
-            <button
-              type="button"
-              className="ww-inventory-control"
-              disabled={inventoryLocked}
-              onClick={openInventory}
-            >
-              {inventoryLocked
-                ? "Inventory unavailable right now"
-                : "View inventory"}
-            </button>
-          </aside>
         </div>
 
         <RoamEncounterToast
