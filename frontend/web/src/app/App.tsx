@@ -1,9 +1,8 @@
 import PoeTayToe, { POTATO_ROUTES } from "../components/PoeTayToe/PoeTayToe";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { LogoutButton } from "../components/Authentication/LogoutButton";
 import { LoginMenus } from "../components/Authentication/LoginMenus";
-import Inventory from "../components/inventory/inventory";
 import { useAliuneSignal } from "../pages/Homepage/useAliuneSignal";
 import { DeltaClock } from "../lib/timers/deltaClock";
 import { useDeltaTime } from "../lib/timers/useDeltaTime";
@@ -14,8 +13,10 @@ import { apiFetch } from "../lib/api/baseClient";
 import { fetchWildwoodStatus } from "../lib/kithna/wildwoodApi";
 import { useVeluneEncounter } from "../lib/kithna/useVeluneEncounter";
 import { VeluneSightingPopup } from "../components/VeluneSightingPopup/VeluneSightingPopup";
-import QuestJournal from "../components/Quests/QuestJournal";
 import "./App.css";
+
+const Inventory = lazy(() => import("../components/inventory/inventory"));
+const QuestJournal = lazy(() => import("../components/Quests/QuestJournal"));
 
 const APP_VERSION = __APP_VERSION__;
 
@@ -651,7 +652,9 @@ export default function App() {
         >
           <section className="dpPopupWindow dpPopupWindow--large">
             <div className="dpPopupWindowContent questJournalPopupContent">
-              <QuestJournal onClose={closeQuestJournal} />
+              <Suspense fallback={<div role="status">Loading Quest Journal...</div>}>
+                <QuestJournal onClose={closeQuestJournal} />
+              </Suspense>
             </div>
           </section>
         </div>
@@ -666,7 +669,9 @@ export default function App() {
         >
           <section className="dpPopupWindow dpPopupWindow--compact">
             <div className="dpPopupWindowContent inventoryModal">
-              <Inventory onClose={closeInventory} />
+              <Suspense fallback={<div role="status">Loading Inventory...</div>}>
+                <Inventory onClose={closeInventory} />
+              </Suspense>
             </div>
           </section>
         </div>
