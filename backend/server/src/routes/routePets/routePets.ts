@@ -4,6 +4,7 @@
 // ========================================
 
 import { Router, Response } from "express";
+import { env } from "../../env.server";
 import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { validateBody } from "../../middleware/validateRequest";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
@@ -558,6 +559,14 @@ petsRouter.post(
 petsRouter.post(
   "/rescue-egg",
   requireUser,
+  (_req, res, next) => {
+    if (env.RESCUE_MAINTENANCE) {
+      res.set("Cache-Control", "no-store");
+      res.status(503).json({ success: false, code: "RESCUE_MAINTENANCE", error: "Rescue is temporarily unavailable. Please try again later." });
+      return;
+    }
+    next();
+  },
   async (req: AuthedRequest, res: Response) => {
     try {
       const userId = req.user!.id;
