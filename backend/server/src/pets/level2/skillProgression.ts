@@ -9,7 +9,7 @@ export const skillMilestones = [2, 5, 8, 11, 14, 17, 20, 23, 26, 30] as const;
 const roleSchema = z.enum(["tank", "healer", "dps", "sorcerer"]);
 const candidateSchema = z.object({ name: z.string(), description: z.string(), element: z.string(),
   role: roleSchema, proposed_unlock_level: z.number().int() });
-export type SkillPet = { id: string; species: string; line: string; level: number; stage: string; ran_away: boolean };
+export type SkillPet = { id: string; species: string | null; line: string; level: number; stage: string; ran_away: boolean };
 
 /** Learning metadata only. Never imports review proposals or approves combat effects. */
 export function learningPath(species: string, element: string) {
@@ -67,7 +67,7 @@ function failure(error: { message: string }): never {
 }
 
 export function skillState(pet: SkillPet, learned: LearnedSkill[], claims: SkillClaim[], definitions: SkillDefinition[]) {
-  const path = learningPath(pet.species, pet.line);
+  const path = pet.stage === "egg" || pet.species === null ? [] : learningPath(pet.species, pet.line);
   const known = path.flatMap(m => m.candidates);
   const learnedDetails = learned.map(row => ({ ...row, definition: definitions.find(d => d.id === row.skill_id) ?? null }));
   const slots = learned.filter(row => row.equipped_slot !== null);
@@ -90,8 +90,8 @@ export function skillState(pet: SkillPet, learned: LearnedSkill[], claims: Skill
     || claims.filter(c => c.equipment_decision === "pending").length > 1;
   const next = path.find(m => m.level <= pet.level && !claims.some(c => c.milestone_key === m.milestoneKey));
   const pending = claims.find(c => c.equipment_decision === "pending") ?? null;
-  const status = !path.length ? "definitions_unavailable" : inconsistent ? "reconciliation_required"
-    : pet.stage === "egg" || pet.ran_away ? "ineligible" : "available";
+  const status = pet.stage === "egg" ? "ineligible" : !path.length ? "definitions_unavailable" : inconsistent ? "reconciliation_required"
+    : pet.ran_away ? "ineligible" : "available";
   const combatSkills = learnedDetails.flatMap(row => {
     const candidate = known.find(c => c.slug === row.definition?.slug);
     const entry = candidate && speciesSkill(candidate.slug);
@@ -120,8 +120,9 @@ export async function readSkillState(pet: SkillPet) {
 }
 
 export async function learnSkill(userId: string, pet: SkillPet, slug: string) {
+  if (pet.stage === "egg" || pet.species === null) failure({ message: "SKILL_INELIGIBLE" });
   const milestone = learningPath(pet.species, pet.line).find(m => m.candidates.some(c => c.slug === slug));
-  if (!milestone || pet.level < milestone.level || pet.stage === "egg" || pet.ran_away) failure({ message: "SKILL_INELIGIBLE" });
+  if (!milestone || pet.level < milestone.level || pet.ran_away) failure({ message: "SKILL_INELIGIBLE" });
   const result = await supabaseAdmin.rpc("claim_species_skill", {
     p_user_id: userId, p_pet_id: pet.id, p_species: pet.species, p_element: pet.line,
     p_level: milestone.level, p_skill_slug: slug, p_choices: milestone.candidates,
@@ -131,6 +132,7 @@ export async function learnSkill(userId: string, pet: SkillPet, slug: string) {
 }
 
 export async function decideEquipment(userId: string, pet: SkillPet, input: unknown) {
+  if (pet.stage === "egg") failure({ message: "SKILL_INELIGIBLE" });
   const body = z.object({ milestoneKey: z.string().refine(v => skillMilestones.some(l => v === `level-${l}`)),
     slot: z.number().int().min(1).max(4).nullable() }).strict().parse(input);
   const result = await supabaseAdmin.rpc("resolve_species_skill_equipment", {

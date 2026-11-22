@@ -35,36 +35,14 @@ kithnaMerchantsRouter.get(
           (sum, phase) => sum + phase.durationMinutes,
           0,
         ) * 60_000;
-      // Preserve the original food catalog and merchant Dots.
-      // Potion definitions are loaded separately by the frontend.
-      // Read today's actual food stock from Supabase.
-      const { data: stockRows, error: stockError } = await supabaseAdmin
-        .from("assanti_daily_stock")
-        .select("slug, remaining_stock")
-        .eq("delta_day", deltaDay)
-        .eq("category", "food");
-
-      if (stockError) {
-        logger.error("[assanti] failed to load daily stock", {
-          code: stockError.code,
-          message: stockError.message,
-        });
-
-        return res.status(503).json({
-          error: "Assanti's stock is temporarily unavailable.",
-        });
+      // The existing food RPC owns availability, prices and transaction limits.
+      // It has no finite per-item stock; do not synthesize a stock quantity.
+      if (!data || !Array.isArray(data.catalog)) {
+        return res.status(503).json({ error: "Assanti's shop is temporarily unavailable. Please try again." });
       }
-
-      // Match stock quantities to their corresponding food items.
-      const stockBySlug = new Map(
-        (stockRows ?? []).map((row) => [row.slug, row.remaining_stock]),
-      );
-
-      const catalogWithStock = (
-        Array.isArray(data?.catalog) ? data.catalog : []
-      ).map((item: { slug: string; [key: string]: unknown }) => ({
+      const catalogWithStock = data.catalog.map((item: Record<string, unknown>) => ({
         ...item,
-        stock: stockBySlug.get(item.slug) ?? 0,
+        stockMode: "unlimited",
       }));
 
       res.setHeader("Cache-Control", "no-store");
@@ -72,7 +50,7 @@ kithnaMerchantsRouter.get(
       return res.json({
         ...data,
         catalog: catalogWithStock,
-        potionTrading: "disabled",
+        potionTrading: "unconfigured",
         nextRotationAt: new Date((deltaDay + 1) * cycleMs).toISOString(),
         rotationInMs: Math.max(0, (deltaDay + 1) * cycleMs - Date.now()),
       });
@@ -287,220 +265,13 @@ kithnaMerchantsRouter.post(
   },
 );
 
-// Daily potion stock is independent of the Food shop.
-kithnaMerchantsRouter.get(
-  "/potions",
-  requireUser,
-  async (req: AuthedRequest, res) => {
-    if (!req.user?.id) {
-      return res.status(401).json({ error: "Not authenticated." });
-    }
-
-    try {
-      const deltaDay = getDeltaTime().deltaDay;
-
-      const potionSlugs = potionIntent.shape.slug.options;
-
-      // Stable daily selection: same five potions for every player.
-      const selected = [...potionSlugs]
-        .sort((a, b) => {
-          const score = (slug: string) => {
-            const input = `assanti:potion:${deltaDay}:${slug}`;
-            let hash = 2166136261;
-
-            for (let i = 0; i < input.length; i++) {
-              hash ^= input.charCodeAt(i);
-              hash = Math.imul(hash, 16777619);
-            }
-
-            return hash >>> 0;
-          };
-
-          return score(a) - score(b) || a.localeCompare(b);
-        })
-        .slice(0, 5);
-
-      const startingRows = selected.map((slug) => {
-        const input = `assanti:potion:stock:${deltaDay}:${slug}`;
-        let hash = 2166136261;
-
-        for (let i = 0; i < input.length; i++) {
-          hash ^= input.charCodeAt(i);
-          hash = Math.imul(hash, 16777619);
-        }
-
-        const startingStock = 5 + ((hash >>> 0) % 16);
-
-        return {
-          delta_day: deltaDay,
-          category: "potion",
-          slug,
-          starting_stock: startingStock,
-          remaining_stock: startingStock,
-        };
-      });
-
-      // Existing records are preserved, including reduced stock.
-      const { error: insertError } = await supabaseAdmin
-        .from("assanti_daily_stock")
-        .upsert(startingRows, {
-          onConflict: "delta_day,category,slug",
-          ignoreDuplicates: true,
-        });
-
-      if (insertError) {
-        logger.error("[assanti] potion stock initialization failed", {
-          code: insertError.code,
-          message: insertError.message,
-        });
-
-        return res.status(503).json({
-          error: "Potion stock is temporarily unavailable.",
-        });
-      }
-
-      const { data: stockRows, error: stockError } = await supabaseAdmin
-        .from("assanti_daily_stock")
-        .select("slug, remaining_stock")
-        .eq("delta_day", deltaDay)
-        .eq("category", "potion")
-        .in("slug", selected);
-
-      if (stockError) {
-        logger.error("[assanti] potion stock lookup failed", {
-          code: stockError.code,
-          message: stockError.message,
-        });
-
-        return res.status(503).json({
-          error: "Potion stock is temporarily unavailable.",
-        });
-      }
-
-      const stockBySlug = new Map(
-        (stockRows ?? []).map((row) => [row.slug, row.remaining_stock]),
-      );
-
-      if (selected.some((slug) => !stockBySlug.has(slug))) {
-        return res.status(503).json({
-          error: "Potion stock is incomplete.",
-        });
-      }
-
-      res.setHeader("Cache-Control", "no-store");
-
-      return res.json({
-        deltaDay,
-        potions: selected.map((slug) => ({
-          slug,
-          stock: stockBySlug.get(slug),
-        })),
-      });
-    } catch (error) {
-      logger.error("[assanti] potion stock failed", {
-        message: error instanceof Error ? error.message : String(error),
-      });
-
-      return res.status(503).json({
-        error: "Potion stock is temporarily unavailable.",
-      });
-    }
-  },
-);
-// Potion transactions use the same wallet/day locks and inventory safety as food.
-const potionIntent = z
-  .object({
-    slug: z.enum([
-      "minor-healing-potion",
-      "healing-potion",
-      "greater-healing-potion",
-      "major-healing-potion",
-      "supreme-healing-potion",
-      "redberry-tonic",
-      "herbal-remedy",
-      "warmroot-tonic",
-      "honey-heal-draught",
-      "greenleaf-tonic",
-      "mosswater-elixir",
-      "sunfruit-tonic",
-      "moonberry-remedy",
-      "silverleaf-elixir",
-      "crystalwater-tonic",
-      "ember-healing-tonic",
-      "tide-healing-tonic",
-      "stone-healing-tonic",
-      "breeze-healing-tonic",
-      "frost-healing-tonic",
-      "storm-healing-tonic",
-      "sun-healing-tonic",
-      "shade-healing-tonic",
-      "prismatic-healing-tonic",
-      "wildwood-remedy",
-      "kithna-restoration-draught",
-      "deepwood-elixir",
-      "mountain-spring-elixir",
-      "golden-restoration-tonic",
-      "violet-restoration-tonic",
-      "ruby-elixir",
-      "sapphire-elixir",
-      "emerald-elixir",
-      "amber-elixir",
-      "amethyst-elixir",
-      "royal-healing-draught",
-      "ancient-restoration-elixir",
-      "starlight-tonic",
-      "moonlight-elixir",
-      "sunlight-elixir",
-      "prism-restoration-elixir",
-      "grand-healing-elixir",
-      "legendary-healing-draught",
-      "mythic-restoration-elixir",
-      "celestial-healing-tonic",
-      "aurora-elixir",
-      "relic-restoration-draught",
-      "kithna-grand-remedy",
-      "prismatic-grand-elixir",
-      "master-healers-draught",
-    ]),
-    quantity: z.number().int().min(1).max(429496729),
-  })
-  .strict();
-for (const direction of ["purchase", "sell"] as const) {
-  const schema =
-    direction === "purchase"
-      ? potionIntent.extend({ quantity: z.number().int().min(1).max(50) })
-      : potionIntent;
-  kithnaMerchantsRouter.post(
-    `/potions/${direction}`,
-    requireUser,
-    validateBody(schema),
-    async (req: AuthedRequest, res) => {
-      if (!req.user?.id)
-        return res.status(401).json({ error: "Not authenticated." });
-      const { slug, quantity } = schema.parse(req.body);
-      try {
-        const { data, error } = await supabaseAdmin.rpc(
-          "trade_assanti_potion_on_day",
-          {
-            p_user_id: req.user.id,
-            p_slug: slug,
-            p_quantity: quantity,
-            p_direction: direction,
-            p_delta_day: getDeltaTime().deltaDay,
-          },
-        );
-        if (error) {
-          logger.error("[assanti] potion trade RPC failed", {
-            code: error.code,
-          });
-          if (error.code === "P0001")
-            return res.status(409).json({ error: error.message });
-          return res.status(503).json({ error: "Potion trade unavailable." });
-        }
-        return res.json(data);
-      } catch {
-        return res.status(500).json({ error: "Potion trade failed." });
-      }
-    },
-  );
+// Potions remain JSON previews in the frontend. No stock or trade RPC exists.
+for (const [method, path] of [
+  ["get", "/potions"],
+  ["post", "/potions/purchase"],
+  ["post", "/potions/sell"],
+] as const) {
+  kithnaMerchantsRouter[method](path, requireUser, (_req, res) => {
+    res.status(409).json({ error: "Potions are preview-only. Trading is not available." });
+  });
 }

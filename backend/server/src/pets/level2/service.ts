@@ -12,7 +12,7 @@ function parseDatabase<T>(schema: z.ZodType<T>, value: unknown): T {
   return result.data;
 }
 
-const petSchema = z.object({
+const petFields = z.object({
   id: z.uuid(), user_id: z.uuid(), species: z.string(), line: z.string(),
   stage: z.string(), ran_away: z.boolean(), xp: z.number().int().nonnegative(),
   level: z.number().int().min(1).max(30), unspent_points: z.number().int().nonnegative(),
@@ -20,6 +20,11 @@ const petSchema = z.object({
   atk: z.number().int().nonnegative(), magi: z.number().int().nonnegative(),
   def: z.number().int().nonnegative(), spd: z.number().int().nonnegative(), mana: z.number().int().nonnegative(),
 });
+// Only eggs may lack species metadata; every other field remains validated.
+const petSchema = z.union([
+  petFields.extend({ stage: z.literal("egg"), species: z.string().nullable() }),
+  petFields.extend({ stage: z.string().refine(stage => stage !== "egg") }),
+]);
 type DatabaseError = { code?: string; message: string };
 function databaseFailure(error: DatabaseError): never {
   if (["L2_NOT_FOUND", "L2_INELIGIBLE", "L2_CONFLICT", "L2_POINTS", "L2_RECONCILIATION_REQUIRED", "L2_CONFIG"].includes(error.message)) {
@@ -48,7 +53,7 @@ export async function readLevel2(userId: string, petId: string) {
   if (allocationResult.error) databaseFailure(allocationResult.error);
   const n = z.number().int().nonnegative();
   const allocations = parseDatabase(z.array(z.object({level:z.number().int().min(1).max(30),hp:n,atk:n,magi:n,def:n,spd:n,mana:n})),allocationResult.data);
-  const supported = pet.species === "light_starter" || pet.species === "kithna_clodian";
+  const supported = pet.stage !== "egg" && (pet.species === "light_starter" || pet.species === "kithna_clodian");
   const history = allocations.filter(row=>row.level>1);
   const consistent = history.every(row=>row.level<=pet.level && statKeys.reduce((sum,key)=>sum+row[key],0)===1)
     && new Set(history.map(row=>row.level)).size===history.length
@@ -76,7 +81,7 @@ export async function allocateLevel2(userId: string, petId: string, input: unkno
     "Cannot allocate more than 29 earned points").parse(input);
   const pet = await ownedPet(userId, petId);
   const body = parsed;
-  if (!["light_starter","kithna_clodian"].includes(pet.species)) throw new AppError("Stat allocation is not enabled for this species.",409,"L2_INELIGIBLE");
+  if (pet.stage === "egg" || pet.species === null || !["light_starter","kithna_clodian"].includes(pet.species)) throw new AppError("Stat allocation is not enabled for this species.",409,"L2_INELIGIBLE");
   const result = await supabaseAdmin.rpc("allocate_level2_stats", {
     p_user_id: userId, p_pet_id: petId, p_request_id: body.requestId, p_allocation: body.allocation,
   });
