@@ -5,6 +5,7 @@ import { requireUser, type AuthedRequest } from "../../middleware/auth";
 import { validateBody } from "../../middleware/validateRequest";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
 import { logger } from "../../lib/logger";
+import { env } from "../../env.server";
 import { getDeltaTime, getDeltaPhaseSchedule } from "../../lib/deltaTime";
 
 export const kithnaMerchantsRouter = Router();
@@ -35,15 +36,39 @@ kithnaMerchantsRouter.get(
           (sum, phase) => sum + phase.durationMinutes,
           0,
         ) * 60_000;
-      // The existing food RPC owns availability, prices and transaction limits.
-      // It has no finite per-item stock; do not synthesize a stock quantity.
       if (!data || !Array.isArray(data.catalog)) {
         return res.status(503).json({ error: "Assanti's shop is temporarily unavailable. Please try again." });
       }
-      const catalogWithStock = data.catalog.map((item: Record<string, unknown>) => ({
-        ...item,
-        stockMode: "unlimited",
-      }));
+      // Only the verified local development database uses the legacy RPC-only
+      // contract. Missing tables or query failures never select this contract.
+      const localRpcOnly = env.NODE_ENV === "development"
+        && env.SUPABASE_URL === "http://127.0.0.1:54321";
+      let catalogWithStock;
+      if (localRpcOnly) {
+        catalogWithStock = data.catalog.map((item: Record<string, unknown>) => ({
+          ...item,
+          stockMode: "unlimited",
+        }));
+      } else {
+        const { data: stockRows, error: stockError } = await supabaseAdmin
+          .from("assanti_daily_stock")
+          .select("slug, remaining_stock")
+          .eq("delta_day", deltaDay)
+          .eq("category", "food");
+        const parsedStock = z.array(z.object({
+          slug: z.string(), remaining_stock: z.number().int().nonnegative(),
+        })).safeParse(stockRows);
+        if (stockError || !parsedStock.success) {
+          return res.status(503).json({ error: "Assanti's stock is temporarily unavailable." });
+        }
+        const stockBySlug = new Map(parsedStock.data.map(row => [row.slug, row.remaining_stock]));
+        catalogWithStock = data.catalog.map((item: { slug: string; [key: string]: unknown }) => ({
+          ...item,
+          // Never let RPC metadata override the finite-stock contract.
+          stockMode: undefined,
+          stock: stockBySlug.get(item.slug) ?? 0,
+        }));
+      }
 
       res.setHeader("Cache-Control", "no-store");
 

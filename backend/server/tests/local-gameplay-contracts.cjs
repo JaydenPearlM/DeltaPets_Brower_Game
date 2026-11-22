@@ -3,23 +3,27 @@ const test = require('node:test');
 const express = require('express');
 const uid = '00000000-0000-4000-8000-000000000001';
 const pid = '00000000-0000-4000-8000-000000000002';
-let pet, rpcResult, calls;
+let pet, rpcResult, calls, stockResult;
+const runtimeEnv = { NODE_ENV: 'development', SUPABASE_URL: 'http://127.0.0.1:54321' };
 const admin = {
   from(table) {
     calls.push(table);
-    const result = { data: table === 'pets' ? pet : [], error: null };
+    const result = table === 'assanti_daily_stock' ? stockResult : { data: table === 'pets' ? pet : [], error: null };
     const chain = { select() { return this; }, eq() { return this; }, maybeSingle() { return Promise.resolve(result); }, then(resolve, reject) { return Promise.resolve(result).then(resolve, reject); } };
     return chain;
   },
   async rpc(name, args) { calls.push({ name, args }); return rpcResult; },
 };
 function stub(path, exports) { const id = require.resolve(path); require.cache[id] = { id, filename: id, loaded: true, exports }; }
+stub('../dist/env.server', { env: runtimeEnv });
 stub('../dist/lib/supabaseAdmin', { supabaseAdmin: admin });
 stub('../dist/middleware/auth', { requireUser(req, res, next) { if (!req.headers.authorization) return res.sendStatus(401); req.user = { id: uid }; next(); } });
 const service = require('../dist/pets/level2/service');
 const { kithnaMerchantsRouter } = require('../dist/routes/merchants/kithnaMerchants');
 function reset() {
   calls = [];
+  runtimeEnv.NODE_ENV = 'development'; runtimeEnv.SUPABASE_URL = 'http://127.0.0.1:54321';
+  stockResult = { data: [], error: null };
   pet = { id: pid, user_id: uid, species: null, line: 'light', stage: 'egg', ran_away: false, xp: 0, level: 1, unspent_points: 0, hp_max: 10, hp_cur: 10, atk: 1, magi: 1, def: 1, spd: 1, mana: 1 };
 }
 test('species-less egg returns real saved state with ineligible skills, no choices or combat skills', async () => {
@@ -86,4 +90,43 @@ test('food buy/sell forward unchanged server-owned transaction parameters and re
     const res = await fetch(url + '/food/purchase', { method: 'POST', headers: { authorization: 'test', 'content-type': 'application/json' }, body: JSON.stringify({ slug: 'alpha-meat', quantity: 51 }) });
     assert.equal(res.status, 400); assert.equal(calls.length, count);
   });
+});
+
+test('finite contract retains stock, zero/missing rows, prices and availability without unlimited metadata', async () => {
+  reset(); runtimeEnv.NODE_ENV = 'production';
+  rpcResult = { data: { merchantDots: 100, catalog: [
+    { slug: 'apple', price: 7, available: true, stockMode: 'unlimited' },
+    { slug: 'rice', price: 9, available: true },
+    { slug: 'bread', price: 5, available: false },
+  ] }, error: null };
+  stockResult = { data: [{ slug: 'apple', remaining_stock: 6 }, { slug: 'rice', remaining_stock: 0 }], error: null };
+  await http(async url => {
+    const res = await fetch(url + '/food', { headers: { authorization: 'test' } }); assert.equal(res.status, 200);
+    const body = await res.json(); assert.equal(body.merchantDots, 100);
+    assert.deepEqual(body.catalog, [
+      { slug: 'apple', price: 7, available: true, stock: 6 },
+      { slug: 'rice', price: 9, available: true, stock: 0 },
+      { slug: 'bread', price: 5, available: false, stock: 0 },
+    ]);
+  }); assert(calls.includes('assanti_daily_stock'));
+});
+test('missing, denied, unavailable or malformed finite stock fails closed for every nonlocal configuration', async () => {
+  for (const config of [
+    { NODE_ENV: 'production', SUPABASE_URL: 'http://127.0.0.1:54321' },
+    { NODE_ENV: 'development', SUPABASE_URL: 'https://example.invalid' },
+    { NODE_ENV: undefined, SUPABASE_URL: 'http://127.0.0.1:54321' },
+    { NODE_ENV: 'development', SUPABASE_URL: 'http://127.0.0.1:54322' },
+  ]) for (const result of [
+    { data: null, error: { code: '42P01' } },
+    { data: null, error: { code: '42501' } },
+    { data: null, error: { code: 'PGRST205' } },
+    { data: null, error: null },
+    { data: [{ slug: 'apple', remaining_stock: -1 }], error: null },
+  ]) {
+    reset(); Object.assign(runtimeEnv, config); stockResult = result;
+    rpcResult = { data: { catalog: [{ slug: 'apple', price: 7, available: true }] }, error: null };
+    await http(async url => { const res = await fetch(url + '/food', { headers: { authorization: 'test' } });
+      assert.equal(res.status, 503); assert(!('catalog' in await res.json())); });
+    assert(calls.includes('assanti_daily_stock'));
+  }
 });
