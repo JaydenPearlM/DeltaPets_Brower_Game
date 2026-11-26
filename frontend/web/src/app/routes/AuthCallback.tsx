@@ -29,7 +29,7 @@ export default function AuthCallback() {
       window.clearTimeout(timeout);
       setVerificationFailed(false);
 
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut({ scope: "local" });
 
       if (cancelled) return;
 
@@ -51,14 +51,8 @@ export default function AuthCallback() {
       );
     }
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session) {
-          void finishVerification();
-        }
-      },
-    );
-
+    // getSession waits for URL-session initialization. Do not call signOut
+    // inside onAuthStateChange: auth methods share the client's session lock.
     void (async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
@@ -89,13 +83,12 @@ export default function AuthCallback() {
     return () => {
       cancelled = true;
       window.clearTimeout(timeout);
-      subscription.subscription.unsubscribe();
     };
   }, []);
   return (
     <main className="authCallbackPage">
       <section className="authCallbackShell">
-        <div className="authCallbackPanel dp-blue-grid-panel">
+        <div className={`authCallbackPanel dp-blue-grid-panel${verified ? " authCallbackPanel--verified" : ""}`}>
           <div className="authCallbackScan" aria-hidden="true" />
 
           <div className="authCallbackMark" aria-hidden="true">

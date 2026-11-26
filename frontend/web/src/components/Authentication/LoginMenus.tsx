@@ -177,10 +177,13 @@ export function LoginMenus({
   useEffect(() => {
     if (forcedView === "none") return;
 
-    setMessage(null);
+    setMessage(location.state?.checkEmail ? {
+      type: "success",
+      text: "Account created! Go to your email and activate your DeltaPets account before signing in.",
+    } : null);
     setView(forcedView);
     setIsOpen(true);
-  }, [forcedView]);
+  }, [forcedView, location.state]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -379,9 +382,12 @@ export function LoginMenus({
       resetSignupFields();
       setLoginPassword("");
       setView("login");
+      navigate("/signin", { replace: true, state: { checkEmail: !hasSession } });
       setMessage({
         type: "success",
-        text: "Account created! Go to your email and activate your DeltaPets account before signing in.",
+        text: hasSession
+          ? "Account created. Please sign in."
+          : "Account created! Go to your email and activate your DeltaPets account before signing in.",
       });
     } catch (error) {
       console.error("[signup] unexpected signup error:", error);

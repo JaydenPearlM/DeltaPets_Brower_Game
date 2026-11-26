@@ -162,6 +162,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 error: new Error(
                   response.status === 401
                     ? "Incorrect Username and/or password."
+                    : response.status === 403
+                    ? "Activate your account using the email link before signing in."
                     : "Could not sign in. Try again later.",
                 ),
               };

@@ -23,6 +23,11 @@
   animation: authCallbackPanelIn 0.45s ease-out both;
 }
 
+.authCallbackPanel--verified {
+  border: 2px solid var(--dp-border-green, #63db83);
+  background: rgba(8, 48, 28, 0.95);
+}
+
 .authCallbackScan {
   position: absolute;
   inset: 0;

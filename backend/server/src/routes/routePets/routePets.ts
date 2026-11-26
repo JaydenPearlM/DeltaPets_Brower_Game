@@ -1129,7 +1129,7 @@ petsRouter.post(
       const finalLocation = hatched.location;
       const finalIsActive = hatched.is_active;
       const storageResult = assignedPartySlot ? "party" : "storage";
-      const postHatchDestination = assignedPartySlot && starter ? "/pet" : null;
+      const postHatchDestination = assignedPartySlot && starter ? "/pets" : null;
       let points: Awaited<ReturnType<typeof fetchTotalPoints>> = null;
       try {
         points = await fetchTotalPoints(egg.id);

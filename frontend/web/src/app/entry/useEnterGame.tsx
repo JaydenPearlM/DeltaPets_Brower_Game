@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../lib/api/baseClient";
 import { supabase } from "../../lib/supabase/client";
 
+import { entryDestination } from "./entryDestination";
+
 const DEV = import.meta.env.DEV;
 
 type IntroStateResponse = {
@@ -27,9 +29,10 @@ function sleep(ms: number) {
  * Centralized entry logic (single source of truth for Alpha):
  *
  * - not logged in            -> /
- * - intro cutscene NOT seen  -> /create
- * - intro seen + no hatched pet + egg -> /hatchery
- * - hatched pet exists                -> /profile
+ * - new player              -> /first-entry -> /create
+ * - no hatched pet + egg    -> /hatchery
+ * - intro seen, no egg/pet  -> /create
+ * - hatched pet exists                -> /pets
  *
  * Backend is authoritative to avoid RLS issues.
  */
@@ -62,37 +65,9 @@ export function useEnterGame() {
 
       debugLog("[enterGame] /api/me/intro payload:", payload);
 
-      const introSeen = Boolean(payload.intro_seen);
-      const hasEgg = Boolean(payload.has_hatchery_egg);
-      const hasHatchedPet = Boolean(payload.has_hatched_pet);
-
-      debugLog("[enterGame] introSeen:", introSeen);
-      debugLog("[enterGame] hasEgg:", hasEgg);
-      debugLog("[enterGame] hasHatchedPet:", hasHatchedPet);
-      if (!introSeen) {
-        debugLog("[enterGame] routing -> /first-entry");
-        navigate("/first-entry", { replace: true });
-        return;
-      }
-
-      if (!hasHatchedPet && hasEgg) {
-        debugLog(
-          "[enterGame] intro egg still incubating, routing -> /hatchery",
-        );
-        navigate("/hatchery", { replace: true });
-        return;
-      }
-
-      if (!hasHatchedPet) {
-        debugLog(
-          "[enterGame] intro incomplete with no pet, routing -> /create",
-        );
-        navigate("/create", { replace: true });
-        return;
-      }
-
-      debugLog("[enterGame] returning player, routing -> /profile");
-      navigate("/profile", { replace: true });
+      const destination = entryDestination(payload);
+      debugLog("[enterGame] routing ->", destination);
+      navigate(destination, { replace: true });
     } catch (err) {
       console.error("[enterGame] failed:", err);
       throw err;

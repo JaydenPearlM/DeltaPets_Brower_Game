@@ -1,0 +1,5 @@
+project_id = "deltapets-core-existing"
+[db]
+major_version = 17
+[db.seed]
+enabled = false

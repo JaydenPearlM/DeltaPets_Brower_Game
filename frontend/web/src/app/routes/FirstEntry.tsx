@@ -56,7 +56,7 @@ export default function FirstEntry() {
               className="dp-btn dp-btn-yellow"
               onClick={() => navigate("/create", { replace: true })}
             >
-              ENTER DELTAPETS
+              ENTER ALIUNE
             </button>
           </div>
         </div>

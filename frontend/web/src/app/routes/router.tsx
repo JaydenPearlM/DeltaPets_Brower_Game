@@ -128,6 +128,14 @@ export const router = createBrowserRouter([
       },
 
       {
+        path: "pets",
+        element: withSuspense(
+          <ProtectedRoute>
+            <PetPage />
+          </ProtectedRoute>,
+        ),
+      },
+      {
         path: "pet",
         element: withSuspense(
           <ProtectedRoute>

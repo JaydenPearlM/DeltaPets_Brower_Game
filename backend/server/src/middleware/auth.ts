@@ -120,6 +120,13 @@ publicAuthRouter.post(
         options: captchaToken ? { captchaToken } : undefined,
       });
       if (loginError || !login.session) {
+        if (loginError?.code === "email_not_confirmed") {
+          return res.status(403).json({ error: "Activate your account using the email link before signing in." });
+        }
+        if (loginError && loginError.code !== "invalid_credentials") {
+          logger.error("[auth] password authentication unavailable", { code: loginError.code });
+          return res.status(503).json({ error: "Could not sign in. Try again later." });
+        }
         return res.status(401).json({ error: "Incorrect Username and/or password." });
       }
 

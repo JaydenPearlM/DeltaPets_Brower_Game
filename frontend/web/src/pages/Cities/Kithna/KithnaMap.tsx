@@ -3,11 +3,24 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import DpPopupWindow from "@/pages/petsPage/components/DpPopupWindow";
 
-
 import { useKithnaQuests } from "./KithnaQuest/useKithnaQuests";
 import KithnaQuestMarker from "./KithnaQuest/KithnaQuestMarker";
+import kithnaDay from "../../../kith/assets/cities/Kithna.png";
+import kithnaDawn from "../../../kith/assets/cities/kithna_dawn.png";
+import kithnaDusk from "../../../kith/assets/cities/kithna_dusk.png";
+import kithnaNight from "../../../kith/assets/cities/kithna_night.png";
+import kithnaDeepNight from "../../../kith/assets/cities/kithna_deep_night.png";
+import kithnaLateNight from "../../../kith/assets/cities/kithna_late_night.png";
+import { useDeltaTime, type DeltaPhase } from "@/lib/timers/useDeltaTime";
 
-import kithnaMapImage from "../../../kith/assets/cities/Kithna.png";
+const kithnaBackgrounds: Record<DeltaPhase, string> = {
+  dawn: kithnaDawn,
+  day: kithnaDay,
+  dusk: kithnaDusk,
+  night: kithnaNight,
+  deep_night: kithnaDeepNight,
+  twilight: kithnaLateNight,
+};
 
 import "./KithnaMap.css";
 
@@ -313,6 +326,8 @@ function KithnaMarkerIcon({
 }
 
 export default function KithnaMap() {
+  const { phase } = useDeltaTime();
+  const kithnaMapImage = kithnaBackgrounds[phase] ?? kithnaDay;
   const navigate = useNavigate();
   const directoryRef = useRef<HTMLElement>(null);
   const lastDirectoryEntryRef = useRef<HTMLButtonElement>(null);
@@ -801,7 +816,6 @@ export default function KithnaMap() {
 
             <div className="kithnaFountainBowl" />
           </div>
-
         </div>
       </section>
     </main>

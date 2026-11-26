@@ -1,0 +1,226 @@
+{
+  "lane": "existing",
+  "platform": "public.ecr.aws/supabase/postgres:17.6.1.063",
+  "expectedPredecessorVersions": [
+    "20260907160539",
+    "20260907160540",
+    "20260914160508",
+    "20260917141918",
+    "20260917153156",
+    "20260925150258",
+    "20260927181654",
+    "20260928201548",
+    "20260928203312",
+    "20261001005606",
+    "20261005023308",
+    "20261005023310",
+    "20261005023311",
+    "20261005023729",
+    "20261005023730",
+    "20261005171844",
+    "20261005173547",
+    "20261005221500",
+    "20261009132856",
+    "20261012184845",
+    "20261012190042",
+    "20261012210000",
+    "20261017001518",
+    "20261023233052",
+    "20261029221654",
+    "20261031015143",
+    "20261031024726",
+    "20261101130407",
+    "20261101161856",
+    "20261101221953",
+    "20261102154932",
+    "20261104165826",
+    "20261111181527",
+    "20261111184310",
+    "20261111184319",
+    "20261111185111",
+    "20261112162741",
+    "20261114122157",
+    "20261115145808",
+    "20261116161401",
+    "20261119165850",
+    "20261119170350"
+  ],
+  "expectedPending": [
+    "20261126051000_restrict_client_privileges.sql"
+  ],
+  "configSha256": "13ec15867b9c22df3a9dc25c850071aafdef7f73d425e6875d2d72d154f97c83",
+  "migrations": [
+    {
+      "file": "20260907160539_remote_baseline.sql",
+      "sha256": "b8b25bc4445bfca7f9ea1abe8f5a27ee634409a2689d33b89ecc7086283ed289"
+    },
+    {
+      "file": "20260907160540_reference_data.sql",
+      "sha256": "dba3d4e1331e0ddfbdd7131a70d05b62fddf1f480bd7953a8d53927cc51dfa82"
+    },
+    {
+      "file": "20260914160508_fix_tester_cleanup_legendary_pet_fk.sql",
+      "sha256": "20476c9c8674182a98d35615dc8b373d83e55f7eab6d2eb6a97bd3a57a74fabf"
+    },
+    {
+      "file": "20260917141918_original_starter_and_corruption_loss.sql",
+      "sha256": "57fb0ff36299a78623ef6199f8570c007607e0a2d7449578d10bfde629d2d0da"
+    },
+    {
+      "file": "20260917153156_restrict_hatch_pet_to_service_role.sql",
+      "sha256": "d035f183a3247724a33920d91861c679a81bf5af1d86cc6f66ed239bedf37571"
+    },
+    {
+      "file": "20260925150258_resonance_evolution_delta_cost.sql",
+      "sha256": "5a1f676cf81428a99305b3864ddd5a194dbfa762e270d710800b3a521589a4b9"
+    },
+    {
+      "file": "20260927181654_profile_appearance.sql",
+      "sha256": "63961f5a950b8839724087f16d1f467cbd05f6926303daf1bd81be938c01f965"
+    },
+    {
+      "file": "20260928201548_secure_assanti_food_trades.sql",
+      "sha256": "fa51fc94b566e1eb490b29ae10bea052a394afc19aeafc706f09f033fad91ae1"
+    },
+    {
+      "file": "20260928203312_server_authoritative_care.sql",
+      "sha256": "0ceeb66d72efb421f8cc2981d5c75893dda2b0c9033df459f0082f3007fc6327"
+    },
+    {
+      "file": "20261001005606_record_pet_battle_results.sql",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "20261005023308_atomic_daily_login_reward.sql",
+      "sha256": "97548c438767dfc26adb8a3461fe89f4d06b4049aaf42b28ab521692546ac4b5"
+    },
+    {
+      "file": "20261005023310_atomic_pet_storage_actions.sql",
+      "sha256": "da6d21bfd19ea9627bee21f3a4a185ff502410938e0833bec7bd749ce821a939"
+    },
+    {
+      "file": "20261005023311_atomic_hatch_completion.sql",
+      "sha256": "7d88badfb1b91eb081b22d79a04cb80688891a58121a6bc39c1c6e145c62da91"
+    },
+    {
+      "file": "20261005023729_restrict_privileged_game_functions.sql",
+      "sha256": "7209f5b7bd3397ac1cb54f42b243f90908b0ed45e59854036b69be894765c452"
+    },
+    {
+      "file": "20261005023730_server_authoritative_progression.sql",
+      "sha256": "058c496cbfb5f1c31931d027e34fff15fca5e7edcce6510f5d4dca00fcb3eef2"
+    },
+    {
+      "file": "20261005171844_retire_closed_alpha_care_package.sql",
+      "sha256": "4d344c646d270b8d891d647e60d0c6c9892ec28831e6f054c6796d7eec02f891"
+    },
+    {
+      "file": "20261005173547_expand_hatchery_slots_to_12.sql",
+      "sha256": "13ceaae9d009d6f974430c9bde1a40f6e4e86a2e4822cf733b2ae88a523b1a63"
+    },
+    {
+      "file": "20261005221500_pet_element_deltas.sql",
+      "sha256": "cf82ec7ae425a15649a26276092523d2285060caa8624c98d60f5b85419158a5"
+    },
+    {
+      "file": "20261009132856_persist_wildwood_kith_results.sql",
+      "sha256": "2c3243782043610b0244cbc009d43c7c5d22adf237b70874de8fdd9b0df90739"
+    },
+    {
+      "file": "20261012184845_restrict_username_email_lookup.sql",
+      "sha256": "ee080ad70230b338b7f2c89a493fdacda803ff944c38a4b4c4726142c5726b6f"
+    },
+    {
+      "file": "20261012190042_qualify_username_email_lookup.sql",
+      "sha256": "e36e5ad621df6e3b6b8951c23a1bb3180ade024a59fb461a78ae06200bf82a4d"
+    },
+    {
+      "file": "20261012210000_atomic_pve_instability_completion.sql",
+      "sha256": "d569f2527f3647fbd6071f73503715cb9a88c9b846adf4d1ea8897f99f58c08c"
+    },
+    {
+      "file": "20261017001518_assanti_daily_food_shop.sql",
+      "sha256": "0b4d9bc42a2644d39e3ea82bd6fb4d6bbf0773edb9e07737543d6f632354f753"
+    },
+    {
+      "file": "20261023233052_poe_tay_toe_dots_only_reward.sql",
+      "sha256": "655491f627df330839145b6351449ab5ff18dcbad6dec72f24d58d3a1fe2a8b2"
+    },
+    {
+      "file": "20261029221654_kennith_daily_wallet_proposal.sql",
+      "sha256": "f5cd1165eb68cb35baf115810733ebe341f69e4c4424a5585aa772604dbea566"
+    },
+    {
+      "file": "20261031015143_kennith_purchase_proposal.sql",
+      "sha256": "edb63f02a8ab1f5de52820522efccb872073ad05622e5cb1e4d5e2b7ab3323b2"
+    },
+    {
+      "file": "20261031024726_equipment_and_item_care_review.sql",
+      "sha256": "72fd6cd85c69e1b669202da78069fee0df6ee72fb49aa0c370f8692b7dfc3581"
+    },
+    {
+      "file": "20261101130407_kennith_atomic_trade.sql",
+      "sha256": "f6b9371b13bf79fa0dcd8adc1bb4f0e7f822407af2b7f48e8226eae44283f791"
+    },
+    {
+      "file": "20261101161856_atomic_lost_kith_recovery_payment.sql",
+      "sha256": "62e5484b1915b1ac90b1bdbd9c0c446f34dc3499e37197b1990370bf1bdf69c3"
+    },
+    {
+      "file": "20261101221953_protect_favorite_kith.sql",
+      "sha256": "06f1f664ac6f8e7d917c25781c449c996037a657e32be67911a28eab5f30677c"
+    },
+    {
+      "file": "20261102154932_traveling_potato_effects.sql",
+      "sha256": "e208a8fd0f7b38682f31139af74e15c6c11c8e70fae7dbc50df20a173d7ae8c3"
+    },
+    {
+      "file": "20261104165826_wildwood_victory_progression.sql",
+      "sha256": "0d51fec3e615d77f788c8f799503e49c68deced8df1c2ded0041097ddb5f8b89"
+    },
+    {
+      "file": "20261111181527_wildwood_treasure_readiness.sql",
+      "sha256": "948fdb3ed630ea6f61522f6ce2a121c55ced7946e3a7e7632085cefa558f36f2"
+    },
+    {
+      "file": "20261111184310_wildwood_kithna_discovery_catalog.sql",
+      "sha256": "bc6d3f7564d9d52a83de05e258f352b058cb79906b1d4eb5101c5393013d5b6c"
+    },
+    {
+      "file": "20261111184319_wildwood_visit_treasure.sql",
+      "sha256": "850187f3a62a4767de5d72516f8ba0372e112bddf6b87756165d86ae4e1aa1d5"
+    },
+    {
+      "file": "20261111185111_wildwood_egg_treasure.sql",
+      "sha256": "9264eb2ce7ef6898c6ec0b2ef6dc3731ac2caaf31c0c77abb075a10a0d1e601a"
+    },
+    {
+      "file": "20261112162741_complete_compatible_archived_guards.sql",
+      "sha256": "9750cd5c31bf487a67199efa0d5bc6bcc30675dc12461cd92817d4dce4ac438a"
+    },
+    {
+      "file": "20261114122157_wildwood_party_victory_xp.sql",
+      "sha256": "8e391fd6b76a15e40c44e8415666afdfb611583d091b9716426028e3a7b3c2af"
+    },
+    {
+      "file": "20261115145808_wildwood_sparkle_opportunity.sql",
+      "sha256": "1958be53c8b25c5eb8af2c9519663db4ebfbd06b1deb1bf1d1c6db4c1c82f964"
+    },
+    {
+      "file": "20261116161401_level2_skill_learning_and_allocation.sql",
+      "sha256": "18f7aa5f42eaf7a6c2da597358f744320dd63dd3df610726cd82582c7b11e13d"
+    },
+    {
+      "file": "20261119165850_species_skill_slots_and_milestones.sql",
+      "sha256": "79519731b285ffaba4f5258e0ccb90ea42d4890bd66d3740e3459f0c2653e4b9"
+    },
+    {
+      "file": "20261119170350_species_skill_claims_and_equipment_rpc.sql",
+      "sha256": "e6f9a033330e0243f470128e9ae0db6429a7305e704e4b550f210838c67b9b7c"
+    },
+    {
+      "file": "20261126051000_restrict_client_privileges.sql",
+      "sha256": "5cb92f4b2026a4c16009f2aa2fc3a05037f911e60d55117b129453ef3d578cf2"
+    }
+  ]
+}

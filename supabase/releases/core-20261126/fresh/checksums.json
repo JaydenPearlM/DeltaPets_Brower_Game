@@ -1,0 +1,15 @@
+{
+  "lane": "fresh",
+  "platform": "public.ecr.aws/supabase/postgres:17.6.1.063",
+  "expectedPredecessorVersions": [],
+  "expectedPending": [
+    "20261126030000_application_bootstrap.sql"
+  ],
+  "configSha256": "a0ec7ee2f768b2444614ddca616d9f13f8125290e6a3d55beb1614afff23158c",
+  "migrations": [
+    {
+      "file": "20261126030000_application_bootstrap.sql",
+      "sha256": "bef08cd625711e6a780d03ce78375c24259c4b7b0f48ee6cdca90e1c95173689"
+    }
+  ]
+}
