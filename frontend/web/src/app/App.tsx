@@ -95,7 +95,11 @@ export default function App() {
     const navigation = desktopNavigationRef.current;
     if (!support || !explore || !navigation) return;
 
+    const desktop = window.matchMedia("(min-width: 901px)");
     const centerNavigation = () => {
+      // The desktop navigation is hidden on mobile; measuring it still forces
+      // the whole page to lay out, including newly mounted route content.
+      if (!desktop.matches) return;
       const gap =
         explore.getBoundingClientRect().left -
         support.getBoundingClientRect().right;
@@ -107,12 +111,13 @@ export default function App() {
     observer.observe(support);
     observer.observe(explore);
     observer.observe(navigation);
-    window.addEventListener("resize", centerNavigation);
-    centerNavigation();
+    // ResizeObserver runs after layout. Observe the header for viewport changes
+    // instead of forcing layout from resize events or route effects.
+    const header = navigation.closest(".appHeaderInner");
+    if (header) observer.observe(header);
 
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", centerNavigation);
     };
   }, [user, location.pathname]);
 
