@@ -390,10 +390,10 @@ export default function EggHatchShowcase({
 
       // Sparks + light heading toward the viewer, timed to finish well
       // before the follow-through settle below.
+      // playOnce already reset these animations before the egg's float.
+      // Restarting them here needs no layout read between style writes.
       burstRefs.current.forEach((el, i) => {
         if (!el) return;
-        el.style.animation = "none";
-        void el.offsetWidth;
         el.style.animation = `showcaseBurst${(i % 4) + 1} 650ms ease-out ${i * 60}ms both`;
       });
 
