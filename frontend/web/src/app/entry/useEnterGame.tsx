@@ -32,7 +32,7 @@ function sleep(ms: number) {
  * - new player              -> /first-entry -> /create
  * - no hatched pet + egg    -> /hatchery
  * - intro seen, no egg/pet  -> /create
- * - hatched pet exists                -> /pets
+ * - hatched pet exists                -> /profile
  *
  * Backend is authoritative to avoid RLS issues.
  */
